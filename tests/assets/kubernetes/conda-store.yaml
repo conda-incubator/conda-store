@@ -18,6 +18,9 @@ spec:
         - name: conda-store
           image: quansight/conda-store:add8c4f61477d9ba7667b65d13dc5d627f65de77
           command: ['python', '/opt/conda-store/conda-store.py', '-e', '/opt/environments', '-o', '/home/conda/environments', '-s', '/home/conda/store', '--uid', '0', '--gid', '0', '--permissions', '775']
+          volumeMounts:
+            - name: conda-environments
+              mountPath: "/opt/environments"
         - name: nfs-server
           image: "gcr.io/google_containers/volume-nfs:0.8"
           ports:
@@ -26,14 +29,12 @@ spec:
             - name: mountd
               containerPort: 20048
             - name: rpcbind
-              contianerPort: 111
+              containerPort: 111
           securityContext:
             privileged: true
           volumeMounts:
             - name: nfs-export-fast
               mountPath: "/home/conda"
-            - name: conda-environments
-              mountPath: "/opt/environments"
       volumes:
         - name: nfs-export-fast
           persistentVolumeClaim:
@@ -42,7 +43,7 @@ spec:
           configMap:
             name: conda-environments
 ---
-apiVersion: apps/v1
+apiVersion: v1
 kind: Service
 metadata:
   name: conda-store
@@ -62,10 +63,11 @@ kind: PersistentVolumeClaim
 metadata:
   name: nfs-conda-storage
 spec:
-  access_modes: ReadWriteOnce
+  accessModes:
+    - ReadWriteOnce
   resources:
     requests:
-      storage: 20GB
+      storage: 20G
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -73,4 +75,4 @@ metadata:
   name: conda-environments
 data:
   "environment1.yaml": "{\"name\": \"env-name-1\", \"channels\": [\"conda-forge\", \"defaults\"], \"dependencies\": [\"python=3.7\", \"numpy\", \"numba\", \"asdf\"]}"
-  "environment2.yaml": "{\"name\": \"env-name-2\", \"channels\": [\"conda-forge\", \"defaults\"], \"dependencies\": [\"python=3.7\", \"numpy\", \"numba\", \"flask\"]}"
+  "environment2.yaml": "{\"name\": \"env-name-2\", \"channels\": [\"conda-forge\", \"defaults\"], \"dependencies\": [\"python=3.7\", \"numpy\", \"pyyaml\", \"flask\"]}"
