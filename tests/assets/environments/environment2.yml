@@ -4,6 +4,9 @@ channels:
   - defaults
 dependencies:
   - python=3.7
+  - pip
   - flask
   - jinja2
   - pandas
+  - pip:
+      - requests

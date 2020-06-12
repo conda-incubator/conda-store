@@ -12,9 +12,10 @@ import yaml
 import shutil
 import contextlib
 import functools
+import tempfile
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('conda-store')
 
 
 # format: {buildsha: (last failed, timeout seconds)}
@@ -123,7 +124,7 @@ def _conda_build(environment_name, environment_filename, environment_directory, 
     if environment_install_directory.is_symlink() and \
        environment_directory.is_dir() and \
        environment_install_directory.resolve() == environment_directory:
-        logger.info(f'found cached {environment_name} in {environment_install_directory}')
+        logger.debug(f'found cached {environment_name} in {environment_install_directory}')
     else:
         logger.info(f'building {environment_name} in {environment_install_directory}')
 
@@ -132,7 +133,12 @@ def _conda_build(environment_name, environment_filename, environment_directory, 
             shutil.rmtree(str(environment_directory))
 
         with timer(logger, f'building {environment_name}'):
-            subprocess.check_output(['conda', 'env', 'create', '-p', environment_directory, '-f', environment_filename], stderr=subprocess.STDOUT)
+            with tempfile.TemporaryDirectory() as tmpdir:
+                # directory of environment.yaml must be writeable
+                # https://github.com/Quansight/conda-store/issues/1
+                tmp_environment_filename = pathlib.Path(tmpdir) / 'environment.yaml'
+                shutil.copyfile(environment_filename, str(tmp_environment_filename))
+                subprocess.check_output(['conda', 'env', 'create', '-p', environment_directory, '-f', tmp_environment_filename], stderr=subprocess.STDOUT)
 
         symlink(environment_directory, environment_install_directory)
 
@@ -158,8 +164,8 @@ def check_environments(environment_directory):
 
 
 def main():
-    init_logging()
     args = init_cli()
+    init_logging(args.verbose)
 
     logger.info(f'polling interval set to {args.poll_interval} seconds')
 
@@ -174,7 +180,7 @@ def main():
 
     while True:
         environment_filenames = check_environments(environment_directory)
-        logger.info(f'found {len(environment_filenames)} to build')
+        logger.debug(f'found {len(environment_filenames)} to build')
 
         for filename in environment_filenames:
             conda_build(filename, output_directory, store_directory, args.permissions, args.uid, args.gid)
@@ -182,8 +188,11 @@ def main():
         time.sleep(args.poll_interval)
 
 
-def init_logging(level=logging.INFO):
-    logging.basicConfig(level=level)
+def init_logging(verbose=False):
+    logging.basicConfig(
+        level=logging.DEBUG if verbose else logging.INFO,
+        format='[%(asctime)s] {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s',
+    )
 
 
 def init_cli():
@@ -195,6 +204,7 @@ def init_cli():
     parser.add_argument('--uid', type=int, help='uid to assign to built environments')
     parser.add_argument('--gid', type=int, help='gid to assign to built environments')
     parser.add_argument('--permissions', type=str, help='permissions to assign to built environments')
+    parser.add_argument('--verbose', action='store_true', help='enable debug logging')
     args = parser.parse_args()
     return args
 
