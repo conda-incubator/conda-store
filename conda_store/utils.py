@@ -1,10 +1,9 @@
+import os
 import re
 import hashlib
 import subprocess
 import contextlib
 import time
-
-import psutil
 
 
 def filename_hash(filename):
@@ -43,4 +42,5 @@ def timer(logger, prefix):
 
 
 def free_disk_space(path):
-    return psutil.disk_usage(str(path)).free
+    disk = os.statvfs(str(path))
+    return disk.f_bavail * disk.f_frsize

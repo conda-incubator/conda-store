@@ -7,6 +7,8 @@ from conda_store.logging import init_logging
 from conda_store.environments import discover_environments
 from conda_store.build import conda_build
 from conda_store.utils import free_disk_space
+from conda_store.ui import start_ui_server
+from conda_store.registry import start_registry_server
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +23,10 @@ def init_cli():
     parser.add_argument('--gid', type=int, help='gid to assign to built environments')
     parser.add_argument('--permissions', type=str, help='permissions to assign to built environments')
     parser.add_argument('--storage-threshold', type=int, default=(5 * (2**30)), help='emit warning when free disk space drops below threshold bytes')
+    parser.add_argument('--enable-ui', action='store_true', help='enable web ui for conda-store')
+    parser.add_argument('--ui-port', type=int, default=5000, help='port to run conda-store ui')
+    parser.add_argument('--enable-registry', action='store_true', help='enable docker registry for conda-store')
+    parser.add_argument('--registry-port', type=int, default=5001, help='port to run conda-store docker registry')
     parser.add_argument('--verbose', action='store_true', help='enable debug logging')
     parser.set_defaults(func=handle_build)
 
@@ -38,6 +44,12 @@ def handle_build(args):
 
     output_directory = pathlib.Path(args.output).expanduser().resolve()
     output_directory.mkdir(parents=True, exist_ok=True)
+
+    if args.enable_ui:
+        start_ui_server('0.0.0.0', args.ui_port)
+
+    if args.enable_ui:
+        start_registry_server('0.0.0.0', args.registry_port)
 
     while True:
         environments = discover_environments(args.paths)

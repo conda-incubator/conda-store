@@ -7,7 +7,7 @@ pkgs.mkShell {
   buildInputs = [
     pythonPackages.pyyaml
     pythonPackages.flask
-    pythonPackages.psutil
+    pythonPackages.requests
 
     pythonPackages.black
     pythonPackages.flake8

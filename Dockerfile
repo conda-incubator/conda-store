@@ -8,4 +8,6 @@ CMD python -m 'conda_store' \
         -o '/opt/mount/environments' \
         -s '/opt/mount/store' \
         --uid '1000' --gid '100' \
-        --permissions '775'
+        --permissions '775' \
+        --enable-ui --ui-port 5000 \
+        --enable-registry --registry-port 5001
