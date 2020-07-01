@@ -1,68 +1,22 @@
-import stat
-import re
-import argparse
-import datetime
-import hashlib
-import logging
 import os
-import pathlib
-import subprocess
-import time
-import yaml
 import shutil
-import contextlib
 import functools
+import datetime
+import logging
+import subprocess
+import pathlib
+import stat
 import tempfile
 
+import yaml
 
-logger = logging.getLogger('conda-store')
+from conda_store.utils import filename_hash, timer, chmod, chown, symlink, timer
 
 
-# format: {buildsha: (last failed, timeout seconds)}
+logger = logging.getLogger(__name__)
+
+
 CONDA_FAILED_BUILDS = {}
-
-
-def filename_hash(filename):
-    with open(filename, "rb") as f:
-        return hashlib.sha256(f.read()).hexdigest()
-
-
-def symlink(source, target):
-    if target.is_symlink():
-        target.unlink()
-    target.symlink_to(source)
-
-
-def chmod(directory, permissions):
-    if re.fullmatch('[0-7]{3}', permissions) is None:
-        raise ValueError(f'chmod permissions={permissions} not 3 integer values between 0-7')
-
-    subprocess.check_output(['chmod', '-R', str(permissions), str(directory)])
-
-
-def chown(directory, uid, gid):
-    if re.fullmatch('\d+', str(uid)) is None:
-        raise ValueError(f'chown uid={uid} not integer value')
-
-    if re.fullmatch('\d+', str(gid)) is None:
-        raise ValueError(f'chown gid={gid} not integer value')
-
-    subprocess.check_output(['chown', '-R', f'{uid}:{gid}', str(directory)])
-
-
-@contextlib.contextmanager
-def timer(logger, prefix):
-    start_time = time.time()
-    yield
-    logger.info(f'{prefix} took {time.time() - start_time:.3f} [s]')
-
-
-@contextlib.contextmanager
-def extended_conda_environment(filename):
-    """Extended conda build
-
-    """
-    pass
 
 
 def conda_build(environment_filename, install_directory, store_directory, permissions=None, uid=None, gid=None):
@@ -153,61 +107,3 @@ def _conda_build(environment_name, environment_filename, environment_directory, 
         logger.info(f'modifying permissions of {environment_directory} to uid={uid} and gid={gid}')
         with timer(logger, f'chown of {environment_directory}'):
             chown(environment_directory, uid, gid)
-
-
-def check_environments(environment_directory):
-    environments = []
-    for filename in os.listdir(environment_directory):
-        if filename.endswith('.yml') or filename.endswith('.yaml'):
-            environments.append(environment_directory / filename)
-    return environments
-
-
-def main():
-    args = init_cli()
-    init_logging(args.verbose)
-
-    logger.info(f'polling interval set to {args.poll_interval} seconds')
-
-    store_directory = pathlib.Path(args.store).expanduser().resolve()
-    store_directory.mkdir(parents=True, exist_ok=True)
-    (store_directory / '.logs').mkdir(parents=True, exist_ok=True)
-
-    output_directory = pathlib.Path(args.output).expanduser().resolve()
-    output_directory.mkdir(parents=True, exist_ok=True)
-
-    environment_directory = pathlib.Path(args.environments).expanduser().resolve()
-
-    while True:
-        environment_filenames = check_environments(environment_directory)
-        logger.debug(f'found {len(environment_filenames)} to build')
-
-        for filename in environment_filenames:
-            conda_build(filename, output_directory, store_directory, args.permissions, args.uid, args.gid)
-
-        time.sleep(args.poll_interval)
-
-
-def init_logging(verbose=False):
-    logging.basicConfig(
-        level=logging.DEBUG if verbose else logging.INFO,
-        format='[%(asctime)s] {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s',
-    )
-
-
-def init_cli():
-    parser = argparse.ArgumentParser(description='declarative conda environments on filesystem')
-    parser.add_argument('-e', '--environments', type=str, help='input directory for environments', required=True)
-    parser.add_argument('-s', '--store', type=str, default='.conda-store-cache', help='directory for storing environments and logs')
-    parser.add_argument('-o', '--output', type=str, help='output directory for symlinking conda environment builds', required=True)
-    parser.add_argument('--poll-interval', type=int, default=10, help='poll interval to check environment directory for new environments')
-    parser.add_argument('--uid', type=int, help='uid to assign to built environments')
-    parser.add_argument('--gid', type=int, help='gid to assign to built environments')
-    parser.add_argument('--permissions', type=str, help='permissions to assign to built environments')
-    parser.add_argument('--verbose', action='store_true', help='enable debug logging')
-    args = parser.parse_args()
-    return args
-
-
-if __name__ == "__main__":
-    main()
