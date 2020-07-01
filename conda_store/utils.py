@@ -6,11 +6,6 @@ import contextlib
 import time
 
 
-def filename_hash(filename):
-    with open(filename, "rb") as f:
-        return hashlib.sha256(f.read()).hexdigest()
-
-
 def symlink(source, target):
     if target.is_symlink():
         target.unlink()
