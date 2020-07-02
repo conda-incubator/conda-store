@@ -7,24 +7,48 @@ import stat
 import tempfile
 import traceback
 import sys
+import time
 
 import yaml
 
-from conda_store.utils import timer, chmod, chown, symlink, disk_usage
-from conda_store.data_model import (
-    claim_conda_build,
-    update_conda_build_completed,
-    update_conda_build_failed
-)
+from conda_store.utils import timer, chmod, chown, symlink, disk_usage, free_disk_space
+from conda_store.data_model.base import DatabaseManager
+from conda_store.data_model import build
+from conda_store.environments import discover_environments
+
 
 logger = logging.getLogger(__name__)
 
 
-def conda_build(dbm, permissions=None, uid=None, gid=None):
-    build_id, spec, store_path, install_path = claim_conda_build(dbm)
+def start_conda_build(store_directory, output_directory, paths, permissions, uid, gid, storage_threshold, poll_interval):
+    dbm = DatabaseManager(store_directory)
+
+    logger.info(f'polling interval set to {poll_interval} seconds')
+    while True:
+        environments = discover_environments(paths)
+        for environment in environments:
+            build.register_environment(dbm, environment)
+
+        num_queued_builds = build.number_queued_conda_builds(dbm)
+        if num_queued_builds > 0:
+            logger.info(f'number of queued conda builds {num_queued_builds}')
+
+        if free_disk_space(store_directory) < storage_threshold:
+            logger.warning(f'free disk space={storage_threshold:g} [bytes] below storage threshold')
+
+        num_schedulable_builds = build.number_schedulable_conda_builds(dbm)
+        if num_schedulable_builds > 0:
+            logger.info(f'number of schedulable conda builds {num_schedulable_builds}')
+            conda_build(dbm, output_directory, permissions, uid, gid)
+        else:
+            time.sleep(poll_interval)
+
+
+def conda_build(dbm, output_directory, permissions=None, uid=None, gid=None):
+    build_id, spec, store_path = build.claim_conda_build(dbm)
     try:
         environment_store_directory = pathlib.Path(store_path)
-        environment_install_directory = pathlib.Path(install_path)
+        environment_install_directory = pathlib.Path(output_directory) / spec['name']
 
         # environment installation is an atomic process if a symlink at
         # "install_directory/environment_name" points to
@@ -51,7 +75,7 @@ def conda_build(dbm, permissions=None, uid=None, gid=None):
                     try:
                         output = subprocess.check_output(args, stderr=subprocess.STDOUT, encoding='utf-8')
                     except subprocess.CalledProcessError as e:
-                        update_conda_build_failed(dbm, build_id, e.output)
+                        build.update_conda_build_failed(dbm, build_id, e.output)
                         return
 
             symlink(environment_store_directory, environment_install_directory)
@@ -70,11 +94,11 @@ def conda_build(dbm, permissions=None, uid=None, gid=None):
 
         size = disk_usage(environment_store_directory)
 
-        update_conda_build_completed(dbm, build_id, output, size)
+        build.update_conda_build_completed(dbm, build_id, output, size)
     except Exception as e:
         logger.exception(e)
-        update_conda_build_failed(dbm, build_id, traceback.format_exc())
+        build.update_conda_build_failed(dbm, build_id, traceback.format_exc())
     except BaseException as e:
         logger.error(f'exception {e.__class__.__name__} caught causing build={build_id} to be rescheduled')
-        update_conda_build_failed(dbm, build_id, traceback.format_exc())
+        build.update_conda_build_failed(dbm, build_id, traceback.format_exc())
         sys.exit(1)

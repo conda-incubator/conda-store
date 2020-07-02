@@ -4,7 +4,7 @@ services:
   conda-store-build:
     build: .
     volumes:
-      - ./tests/assets/enviroments:/opt/environments:ro
+      - ./tests/assets/environments:/opt/environments:ro
       - /tmp/conda-store/mount:/opt/mount
     command: ['python', '-m', 'conda_store', 'build', '-p', '/opt/environments', '-o', '/opt/mount/environments', '-s', '/opt/mount/store', '--uid', '1000', '--gid', '100', '--permissions', '775']
     environment:

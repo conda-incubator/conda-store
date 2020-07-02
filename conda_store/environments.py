@@ -6,7 +6,7 @@ import json
 
 import yaml
 
-from conda_store.data_model import Environment
+from conda_store.data_model.base import Environment
 
 logger = logging.getLogger(__name__)
 

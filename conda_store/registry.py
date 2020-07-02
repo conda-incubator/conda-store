@@ -3,7 +3,7 @@ import json
 import requests
 from flask import Flask, Response, redirect, g
 
-from conda_store.data_model import DatabaseManager
+from conda_store.data_model.base import DatabaseManager
 
 
 def docker_token(image):
