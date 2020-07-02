@@ -3,11 +3,11 @@
   "scripts": {
 	  "dev": "nuxt", 
 	  "start": "nuxt start", 
-	  "build": "nuxt generate",
+	  "build": "nuxt generate"
   },
   "dependencies" : {
 	  "nuxt": "^2.12.2",
-	  "vue-prettier": "^0.2.0",
+	  "vue-prettier": "^0.2.0"
   },
   "devDependencies": {
 	  "@nuxt/typescript-build": "^1.0.1",
