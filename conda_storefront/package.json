@@ -1,5 +1,5 @@
 {
-  name:"conda-storefront",
+  "name":"conda-storefront",
   "scripts": {
 	  "dev": "nuxt", 
 	  "start": "nuxt start", 
