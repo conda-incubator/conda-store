@@ -1,28 +1,25 @@
-import threading
 import datetime
 
-from werkzeug.serving import make_server
-from flask import jsonify, Flask
+from flask import jsonify, Flask, g
 
 
-class ServerThread(threading.Thread):
-    def __init__(self, conda_store, app, address, port):
-        threading.Thread.__init__(self)
-        self.srv = make_server(address, port, app)
-        self.ctx = app.app_context()
-        self.ctx.push()
-
-    def run(self):
-        self.srv.serve_forever()
-
-    def shutdown(self):
-        self.srv.shutdown()
+from conda_store.data_model import DatabaseManager, list_environments
 
 
-def start_ui_server(address='0.0.0.0', port=5000):
-    app = Flask('conda_store_ui')
-    server = ServerThread(app, address, port)
-    server.start()
+def start_ui_server(conda_store, address='0.0.0.0', port=5000):
+    app = Flask(__name__)
+
+    def get_dbm(conda_store):
+        dbm = getattr(g, '_dbm', None)
+        if dbm is None:
+            dbm = g._dbm = DatabaseManager(conda_store)
+        return dbm
+
+    @app.teardown_appcontext
+    def close_connection(exception):
+        dbm = getattr(g, '_dbm', None)
+        if dbm is not None:
+            dbm.close()
 
     @app.route('/')
     def index():
@@ -33,8 +30,9 @@ def start_ui_server(address='0.0.0.0', port=5000):
         return jsonify({"status": "ok"})
 
     @app.route('/api/v1/environment/')
-    def list_environments():
-        return ['asdf', 'qwer', 'zxcv']
+    def _list_environments():
+        dbm = get_dbm(conda_store)
+        return jsonify(list_environments(dbm))
 
     @app.route('/api/v1/environment/<name>/', methods=['GET'])
     def get_environment(name):
@@ -47,3 +45,5 @@ def start_ui_server(address='0.0.0.0', port=5000):
     @app.route('/api/v1/environment/<name>/', methods=['DELETE'])
     def delete_environment(name):
         return jsonify({'name': name, 'last_modified': datetime.datetime.now()})
+
+    app.run(debug=True, host=address, port=port)

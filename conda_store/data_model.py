@@ -39,6 +39,16 @@ class Build:
 
 SQL_TABLES = """
 CREATE TABLE IF NOT EXISTS environment (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT,
+  specification_id INTEGER,
+  build_id INTEGER,
+  UNIQUE(name),
+  FOREIGN KEY(specification_id) REFERENCES specification(id)
+  FOREIGN KEY(build_id) REFERENCES build(id)
+);
+
+CREATE TABLE IF NOT EXISTS specification (
    id INTEGER PRIMARY KEY AUTOINCREMENT,
    name TEXT,
    created_on DATETIME,
@@ -50,7 +60,7 @@ CREATE TABLE IF NOT EXISTS environment (
 
 CREATE TABLE IF NOT EXISTS build (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  environment_id INTEGER,
+  specification_id INTEGER,
   status ENUM,
   logs TEXT,
   size INTEGER,
@@ -59,18 +69,19 @@ CREATE TABLE IF NOT EXISTS build (
   scheduled_on DATETIME,
   started_on DATETIME,
   ended_on DATETIME,
-  build_time REAL,
-  FOREIGN KEY(environment_id) REFERENCES environment(id)
+  FOREIGN KEY(specification_id) REFERENCES specification(id)
 )
 """
 
 
 class DatabaseManager:
-    def __init__(self, store_directory, install_directory):
+    def __init__(self, store_directory):
         self.store_directory = store_directory
-        self.install_directory = install_directory
         self.connection = self.create_database()
         self.create_tables()
+
+    def close(self):
+        self.connection.close()
 
     def create_database(self):
         def adapt_datetime(datetime):
@@ -116,25 +127,32 @@ class DatabaseManager:
             yield cursor
 
 
-def register_environment(dbm, environment):
+# ========== CONDA BUILD API ============
+def register_environment(dbm, environment, install_directory):
     with dbm.transaction() as cursor:
         # only register new environment if it does not already exist
-        cursor.execute('SELECT COUNT(*) FROM environment WHERE spec_sha256 = ?', (environment.spec_sha256,))
+        cursor.execute('SELECT COUNT(*) FROM specification WHERE spec_sha256 = ?', (environment.spec_sha256,))
         if cursor.fetchone()[0] == 0:
             logger.info(f'registering environment name={environment.name} filename={environment.filename}')
             environment_row = (environment.name, environment.created_on, environment.filename, environment.spec, environment.spec_sha256)
-            cursor.execute('INSERT INTO environment (name, created_on, filename, spec, spec_sha256) VALUES (?, ?, ?, ?, ?)', environment_row)
+            cursor.execute('INSERT INTO specification (name, created_on, filename, spec, spec_sha256) VALUES (?, ?, ?, ?, ?)', environment_row)
 
             logger.info(f'scheduling environment for build name={environment.name} filename={environment.filename}')
             environment_directory = dbm.store_directory / f'{environment.spec_sha256}-{environment.name}'
-            environment_install_directory = dbm.install_directory / environment.name
+            environment_install_directory = install_directory / environment.name
             build_row = (cursor.lastrowid, BuildStatus.QUEUED, datetime.datetime.now(), str(environment_directory), str(environment_install_directory))
-            cursor.execute('INSERT INTO build (environment_id, status, scheduled_on, store_path, install_path) VALUES (?, ?, ?, ?, ?)', build_row)
+            cursor.execute('INSERT INTO build (specification_id, status, scheduled_on, store_path, install_path) VALUES (?, ?, ?, ?, ?)', build_row)
         else:
             logger.debug(f'environment name={environment.name} filename={environment.filename} already registered')
 
 
-def number_available_conda_builds(dbm):
+def number_queued_conda_builds(dbm):
+    with dbm.transaction() as cursor:
+        cursor.execute('SELECT COUNT(*) FROM build WHERE status = ?', (BuildStatus.QUEUED,))
+        return cursor.fetchone()[0]
+
+
+def number_schedulable_conda_builds(dbm):
     with dbm.transaction() as cursor:
         cursor.execute('SELECT COUNT(*) FROM build WHERE status = ? AND scheduled_on < ?', (BuildStatus.QUEUED, datetime.datetime.now()))
         return cursor.fetchone()[0]
@@ -143,8 +161,8 @@ def number_available_conda_builds(dbm):
 def claim_conda_build(dbm):
     with dbm.transaction() as cursor:
         cursor.execute('''
-           SELECT build.id, environment.spec, build.store_path, build.install_path
-           FROM build INNER JOIN environment ON build.environment_id = environment.id
+           SELECT build.id, specification.spec, build.store_path, build.install_path
+           FROM build INNER JOIN specification ON build.specification_id = specification.id
            WHERE status = ? AND scheduled_on < ? LIMIT 1
         ''', (BuildStatus.QUEUED, datetime.datetime.now()))
         build_id, spec, store_path, install_path = cursor.fetchone()
@@ -157,6 +175,13 @@ def update_conda_build_completed(dbm, build_id, logs, size):
     with dbm.transaction() as cursor:
         cursor.execute('UPDATE build SET status = ?, logs = ?, ended_on = ?, size = ? WHERE id = ?', (BuildStatus.COMPLETED, logs, datetime.datetime.now(), size, build_id))
 
+        cursor.execute('SELECT name, id FROM specification WHERE id = (SELECT specification_id FROM build WHERE id = ?)', (build_id,))
+        name, specification_id = cursor.fetchone()
+        cursor.execute('''
+           INSERT INTO environment (name, specification_id, build_id) VALUES (?, ?, ?)
+             ON CONFLICT(name) DO UPDATE SET specification_id = ?, build_id = ?
+        ''', (name, specification_id, build_id, specification_id, build_id))
+
 
 def update_conda_build_failed(dbm, build_id, logs, reschedule=True):
     logger.debug(f'build for build_id={build_id} failed')
@@ -164,7 +189,7 @@ def update_conda_build_failed(dbm, build_id, logs, reschedule=True):
         cursor.execute('UPDATE build SET status = ?, logs = ?, ended_on = ? WHERE id = ?', (BuildStatus.FAILED, logs, datetime.datetime.now(), build_id))
 
         if reschedule:
-            cursor.execute('SELECT COUNT(*) FROM build WHERE environment_id = (SELECT environment_id FROM build WHERE id = ?)', (build_id,))
+            cursor.execute('SELECT COUNT(*) FROM build WHERE specification_id = (SELECT specification_id FROM build WHERE id = ?)', (build_id,))
             num_failed_builds = cursor.fetchone()[0]
             logger.info(f'environment build has failed={num_failed_builds} times')
             scheduled_on = datetime.datetime.now() + datetime.timedelta(seconds=10*(2**num_failed_builds))
@@ -173,8 +198,29 @@ def update_conda_build_failed(dbm, build_id, logs, reschedule=True):
 
 def reschedule_failed_build(dbm, build_id, scheduled_on):
     with dbm.transaction() as cursor:
-        cursor.execute('SELECT environment_id, store_path, install_path FROM build WHERE id = ?', (build_id,))
-        environment_id, store_path, install_path = cursor.fetchone()
-        logger.info(f'rescheduling environment_id={environment_id} on {scheduled_on}')
-        build_row = (environment_id, BuildStatus.QUEUED, scheduled_on, store_path, install_path)
-        cursor.execute('INSERT INTO build (environment_id, status, scheduled_on, store_path, install_path) VALUES (?, ?, ?, ?, ?)', build_row)
+        cursor.execute('SELECT specification_id, store_path, install_path FROM build WHERE id = ?', (build_id,))
+        specification_id, store_path, install_path = cursor.fetchone()
+        logger.info(f'rescheduling specification_id={specification_id} on {scheduled_on}')
+        build_row = (specification_id, BuildStatus.QUEUED, scheduled_on, store_path, install_path)
+        cursor.execute('INSERT INTO build (specification_id, status, scheduled_on, store_path, install_path) VALUES (?, ?, ?, ?, ?)', build_row)
+
+
+# ================ UI API =================
+def list_environments(dbm):
+    with dbm.transaction() as cursor:
+        cursor.execute('''
+          SELECT environment.name, environment.build_id, environment.specification_id, build.store_path, build.size
+          FROM environment
+          INNER JOIN specification ON environment.specification_id = specification.id
+          INNER JOIN build ON environment.build_id = build.id
+        ''')
+        data = []
+        for row in cursor.fetchall():
+            data.append({
+                'name': row[0],
+                'build_id': row[1],
+                'specification_id': row[2],
+                'store_path': row[3],
+                'size': row[4]
+            })
+        return data

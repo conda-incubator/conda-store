@@ -5,6 +5,8 @@ let
 in
 pkgs.mkShell {
   buildInputs = [
+    pkgs.docker-compose
+
     pythonPackages.pyyaml
     pythonPackages.flask
     pythonPackages.requests

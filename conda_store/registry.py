@@ -1,23 +1,9 @@
-import threading
 import json
 
 import requests
-from werkzeug.serving import make_server
-from flask import Flask, Response, redirect
+from flask import Flask, Response, redirect, g
 
-
-class ServerThread(threading.Thread):
-    def __init__(self, app, address, port):
-        threading.Thread.__init__(self)
-        self.srv = make_server(address, port, app)
-        self.ctx = app.app_context()
-        self.ctx.push()
-
-    def run(self):
-        self.srv.serve_forever()
-
-    def shutdown(self):
-        self.srv.shutdown()
+from conda_store.data_model import DatabaseManager
 
 
 def docker_token(image):
@@ -45,10 +31,20 @@ def json_response(data, status=200, mimetype='application/json'):
     return response
 
 
-def start_registry_server(address='0.0.0.0', port=5001):
-    app = Flask('conda_store_registry')
-    server = ServerThread(app, address, port)
-    server.start()
+def start_registry_server(conda_store, address='0.0.0.0', port=5001):
+    app = Flask(__name__)
+
+    def get_dbm(conda_store):
+        dbm = getattr(g, '_dbm', None)
+        if dbm is None:
+            dbm = g._dbm = DatabaseManager(conda_store)
+        return dbm
+
+    @app.teardown_appcontext
+    def close_connection(exception):
+        dbm = getattr(g, '_dbm', None)
+        if dbm is not None:
+            dbm.close()
 
     @app.route("/v2/")
     def v2():
@@ -71,3 +67,5 @@ def start_registry_server(address='0.0.0.0', port=5001):
             return redirect(url)
         else:
             return json_response({'status': 'error', 'path': rest}, status=404)
+
+    app.run(debug=True, host=address, port=port)

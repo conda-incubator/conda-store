@@ -71,10 +71,10 @@ def conda_build(dbm, permissions=None, uid=None, gid=None):
         size = disk_usage(environment_store_directory)
 
         update_conda_build_completed(dbm, build_id, output, size)
-    except KeyboardInterrupt:
-        logger.warning('Caught KeyboardInterrupt rescheduling build')
-        update_conda_build_failed(dbm, build_id, traceback.format_exc())
-        sys.exit(1)
     except Exception as e:
         logger.exception(e)
         update_conda_build_failed(dbm, build_id, traceback.format_exc())
+    except BaseException as e:
+        logger.error(f'exception {e.__class__.__name__} caught causing build={build_id} to be rescheduled')
+        update_conda_build_failed(dbm, build_id, traceback.format_exc())
+        sys.exit(1)
