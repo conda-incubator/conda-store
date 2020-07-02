@@ -6,7 +6,7 @@ from flask import jsonify, Flask
 
 
 class ServerThread(threading.Thread):
-    def __init__(self, app, address, port):
+    def __init__(self, conda_store, app, address, port):
         threading.Thread.__init__(self)
         self.srv = make_server(address, port, app)
         self.ctx = app.app_context()

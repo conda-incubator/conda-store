@@ -9,6 +9,7 @@ from conda_store.build import conda_build
 from conda_store.utils import free_disk_space
 from conda_store.ui import start_ui_server
 from conda_store.registry import start_registry_server
+from conda_store.data_model import DatabaseManager, register_environment, number_available_conda_builds, claim_conda_build
 
 logger = logging.getLogger(__name__)
 
@@ -51,15 +52,19 @@ def handle_build(args):
     if args.enable_ui:
         start_registry_server('0.0.0.0', args.registry_port)
 
+    dbm = DatabaseManager(store_directory, output_directory)
+
     while True:
         environments = discover_environments(args.paths)
-        logger.debug(f'found {len(environments)} to build')
+        for environment in environments:
+            register_environment(dbm, environment)
+
+        num_builds = number_available_conda_builds(dbm)
+        if num_builds > 0:
+            logger.info(f'number of available conda builds {num_builds}')
+            conda_build(dbm, args.permissions, args.uid, args.gid)
 
         if free_disk_space(store_directory) < args.storage_threshold:
             logger.warning(f'free disk space={args.storage_threshold:g} [bytes] bellow storage threshold')
-
-        for environment in environments:
-            filename = environment['filename']
-            conda_build(filename, output_directory, store_directory, args.permissions, args.uid, args.gid)
 
         time.sleep(args.poll_interval)
