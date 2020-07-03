@@ -1,101 +1,27 @@
 <template>
-<v-app>
-  <v-navigation-drawer v-model="drawer" app>
-    <v-list dense>
-      <v-list-item link>
-        <v-list-item-action>
-          <v-icon>mdi-home</v-icon>
-        </v-list-item-action>
-        <v-list-item-content>
-          <v-list-item-title>Environments</v-list-item-title>
-        </v-list-item-content>
-      </v-list-item>
-      <v-list-item link>
-        <v-list-item-action>
-          <v-icon>mdi-email</v-icon>
-        </v-list-item-action>
-        <v-list-item-content>
-          <v-list-item-title>Specifications</v-list-item-title>
-        </v-list-item-content>
-      </v-list-item>
-      <v-list-item link>
-        <v-list-item-action>
-          <v-icon>mdi-email</v-icon>
-        </v-list-item-action>
-        <v-list-item-content>
-          <v-list-item-title>Builds</v-list-item-title>
-        </v-list-item-content>
-      </v-list-item>
-    </v-list>
-  </v-navigation-drawer>
+<v-container class="fill-height" fluid>
+<p v-if="$fetchState.pending">Fetching posts...</p>
+<p v-else-if="$fetchState.error">Error while fetching posts: {{ $fetchState.error.message }}</p>
+<v-row v-else v-for="environment of environments" v-bind:key="environment.name">
+  <v-card class="mx-auto" max-width="344" outlined>
+    <v-list-item-content>
+      <v-list-item-title class="headline mb-1">{{ environment.name }}</v-list-item-title>
+      <v-list-item-subtitle>Greyhound divisely hello coldly fonwderfully</v-list-item-subtitle>
+    </v-list-item-content>
 
-  <v-app-bar app color="indigo" dark>
-    <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
-    <v-toolbar-title>Conda-Store</v-toolbar-title>
-  </v-app-bar>
-
-  <v-main>
-    <v-container class="fill-height" fluid>
-      <v-row align="center" justify="center">
-        <v-col class="text-center">
-          <v-tooltip left>
-            <template v-slot:activator="{ on }">
-              <v-btn :href="source" icon large target="_blank" v-on="on">
-                <v-icon large>mdi-code-tags</v-icon>
-              </v-btn>
-            </template>
-            <span>Source</span>
-          </v-tooltip>
-        </v-col>
-      </v-row>
-    </v-container>
-  </v-main>
-
-  <v-btn bottom color="pink" dark fab fixed right @click="dialog = !dialog">
-    <v-icon>mdi-plus</v-icon>
-  </v-btn>
-
-  <v-dialog v-model="dialog" width="800px">
-    <v-card>
-      <v-card-title class="grey darken-2">
-        Create Environment
-      </v-card-title>
-      <v-container>
-        <v-row class="mx-2">
-          <v-text-field placeholder="Environment Name"></v-text-field>
-        </v-row>
-
-        <v-row class="mx-2">
-          <v-combobox v-model="chips" :items="items" chips clearable label="Channels" multiple solo>
-            <template v-slot:selection="{ attrs, item, select, selected }">
-              <v-chip v-bind="attrs" :input-value="selected" close @click="select" @click:close="remove(item)">
-                <strong>{{ item }}</strong>&nbsp;
-              </v-chip>
-            </template>
-          </v-combobox>
-        </v-row>
-
-        <v-row class="mx-2">
-          <v-combobox v-model="chips" :items="items" chips clearable label="Dependencies" multiple solo>
-            <template v-slot:selection="{ attrs, item, select, selected }">
-              <v-chip v-bind="attrs" :input-value="selected" close @click="select" @click:close="remove(item)">
-                <strong>{{ item }}</strong>&nbsp;
-              </v-chip>
-            </template>
-          </v-combobox>
-        </v-row>
-      </v-container>
-      <v-card-actions>
-        <v-btn text color="primary" @click="dialog = false">Cancel</v-btn>
-        <v-btn text @click="dialog = false">Create</v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
-</v-app>
+    <v-card-actions>
+      <v-btn v-bind:href="'/specification/' + environment.specification_id + '/'" text>View Spec</v-btn>
+      <v-btn v-bind:href="'/build/' + environment.build_id + '/'" text>View Build</v-btn>
+    </v-card-actions>
+  </v-card>
+</v-row>
+</v-container>
 </template>
 
 <script>
 export default {
+  layout: 'default',
+
   props: {
     source: String,
   },
@@ -104,12 +30,21 @@ export default {
     return {
       dialog: false,
       drawer: null,
-      msg: 'Hello, World!'
+      environments: []
     };
   },
+
+  async fetch () {
+    this.environments = await this.$http.$get('http://localhost:5000/api/v1/environment/')
+  },
+
   components: {
   },
+
   methods: {
+    refresh() {
+      this.$fetch();
+    }
   }
 };
 </script>

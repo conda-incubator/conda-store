@@ -6,19 +6,13 @@ export default {
       { rel: 'stylesheet', href: 'https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css'}
     ]
   },
+  modules: [
+    '@nuxt/http',
+  ],
   buildModules: [
     '@nuxtjs/vuetify',
     '@nuxt/typescript-build',
   ],
-  markdownit: {
-    preset: "default",
-    linkify: true,
-    breaks: true,
-    use: [
-      "markdown-it-div",
-      "markdown-it-attrs",
-    ],
-  },
   plugins: [
      { src: '~/plugins/vuetify', mode: 'client' }
   ],
