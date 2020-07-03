@@ -1,16 +1,16 @@
 {
-  "name":"conda-storefront",
+  "name": "conda-storefront",
   "scripts": {
-	  "dev": "nuxt", 
-	  "start": "nuxt start", 
-	  "build": "nuxt generate"
+    "dev": "nuxt",
+    "start": "nuxt start",
+    "build": "nuxt generate"
   },
-  "dependencies" : {
-	  "nuxt": "^2.12.2",
-	  "vue-prettier": "^0.2.0"
+  "dependencies": {
+    "nuxt": "^2.12.2",
+    "vue-prettier": "^0.2.0"
   },
   "devDependencies": {
-	  "@nuxt/typescript-build": "^1.0.1",
+    "@nuxt/typescript-build": "^1.0.1",
     "@nuxtjs/vuetify": "^1.11.2"
   }
 }

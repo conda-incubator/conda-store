@@ -2,7 +2,8 @@ export default {
   head: {
     link: [
       { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css?family=Montserrat+Alternates' },
-      { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css?family=Lato'}
+      { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css?family=Lato'},
+      { rel: 'stylesheet', href: 'https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css'}
     ]
   },
   buildModules: [
@@ -18,7 +19,7 @@ export default {
       "markdown-it-attrs",
     ],
   },
-  plugins: [ 
+  plugins: [
      { src: '~/plugins/vuetify', mode: 'client' }
   ],
   generate: {},
