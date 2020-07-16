@@ -1,0 +1,8 @@
+name: conda-store
+channels:
+  - conda-forge
+dependencies:
+  - conda-docker
+  - requests
+  - flask
+  - pyyaml

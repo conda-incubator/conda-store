@@ -6,14 +6,14 @@ services:
     volumes:
       - ./tests/assets/environments:/opt/environments:ro
       - /tmp/conda-store/mount:/opt/mount
-    command: ['python', '-m', 'conda_store', 'build', '-p', '/opt/environments', '-o', '/opt/mount/environments', '-s', '/opt/mount/store', '--uid', '1000', '--gid', '100', '--permissions', '775']
+    command: ['/opt/conda/envs/conda-store/bin/python', '-m', 'conda_store', 'build', '-p', '/opt/environments', '-o', '/opt/mount/environments', '-s', '/opt/mount/store', '--uid', '1000', '--gid', '100', '--permissions', '775']
     environment:
       TZ: America/New_York
   conda-store-ui:
     build: .
     volumes:
       - /tmp/conda-store/mount:/opt/mount
-    command: ['python', '-m', 'conda_store', 'ui', '-s', '/opt/mount/store', '--port', '5000']
+    command: ['/opt/conda/envs/conda-store/bin/python', '-m', 'conda_store', 'ui', '-s', '/opt/mount/store', '--port', '5000']
     ports:
       - "5000:5000"
     environment:
@@ -22,7 +22,7 @@ services:
     build: .
     volumes:
       - /tmp/conda-store:/opt/mount
-    command: ['python', '-m', 'conda_store', 'registry', '-s', '/opt/mount/store', '--port', '5001']
+    command: ['/opt/conda/envs/conda-store/bin/python', '-m', 'conda_store', 'registry', '-s', '/opt/mount/store', '--port', '5001']
     ports:
       - "5001:5001"
     environment:
