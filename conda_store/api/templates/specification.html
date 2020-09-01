@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Specification {{ specification_id }}
+{% endblock %}
+
+{% block content %}
+<div class="specification">
+    <h2>{{ specification.name }}</h2>
+    <p>sha256: {{ specification.spec_sha256 }}</p>
+    <p>created on: {{ specification.created_on }}</p>
+    <p>filename: {{ specification.filename }}</p>
+
+    <h3>Specification</h3>
+    <pre>{{ spec_str }}</pre>
+
+    <h3>Builds</h3>
+    <ul>
+{% for build in specification.builds %}
+        <li>Build <a href="/build/{{ build.id }}/">{{ build.id }}</a> {{ build.status}}</li>
+{% endfor %}
+    </ul>
+</div>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Environments {{ environment.name }}
+{% endblock %}
+
+{% block content %}
+<h2>{{ environment.name }}</a></h2>
+<p>Current Specification <a href="/specification/{{ environment.specification_id }}/">{{ environment.specification_id }}</a></p>
+<p>Current Build <a href="/build/{{ environment.build_id }}/">{{ environment.build_id }}</a></p>
+<p>Size {{ (environment.size or -1) | filesizeformat(true) }}</p>
+
+<h3>Builds</h3>
+<ul>
+{% for build in environment.builds %}
+    <li>Build <a href="/build/{{ build.id }}/">{{ build.id }}</a> {{ build.status}}</li>
+{% endfor %}
+<ul>
+{% endblock %}

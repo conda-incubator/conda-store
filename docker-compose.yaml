@@ -13,7 +13,7 @@ services:
     build: .
     volumes:
       - /tmp/conda-store/mount:/opt/mount
-    command: ['/opt/conda/envs/conda-store/bin/python', '-m', 'conda_store', 'ui', '-s', '/opt/mount/store', '--port', '5000']
+    command: ['/opt/conda/envs/conda-store/bin/python', '-m', 'conda_store', 'api', '-s', '/opt/mount/store', '--port', '5000']
     ports:
       - "5000:5000"
     environment:
