@@ -50,7 +50,7 @@ def start_ui_server(conda_store, address='0.0.0.0', port=5000):
         dbm = get_dbm(conda_store)
         return render_template('environment.html', environment=api.get_environment(dbm, name))
 
-    @app.route('/environment/<name>/edit', methods=['GET'])
+    @app.route('/environment/<name>/edit/', methods=['GET'])
     def ui_edit_environment(name):
         dbm = get_dbm(conda_store)
         environment = api.get_environment(dbm, name)
