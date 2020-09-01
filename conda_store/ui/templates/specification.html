@@ -3,12 +3,25 @@
 {% block title %}Specification {{ specification_id }}{% endblock %}
 
 {% block content %}
-<h2>{{ specification.name }}</h2>
-<p>sha256: {{ specification.spec_sha256 }}</p>
-<p>created on: {{ specification.created_on }}</p>
-<p>filename: {{ specification.filename }}</p>
+<div class="card">
+    <div class="card-body">
+        <h3 class="card-title">{{ specification.name }}</h3>
+    </div>
+    <p class="card-text">
+        <dl>
+            <dt class="col-sm-3">sha256</dt>
+            <dd class="col-sm-9">{{ specification.spec_sha256 }}</dd>
 
-<h3>Specification</h3>
+            <dt class="col-sm-3">created on</dt>
+            <dd class="col-sm-9">{{ specification.created_on }}</dd>
+
+            <dt class="col-sm-3">filename</dt>
+            <dd class="col-sm-9">{{ specification.filename }}</dd>
+        </dl>
+    </p>
+</div>
+
+<h3 class="mt-2">Specification</h3>
 <div class="card">
     <div class="card-header">
         Conda Environment
@@ -18,7 +31,7 @@
     </div>
 </div>
 
-<h3>Builds</h3>
+<h3 class="mt-2">Builds</h3>
 <ul class="list-group">
     {% for build in specification.builds %}
     <li class="list-group-item"><a href="/build/{{ build.id }}/">Build {{ build.id }}</a> {{ build.status}}</li>

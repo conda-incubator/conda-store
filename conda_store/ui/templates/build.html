@@ -3,16 +3,40 @@
 {% block title %}Build {{ build.id }}{% endblock %}
 
 {% block content %}
+<div class="card">
+    <div class="card-body">
+        <h3 class="card-title">Build {{ build.id }}
+            <span class="badge badge-light">{{ (build.size or 0) | filesizeformat(true) }}</span>
+        </h3>
+    </div>
+    <p class="card-text">
+        <dl>
+            <dt class="col-sm-3">scheduled on</dt>
+            <dd class="col-sm-9">{{ build.scheduled_on }}</dd>
+
+            <dt class="col-sm-3">started on</dt>
+            <dd class="col-sm-9">{{ build.started_on }}</dd>
+
+            <dt class="col-sm-3">ended on</dt>
+            <dd class="col-sm-9">{{ build.ended_on }}</dd>
+
+            <dt class="col-sm-3">store path</dt>
+            <dd class="col-sm-9">{{ build.store_path }}</dd>
+
+            <dt class="col-sm-3">status</dt>
+            <dd class="col-sm-9">{{ build.status }}</dd>
+        </dl>
+
+        <pre><code>{{ build.logs }}</code></pre>
+    </p>
+
+    <div class="card-body">
+        <a href="/build/{{ build.id }}/logs/" class="btn btn-primary btn-block">Full Logs</a>
+    </div>
+</div>
+
+
 <div class="build">
-    <h2>Build {{ build.id }}</h2>
-    <p>scheduled on: {{ build.scheduled_on}}</p>
-    <p>started on: {{ build.started_on}}</p>
-    <p>ended on: {{ build.ended_on}}</p>
-    <p>store path: {{ build.store_path }}</p>
-    <p>status: {{ build.status }}</p>
     <p>specification: <a href="/specification/{{ build.spec_sha256 }}/">{{ build.spec_sha256[:8] }}</a></p>
-    <p>size {{ (build.size or 0) | filesizeformat(true) }}</p>
-    <p><a href="/build/{{ build_id }}/logs/">full logs</a></p>
-    <pre>{{ build.logs }}</pre>
 </div>
 {% endblock %}
