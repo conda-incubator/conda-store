@@ -20,7 +20,10 @@ def is_environment_file(filename):
 
 
 def validate_environment(spec, filename=None):
-    if 'name' not in spec:
+    if not isinstance(spec, dict):
+        logger.error(f'conda environment filename={filename} must be a dictionary')
+        return False
+    elif 'name' not in spec:
         logger.error(f'conda environment filename={filename} requires name')
         return False
     elif 'dependencies' not in spec:
