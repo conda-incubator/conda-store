@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Environment{% endblock %}
+
+{% block content %}
+{% if message %}
+<pre class="alert alert-danger" role="alert">{{ message }}</pre>
+{% endif %}
+
+<form action="/create/" method="post">
+    <div class="form-group">
+        <label for="specification">Specification:</label>
+        <div id="editor" style="height: 100px;">{{ spec or "" }}</div>
+        <textarea name="specification" id="specification" style="display: none;"></textarea>
+        <button type="submit" class="btn btn-primary mb-2">Submit</button>
+    </div>
+</form>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js" integrity="sha512-GZ1RIgZaSc8rnco/8CXfRdCpDxRCphenIiZ2ztLy3XQfCbQUSCuk8IudvNHxkRA3oUg6q0qejgN/qqyG1duv5Q==" crossorigin="anonymous"></script>
+<script>
+ var editor = ace.edit("editor");
+ editor.setTheme("ace/theme/github");
+ editor.getSession().setMode("ace/mode/yaml");
+ editor.setFontSize("20px");
+
+ var textarea = document.querySelector('textarea[name="specification"]');
+ editor.getSession().on("change", function() {
+    textarea.value = editor.getSession().getValue();
+ })
+</script>
+{% endblock %}

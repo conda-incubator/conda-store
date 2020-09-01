@@ -1,19 +1,18 @@
 {% extends 'base.html' %}
 
-{% block title %}
-Build {{ build_id }}
-{% endblock %}
+{% block title %}Build {{ build.id }}{% endblock %}
 
 {% block content %}
 <div class="build">
+    <h2>Build {{ build.id }}</h2>
     <p>scheduled on: {{ build.scheduled_on}}</p>
     <p>started on: {{ build.started_on}}</p>
     <p>ended on: {{ build.ended_on}}</p>
     <p>store path: {{ build.store_path }}</p>
     <p>status: {{ build.status }}</p>
-    <p>specification: <a href="/specification/{{ build.specification_id }}/">{{ build.specification_id }}</a></p>
-    <p>size {{ (build.size or -1) | filesizeformat(true) }}</p>
-    <p><a href="/api/v1/build/{{ build_id }}/logs">full logs</a></p>
+    <p>specification: <a href="/specification/{{ build.spec_sha256 }}/">{{ build.spec_sha256[:8] }}</a></p>
+    <p>size {{ (build.size or 0) | filesizeformat(true) }}</p>
+    <p><a href="/build/{{ build_id }}/logs/">full logs</a></p>
     <pre>{{ build.logs }}</pre>
 </div>
 {% endblock %}

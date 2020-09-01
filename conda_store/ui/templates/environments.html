@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}Environments{% endblock %}
+
+{% block content %}
+<h2>Environments</h2>
+
+{% for environment in environments %}
+<div class="card my-2">
+    <div class="card-body">
+        <h5 class="card-title">
+            <a href="/environment/{{ environment.name }}/">{{ environment.name }}</a>
+            <span class="badge badge-light">{{ (environment.size or 0) | filesizeformat(true) }}</span>
+        </h5>
+        <a class="card-link" href="/build/{{ environment.build_id }}/">Build {{ environment.build_id }}</a>
+        <a class="card-link" href="/specification/{{ environment.spec_sha256 }}/">Specification {{ environment.spec_sha256[:8] }}</a>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

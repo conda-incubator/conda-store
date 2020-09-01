@@ -1,7 +1,5 @@
 import os
 
-from conda_docker.registry.client import pull_image
-
 
 class RegistryStorageBase:
     def __init__(self, conda_store):

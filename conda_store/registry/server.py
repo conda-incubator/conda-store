@@ -36,7 +36,7 @@ def _json_response(data, status=200, mimetype='application/json'):
     return response
 
 
-def start_registry_server(conda_store, address='0.0.0.0', port=5001):
+def start_registry_server(conda_store, address='0.0.0.0', port=5002):
     app = Flask(__name__)
 
     @app.route("/v2/")

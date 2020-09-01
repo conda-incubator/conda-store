@@ -1,17 +1,13 @@
 import datetime
-import os
-import importlib
 
-from flask import jsonify, Flask, g, request, Response, render_template, redirect
-import yaml
+from flask import jsonify, Flask, g, request, Response
 
 from conda_store.data_model.base import DatabaseManager
 from conda_store.data_model import api
-from conda_store.environments import validate_environment
 
 
-def start_api_server(conda_store, address='0.0.0.0', port=5000):
-    app = Flask(__name__, template_folder=os.path.join(os.path.dirname(importlib.__import__('conda_store.api.server').api.server.__file__), 'templates'))
+def start_api_server(conda_store, address='0.0.0.0', port=5001):
+    app = Flask(__name__)
 
     def get_dbm(conda_store):
         dbm = getattr(g, '_dbm', None)
@@ -35,10 +31,10 @@ def start_api_server(conda_store, address='0.0.0.0', port=5000):
         dbm = get_dbm(conda_store)
         return jsonify(api.list_environments(dbm))
 
-    @app.route('/api/v1/environment/<environment>/')
-    def api_get_environment(environment):
+    @app.route('/api/v1/environment/<name>/', methods=['DELETE'])
+    def api_get_environment(name):
         dbm = get_dbm(conda_store)
-        return jsonify(api.get_environment(dbm, environment))
+        return jsonify({'name': name, 'last_modified': datetime.datetime.now()})
 
     @app.route('/api/v1/specification/', methods=['GET'])
     def api_list_specification():
@@ -50,10 +46,10 @@ def start_api_server(conda_store, address='0.0.0.0', port=5000):
         dbm = get_dbm(conda_store)
         return jsonify(api.post_specifications(dbm, request.json))
 
-    @app.route('/api/v1/specification/<spec>/', methods=['GET'])
-    def api_get_specification(spec):
+    @app.route('/api/v1/specification/<sha256>/', methods=['GET'])
+    def api_get_specification(sha256):
         dbm = get_dbm(conda_store)
-        return jsonify(api.get_specification(dbm, spec))
+        return jsonify(api.get_specification(dbm, sha256))
 
     @app.route('/api/v1/build/<build>/', methods=['GET'])
     def api_get_build(build):
@@ -66,47 +62,5 @@ def start_api_server(conda_store, address='0.0.0.0', port=5000):
         return Response(
             api.get_build_logs(dbm, build),
             mimetype='text/plain')
-
-    @app.route('/api/v1/environment/<name>/', methods=['DELETE'])
-    def delete_environment(name):
-        return jsonify({'name': name, 'last_modified': datetime.datetime.now()})
-
-    # ui
-    @app.route('/create/', methods=['GET'])
-    def ui_create_get_environment():
-        return render_template('create.html')
-
-    @app.route('/create/', methods=['POST'])
-    def ui_create_post_environment():
-        try:
-            spec = yaml.safe_load(request.form.get('specification', ''))
-            if not validate_environment(spec):
-                raise ValueError('non valid environment')
-            dbm = get_dbm(conda_store)
-            api.post_specification(dbm, spec)
-            return redirect('/environment/')
-        except (yaml.YAMLError, ValueError):
-            return redirect('/create/')
-
-    @app.route('/environment/', methods=['GET'])
-    def ui_get_environments():
-        dbm = get_dbm(conda_store)
-        return render_template('environments.html', environments=api.list_environments(dbm))
-
-    @app.route('/environment/<environment>/', methods=['GET'])
-    def ui_get_environment(environment):
-        dbm = get_dbm(conda_store)
-        return render_template('environment.html', environment=api.get_environment(dbm, environment))
-
-    @app.route('/specification/<spec>/', methods=['GET'])
-    def ui_get_specification(spec):
-        dbm = get_dbm(conda_store)
-        specification = api.get_specification(dbm, spec)
-        return render_template('specification.html', specification_id=spec, specification=specification, spec_str=yaml.dump(specification['spec']))
-
-    @app.route('/build/<build>/', methods=['GET'])
-    def ui_get_build(build):
-        dbm = get_dbm(conda_store)
-        return render_template('build.html', build_id=build, build=api.get_build(dbm, build))
 
     app.run(debug=True, host=address, port=port)

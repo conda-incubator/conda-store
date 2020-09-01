@@ -13,17 +13,26 @@ services:
     build: .
     volumes:
       - /tmp/conda-store/mount:/opt/mount
-    command: ['/opt/conda/envs/conda-store/bin/python', '-m', 'conda_store', 'api', '-s', '/opt/mount/store', '--port', '5000']
+    command: ['/opt/conda/envs/conda-store/bin/python', '-m', 'conda_store', 'ui', '-s', '/opt/mount/store', '--port', '5000']
     ports:
       - "5000:5000"
+    environment:
+      TZ: America/New_York
+  conda-store-api:
+    build: .
+    volumes:
+      - /tmp/conda-store/mount:/opt/mount
+    command: ['/opt/conda/envs/conda-store/bin/python', '-m', 'conda_store', 'api', '-s', '/opt/mount/store', '--port', '5001']
+    ports:
+      - "5001:5001"
     environment:
       TZ: America/New_York
   conda-store-registry:
     build: .
     volumes:
       - /tmp/conda-store:/opt/mount
-    command: ['/opt/conda/envs/conda-store/bin/python', '-m', 'conda_store', 'registry', '-s', '/opt/mount/store', '--port', '5001']
+    command: ['/opt/conda/envs/conda-store/bin/python', '-m', 'conda_store', 'registry', '-s', '/opt/mount/store', '--port', '5002']
     ports:
-      - "5001:5001"
+      - "5002:5002"
     environment:
       TZ: America/New_York

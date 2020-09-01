@@ -10,33 +10,33 @@ from conda_store.data_model.build import register_environment
 def list_environments(dbm):
     with dbm.transaction() as cursor:
         cursor.execute('''
-          SELECT environment.name, environment.id, environment.build_id, environment.specification_id, build.store_path, build.size
+          SELECT environment.name, specification.spec_sha256, environment.build_id, build.store_path, build.size
           FROM environment
           INNER JOIN specification ON environment.specification_id = specification.id
           INNER JOIN build ON environment.build_id = build.id
+          ORDER BY environment.name
         ''')
         data = []
         for row in cursor.fetchall():
             data.append({
                 'name': row[0],
-                'id': row[1],
+                'spec_sha256': row[1],
                 'build_id': row[2],
-                'specification_id': row[3],
-                'store_path': row[4],
-                'size': row[5]
+                'store_path': row[3],
+                'size': row[4]
             })
         return data
 
 
-def get_environment(dbm, environment_id):
+def get_environment(dbm, environment_name):
     with dbm.transaction() as cursor:
         cursor.execute('''
-          SELECT environment.name, environment.build_id, environment.specification_id, build.store_path, build.size
+          SELECT environment.name, specification.spec_sha256, environment.build_id, build.store_path, build.size
           FROM environment
           INNER JOIN specification ON environment.specification_id = specification.id
           INNER JOIN build ON environment.build_id = build.id
-          WHERE environment.id = ?
-        ''', (environment_id,))
+          WHERE environment.name = ?
+        ''', (environment_name,))
         result = cursor.fetchone()
 
         cursor.execute('''
@@ -44,14 +44,14 @@ def get_environment(dbm, environment_id):
           FROM environment
           INNER JOIN specification ON environment.name = specification.name
           INNER JOIN build ON specification.id = build.specification_id
-          WHERE environment.id = ?
-        ''', (environment_id,))
+          WHERE environment.name = ?
+        ''', (environment_name,))
         builds = [{'id': _[0], 'status': _[1].name} for _ in cursor.fetchall()]
 
         return {
             'name': result[0],
-            'build_id': result[1],
-            'specification_id': result[2],
+            'spec_sha256': result[1],
+            'build_id': result[2],
             'store_path': result[3],
             'size': result[4],
             'builds': builds
@@ -81,24 +81,26 @@ def post_specification(dbm, spec):
     register_environment(dbm, environment)
 
 
-def get_specification(dbm, specification_id):
+def get_specification(dbm, spec_sha256):
     with dbm.transaction() as cursor:
         cursor.execute('''
-          SELECT name, created_on, filename, spec, spec_sha256, (
+          SELECT specification.name, specification.created_on, specification.filename, specification.spec, (
              SELECT COUNT(*)
              FROM build
-             WHERE build.specification_id = ?
+             INNER JOIN specification ON build.specification_id = specification.id
+             WHERE specification.spec_sha256 = ?
           ) AS num_builds
           FROM specification
-          WHERE specification.id = ?
-        ''', (specification_id, specification_id))
-        name, created_on, filename, spec, spec_sha256, num_builds = cursor.fetchone()
+          WHERE specification.spec_sha256 = ?
+        ''', (spec_sha256, spec_sha256))
+        name, created_on, filename, spec, num_builds = cursor.fetchone()
 
         cursor.execute('''
           SELECT build.id, build.status
           FROM build
-          WHERE build.specification_id = ?
-        ''', (specification_id,))
+          INNER JOIN specification ON build.specification_id = specification.id
+          WHERE specification.spec_sha256 = ?
+        ''', (spec_sha256,))
         builds = [{'id': _[0], 'status': _[1].name} for _ in cursor.fetchall()]
 
         return {
@@ -107,21 +109,24 @@ def get_specification(dbm, specification_id):
             'filename': filename,
             'spec': spec,
             'spec_sha256': spec_sha256,
-            'builds': builds,
             'num_builds': num_builds,
+            'builds': builds,
         }
 
 
 def get_build(dbm, build_id):
     with dbm.transaction() as cursor:
         cursor.execute('''
-          SELECT specification_id, status, SUBSTR(logs, -256), size, store_path, scheduled_on, started_on, ended_on
-          FROM build WHERE id = ?
+          SELECT specification.spec_sha256, build.status, SUBSTR(build.logs, -256), build.size, build.store_path, build.scheduled_on, build.started_on, build.ended_on
+          FROM build
+          INNER JOIN specification ON build.specification_id = specification.id
+          WHERE build.id = ?
         ''', (build_id,))
-        specification_id, status, logs, size, store_path, scheduled_on, started_on, ended_on = cursor.fetchone()
+        spec_sha256, status, logs, size, store_path, scheduled_on, started_on, ended_on = cursor.fetchone()
 
         return {
-            'specification_id': specification_id,
+            'id': build_id,
+            'spec_sha256': spec_sha256,
             'status': status.name,
             'logs': logs,
             'size': size,
