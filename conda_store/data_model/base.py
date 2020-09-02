@@ -31,7 +31,8 @@ class Build:
     status: int
     logs: bytes
     size: int
-    path: str
+    packages: list
+    store_path: str
     created_on: datetime.datetime
     build_on: datetime.datetime
     build_time: float
@@ -64,6 +65,7 @@ CREATE TABLE IF NOT EXISTS build (
   status ENUM,
   logs TEXT,
   size INTEGER,
+  packages JSON,
   store_path TEXT,
   scheduled_on DATETIME,
   started_on DATETIME,

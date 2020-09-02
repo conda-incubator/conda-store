@@ -50,10 +50,10 @@ def claim_conda_build(dbm):
     return build_id, spec, store_path
 
 
-def update_conda_build_completed(dbm, build_id, logs, size):
+def update_conda_build_completed(dbm, build_id, logs, packages, size):
     logger.debug(f'build for build_id={build_id} completed')
     with dbm.transaction() as cursor:
-        cursor.execute('UPDATE build SET status = ?, logs = ?, ended_on = ?, size = ? WHERE id = ?', (BuildStatus.COMPLETED, logs, datetime.datetime.now(), size, build_id))
+        cursor.execute('UPDATE build SET status = ?, logs = ?, ended_on = ?, size = ?, packages = ? WHERE id = ?', (BuildStatus.COMPLETED, logs, datetime.datetime.now(), size, packages, build_id))
 
         cursor.execute('SELECT name, id FROM specification WHERE id = (SELECT specification_id FROM build WHERE id = ?)', (build_id,))
         name, specification_id = cursor.fetchone()

@@ -8,6 +8,7 @@ import tempfile
 import traceback
 import sys
 import time
+import json
 
 import yaml
 
@@ -92,9 +93,11 @@ def conda_build(dbm, output_directory, permissions=None, uid=None, gid=None):
             with timer(logger, f'chown of {environment_store_directory}'):
                 chown(environment_store_directory, uid, gid)
 
+        packages = conda_list(environment_store_directory)
+
         size = disk_usage(environment_store_directory)
 
-        build.update_conda_build_completed(dbm, build_id, output, size)
+        build.update_conda_build_completed(dbm, build_id, output, packages, size)
     except Exception as e:
         logger.exception(e)
         build.update_conda_build_failed(dbm, build_id, traceback.format_exc())
@@ -102,3 +105,8 @@ def conda_build(dbm, output_directory, permissions=None, uid=None, gid=None):
         logger.error(f'exception {e.__class__.__name__} caught causing build={build_id} to be rescheduled')
         build.update_conda_build_failed(dbm, build_id, traceback.format_exc())
         sys.exit(1)
+
+
+def conda_list(prefix):
+    args = ['conda', 'list', '-p', prefix, '--json']
+    return json.loads(subprocess.check_output(args))

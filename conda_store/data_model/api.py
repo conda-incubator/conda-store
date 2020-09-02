@@ -119,12 +119,12 @@ def get_specification(dbm, spec_sha256):
 def get_build(dbm, build_id):
     with dbm.transaction() as cursor:
         cursor.execute('''
-          SELECT specification.spec_sha256, build.status, SUBSTR(build.logs, -256), build.size, build.store_path, build.scheduled_on, build.started_on, build.ended_on
+          SELECT specification.spec_sha256, build.status, SUBSTR(build.logs, -256), build.size, build.packages, build.store_path, build.scheduled_on, build.started_on, build.ended_on
           FROM build
           INNER JOIN specification ON build.specification_id = specification.id
           WHERE build.id = ?
         ''', (build_id,))
-        spec_sha256, status, logs, size, store_path, scheduled_on, started_on, ended_on = cursor.fetchone()
+        spec_sha256, status, logs, size, packages, store_path, scheduled_on, started_on, ended_on = cursor.fetchone()
 
         return {
             'id': build_id,
@@ -132,6 +132,7 @@ def get_build(dbm, build_id):
             'status': status.name,
             'logs': logs,
             'size': size,
+            'packages': packages,
             'store_path': store_path,
             'scheduled_on': scheduled_on,
             'started_on': started_on,
