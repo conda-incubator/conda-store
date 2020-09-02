@@ -8,14 +8,14 @@ import tempfile
 import traceback
 import sys
 import time
-import json
 
 import yaml
 
 from conda_store.utils import timer, chmod, chown, symlink, disk_usage, free_disk_space
 from conda_store.data_model.base import DatabaseManager
-from conda_store.data_model import build
+from conda_store.data_model import build, package
 from conda_store.environments import discover_environments
+from conda_store.conda import conda_list
 
 
 logger = logging.getLogger(__name__)
@@ -23,6 +23,11 @@ logger = logging.getLogger(__name__)
 
 def start_conda_build(store_directory, output_directory, paths, permissions, uid, gid, storage_threshold, poll_interval):
     dbm = DatabaseManager(store_directory)
+
+    # download conda channel data
+    # TODO: will need to make this more robust
+    for channel in {'https://repo.anaconda.com/pkgs/main', 'https://conda.anaconda.org/conda-forge'}:
+        package.add_channel_packages(dbm, channel)
 
     logger.info(f'polling interval set to {poll_interval} seconds')
     while True:
@@ -105,8 +110,3 @@ def conda_build(dbm, output_directory, permissions=None, uid=None, gid=None):
         logger.error(f'exception {e.__class__.__name__} caught causing build={build_id} to be rescheduled')
         build.update_conda_build_failed(dbm, build_id, traceback.format_exc())
         sys.exit(1)
-
-
-def conda_list(prefix):
-    args = ['conda', 'list', '-p', prefix, '--json']
-    return json.loads(subprocess.check_output(args))

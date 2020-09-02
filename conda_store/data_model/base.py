@@ -38,7 +38,52 @@ class Build:
     build_time: float
 
 
+@dataclasses.dataclass
+class Package:
+    channel: str
+    build: str
+    build_number: int
+    constrains: list
+    depends: list
+    license: str
+    license_family: str
+    md5: str
+    name: str
+    sha256: str
+    size: int
+    subdir: str
+    timestamp: int
+    version: str
+
+
 SQL_TABLES = """
+CREATE TABLE IF NOT EXISTS package (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  channel TEXT,
+  build TEXT,
+  build_number INTEGER,
+  constrains JSON,
+  depends JSON,
+  license TEXT,
+  license_family TEXT,
+  md5 TEXT,
+  name TEXT,
+  sha256 TEXT,
+  size INTEGER,
+  subdir TEXT,
+  timestamp INTEGER,
+  version TEXT,
+  UNIQUE(sha256)
+);
+
+CREATE TABLE IF NOT EXISTS build_package (
+  package_id INTEGER,
+  build_id INTEGER,
+  PRIMARY KEY(package_id, build_id),
+  FOREIGN KEY(package_id) REFERENCES package(id),
+  FOREIGN KEY(build_id) REFERENCES build(id)
+);
+
 CREATE TABLE IF NOT EXISTS environment (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT,

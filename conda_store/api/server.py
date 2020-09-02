@@ -63,4 +63,9 @@ def start_api_server(conda_store, address='0.0.0.0', port=5001):
             api.get_build_logs(dbm, build),
             mimetype='text/plain')
 
+    @app.route('/api/v1/package/', methods=['GET'])
+    def api_list_packages():
+        dbm = get_dbm(conda_store)
+        return jsonify(api.list_packages(dbm))
+
     app.run(debug=True, host=address, port=port)

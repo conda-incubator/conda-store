@@ -144,3 +144,32 @@ def get_build_logs(dbm, build_id):
     with dbm.transaction() as cursor:
         cursor.execute('SELECT logs FROM build WHERE id = ?', (build_id,))
     return cursor.fetchone()[0]
+
+
+def list_packages(dbm):
+    with dbm.transaction() as cursor:
+        cursor.execute('''
+          SELECT channel, build, build_number, constrains, depends, license, license_family, md5, name, sha256, size, subdir, timestamp, version
+          FROM package
+          LIMIT 10
+        ''')
+
+    data = []
+    for row in cursor.fetchall():
+        data.append({
+            'channel': row[0],
+            'build': row[1],
+            'build_number': row[2],
+            'constrains': row[3],
+            'depends': row[4],
+            'license': row[5],
+            'license_family': row[6],
+            'md5': row[7],
+            'name': row[8],
+            'sha256': row[9],
+            'size': row[10],
+            'subdir': row[11],
+            'timestamp': row[12],
+            'version': row[13]
+        })
+    return data
