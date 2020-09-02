@@ -31,7 +31,7 @@ def start_ui_server(conda_store, address='0.0.0.0', port=5000):
             return render_template('create.html')
         elif request.method == 'POST':
             try:
-                spec = yaml.safe_load(request.files.get('file') or request.form.get('specification'))
+                spec = yaml.safe_load(request.form.get('specification'))
                 if not validate_environment(spec):
                     raise ValueError('Specification is not a valid conda environment')
                 dbm = get_dbm(conda_store)

@@ -7,7 +7,7 @@
 <pre class="alert alert-danger" role="alert">{{ message }}</pre>
 {% endif %}
 
-<form enctype="multipart/form-data" action="/create/" method="post">
+<form action="/create/" method="post">
     <div class="custom-file">
         <input name="file" type="file" class="custom-file-input" id="customFile">
         <label class="custom-file-label" for="customFile">Choose file</label>
@@ -24,14 +24,24 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js" integrity="sha512-GZ1RIgZaSc8rnco/8CXfRdCpDxRCphenIiZ2ztLy3XQfCbQUSCuk8IudvNHxkRA3oUg6q0qejgN/qqyG1duv5Q==" crossorigin="anonymous"></script>
 <script>
- var editor = ace.edit("editor");
+ const editor = ace.edit("editor");
  editor.setTheme("ace/theme/github");
  editor.getSession().setMode("ace/mode/yaml");
  editor.setFontSize("20px");
 
- var textarea = document.querySelector('textarea[name="specification"]');
+ const textarea = document.querySelector('textarea[name="specification"]');
  editor.getSession().on("change", function() {
      textarea.value = editor.getSession().getValue();
  })
+
+ const fileSelector = document.querySelector('#customFile');
+ fileSelector.addEventListener('change', (event) => {
+     const reader = new FileReader();
+     reader.addEventListener('load', (event) => {
+         textarea.value = event.target.result;
+         editor.setValue(event.target.result, 1);
+     });
+     reader.readAsText(event.target.files[0]);
+ });
 </script>
 {% endblock %}
