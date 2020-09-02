@@ -2,7 +2,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-from conda_store.environments import parse_environment_spec
+from conda_store.environments import parse_environment_spec, validate_environment
 from conda_store.data_model.base import BuildStatus
 from conda_store.data_model.build import register_environment
 
@@ -12,8 +12,8 @@ def list_environments(dbm):
         cursor.execute('''
           SELECT environment.name, specification.spec_sha256, environment.build_id, build.store_path, build.size
           FROM environment
-          INNER JOIN specification ON environment.specification_id = specification.id
-          INNER JOIN build ON environment.build_id = build.id
+          LEFT JOIN specification ON environment.specification_id = specification.id
+          LEFT JOIN build ON environment.build_id = build.id
           ORDER BY environment.name
         ''')
         data = []
@@ -33,8 +33,8 @@ def get_environment(dbm, environment_name):
         cursor.execute('''
           SELECT environment.name, specification.spec_sha256, environment.build_id, build.store_path, build.size
           FROM environment
-          INNER JOIN specification ON environment.specification_id = specification.id
-          INNER JOIN build ON environment.build_id = build.id
+          LEFT JOIN specification ON environment.specification_id = specification.id
+          LEFT JOIN build ON environment.build_id = build.id
           WHERE environment.name = ?
         ''', (environment_name,))
         result = cursor.fetchone()
@@ -77,6 +77,8 @@ def list_specifications(dbm):
 
 
 def post_specification(dbm, spec):
+    if not validate_environment(spec):
+        raise ValueError('Specification is not a valid conda environment')
     environment = parse_environment_spec(spec)
     register_environment(dbm, environment)
 

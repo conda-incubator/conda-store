@@ -8,9 +8,12 @@ logger = logging.getLogger(__name__)
 
 def register_environment(dbm, environment):
     with dbm.transaction() as cursor:
-        # only register new environment if it does not already exist
+        # only register new environment if specification does not already exist
         cursor.execute('SELECT COUNT(*) FROM specification WHERE spec_sha256 = ?', (environment.spec_sha256,))
         if cursor.fetchone()[0] == 0:
+            logger.info(f'ensuring environment name={environment.name} filename={environment.filename} exists')
+            cursor.execute('INSERT OR IGNORE INTO environment (name) VALUES (?)', (environment.name,))
+
             logger.info(f'registering environment name={environment.name} filename={environment.filename}')
             environment_row = (environment.name, environment.created_on, environment.filename, environment.spec, environment.spec_sha256)
             cursor.execute('INSERT INTO specification (name, created_on, filename, spec, spec_sha256) VALUES (?, ?, ?, ?, ?)', environment_row)

@@ -11,8 +11,12 @@
         </h5>
     </div>
     <ul class="list-group list-group-flush">
+{% if environment.spec_sha256 is not none %}
         <li class="list-group-item"><a href="/specification/{{ environment.spec_sha256 }}/">Current Specification</a></li>
+{% endif %}
+{% if environment.build_id is not none %}
         <li class="list-group-item"><a href="/build/{{ environment.build_id }}/">Current Build</a></li>
+{% endif %}
     </ul>
     <div class="card-body">
         <a href="/environment/{{ environment.name }}/edit/" class="btn btn-primary btn-block">Edit</a>
