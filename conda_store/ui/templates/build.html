@@ -23,6 +23,9 @@
             <dt class="col-sm-3">store path</dt>
             <dd class="col-sm-9">{{ build.store_path }}</dd>
 
+            <dt class="col-sm-3">archive path</dt>
+            <dd class="col-sm-9">{{ build.archive_path }}</dd>
+
             <dt class="col-sm-3">status</dt>
             <dd class="col-sm-9">{{ build.status }}</dd>
 
@@ -32,9 +35,10 @@
     </p>
 </div>
 
+{% if build.status in ['COMPLETED'] %}
 <div class="card my-2">
     <div class="card-body">
-        <h3 class="card-title">Packages
+        <h3 class="card-title">Conda Packages
             <span class="badge badge-light">{{ build.packages | length }}</span>
         </h3>
     </div>
@@ -50,7 +54,7 @@
         <tbody>
 {% for package in build.packages %}
             <tr>
-                <th scope="row">{{ loop.index + 1 }}</th>
+                <th scope="row">{{ loop.index }}</th>
                 <td>{{ package.name }}</td>
                 <td>{{ package.version }}</td>
                 <td>{{ package.channel }}</td>
@@ -59,7 +63,22 @@
         </tbody>
     </table>
 </div>
+{% endif %}
 
+{% if build.status in ['COMPLETED'] %}
+<div class="card my-2">
+    <div class="card-body">
+        <h3 class="card-title">Conda Environment Artifacts</h3>
+    </div>
+    <ul class="list-group list-group-flush">
+        <li class="list-group-item">Lockfile: <a href="/build/{{ build.id }}/lockfile/">conda-linux-64.lock</a></li>
+        <li class="list-group-item">Archive: <a href="/build/{{ build.id }}/archive/">environment.tar.gz</a></li>
+    </ul>
+</div>
+{% endif %}
+
+
+{% if build.status in ['COMPLETED', 'FAILED'] %}
 <div class="card my-2">
     <div class="card-body">
         <h3 class="card-title">Partial Logs</h3>
@@ -73,4 +92,5 @@
         <a href="/build/{{ build.id }}/logs/" class="btn btn-primary btn-block">Full Logs</a>
     </div>
 </div>
+{% endif %}
 {% endblock %}

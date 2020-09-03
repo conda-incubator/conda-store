@@ -3,6 +3,7 @@ import subprocess
 import logging
 
 import requests
+from conda_pack import pack
 
 logger = logging.getLogger(__name__)
 
@@ -10,6 +11,10 @@ logger = logging.getLogger(__name__)
 def conda_list(prefix):
     args = ['conda', 'list', '-p', prefix, '--json']
     return json.loads(subprocess.check_output(args))
+
+
+def conda_pack(prefix, output):
+    pack(prefix=str(prefix), output=str(output))
 
 
 def download_repodata(channel, architectures=None):

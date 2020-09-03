@@ -1,37 +1,37 @@
 import logging
 
-logger = logging.getLogger(__name__)
-
 from conda_store.environments import parse_environment_spec, validate_environment
-from conda_store.data_model.base import BuildStatus
 from conda_store.data_model.build import register_environment
+
+logger = logging.getLogger(__name__)
 
 
 def list_environments(dbm):
     with dbm.transaction() as cursor:
         cursor.execute('''
-          SELECT environment.name, specification.spec_sha256, environment.build_id, build.store_path, build.size
+          SELECT
+            environment.name,
+            specification.spec_sha256,
+            environment.build_id,
+            build.store_path,
+            build.size
           FROM environment
           LEFT JOIN specification ON environment.specification_id = specification.id
           LEFT JOIN build ON environment.build_id = build.id
           ORDER BY environment.name
         ''')
-        data = []
-        for row in cursor.fetchall():
-            data.append({
-                'name': row[0],
-                'spec_sha256': row[1],
-                'build_id': row[2],
-                'store_path': row[3],
-                'size': row[4]
-            })
-        return data
+        return cursor.fetchall()
 
 
 def get_environment(dbm, environment_name):
     with dbm.transaction() as cursor:
         cursor.execute('''
-          SELECT environment.name, specification.spec_sha256, environment.build_id, build.store_path, build.size
+          SELECT
+            environment.name,
+            specification.spec_sha256,
+            environment.build_id,
+            build.store_path,
+            build.size
           FROM environment
           LEFT JOIN specification ON environment.specification_id = specification.id
           LEFT JOIN build ON environment.build_id = build.id
@@ -40,40 +40,31 @@ def get_environment(dbm, environment_name):
         result = cursor.fetchone()
 
         cursor.execute('''
-          SELECT build.id, build.status
+          SELECT
+            build.id,
+            build.status
           FROM environment
           INNER JOIN specification ON environment.name = specification.name
           INNER JOIN build ON specification.id = build.specification_id
           WHERE environment.name = ?
         ''', (environment_name,))
-        builds = [{'id': _[0], 'status': _[1].name} for _ in cursor.fetchall()]
 
-        return {
-            'name': result[0],
-            'spec_sha256': result[1],
-            'build_id': result[2],
-            'store_path': result[3],
-            'size': result[4],
-            'builds': builds
-        }
+        result['builds'] = [{'id': row['id'], 'status': row['status'].name} for row in cursor.fetchall()]
+        return result
 
 
 def list_specifications(dbm):
     with dbm.transaction() as cursor:
         cursor.execute('''
-          SELECT name, created_on, filename, spec, spec_sha256
+          SELECT
+            name,
+            created_on,
+            filename,
+            spec,
+            spec_sha256
           FROM specification
         ''')
-        data = []
-        for row in cursor.fetchall():
-            data.append({
-                'name': row[0],
-                'created_on': row[1],
-                'filename': row[2],
-                'spec': row[3],
-                'spec_sha256': row[4],
-            })
-        return data
+        return cursor.fetchall()
 
 
 def post_specification(dbm, spec):
@@ -86,90 +77,129 @@ def post_specification(dbm, spec):
 def get_specification(dbm, spec_sha256):
     with dbm.transaction() as cursor:
         cursor.execute('''
-          SELECT specification.name, specification.created_on, specification.filename, specification.spec, (
-             SELECT COUNT(*)
-             FROM build
-             INNER JOIN specification ON build.specification_id = specification.id
-             WHERE specification.spec_sha256 = ?
-          ) AS num_builds
+          SELECT
+            specification.name,
+            specification.created_on,
+            specification.filename,
+            specification.spec,
+            (
+              SELECT COUNT(*)
+              FROM build
+              INNER JOIN specification ON build.specification_id = specification.id
+              WHERE specification.spec_sha256 = ?
+            ) AS num_builds
           FROM specification
           WHERE specification.spec_sha256 = ?
         ''', (spec_sha256, spec_sha256))
-        name, created_on, filename, spec, num_builds = cursor.fetchone()
+        result = cursor.fetchone()
 
         cursor.execute('''
-          SELECT build.id, build.status
+          SELECT
+            build.id,
+            build.status
           FROM build
           INNER JOIN specification ON build.specification_id = specification.id
           WHERE specification.spec_sha256 = ?
         ''', (spec_sha256,))
-        builds = [{'id': _[0], 'status': _[1].name} for _ in cursor.fetchall()]
 
-        return {
-            'name': name,
-            'created_on': created_on,
-            'filename': filename,
-            'spec': spec,
-            'spec_sha256': spec_sha256,
-            'num_builds': num_builds,
-            'builds': builds,
-        }
+        result['builds'] = [{'id': row['id'], 'status': row['status'].name} for row in cursor.fetchall()]
+        return result
 
 
 def get_build(dbm, build_id):
     with dbm.transaction() as cursor:
         cursor.execute('''
-          SELECT specification.spec_sha256, build.status, SUBSTR(build.logs, -256), build.size, build.packages, build.store_path, build.scheduled_on, build.started_on, build.ended_on
+          SELECT
+            build.id,
+            specification.spec_sha256,
+            build.status,
+            SUBSTR(build.logs, -256) as logs,
+            build.size,
+            build.archive_path,
+            build.store_path,
+            build.scheduled_on,
+            build.started_on,
+            build.ended_on
           FROM build
           INNER JOIN specification ON build.specification_id = specification.id
           WHERE build.id = ?
         ''', (build_id,))
-        spec_sha256, status, logs, size, packages, store_path, scheduled_on, started_on, ended_on = cursor.fetchone()
+        result = cursor.fetchone()
 
-        return {
-            'id': build_id,
-            'spec_sha256': spec_sha256,
-            'status': status.name,
-            'logs': logs,
-            'size': size,
-            'packages': packages,
-            'store_path': store_path,
-            'scheduled_on': scheduled_on,
-            'started_on': started_on,
-            'ended_on': ended_on
-        }
+        cursor.execute('''
+          SELECT
+              conda_package.name,
+              conda_package.version,
+              conda_package.channel
+          FROM conda_package
+          INNER JOIN build_package ON conda_package.id = build_package.conda_package_id
+          WHERE build_package.build_id = ?
+        ''', (build_id,))
+        result['packages'] = cursor.fetchall()
+        result['status'] = result['status'].name
+        return result
 
 
 def get_build_logs(dbm, build_id):
     with dbm.transaction() as cursor:
         cursor.execute('SELECT logs FROM build WHERE id = ?', (build_id,))
-    return cursor.fetchone()[0]
+    return cursor.fetchone()['logs']
 
 
-def list_packages(dbm):
+def get_build_lockfile(dbm, build_id):
     with dbm.transaction() as cursor:
         cursor.execute('''
-          SELECT channel, build, build_number, constrains, depends, license, license_family, md5, name, sha256, size, subdir, timestamp, version
-          FROM package
+          SELECT
+            channel,
+            subdir,
+            name,
+            version,
+            build,
+            md5
+          FROM conda_package
+          INNER JOIN build_package ON conda_package.id = build_package.conda_package_id
+          WHERE build_package.build_id = ?
+        ''', (build_id,))
+
+    return '''#platform: linux-64
+@EXPLICIT
+{0}
+'''.format('\n'.join(['{channel}/{subdir}/{name}-{version}-{build}.tar.bz2#{md5}'.format(**v) for v in cursor.fetchall()]))
+
+
+def get_build_archive(dbm, build_id):
+    with dbm.transaction() as cursor:
+        cursor.execute('''
+          SELECT
+            build.archive_path,
+            specification.name,
+            specification.spec_sha256
+          FROM build
+          INNER JOIN specification ON build.specification_id = specification.id
+          WHERE build.id = ?
+        ''', (build_id,))
+        return cursor.fetchone()
+
+
+def list_conda_packages(dbm):
+    with dbm.transaction() as cursor:
+        cursor.execute('''
+          SELECT
+            channel,
+            build,
+            build_number,
+            constrains,
+            depends,
+            license,
+            license_family,
+            md5,
+            name,
+            sha256,
+            size,
+            subdir,
+            timestamp,
+            version
+          FROM conda_package
           LIMIT 10
         ''')
-
-    data = []
-    for row in cursor.fetchall():
-        data.append({
-            'channel': row[0],
-            'build': row[1],
-            'build_number': row[2],
-            'constrains': row[3],
-            'depends': row[4],
-            'license': row[5],
-            'license_family': row[6],
-            'md5': row[7],
-            'name': row[8],
-            'sha256': row[9],
-            'size': row[10],
-            'subdir': row[11],
-            'timestamp': row[12],
-            'version': row[13]
-        })
-    return data
+    return cursor.fetchall()

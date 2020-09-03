@@ -15,7 +15,7 @@ from conda_store.utils import timer, chmod, chown, symlink, disk_usage, free_dis
 from conda_store.data_model.base import DatabaseManager
 from conda_store.data_model import build, package
 from conda_store.environments import discover_environments
-from conda_store.conda import conda_list
+from conda_store.conda import conda_list, conda_pack
 
 
 logger = logging.getLogger(__name__)
@@ -51,9 +51,10 @@ def start_conda_build(store_directory, output_directory, paths, permissions, uid
 
 
 def conda_build(dbm, output_directory, permissions=None, uid=None, gid=None):
-    build_id, spec, store_path = build.claim_conda_build(dbm)
+    build_id, spec, store_path, archive_path = build.claim_conda_build(dbm)
     try:
         environment_store_directory = pathlib.Path(store_path)
+        environment_archive_filename = pathlib.Path(archive_path)
         environment_install_directory = pathlib.Path(output_directory) / spec['name']
 
         # environment installation is an atomic process if a symlink at
@@ -84,7 +85,7 @@ def conda_build(dbm, output_directory, permissions=None, uid=None, gid=None):
                         build.update_conda_build_failed(dbm, build_id, e.output)
                         return
 
-            symlink(environment_store_directory, environment_install_directory)
+        symlink(environment_store_directory, environment_install_directory)
 
         # modify permissions, uid, gid if they do not match
         stat_info = os.stat(environment_store_directory)
@@ -101,6 +102,8 @@ def conda_build(dbm, output_directory, permissions=None, uid=None, gid=None):
         packages = conda_list(environment_store_directory)
 
         size = disk_usage(environment_store_directory)
+
+        conda_pack(prefix=environment_store_directory, output=environment_archive_filename)
 
         build.update_conda_build_completed(dbm, build_id, output, packages, size)
     except Exception as e:

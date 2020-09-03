@@ -3,6 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - conda-docker
+  - conda-pack
   - requests
   - flask
   - pyyaml

@@ -33,13 +33,14 @@ class Build:
     size: int
     packages: list
     store_path: str
+    archive_path: str
     created_on: datetime.datetime
     build_on: datetime.datetime
     build_time: float
 
 
 @dataclasses.dataclass
-class Package:
+class CondaPackage:
     channel: str
     build: str
     build_number: int
@@ -57,7 +58,7 @@ class Package:
 
 
 SQL_TABLES = """
-CREATE TABLE IF NOT EXISTS package (
+CREATE TABLE IF NOT EXISTS conda_package (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   channel TEXT,
   build TEXT,
@@ -77,11 +78,11 @@ CREATE TABLE IF NOT EXISTS package (
 );
 
 CREATE TABLE IF NOT EXISTS build_package (
-  package_id INTEGER,
   build_id INTEGER,
-  PRIMARY KEY(package_id, build_id),
-  FOREIGN KEY(package_id) REFERENCES package(id),
-  FOREIGN KEY(build_id) REFERENCES build(id)
+  conda_package_id INTEGER,
+  PRIMARY KEY(build_id, conda_package_id),
+  FOREIGN KEY(build_id) REFERENCES build(id),
+  FOREIGN KEY(conda_package_id) REFERENCES conda_package(id)
 );
 
 CREATE TABLE IF NOT EXISTS environment (
@@ -112,12 +113,20 @@ CREATE TABLE IF NOT EXISTS build (
   size INTEGER,
   packages JSON,
   store_path TEXT,
+  archive_path TEXT,
   scheduled_on DATETIME,
   started_on DATETIME,
   ended_on DATETIME,
   FOREIGN KEY(specification_id) REFERENCES specification(id)
 )
 """
+
+
+def dict_factory(cursor, row):
+    d = {}
+    for index, column in enumerate(cursor.description):
+        d[column[0]] = row[index]
+    return d
 
 
 class DatabaseManager:
@@ -160,6 +169,8 @@ class DatabaseManager:
         sqlite3.register_converter('ENUM', convert_enum)
 
         connection = sqlite3.connect(str(self.store_directory / 'conda-store.sqlite'), detect_types=sqlite3.PARSE_DECLTYPES)
+        connection.row_factory = dict_factory
+
         return connection
 
     def create_tables(self):
