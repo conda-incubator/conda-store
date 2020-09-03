@@ -1,5 +1,4 @@
 import os
-import importlib
 import traceback
 
 from flask import Flask, g, request, render_template, redirect, Response, send_file
@@ -38,10 +37,10 @@ def start_ui_server(conda_store, address='0.0.0.0', port=5000):
             except (yaml.YAMLError, ValueError):
                 return render_template('create.html', spec=yaml.dump(spec), message=traceback.format_exc())
 
-    @app.route('/environment/', methods=['GET'])
+    @app.route('/', methods=['GET'])
     def ui_get_environments():
         dbm = get_dbm(conda_store)
-        return render_template('environments.html', environments=api.list_environments(dbm))
+        return render_template('home.html', environments=api.list_environments(dbm))
 
     @app.route('/environment/<name>/', methods=['GET'])
     def ui_get_environment(name):
