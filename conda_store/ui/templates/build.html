@@ -73,10 +73,10 @@
     <ul class="list-group list-group-flush">
         <li class="list-group-item">Lockfile: <a href="/build/{{ build.id }}/lockfile/">conda-linux-64.lock</a></li>
         <li class="list-group-item">Archive: <a href="/build/{{ build.id }}/archive/">environment.tar.gz</a></li>
+        <li class="list-group-item">Docker: IN THE WORKS</li>
     </ul>
 </div>
 {% endif %}
-
 
 {% if build.status in ['COMPLETED', 'FAILED'] %}
 <div class="card my-2">
