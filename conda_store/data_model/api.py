@@ -183,6 +183,20 @@ def get_build_archive(dbm, build_id):
         return cursor.fetchone()
 
 
+def get_build_docker_archive(dbm, build_id):
+    with dbm.transaction() as cursor:
+        cursor.execute('''
+          SELECT
+            build.docker_path,
+            specification.name,
+            specification.spec_sha256
+          FROM build
+          INNER JOIN specification ON build.specification_id = specification.id
+          WHERE build.id = ?
+        ''', (build_id,))
+        return cursor.fetchone()
+
+
 def list_conda_packages(dbm):
     with dbm.transaction() as cursor:
         cursor.execute('''

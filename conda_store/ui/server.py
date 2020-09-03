@@ -84,4 +84,11 @@ def start_ui_server(conda_store, address='0.0.0.0', port=5000):
         archive_download_filename = f'{data["spec_sha256"]}-{data["name"]}.tar.gz'
         return send_file(data['archive_path'], mimetype='application/gzip', as_attachment=True, attachment_filename=archive_download_filename)
 
+    @app.route('/build/<build>/docker/', methods=['GET'])
+    def api_get_build_docker_archive(build):
+        dbm = get_dbm(conda_store)
+        data = api.get_build_docker_archive(dbm, build)
+        archive_download_filename = f'{data["spec_sha256"]}-{data["name"]}.docker.tar'
+        return send_file(data['docker_path'], mimetype='application/x-tar', as_attachment=True, attachment_filename=archive_download_filename)
+
     app.run(debug=True, host=address, port=port)

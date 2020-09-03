@@ -15,7 +15,7 @@ from conda_store.utils import timer, chmod, chown, symlink, disk_usage, free_dis
 from conda_store.data_model.base import DatabaseManager
 from conda_store.data_model import build, package
 from conda_store.environments import discover_environments
-from conda_store.conda import conda_list, conda_pack
+from conda_store.conda import conda_list, conda_pack, conda_docker
 
 
 logger = logging.getLogger(__name__)
@@ -51,10 +51,11 @@ def start_conda_build(store_directory, output_directory, paths, permissions, uid
 
 
 def conda_build(dbm, output_directory, permissions=None, uid=None, gid=None):
-    build_id, spec, store_path, archive_path = build.claim_conda_build(dbm)
+    build_id, spec, store_path, archive_path, docker_path = build.claim_conda_build(dbm)
     try:
         environment_store_directory = pathlib.Path(store_path)
         environment_archive_filename = pathlib.Path(archive_path)
+        environment_docker_filename = pathlib.Path(docker_path)
         environment_install_directory = pathlib.Path(output_directory) / spec['name']
 
         # environment installation is an atomic process if a symlink at
@@ -103,7 +104,12 @@ def conda_build(dbm, output_directory, permissions=None, uid=None, gid=None):
 
         size = disk_usage(environment_store_directory)
 
+        logger.info(f'packaging archive of conda environment={environment_store_directory}')
         conda_pack(prefix=environment_store_directory, output=environment_archive_filename)
+
+        logger.info(f'creating docker archive of conda environment={environment_store_directory}')
+        sha256, name = environment_store_directory.name.split('-', 1)
+        conda_docker(prefix=environment_store_directory, output=environment_docker_filename, image_name=f'{name}:{sha256}')
 
         build.update_conda_build_completed(dbm, build_id, output, packages, size)
     except Exception as e:

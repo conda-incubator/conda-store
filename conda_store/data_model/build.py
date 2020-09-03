@@ -21,8 +21,8 @@ def register_environment(dbm, environment):
 
             logger.info(f'scheduling environment for build name={environment.name} filename={environment.filename}')
             environment_directory = dbm.store_directory / f'{environment.spec_sha256}-{environment.name}'
-            cursor.execute('INSERT INTO build (specification_id, status, scheduled_on, store_path, archive_path) VALUES (?, ?, ?, ?, ?)',
-                           (cursor.lastrowid, BuildStatus.QUEUED, datetime.datetime.now(), str(environment_directory), f'{environment_directory}.tar.gz'))
+            cursor.execute('INSERT INTO build (specification_id, status, scheduled_on, store_path, archive_path, docker_path) VALUES (?, ?, ?, ?, ?, ?)',
+                           (cursor.lastrowid, BuildStatus.QUEUED, datetime.datetime.now(), str(environment_directory), f'{environment_directory}.tar.gz', f'{environment_directory}.docker.tar'))
         else:
             logger.debug(f'environment name={environment.name} filename={environment.filename} already registered')
 
@@ -46,13 +46,14 @@ def claim_conda_build(dbm):
              build.id,
              specification.spec,
              build.store_path,
-             build.archive_path
+             build.archive_path,
+             build.docker_path
            FROM build INNER JOIN specification ON build.specification_id = specification.id
            WHERE status = ? AND scheduled_on < ? LIMIT 1
         ''', (BuildStatus.QUEUED, datetime.datetime.now()))
         result = cursor.fetchone()
         cursor.execute('UPDATE build SET status = ?, started_on = ? WHERE id = ?', (BuildStatus.BUILDING, datetime.datetime.now(), result['id']))
-    return result['id'], result['spec'], result['store_path'], result['archive_path']
+    return result['id'], result['spec'], result['store_path'], result['archive_path'], result['docker_path']
 
 
 def update_conda_build_completed(dbm, build_id, logs, packages, size):

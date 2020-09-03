@@ -114,6 +114,7 @@ CREATE TABLE IF NOT EXISTS build (
   packages JSON,
   store_path TEXT,
   archive_path TEXT,
+  docker_path TEXT,
   scheduled_on DATETIME,
   started_on DATETIME,
   ended_on DATETIME,
