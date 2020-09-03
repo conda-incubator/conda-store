@@ -43,3 +43,8 @@ def disk_usage(path):
 def free_disk_space(path):
     disk = os.statvfs(str(path))
     return disk.f_bavail * disk.f_frsize
+
+
+def total_disk_space(path):
+    disk = os.statvfs(str(path))
+    return disk.f_blocks * disk.f_frsize

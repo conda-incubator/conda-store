@@ -1,7 +1,9 @@
 import logging
+import math
 
 from conda_store.environments import parse_environment_spec, validate_environment
 from conda_store.data_model.build import register_environment
+from conda_store import utils
 
 logger = logging.getLogger(__name__)
 
@@ -203,3 +205,13 @@ def list_conda_packages(dbm):
           LIMIT 10
         ''')
     return cursor.fetchall()
+
+
+def get_metrics(conda_store_path):
+    metrics = {
+        'free': utils.free_disk_space(conda_store_path),
+        'total': utils.total_disk_space(conda_store_path),
+    }
+    metrics['used'] = metrics['total'] - metrics['free']
+    metrics['percent'] = math.ceil(metrics['used'] / metrics['total'] * 100)
+    return metrics

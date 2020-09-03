@@ -1,10 +1,9 @@
 {% extends 'base.html' %}
 
-{% block title %}Environments{% endblock %}
+{% block title %}Home{% endblock %}
 
 {% block content %}
 <h2>Environments</h2>
-
 {% for environment in environments %}
 <div class="card my-2">
     <div class="card-body">
@@ -21,4 +20,17 @@
     </div>
 </div>
 {% endfor %}
+
+<div class="card my-2">
+    <div class="card-body">
+        <h3 class="card-title">Metrics</h3>
+    </div>
+    <div class="card-body">
+        <h4>{{ metrics.used | filesizeformat }} / {{ metrics.total | filesizeformat }}</h4>
+
+        <div class="progress">
+            <div class="progress-bar" role="progressbar" style="width: {{ metrics.percent }}%;" aria-valuenow="{{ metrics.percent }}" aria-valuemin="0" aria-valuemax="100">{{ metrics.percent }}%</div>
+        </div>
+    </div>
+</div>
 {% endblock %}
