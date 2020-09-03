@@ -12,10 +12,9 @@
             <span class="badge badge-light">{{ (environment.size or 0) | filesizeformat(true) }}</span>
         </h5>
 {% if environment.build_id is not none %}
-        <a class="card-link" href="/build/{{ environment.build_id }}/">Build {{ environment.build_id }}</a>
-{% endif %}
-{% if environment.spec_sha256 is not none %}
-        <a class="card-link" href="/specification/{{ environment.spec_sha256 }}/">Specification {{ environment.spec_sha256[:8] }}</a>
+        <a class="card-link" href="/build/{{ environment.build_id }}/lockfile/"><ion-icon name="lock-closed-outline"></ion-icon> Lockfile</a>
+        <a class="card-link" href="/build/{{ environment.build_id }}/archive/"><ion-icon name="archive-outline"></ion-icon> Archive</a>
+        <a class="card-link" href="/build/{{ environment.build_id }}/docker/"><ion-icon name="logo-docker"></ion-icon> Docker Image</a>
 {% endif %}
     </div>
 </div>
