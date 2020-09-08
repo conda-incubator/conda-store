@@ -33,7 +33,7 @@ def start_ui_server(conda_store, address='0.0.0.0', port=5000):
                 spec = yaml.safe_load(request.form.get('specification'))
                 dbm = get_dbm(conda_store)
                 api.post_specification(dbm, spec)
-                return redirect('/environment/')
+                return redirect('/')
             except (yaml.YAMLError, ValueError):
                 return render_template('create.html', spec=yaml.dump(spec), message=traceback.format_exc())
 
@@ -42,7 +42,7 @@ def start_ui_server(conda_store, address='0.0.0.0', port=5000):
         dbm = get_dbm(conda_store)
         return render_template('home.html',
                                environments=api.list_environments(dbm),
-                               metrics=api.get_metrics(conda_store))
+                               metrics=api.get_metrics(dbm))
 
     @app.route('/environment/<name>/', methods=['GET'])
     def ui_get_environment(name):

@@ -58,6 +58,14 @@ class CondaPackage:
 
 
 SQL_TABLES = """
+CREATE TABLE IF NOT EXISTS conda_store (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  last_package_update DATETIME,
+  free_storage INTEGER,
+  total_storage INTEGER,
+  disk_usage INTEGER
+);
+
 CREATE TABLE IF NOT EXISTS conda_package (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   channel TEXT,

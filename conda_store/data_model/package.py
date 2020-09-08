@@ -1,8 +1,27 @@
 import logging
+import datetime
 
 from conda_store.conda import download_repodata
 
 logger = logging.getLogger(__name__)
+
+
+def update_conda_channels(dbm, channels=None, update_interval=60*60):
+    channels = channels or {'https://repo.anaconda.com/pkgs/main', 'https://conda.anaconda.org/conda-forge'}
+
+    with dbm.transaction() as cursor:
+        cursor.execute('SELECT last_package_update FROM conda_store WHERE id = 1')
+        last_package_update = cursor.fetchone()['last_package_update']
+
+        # don't update packages if last update was less than update_interval seconds ago
+        if last_package_update is not None and (last_package_update + datetime.timedelta(seconds=update_interval) > datetime.datetime.now()):
+            logger.info(f'packages were updated in the last seconds={update_interval}')
+            return
+
+        for channel in channels:
+            add_channel_packages(dbm, channel)
+
+        cursor.execute('UPDATE conda_store SET last_package_update = ?', (datetime.datetime.now(),))
 
 
 def add_channel_packages(dbm, channel):

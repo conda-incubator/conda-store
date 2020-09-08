@@ -14,6 +14,7 @@ import yaml
 from conda_store.utils import timer, chmod, chown, symlink, disk_usage, free_disk_space
 from conda_store.data_model.base import DatabaseManager
 from conda_store.data_model import build, package
+from conda_store.data_model.conda_store import initialize_conda_store_state, calculate_storage_metrics
 from conda_store.environments import discover_environments
 from conda_store.conda import conda_list, conda_pack, conda_docker
 
@@ -24,10 +25,9 @@ logger = logging.getLogger(__name__)
 def start_conda_build(store_directory, output_directory, paths, permissions, uid, gid, storage_threshold, poll_interval):
     dbm = DatabaseManager(store_directory)
 
-    # download conda channel data
-    # TODO: will need to make this more robust
-    for channel in {'https://repo.anaconda.com/pkgs/main', 'https://conda.anaconda.org/conda-forge'}:
-        package.add_channel_packages(dbm, channel)
+    initialize_conda_store_state(dbm)
+    calculate_storage_metrics(dbm, store_directory)
+    package.update_conda_channels(dbm)
 
     logger.info(f'polling interval set to {poll_interval} seconds')
     while True:
@@ -46,6 +46,7 @@ def start_conda_build(store_directory, output_directory, paths, permissions, uid
         if num_schedulable_builds > 0:
             logger.info(f'number of schedulable conda builds {num_schedulable_builds}')
             conda_build(dbm, output_directory, permissions, uid, gid)
+            calculate_storage_metrics(dbm, store_directory)
         else:
             time.sleep(poll_interval)
 
