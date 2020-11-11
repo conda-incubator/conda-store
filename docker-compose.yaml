@@ -40,3 +40,11 @@ services:
     environment:
       TZ: America/New_York
       PATH: "/opt/conda/envs/conda-store/bin:/opt/conda/bin:/opt/conda/condabin:/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+  minio:
+    image: minio/minio:RELEASE.2020-11-10T21-02-24Z
+    expose:
+      - "9000"
+    command: server /var/lib/minio
+    environment:
+      MINIO_ACCESS_KEY: minio_access_key
+      MINIO_SECRET_KEY: minio_secret_key

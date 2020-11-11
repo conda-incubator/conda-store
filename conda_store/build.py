@@ -11,6 +11,14 @@ import time
 
 import yaml
 
+from conda_docker.conda import (
+    build_docker_environment_image,
+    find_user_conda,
+    conda_info,
+    precs_from_environment_prefix,
+    fetch_precs
+)
+
 from conda_store.utils import timer, chmod, chown, symlink, disk_usage, free_disk_space
 from conda_store.data_model.base import DatabaseManager
 from conda_store.data_model import build, package
@@ -105,12 +113,10 @@ def conda_build(dbm, output_directory, permissions=None, uid=None, gid=None):
 
         size = disk_usage(environment_store_directory)
 
-        logger.info(f'packaging archive of conda environment={environment_store_directory}')
-        conda_pack(prefix=environment_store_directory, output=environment_archive_filename)
+        build_conda_archive(environment_store_directory, environment_archive_filename)
 
-        logger.info(f'creating docker archive of conda environment={environment_store_directory}')
         sha256, name = environment_store_directory.name.split('-', 1)
-        conda_docker(prefix=environment_store_directory, output=environment_docker_filename, image_name=f'{name}:{sha256}')
+        build_docker_image(environment_store_directory, f'{name}:{sha256}')
 
         build.update_conda_build_completed(dbm, build_id, output, packages, size)
     except Exception as e:
@@ -120,3 +126,32 @@ def conda_build(dbm, output_directory, permissions=None, uid=None, gid=None):
         logger.error(f'exception {e.__class__.__name__} caught causing build={build_id} to be rescheduled')
         build.update_conda_build_failed(dbm, build_id, traceback.format_exc())
         sys.exit(1)
+
+
+def build_conda_pack(conda_prefix, output_filename):
+    logger.info(f'packaging archive of conda environment={conda_prefix}')
+    conda_pack(prefix=environment_store_directory, output=output_filename)
+
+
+def build_docker_image(conda_prefix, image_name):
+    logger.info(f'creating docker archive of conda environment={conda_prefix}')
+
+    user_conda = find_user_conda()
+    info = conda_info(user_conda)
+    download_dir = info["pkgs_dirs"][0]
+    precs = precs_from_environment_prefix(
+        conda_prefix,
+        download_dir,
+        user_conda)
+    records = fetch_precs(download_dir, precs)
+    image = build_docker_environment_image(
+        base_image='frolvlad/alpine-glibc:latest',
+        output_image=image_name,
+        records=records,
+        default_prefix=info["default_prefix"],
+        download_dir=download_dir,
+        user_conda=user_conda,
+        channels_remap=info.get("channels_remap", []),
+        layering_strategy="layered",
+    )
+    logger.info(f'built docker image: {image.name} {image.tag} layers={len(image.layers)}')
