@@ -1,3 +1,4 @@
+import io
 import os
 import pathlib
 import shutil
@@ -22,11 +23,11 @@ class S3Storage(Storage):
         self.bucket_name = os.environ.get('S3_BUCKET_NAME', 'conda-store')
         self.client = minio.Minio(self.endpoint, os.environ['S3_ACCESS_KEY'], os.environ['S3_SECRET_KEY'], secure=False)
 
-    def fset(self, key, filename):
-        self.client.fput_object(self.bucket_name, key, filename)
+    def fset(self, key, filename, content_type='application/octet-stream'):
+        self.client.fput_object(self.bucket_name, key, filename, content_type=content_type)
 
-    def set(self, key, value):
-        self.client.put_object(self.bucket_name, key, value)
+    def set(self, key, value, content_type='application/octet-stream'):
+        self.client.put_object(self.bucket_name, key, io.BytesIO(value), length=len(value), content_type=content_type)
 
     def get_url(self, key):
         return self.client.presigned_get_object(self.bucket_name, key)

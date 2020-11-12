@@ -46,7 +46,7 @@ def handle_build(args):
     output_directory = pathlib.Path(args.output).expanduser().resolve()
     output_directory.mkdir(parents=True, exist_ok=True)
 
-    start_conda_build(store_directory, output_directory, args.paths, args.permissions, args.uid, args.gid, args.storage_threshold, args.poll_interval)
+    start_conda_build(store_directory, output_directory, args.paths, args.permissions, args.uid, args.gid, args.storage_threshold, args.storage_backend, args.poll_interval)
 
 
 def init_ui_cli(subparser):

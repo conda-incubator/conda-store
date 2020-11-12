@@ -17,17 +17,6 @@ def conda_pack(prefix, output):
     pack(prefix=str(prefix), output=str(output))
 
 
-def conda_docker(prefix, output, image_name, base_image='frolvlad/alpine-glibc:latest'):
-    args = [
-        'conda', 'docker', 'build',
-        '-p', prefix,
-        '-o', output,
-        '-b', base_image,
-        '-i', image_name
-    ]
-    subprocess.check_output(args)
-
-
 def download_repodata(channel, architectures=None):
     """Download repodata for channel
 

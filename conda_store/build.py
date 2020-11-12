@@ -1,3 +1,5 @@
+import io
+import tarfile
 import os
 import shutil
 import logging
@@ -8,6 +10,9 @@ import tempfile
 import traceback
 import sys
 import time
+import hashlib
+import gzip
+import json
 
 import yaml
 
@@ -24,14 +29,21 @@ from conda_store.data_model.base import DatabaseManager
 from conda_store.data_model import build, package
 from conda_store.data_model.conda_store import initialize_conda_store_state, calculate_storage_metrics
 from conda_store.environments import discover_environments
-from conda_store.conda import conda_list, conda_pack, conda_docker
+from conda_store.conda import conda_list, conda_pack
+from conda_store.storage import S3Storage, LocalStorage
 
 
 logger = logging.getLogger(__name__)
 
 
-def start_conda_build(store_directory, output_directory, paths, permissions, uid, gid, storage_threshold, poll_interval):
+def start_conda_build(store_directory, output_directory, paths, permissions, uid, gid, storage_threshold, storage_backend, poll_interval):
     dbm = DatabaseManager(store_directory)
+
+    if storage_backend == 's3':
+        storage_manager = S3Storage()
+    else: # filesystem
+        # storage_manager = LocalStorage(store_directory / 'storage', 'http://..../')
+        raise NotImplementedError('filesystem')
 
     initialize_conda_store_state(dbm)
     calculate_storage_metrics(dbm, store_directory)
@@ -53,13 +65,13 @@ def start_conda_build(store_directory, output_directory, paths, permissions, uid
         num_schedulable_builds = build.number_schedulable_conda_builds(dbm)
         if num_schedulable_builds > 0:
             logger.info(f'number of schedulable conda builds {num_schedulable_builds}')
-            conda_build(dbm, output_directory, permissions, uid, gid)
+            conda_build(dbm, storage_manager, output_directory, permissions, uid, gid)
             calculate_storage_metrics(dbm, store_directory)
         else:
             time.sleep(poll_interval)
 
 
-def conda_build(dbm, output_directory, permissions=None, uid=None, gid=None):
+def conda_build(dbm, storage_manager, output_directory, permissions=None, uid=None, gid=None):
     build_id, spec, store_path, archive_path, docker_path = build.claim_conda_build(dbm)
     try:
         environment_store_directory = pathlib.Path(store_path)
@@ -113,10 +125,9 @@ def conda_build(dbm, output_directory, permissions=None, uid=None, gid=None):
 
         size = disk_usage(environment_store_directory)
 
-        build_conda_archive(environment_store_directory, environment_archive_filename)
-
         sha256, name = environment_store_directory.name.split('-', 1)
-        build_docker_image(environment_store_directory, f'{name}:{sha256}')
+        build_conda_archive(storage_manager, environment_store_directory, name, sha256)
+        build_docker_image(storage_manager, environment_store_directory, name, sha256)
 
         build.update_conda_build_completed(dbm, build_id, output, packages, size)
     except Exception as e:
@@ -128,12 +139,15 @@ def conda_build(dbm, output_directory, permissions=None, uid=None, gid=None):
         sys.exit(1)
 
 
-def build_conda_pack(conda_prefix, output_filename):
+def build_conda_archive(storage_manager, conda_prefix, name, sha256):
     logger.info(f'packaging archive of conda environment={conda_prefix}')
-    conda_pack(prefix=environment_store_directory, output=output_filename)
+    with tempfile.TemporaryDirectory() as tmpdir:
+        output_filename = pathlib.Path(tmpdir) / 'environment.tar.gz'
+        conda_pack(prefix=conda_prefix, output=output_filename)
+        storage_manager.fset(f'archive/{name}/{sha256}.tar.gz', output_filename, content_type='application/gzip')
 
 
-def build_docker_image(conda_prefix, image_name):
+def build_docker_image(storage_manager, conda_prefix, name, sha256):
     logger.info(f'creating docker archive of conda environment={conda_prefix}')
 
     user_conda = find_user_conda()
@@ -146,7 +160,7 @@ def build_docker_image(conda_prefix, image_name):
     records = fetch_precs(download_dir, precs)
     image = build_docker_environment_image(
         base_image='frolvlad/alpine-glibc:latest',
-        output_image=image_name,
+        output_image=f'{name}:{sha256}',
         records=records,
         default_prefix=info["default_prefix"],
         download_dir=download_dir,
@@ -154,4 +168,22 @@ def build_docker_image(conda_prefix, image_name):
         channels_remap=info.get("channels_remap", []),
         layering_strategy="layered",
     )
-    logger.info(f'built docker image: {image.name} {image.tag} layers={len(image.layers)}')
+
+    manifest = {
+        'schemaVersion': 1,
+        'name': image.name,
+        'tag': image.tag,
+        'architecture': 'amd64',
+        'fsLayers': [],
+        'history': [],
+    }
+
+    for layer in image.layers:
+        content_hash = hashlib.sha256(layer.content).hexdigest()
+        content_compressed = gzip.compress(layer.content)
+        storage_manager.set(f'docker/blobs/{content_hash}', content_compressed, content_type='application/gzip')
+        manifest['fsLayers'].append({'blobSum': f'sha256:{content_hash}'})
+        manifest['history'].append({'v1Compatibility': json.dumps(layer.config)})
+
+    storage_manager.set(f'docker/manifest/{name}/{sha256}', json.dumps(manifest).encode('utf-8'), content_type='application/json')
+    logger.info(f'built docker image: {image.name}:{image.tag} layers={len(image.layers)}')
