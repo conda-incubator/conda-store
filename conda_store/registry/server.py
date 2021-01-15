@@ -1,33 +1,8 @@
 import json
 
-from flask import Flask, Response
-import requests
+from flask import Flask, Response, redirect
 
-
-def _docker_token(image):
-    url = f'https://auth.docker.io/token?service=registry.docker.io&scope=repository:{image}:pull'
-    response = requests.get(url)
-    return response.json()['token']
-
-
-def _docker_request_tags(image):
-    token = _docker_token(image)
-    url = f'https://index.docker.io/v2/{image}/tags/list'
-    return requests.get(url, headers={'Authorization': f'Bearer {token}'}).json()
-
-
-def _docker_request_manifest(image, tag):
-    token = _docker_token(image)
-    url = f'https://index.docker.io/v2/{image}/manifests/{tag}'
-    response = requests.get(url, headers={'Authorization': f'Bearer {token}'})
-    return response.json()
-
-
-def _download_blob(image, blob):
-    token = _docker_token(image)
-    url = f'https://index.docker.io/v2/{image}/blobs/{blob}'
-    response = requests.get(url, headers={'Authorization': f'Bearer {token}'})
-    return response.content
+from conda_store.storage import S3Storage, LocalStorage
 
 
 def _json_response(data, status=200, mimetype='application/json'):
@@ -36,7 +11,13 @@ def _json_response(data, status=200, mimetype='application/json'):
     return response
 
 
-def start_registry_server(conda_store, address='0.0.0.0', port=5002):
+def start_registry_server(conda_store, storage_backend, address='0.0.0.0', port=5002):
+    if storage_backend == 's3':
+        storage_manager = S3Storage()
+    else: # filesystem
+        # storage_manager = LocalStorage(store_directory / 'storage', 'http://..../')
+        raise NotImplementedError('filesystem as a storage_manager not implemented')
+
     app = Flask(__name__)
 
     @app.route("/v2/")
@@ -48,15 +29,17 @@ def start_registry_server(conda_store, address='0.0.0.0', port=5002):
         parts = rest.split('/')
         if len(parts) > 2 and parts[-2:] == ['tags', 'list']:
             image = '/'.join(parts[:-2])
-            return _json_response(_docker_request_tags(image))
+            raise NotImplementedError()
         elif len(parts) > 2 and parts[-2] == 'manifests':
             image = '/'.join(parts[:-2])
             tag = parts[-1]
-            return _json_response(_docker_request_manifest(image, tag), mimetype='application/json')
+            manifests_key = f'docker/manifest/{image}/{tag}'
+            return redirect(storage_manager.get_url(manifests_key))
         elif len(parts) > 2 and parts[-2] == 'blobs':
             image = '/'.join(parts[:-2])
             blob = parts[-1]
-            return (_download_blob(image, blob), 200, {'Docker-Distribution-Api-Version': 'registry/2.0'})
+            blob_key = f'docker/blobs/{blob}'
+            return redirect(storage_manager.get_url(blob_key))
         else:
             return _json_response({'status': 'error', 'path': rest}, status=404)
 

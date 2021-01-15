@@ -92,6 +92,7 @@ def init_registry_cli(subparser):
     parser.add_argument('--address', type=str, default='0.0.0.0', help='address to bind run conda-store registry')
     parser.add_argument('--port', type=int, default=5002, help='port to run conda-store registry')
     parser.add_argument('-s', '--store', type=str, default='.conda-store-cache', help='directory for conda-store state')
+    parser.add_argument('--storage-backend', type=str, default='filesystem', choices=['filesystem', 's3'], help='backend for storing build artifacts. Production should use s3')
     parser.add_argument('--verbose', action='store_true', help='enable debug logging')
     parser.set_defaults(func=handle_registry)
 
@@ -102,4 +103,4 @@ def handle_registry(args):
     store_directory = pathlib.Path(args.store).expanduser().resolve()
     store_directory.mkdir(parents=True, exist_ok=True)
 
-    start_registry_server(store_directory, args.address, args.port)
+    start_registry_server(store_directory, args.storage_backend, args.address, args.port)

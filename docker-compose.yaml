@@ -52,11 +52,14 @@ services:
     build: .
     volumes:
       - /tmp/conda-store:/opt/mount
-    command: ['python', '-m', 'conda_store', 'registry', '-s', '/opt/mount/store', '--port', '5002']
+    command: ['python', '-m', 'conda_store', 'registry', '-s', '/opt/mount/store', '--port', '5002', '--storage-backend', 's3']
     ports:
       - "5002:5002"
     environment:
       TZ: America/New_York
+      S3_ENDPOINT: 10.10.0.6:9000
+      S3_ACCESS_KEY: minio_access_key
+      S3_SECRET_KEY: minio_secret_key
       PATH: "/opt/conda/envs/conda-store/bin:/opt/conda/bin:/opt/conda/condabin:/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
     networks:
       testing_network:
