@@ -29,11 +29,9 @@ class Environment:
 class Build:
     environment_id: int
     status: int
-    logs: bytes
     size: int
     packages: list
     store_path: str
-    archive_path: str
     created_on: datetime.datetime
     build_on: datetime.datetime
     build_time: float
@@ -117,12 +115,9 @@ CREATE TABLE IF NOT EXISTS build (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   specification_id INTEGER,
   status ENUM,
-  logs TEXT,
   size INTEGER,
   packages JSON,
   store_path TEXT,
-  archive_path TEXT,
-  docker_path TEXT,
   scheduled_on DATETIME,
   started_on DATETIME,
   ended_on DATETIME,

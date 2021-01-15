@@ -32,7 +32,7 @@ def init_build_cli(subparser):
     parser.add_argument('--gid', type=int, help='gid to assign to built environments')
     parser.add_argument('--permissions', type=str, help='permissions to assign to built environments')
     parser.add_argument('--storage-threshold', type=int, default=(5 * (2**30)), help='emit warning when free disk space drops below threshold bytes')
-    parser.add_argument('--storage-backend', type=str, default='filesystem', choices=['filesystem', 's3'], help='backend for storing build artifacts. Production should use s3')
+    parser.add_argument('--storage-backend', type=str, default='s3', choices=['filesystem', 's3'], help='backend for storing build artifacts. Production should use s3')
     parser.add_argument('--poll-interval', type=int, default=10, help='poll interval to check environment directory for new environments')
     parser.add_argument('--verbose', action='store_true', help='enable debug logging')
     parser.set_defaults(func=handle_build)
@@ -54,7 +54,7 @@ def init_ui_cli(subparser):
     parser.add_argument('--address', type=str, default='0.0.0.0', help='address to bind run conda-store ui')
     parser.add_argument('--port', type=int, default=5000, help='port to run conda-store ui')
     parser.add_argument('-s', '--store', type=str, default='.conda-store', help='directory for conda-store state')
-    parser.add_argument('--storage-backend', type=str, default='filesystem', choices=['filesystem', 's3'], help='backend for storing build artifacts. Production should use s3')
+    parser.add_argument('--storage-backend', type=str, default='s3', choices=['filesystem', 's3'], help='backend for storing build artifacts. Production should use s3')
     parser.add_argument('--verbose', action='store_true', help='enable debug logging')
     parser.set_defaults(func=handle_ui)
 
@@ -65,7 +65,7 @@ def handle_ui(args):
     store_directory = pathlib.Path(args.store).expanduser().resolve()
     store_directory.mkdir(parents=True, exist_ok=True)
 
-    start_ui_server(store_directory, args.address, args.port)
+    start_ui_server(store_directory, args.storage_backend, args.address, args.port)
 
 
 def init_api_cli(subparser):

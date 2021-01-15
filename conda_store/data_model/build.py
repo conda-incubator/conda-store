@@ -21,8 +21,8 @@ def register_environment(dbm, environment):
 
             logger.info(f'scheduling environment for build name={environment.name} filename={environment.filename}')
             environment_directory = dbm.store_directory / f'{environment.spec_sha256}-{environment.name}'
-            cursor.execute('INSERT INTO build (specification_id, status, scheduled_on, store_path, archive_path, docker_path) VALUES (?, ?, ?, ?, ?, ?)',
-                           (cursor.lastrowid, BuildStatus.QUEUED, datetime.datetime.now(), str(environment_directory), f'{environment_directory}.tar.gz', f'{environment_directory}.docker.tar'))
+            cursor.execute('INSERT INTO build (specification_id, status, scheduled_on, store_path) VALUES (?, ?, ?, ?)',
+                           (cursor.lastrowid, BuildStatus.QUEUED, datetime.datetime.now(), str(environment_directory)))
         else:
             logger.debug(f'environment name={environment.name} filename={environment.filename} already registered')
 
@@ -44,22 +44,22 @@ def claim_conda_build(dbm):
         cursor.execute('''
            SELECT
              build.id,
+             specification.name,
              specification.spec,
-             build.store_path,
-             build.archive_path,
-             build.docker_path
+             specification.spec_sha256,
+             build.store_path
            FROM build INNER JOIN specification ON build.specification_id = specification.id
            WHERE status = ? AND scheduled_on < ? LIMIT 1
         ''', (BuildStatus.QUEUED, datetime.datetime.now()))
         result = cursor.fetchone()
         cursor.execute('UPDATE build SET status = ?, started_on = ? WHERE id = ?', (BuildStatus.BUILDING, datetime.datetime.now(), result['id']))
-    return result['id'], result['spec'], result['store_path'], result['archive_path'], result['docker_path']
+    return result['id'], result['name'], result['spec'], result['spec_sha256'], result['store_path']
 
 
-def update_conda_build_completed(dbm, build_id, logs, packages, size):
+def update_conda_build_completed(dbm, build_id, packages, size):
     logger.debug(f'build for build_id={build_id} completed')
     with dbm.transaction() as cursor:
-        cursor.execute('UPDATE build SET status = ?, logs = ?, ended_on = ?, size = ? WHERE id = ?', (BuildStatus.COMPLETED, logs, datetime.datetime.now(), size, build_id))
+        cursor.execute('UPDATE build SET status = ?, ended_on = ?, size = ? WHERE id = ?', (BuildStatus.COMPLETED, datetime.datetime.now(), size, build_id))
 
         cursor.execute('''
           SELECT
@@ -76,10 +76,10 @@ def update_conda_build_completed(dbm, build_id, logs, packages, size):
         link_packages_to_build(dbm, build_id, packages)
 
 
-def update_conda_build_failed(dbm, build_id, logs, reschedule=True):
+def update_conda_build_failed(dbm, build_id, reschedule=True):
     logger.debug(f'build for build_id={build_id} failed')
     with dbm.transaction() as cursor:
-        cursor.execute('UPDATE build SET status = ?, logs = ?, ended_on = ? WHERE id = ?', (BuildStatus.FAILED, logs, datetime.datetime.now(), build_id))
+        cursor.execute('UPDATE build SET status = ?, ended_on = ? WHERE id = ?', (BuildStatus.FAILED, datetime.datetime.now(), build_id))
 
         if reschedule:
             cursor.execute('SELECT COUNT(*) AS count FROM build WHERE specification_id = (SELECT specification_id FROM build WHERE id = ?)', (build_id,))

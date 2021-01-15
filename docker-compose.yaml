@@ -1,4 +1,4 @@
-version: "3"
+version: "2"
 
 services:
   conda-store-build:
@@ -9,10 +9,14 @@ services:
     command: ['python', '-m', 'conda_store', 'build', '-p', '/opt/environments', '-o', '/opt/mount/environments', '-s', '/opt/mount/store', '--uid', '1000', '--gid', '100', '--permissions', '775', '--storage-backend', 's3']
     environment:
       TZ: America/New_York
-      S3_ENDPOINT: minio:9000
+      S3_ENDPOINT: 10.10.0.6:9000
       S3_ACCESS_KEY: minio_access_key
       S3_SECRET_KEY: minio_secret_key
       PATH: "/opt/conda/envs/conda-store/bin:/opt/conda/bin:/opt/conda/condabin:/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+    networks:
+      testing_network:
+        ipv4_address: 10.10.0.2
+
   conda-store-ui:
     build: .
     volumes:
@@ -22,7 +26,14 @@ services:
       - "5000:5000"
     environment:
       TZ: America/New_York
+      S3_ENDPOINT: 10.10.0.6:9000
+      S3_ACCESS_KEY: minio_access_key
+      S3_SECRET_KEY: minio_secret_key
       PATH: "/opt/conda/envs/conda-store/bin:/opt/conda/bin:/opt/conda/condabin:/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+    networks:
+      testing_network:
+        ipv4_address: 10.10.0.3
+
   conda-store-api:
     build: .
     volumes:
@@ -33,6 +44,10 @@ services:
     environment:
       TZ: America/New_York
       PATH: "/opt/conda/envs/conda-store/bin:/opt/conda/bin:/opt/conda/condabin:/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+    networks:
+      testing_network:
+        ipv4_address: 10.10.0.4
+
   conda-store-registry:
     build: .
     volumes:
@@ -43,6 +58,10 @@ services:
     environment:
       TZ: America/New_York
       PATH: "/opt/conda/envs/conda-store/bin:/opt/conda/bin:/opt/conda/condabin:/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+    networks:
+      testing_network:
+        ipv4_address: 10.10.0.5
+
   minio:
     image: minio/minio:RELEASE.2020-11-10T21-02-24Z
     ports:
@@ -51,3 +70,13 @@ services:
     environment:
       MINIO_ACCESS_KEY: minio_access_key
       MINIO_SECRET_KEY: minio_secret_key
+    networks:
+      testing_network:
+        ipv4_address: 10.10.0.6
+
+networks:
+  testing_network:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.10.0.0/24

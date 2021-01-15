@@ -1,5 +1,3 @@
-import io
-import tarfile
 import os
 import shutil
 import logging
@@ -26,7 +24,7 @@ from conda_docker.conda import (
 
 from conda_store.utils import timer, chmod, chown, symlink, disk_usage, free_disk_space
 from conda_store.data_model.base import DatabaseManager
-from conda_store.data_model import build, package
+from conda_store.data_model import build, package, api
 from conda_store.data_model.conda_store import initialize_conda_store_state, calculate_storage_metrics
 from conda_store.environments import discover_environments
 from conda_store.conda import conda_list, conda_pack
@@ -43,7 +41,7 @@ def start_conda_build(store_directory, output_directory, paths, permissions, uid
         storage_manager = S3Storage()
     else: # filesystem
         # storage_manager = LocalStorage(store_directory / 'storage', 'http://..../')
-        raise NotImplementedError('filesystem')
+        raise NotImplementedError('filesystem as a storage_manager not implemented')
 
     initialize_conda_store_state(dbm)
     calculate_storage_metrics(dbm, store_directory)
@@ -72,12 +70,10 @@ def start_conda_build(store_directory, output_directory, paths, permissions, uid
 
 
 def conda_build(dbm, storage_manager, output_directory, permissions=None, uid=None, gid=None):
-    build_id, spec, store_path, archive_path, docker_path = build.claim_conda_build(dbm)
+    build_id, name, spec, sha256, store_path = build.claim_conda_build(dbm)
     try:
         environment_store_directory = pathlib.Path(store_path)
-        environment_archive_filename = pathlib.Path(archive_path)
-        environment_docker_filename = pathlib.Path(docker_path)
-        environment_install_directory = pathlib.Path(output_directory) / spec['name']
+        environment_install_directory = pathlib.Path(output_directory) / name
 
         # environment installation is an atomic process if a symlink at
         # "install_directory/environment_name" points to
@@ -104,7 +100,9 @@ def conda_build(dbm, storage_manager, output_directory, permissions=None, uid=No
                     try:
                         output = subprocess.check_output(args, stderr=subprocess.STDOUT, encoding='utf-8')
                     except subprocess.CalledProcessError as e:
-                        build.update_conda_build_failed(dbm, build_id, e.output)
+                        log_key = api.get_build_log_key(dbm, build_id)
+                        storage_manager.set(log_key, e.output.encode('utf-8'), content_type='text/plain')
+                        build.update_conda_build_failed(dbm, build_id)
                         return
 
         symlink(environment_store_directory, environment_install_directory)
@@ -125,26 +123,32 @@ def conda_build(dbm, storage_manager, output_directory, permissions=None, uid=No
 
         size = disk_usage(environment_store_directory)
 
-        sha256, name = environment_store_directory.name.split('-', 1)
-        build_conda_archive(storage_manager, environment_store_directory, name, sha256)
+        build_conda_archive(dbm, storage_manager, environment_store_directory, build_id)
         build_docker_image(storage_manager, environment_store_directory, name, sha256)
 
-        build.update_conda_build_completed(dbm, build_id, output, packages, size)
+        log_key = api.get_build_log_key(dbm, build_id)
+        storage_manager.set(log_key, output.encode('utf-8'), content_type='text/plain')
+        build.update_conda_build_completed(dbm, build_id, packages, size)
     except Exception as e:
         logger.exception(e)
-        build.update_conda_build_failed(dbm, build_id, traceback.format_exc())
+        log_key = api.get_build_log_key(dbm, build_id)
+        storage_manager.set(log_key, traceback.format_exc().encode('utf-8'), content_type='text/plain')
+        build.update_conda_build_failed(dbm, build_id)
     except BaseException as e:
         logger.error(f'exception {e.__class__.__name__} caught causing build={build_id} to be rescheduled')
-        build.update_conda_build_failed(dbm, build_id, traceback.format_exc())
+        log_key = api.get_build_log_key(dbm, build_id)
+        storage_manager.set(log_key, traceback.format_exc().encode('utf-8'), content_type='text/plain')
+        build.update_conda_build_failed(dbm, build_id)
         sys.exit(1)
 
 
-def build_conda_archive(storage_manager, conda_prefix, name, sha256):
+def build_conda_archive(dbm, storage_manager, conda_prefix, build_id):
     logger.info(f'packaging archive of conda environment={conda_prefix}')
     with tempfile.TemporaryDirectory() as tmpdir:
         output_filename = pathlib.Path(tmpdir) / 'environment.tar.gz'
         conda_pack(prefix=conda_prefix, output=output_filename)
-        storage_manager.fset(f'archive/{name}/{sha256}.tar.gz', output_filename, content_type='application/gzip')
+        archive_key = api.get_build_archive_key(dbm, build_id)
+        storage_manager.fset(archive_key, output_filename, content_type='application/gzip')
 
 
 def build_docker_image(storage_manager, conda_prefix, name, sha256):

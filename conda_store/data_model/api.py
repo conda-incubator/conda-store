@@ -116,9 +116,7 @@ def get_build(dbm, build_id):
             build.id,
             specification.spec_sha256,
             build.status,
-            SUBSTR(build.logs, -256) as logs,
             build.size,
-            build.archive_path,
             build.store_path,
             build.scheduled_on,
             build.started_on,
@@ -143,10 +141,34 @@ def get_build(dbm, build_id):
         return result
 
 
-def get_build_logs(dbm, build_id):
+def get_build_log_key(dbm, build_id):
     with dbm.transaction() as cursor:
-        cursor.execute('SELECT logs FROM build WHERE id = ?', (build_id,))
-    return cursor.fetchone()['logs']
+        cursor.execute('''
+          SELECT
+            specification.name,
+            specification.spec_sha256,
+            build.id
+          FROM build
+          INNER JOIN specification ON build.specification_id = specification.id
+          WHERE build.id = ?
+        ''', (build_id,))
+        result = cursor.fetchone()
+        return f'logs/{result["name"]}/{result["spec_sha256"]}/{result["id"]}.txt'
+
+
+def get_build_archive_key(dbm, build_id):
+    with dbm.transaction() as cursor:
+        cursor.execute('''
+          SELECT
+            specification.name,
+            specification.spec_sha256,
+            build.id
+          FROM build
+          INNER JOIN specification ON build.specification_id = specification.id
+          WHERE build.id = ?
+        ''', (build_id,))
+        result = cursor.fetchone()
+        return f'archive/{result["name"]}/{result["spec_sha256"]}/{result["id"]}.tar.gz'
 
 
 def get_build_lockfile(dbm, build_id):
@@ -170,18 +192,6 @@ def get_build_lockfile(dbm, build_id):
 '''.format('\n'.join(['{channel}/{subdir}/{name}-{version}-{build}.tar.bz2#{md5}'.format(**v) for v in cursor.fetchall()]))
 
 
-def get_build_archive(dbm, build_id):
-    with dbm.transaction() as cursor:
-        cursor.execute('''
-          SELECT
-            build.archive_path,
-            specification.name,
-            specification.spec_sha256
-          FROM build
-          INNER JOIN specification ON build.specification_id = specification.id
-          WHERE build.id = ?
-        ''', (build_id,))
-        return cursor.fetchone()
 
 
 def get_build_docker_archive(dbm, build_id):

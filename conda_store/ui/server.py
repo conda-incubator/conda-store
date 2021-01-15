@@ -7,9 +7,16 @@ import yaml
 from conda_store.data_model.base import DatabaseManager
 from conda_store.data_model import api
 from conda_store.environments import validate_environment
+from conda_store.storage import S3Storage, LocalStorage
 
 
-def start_ui_server(conda_store, address='0.0.0.0', port=5000):
+def start_ui_server(conda_store, storage_backend, address='0.0.0.0', port=5000):
+    if storage_backend == 's3':
+        storage_manager = S3Storage()
+    else: # filesystem
+        # storage_manager = LocalStorage(store_directory / 'storage', 'http://..../')
+        raise NotImplementedError('filesystem as a storage_manager not implemented')
+
     app = Flask(__name__, template_folder=os.path.join(os.path.dirname(__file__), 'templates'))
 
     def get_dbm(conda_store):
@@ -70,7 +77,8 @@ def start_ui_server(conda_store, address='0.0.0.0', port=5000):
     @app.route('/build/<build>/logs/', methods=['GET'])
     def api_get_build_logs(build):
         dbm = get_dbm(conda_store)
-        return Response(api.get_build_logs(dbm, build), mimetype='text/plain')
+        log_key = api.get_build_log_key(dbm, build)
+        return redirect(storage_manager.get_url(log_key))
 
     @app.route('/build/<build>/lockfile/', methods=['GET'])
     def api_get_build_lockfile(build):
@@ -80,9 +88,8 @@ def start_ui_server(conda_store, address='0.0.0.0', port=5000):
     @app.route('/build/<build>/archive/', methods=['GET'])
     def api_get_build_archive(build):
         dbm = get_dbm(conda_store)
-        data = api.get_build_archive(dbm, build)
-        archive_download_filename = f'{data["spec_sha256"]}-{data["name"]}.tar.gz'
-        return send_file(data['archive_path'], mimetype='application/gzip', as_attachment=True, attachment_filename=archive_download_filename)
+        archive_key = api.get_build_archive_key(dbm, build)
+        return redirect(storage_manager.get_url(archive_key))
 
     @app.route('/build/<build>/docker/', methods=['GET'])
     def api_get_build_docker_archive(build):

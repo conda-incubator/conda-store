@@ -22,6 +22,11 @@ class S3Storage(Storage):
         self.endpoint = os.environ['S3_ENDPOINT']
         self.bucket_name = os.environ.get('S3_BUCKET_NAME', 'conda-store')
         self.client = minio.Minio(self.endpoint, os.environ['S3_ACCESS_KEY'], os.environ['S3_SECRET_KEY'], secure=False)
+        self._check_bucket_exists()
+
+    def _check_bucket_exists(self):
+        if not self.client.bucket_exists(self.bucket_name):
+            raise ValueError(f'S3 bucket={self.bucket_name} does not exist')
 
     def fset(self, key, filename, content_type='application/octet-stream'):
         self.client.fput_object(self.bucket_name, key, filename, content_type=content_type)
