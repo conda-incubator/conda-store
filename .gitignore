@@ -1,4 +1,5 @@
-mount
+data/conda-store
+data/minio
 
 # yarn / nuxt
 node_modules
