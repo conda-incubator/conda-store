@@ -174,20 +174,25 @@ def build_docker_image(storage_manager, conda_prefix, name, sha256):
     )
 
     manifest = {
-        'schemaVersion': 1,
-        'name': image.name,
-        'tag': image.tag,
-        'architecture': 'amd64',
-        'fsLayers': [],
-        'history': [],
+        'schemaVersion': 2,
+        'mediaType': 'application/vnd.docker.distribution.manifest.v2+json',
+        "config": {
+            "mediaType": "application/vnd.docker.container.image.v1+json",
+            "size": None,
+            "digest": None,
+        },
+        "layers": [],
     }
 
     for layer in image.layers:
         content_hash = hashlib.sha256(layer.content).hexdigest()
         content_compressed = gzip.compress(layer.content)
         storage_manager.set(f'docker/blobs/{content_hash}', content_compressed, content_type='application/gzip')
-        manifest['fsLayers'].append({'blobSum': f'sha256:{content_hash}'})
-        manifest['history'].append({'v1Compatibility': json.dumps(layer.config)})
+        manifest['layers'].append({
+            'mediaType': 'application/vnd.docker.image.rootfs.diff.tar.gzip',
+            'size': len(content_compressed),
+            'digest': f'sha256:{content_hash}'
+        })
 
-    storage_manager.set(f'docker/manifest/{name}/{sha256}', json.dumps(manifest).encode('utf-8'), content_type='application/json')
+    storage_manager.set(f'docker/manifest/{name}/{sha256}', json.dumps(manifest).encode('utf-8'), content_type='application/vnd.docker.distribution.manifest.v1+json')
     logger.info(f'built docker image: {image.name}:{image.tag} layers={len(image.layers)}')
