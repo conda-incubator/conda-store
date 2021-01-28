@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Specification {{ specification_id }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <h3 class="card-title">{{ specification.name }}</h3>
+    </div>
+    <p class="card-text">
+        <dl>
+            <dt class="col-sm-3">sha256</dt>
+            <dd class="col-sm-9">{{ specification.spec_sha256 }}</dd>
+
+            <dt class="col-sm-3">created on</dt>
+            <dd class="col-sm-9">{{ specification.created_on }}</dd>
+
+            <dt class="col-sm-3">filename</dt>
+            <dd class="col-sm-9">{{ specification.filename }}</dd>
+        </dl>
+    </p>
+</div>
+
+<h3 class="mt-2">Specification</h3>
+<div class="card">
+    <div class="card-header">
+        Conda Environment
+    </div>
+    <div class="card-body">
+        <div id="editor" style="height: 300px;">{{ spec }}</div>
+    </div>
+</div>
+
+<h3 class="mt-2">Builds</h3>
+<ul class="list-group">
+    {% for build in specification.builds %}
+    <li class="list-group-item"><a href="/build/{{ build.id }}/">Build {{ build.id }}</a> {{ build.status}}</li>
+    {% endfor %}
+</ul>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js" integrity="sha512-GZ1RIgZaSc8rnco/8CXfRdCpDxRCphenIiZ2ztLy3XQfCbQUSCuk8IudvNHxkRA3oUg6q0qejgN/qqyG1duv5Q==" crossorigin="anonymous"></script>
+<script>
+ var editor = ace.edit("editor");
+ editor.setTheme("ace/theme/github");
+ editor.getSession().setMode("ace/mode/yaml");
+ editor.setFontSize("20px");
+ editor.setReadOnly(true);
+</script>
+{% endblock %}

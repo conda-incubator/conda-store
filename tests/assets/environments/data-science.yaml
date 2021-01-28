@@ -1,12 +1,11 @@
-name: env-name-1
+name: data-science
 channels:
   - conda-forge
   - defaults
 dependencies:
   - python=3.7
-  - pip
   - numpy
-  - numba
   - asdf
-  - pip:
-     - flask
+  - pandas
+  - dask
+  - scikit-learn

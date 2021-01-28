@@ -6,11 +6,6 @@ import contextlib
 import time
 
 
-def filename_hash(filename):
-    with open(filename, "rb") as f:
-        return hashlib.sha256(f.read()).hexdigest()
-
-
 def symlink(source, target):
     if target.is_symlink():
         target.unlink()
@@ -41,6 +36,15 @@ def timer(logger, prefix):
     logger.info(f'{prefix} took {time.time() - start_time:.3f} [s]')
 
 
+def disk_usage(path):
+    return subprocess.check_output(['du', '-sb', path], encoding='utf-8').split()[0]
+
+
 def free_disk_space(path):
     disk = os.statvfs(str(path))
     return disk.f_bavail * disk.f_frsize
+
+
+def total_disk_space(path):
+    disk = os.statvfs(str(path))
+    return disk.f_blocks * disk.f_frsize

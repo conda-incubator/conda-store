@@ -1,0 +1,10 @@
+name: conda-store
+channels:
+  - conda-forge
+dependencies:
+  - conda-docker
+  - conda-pack
+  - requests
+  - flask
+  - pyyaml
+  - minio

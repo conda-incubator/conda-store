@@ -5,6 +5,9 @@ let
 in
 pkgs.mkShell {
   buildInputs = [
+    pkgs.yarn
+    pkgs.docker-compose
+
     pythonPackages.pyyaml
     pythonPackages.flask
     pythonPackages.requests
@@ -12,4 +15,8 @@ pkgs.mkShell {
     pythonPackages.black
     pythonPackages.flake8
   ];
+
+  shellHook = ''
+    export PATH="$PWD/node_modules/.bin/:$PATH"
+  '';
 }

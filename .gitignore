@@ -1,1 +1,5 @@
 mount
+
+# yarn / nuxt
+node_modules
+.nuxt

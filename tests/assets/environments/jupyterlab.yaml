@@ -1,8 +1,9 @@
-name: env-name-3
+name: jupyterlab
 channels:
   - conda-forge
   - defaults
 dependencies:
   - python=3.7
-  - numpy
-  - ansible
+  - jupyterlab
+  - black
+  - flake8
