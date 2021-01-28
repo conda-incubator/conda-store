@@ -5,7 +5,7 @@ services:
     build: .
     volumes:
       - ./tests/assets/environments:/opt/environments:ro
-      - /tmp/conda-store/mount:/opt/mount
+      - ./mount:/opt/mount
     command: ['python', '-m', 'conda_store', 'build', '-p', '/opt/environments', '-o', '/opt/mount/environments', '-s', '/opt/mount/store', '--uid', '1000', '--gid', '100', '--permissions', '775', '--storage-backend', 's3']
     environment:
       TZ: America/New_York
@@ -20,7 +20,7 @@ services:
   conda-store-ui:
     build: .
     volumes:
-      - /tmp/conda-store/mount:/opt/mount
+      - ./mount:/opt/mount
     command: ['python', '-m', 'conda_store', 'ui', '-s', '/opt/mount/store', '--port', '5000']
     ports:
       - "5000:5000"
@@ -37,7 +37,7 @@ services:
   conda-store-api:
     build: .
     volumes:
-      - /tmp/conda-store/mount:/opt/mount
+      - ./mount:/opt/mount
     command: ['python', '-m', 'conda_store', 'api', '-s', '/opt/mount/store', '--port', '5001']
     ports:
       - "5001:5001"
@@ -51,7 +51,7 @@ services:
   conda-store-registry:
     build: .
     volumes:
-      - /tmp/conda-store:/opt/mount
+      - ./mount:/opt/mount
     command: ['python', '-m', 'conda_store', 'registry', '-s', '/opt/mount/store', '--port', '5002', '--storage-backend', 's3']
     ports:
       - "5002:5002"
