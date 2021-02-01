@@ -1,18 +1,18 @@
 {
   "name": "conda-store-widget",
   "version": "0.1.0",
-  "description": "Example of using a React Widget in a Jupyterlab extension",
+  "description": "A jupyterlab widget for conda-store",
   "keywords": [
     "jupyter",
     "jupyterlab",
     "jupyterlab-extension"
   ],
-  "homepage": "https://github.com/jupyterlab/extension-examples",
+  "homepage": "https://github.com/Quansight/conda-store",
   "bugs": {
-    "url": "https://github.com/jupyterlab/extension-examples/issues"
+    "url": "https://github.com/Quansight/conda-store/issues"
   },
   "license": "BSD-3-Clause",
-  "author": "Project Jupyter Contributors",
+  "author": "Anirrudh Krishnan",
   "files": [
     "lib/**/*.{d.ts,eot,gif,html,jpg,js,js.map,json,png,svg,woff2,ttf}",
     "style/**/*.{css,eot,gif,html,jpg,json,png,svg,woff2,ttf}"
