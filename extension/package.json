@@ -44,12 +44,20 @@
     "watch:src": "tsc -w"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.15.2",
+    "@fortawesome/fontawesome-svg-core": "^1.2.34",
+    "@fortawesome/free-solid-svg-icons": "^5.15.2",
+    "@fortawesome/react-fontawesome": "^0.1.14",
     "@jupyterlab/application": "^3.0.0",
     "@jupyterlab/launcher": "^3.0.0",
-    "@jupyterlab/ui-components": "^3.0.0"
+    "@jupyterlab/ui-components": "^3.0.0",
+    "js-yaml": "^4.0.0",
+    "react-ace": "^9.3.0",
+    "react-bootstrap": "^1.4.3"
   },
   "devDependencies": {
     "@jupyterlab/builder": "^3.0.0-rc.15",
+    "@types/js-yaml": "^4.0.0",
     "@typescript-eslint/eslint-plugin": "^2.27.0",
     "@typescript-eslint/parser": "^2.27.0",
     "eslint": "^7.5.0",
