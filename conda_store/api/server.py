@@ -1,6 +1,7 @@
 import datetime
 
 from flask import jsonify, Flask, g, request, Response
+from flask_cors import CORS
 
 from conda_store.data_model.base import DatabaseManager
 from conda_store.data_model import api
@@ -8,6 +9,7 @@ from conda_store.data_model import api
 
 def start_api_server(conda_store, address='0.0.0.0', port=5001):
     app = Flask(__name__)
+    CORS(app)
 
     def get_dbm(conda_store):
         dbm = getattr(g, '_dbm', None)
