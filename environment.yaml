@@ -6,5 +6,6 @@ dependencies:
   - conda-pack
   - requests
   - flask
+  - flask_cors
   - pyyaml
   - minio
