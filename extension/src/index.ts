@@ -7,7 +7,7 @@ import { MainAreaWidget } from '@jupyterlab/apputils';
 
 import { ILauncher } from '@jupyterlab/launcher';
 
-import { CounterWidget } from './widget';
+import { CondaStoreWidget } from './widget';
 /**
  * The command IDs used by the react-widget plugin.
  */
@@ -31,8 +31,8 @@ const extension: JupyterFrontEndPlugin<void> = {
       label: 'Conda Store Widget',
       icon: args => (args['isPalette'] ? null : null),
       execute: () => {
-	const content = new CounterWidget();
-        const widget = new MainAreaWidget<CounterWidget>({ content });
+	const content = new CondaStoreWidget();
+        const widget = new MainAreaWidget<CondaStoreWidget>({ content });
         widget.title.label = 'Conda Store';
         app.shell.add(widget, 'main');
       }

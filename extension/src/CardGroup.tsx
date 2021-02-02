@@ -17,12 +17,16 @@ const CardGroupComponent = (props: any) => {
       const jsondata = await response.json();
       setEnvdata(jsondata);
       setShowCondaCards(true);
+      console.log(envdata);
     };
     renderCondaCards();
-  }, []);
+  }, [
+	  envdata
+  ]);
 
   return (
     <div>
+    <p> in conda cards </p>
       {showCondaCards
         ? envdata.map((envData: IEnv) => (
             <CondaCard

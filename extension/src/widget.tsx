@@ -9,14 +9,16 @@ import CardGroupComponent from './CardGroup';
 import EnvironmentEditorPanel from './EnvironmentEditorPanel';
 import BuildInformationPanel from './BuildInformationPanel';
 import ImageDownloadModal from './ImageDownloadModal';
+//import ErrorPanel from './ErrorPanel';
 /**
  * React component for a counter.
  *
  * @returns The React component
  */
-const CounterComponent = (): JSX.Element => {
+const HomeArea = (): JSX.Element => {
   const [serverAddress, setServerAddress] = useState(null); // Server Address String.
   const [toggleEnvironment, setToggleEnvironment] = useState(false); // Show/Hide the Env Edit Panel
+//  const [toggleErr, setToggleErr] = useState(false);
   const [toggleInfo, setToggleInfo] = useState(false);
   const [toggleCondaCards, setToggleCondaCards] = useState(true);
   const [toggleImageDl, setToggleImageDl] = useState(false);
@@ -37,8 +39,8 @@ function handleServerSelect(e: any) {
     e.preventDefault(); //Prevent a reload
     //TODO: Find a way to figure out which index was selected
     //TODO: Write script to check connections - for now, assuming connection
-    setServerAddress(servers[0].url);
-  }
+ 	setServerAddress(servers[0].url);
+}
 
   /*
    * Handles setting the current environment hash value
@@ -77,8 +79,16 @@ function handleServerSelect(e: any) {
     e.preventDefault(); //Prevent a reload
     setToggleImageDl(false);
   }
+ /*
+   * Handles a "Go Back" when an error occurs.
+   */
+  //function handleBack(e: any) {
+  // e.preventDefault(); //Prevent a reload
+  // setServerAddress('null');
+  // setToggleCondaCards(true);
+  //}
 
-
+ 
   /*
    * Handles a "Cancel"
    */
@@ -100,6 +110,7 @@ function handleServerSelect(e: any) {
                 style={{ height: '100vh' }}
               >
                 <Col xs={6} sm={6} md={6} className="mx-auto">
+		<h1> logged in! </h1>
                   <CardGroupComponent
                     url={serverAddress}
                     handleBuildClick={handleBuildClick}
@@ -136,7 +147,7 @@ function handleServerSelect(e: any) {
 			      </div> : null}
           </Container>
         </div>
-      ) : (
+      ) :
         <Container fluid style={{ height: '100vh' }}>
           <Row
             className="justify-content-center align-items-center"
@@ -154,14 +165,16 @@ function handleServerSelect(e: any) {
             </Col>
           </Row>
         </Container>
-      )}
+      }
     </div>
   );
 };
 /**
  * A Counter Lumino Widget that wraps a CounterComponent.
  */
-export class CounterWidget extends ReactWidget {
+//const CondaStoreWidget: Widget = ReactWidget.create(
+//);
+export class CondaStoreWidget extends ReactWidget {
   /**
    * Constructs a new CounterWidget.
    */
@@ -171,6 +184,10 @@ export class CounterWidget extends ReactWidget {
   }
 
   render(): JSX.Element {
-    return <CounterComponent />;
+    return (
+ <div>
+   <HomeArea />
+ </div>
+    )
   }
 }
