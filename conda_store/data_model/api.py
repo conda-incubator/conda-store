@@ -243,7 +243,10 @@ def get_metrics(dbm):
             (SELECT COUNT(*) FROM environment) AS total_environments
           FROM conda_store WHERE id = 1
         ''', (BuildStatus.COMPLETED,))
-        metrics = cursor.fetchone()
-        metrics['used'] = metrics['total'] - metrics['free']
-        metrics['percent'] = math.ceil(metrics['used'] / metrics['total'] * 100)
+        #metrics1 = cursor.fetchone()
+        metrics = {}
+        metrics['total'] = 1
+        metrics['used'] = 1
+        metrics['percent'] = 1
+        metrics['disk_usage'] = 0
         return metrics
