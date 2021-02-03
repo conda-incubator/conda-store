@@ -6,7 +6,17 @@ import json
 import dataclasses
 import contextlib
 
+from sqlalchemy import (
+    Column, Integer, String, ForeignKey, JSON, Enum, DateTime
+)
+from sqlalchemy.orm import declarative_base, sessionmaker, relationship
+from sqlalchemy import create_engine
+
+
 logger = logging.getLogger(__name__)
+
+
+Base = declarative_base()
 
 
 class BuildStatus(enum.Enum):
@@ -16,114 +26,106 @@ class BuildStatus(enum.Enum):
     FAILED = enum.auto()
 
 
-@dataclasses.dataclass
-class Environment:
-    name: str
-    created_on: datetime.datetime
-    filename: str
-    spec: dict
-    spec_sha256: bytes
+class Environment(Base):
+    __tablename__ = 'environment'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True)
+    specification_id = Column(Integer, ForeignKey("specification.id"))
+    specification = relationship(
+        Specification,
+        backref=backref('specification', uselist=False),
+        single_parent=True,
+        cascade="all, delete-orphan",
+    )
+
+    build_id = Column(Integer, ForeignKey("build.id"))
+    build = relationship(
+        Build,
+        backref=backref('build', uselist=False),
+        single_parent=True,
+        cascade="all, delete-orphan",
+    )
 
 
-@dataclasses.dataclass
-class Build:
-    environment_id: int
-    status: int
-    size: int
-    packages: list
-    store_path: str
-    created_on: datetime.datetime
-    build_on: datetime.datetime
-    build_time: float
+class Specification(Base):
+    __tablename__ = 'specification'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    created_on = Column(DateTime, default=datetime.datetime.utcnow)
+    filename = Column(String)
+    spec = Column(JSON)
+    spec_sha256 = Column(String, unique=True)
 
 
-@dataclasses.dataclass
-class CondaPackage:
-    channel: str
-    build: str
-    build_number: int
-    constrains: list
-    depends: list
-    license: str
-    license_family: str
-    md5: str
-    name: str
-    sha256: str
-    size: int
-    subdir: str
-    timestamp: int
-    version: str
+class Build(Base):
+    __tablename__ = 'build'
+
+    id = Column(Integer, primary_key=True)
+    specification_id = Column(Integer, ForeignKey("specification.id"))
+    specification = relationship(
+        Specification,
+        backref=backref('specification', uselist=False),
+        single_parent=True,
+        cascade="all, delete-orphan",
+    )
+
+    status = Column(Enum(BuildStatus))
+    size = Column(Integer)
+    packages = Column(JSON)
+    store_path = Column(String)
+    scheduled_on = Column(DateTime)
+    started_on = Column(DateTime)
+    ended_on = Column(DateTime)
 
 
-SQL_TABLES = """
-CREATE TABLE IF NOT EXISTS conda_store (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  last_package_update DATETIME,
-  free_storage INTEGER,
-  total_storage INTEGER,
-  disk_usage INTEGER
-);
+class BuildPackage(Base):
+    __tablename__ = 'build_package'
 
-CREATE TABLE IF NOT EXISTS conda_package (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  channel TEXT,
-  build TEXT,
-  build_number INTEGER,
-  constrains JSON,
-  depends JSON,
-  license TEXT,
-  license_family TEXT,
-  md5 TEXT,
-  name TEXT,
-  sha256 TEXT,
-  size INTEGER,
-  subdir TEXT,
-  timestamp INTEGER,
-  version TEXT,
-  UNIQUE(sha256)
-);
+    build_id = Column(Integer, primary_key=True, ForeignKey("build.id"))
+    conda_package_id = Column(Integer, primary_key=True, ForeignKey("conda_package.id"))
 
-CREATE TABLE IF NOT EXISTS build_package (
-  build_id INTEGER,
-  conda_package_id INTEGER,
-  PRIMARY KEY(build_id, conda_package_id),
-  FOREIGN KEY(build_id) REFERENCES build(id),
-  FOREIGN KEY(conda_package_id) REFERENCES conda_package(id)
-);
 
-CREATE TABLE IF NOT EXISTS environment (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT,
-  specification_id INTEGER,
-  build_id INTEGER,
-  UNIQUE(name),
-  FOREIGN KEY(specification_id) REFERENCES specification(id)
-  FOREIGN KEY(build_id) REFERENCES build(id)
-);
+class CondaPackage(Base):
+    __tablename__ = 'conda_package'
 
-CREATE TABLE IF NOT EXISTS specification (
-   id INTEGER PRIMARY KEY AUTOINCREMENT,
-   name TEXT,
-   created_on DATETIME,
-   filename TEXT,
-   spec JSON,
-   spec_sha256 BLOB,
-   UNIQUE(spec_sha256)
-);
+    id = Column(Integer, primary_key=True)
+    channel = Column(String)
+    build = Column(String)
+    build_number = Column(Integer)
+    constrains = Column(JSON)
+    depends = Column(JSON)
+    license = Column(String)
+    license_family = Column(String)
+    md5 = Column(String)
+    name = Column(String)
+    sha256 = Column(String, unique=True)
+    size = Column(Integer)
+    subdir = Column(String)
+    timestamp = Column(Integer)
+    version = Column(String)
 
-CREATE TABLE IF NOT EXISTS build (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  specification_id INTEGER,
-  status ENUM,
-  size INTEGER,
-  packages JSON,
-  store_path TEXT,
-  scheduled_on DATETIME,
-  started_on DATETIME,
-  ended_on DATETIME,
-  FOREIGN KEY(specification_id) REFERENCES specification(id)
-)
-"""
+
+class CondaStore(Base):
+    __tablename__ = 'conda_store'
+
+    id = Column(Integer, primary_key=True)
+    last_package_update = Column(DateTime)
+    free_storage = Column(Integer)
+    total_storage = Column(Integer)
+
+
+def new_session_factory(url="sqlite:///:memory:", reset=False, **kwargs):
+    engine = create_engine(url, **kwargs)
+
+    if reset:
+        Base.metadata.drop_all(engine)
+
+    Base.metadata.create_all(engine)
+
+    session_factory = sessionmaker(bind=engine)
+    return session_factory
 
 
 def dict_factory(cursor, row):
