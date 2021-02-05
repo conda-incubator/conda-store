@@ -8,8 +8,8 @@
 <div class="card my-2">
     <div class="card-body">
         <h5 class="card-title">
-            <a href="/environment/{{ environment.name }}/">{{ environment.name }}</a>
-            <span class="badge badge-light">{{ (environment.size or 0) | filesizeformat(true) }}</span>
+            <a href="/environment/{{ environment.name }}/">{{ environment.namespace }}/{{ environment.name }}</a>
+            <span class="badge badge-light">{{ (environment.build.size or 0) | filesizeformat(true) }}</span>
         </h5>
 {% if environment.build_id is not none %}
         <a class="card-link" href="/build/{{ environment.build_id }}/lockfile/"><ion-icon name="lock-closed-outline"></ion-icon> Lockfile</a>

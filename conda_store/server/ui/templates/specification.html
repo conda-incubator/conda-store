@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Specification {{ specification_id }}{% endblock %}
+{% block title %}Specification {{ specification.id }}{% endblock %}
 
 {% block content %}
 <div class="card">
@@ -10,13 +10,10 @@
     <p class="card-text">
         <dl>
             <dt class="col-sm-3">sha256</dt>
-            <dd class="col-sm-9">{{ specification.spec_sha256 }}</dd>
+            <dd class="col-sm-9">{{ specification.sha256 }}</dd>
 
             <dt class="col-sm-3">created on</dt>
             <dd class="col-sm-9">{{ specification.created_on }}</dd>
-
-            <dt class="col-sm-3">filename</dt>
-            <dd class="col-sm-9">{{ specification.filename }}</dd>
         </dl>
     </p>
 </div>

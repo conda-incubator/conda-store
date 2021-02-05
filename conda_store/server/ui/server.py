@@ -4,32 +4,21 @@ import traceback
 from flask import Flask, g, request, render_template, redirect, Response, send_file
 import yaml
 
-from conda_store.data_model.base import DatabaseManager
-from conda_store.data_model import api
-from conda_store.environments import validate_environment
-from conda_store.storage import S3Storage, LocalStorage
+from conda_store import api
+from conda_store.app import CondaStore
 
 
-def start_ui_server(conda_store, storage_backend, address='0.0.0.0', port=5000):
-    if storage_backend == 's3':
-        storage_manager = S3Storage()
-    else: # filesystem
-        # storage_manager = LocalStorage(store_directory / 'storage', 'http://..../')
-        raise NotImplementedError('filesystem as a storage_manager not implemented')
-
+def start_ui_server(store_directory, storage_backend, address='0.0.0.0', port=5000):
     app = Flask(__name__, template_folder=os.path.join(os.path.dirname(__file__), 'templates'))
 
-    def get_dbm(conda_store):
-        dbm = getattr(g, '_dbm', None)
-        if dbm is None:
-            dbm = g._dbm = DatabaseManager(conda_store)
-        return dbm
-
-    @app.teardown_appcontext
-    def close_connection(exception):
-        dbm = getattr(g, '_dbm', None)
-        if dbm is not None:
-            dbm.close()
+    def get_conda_store(store_directory, storage_backend):
+        conda_store = getattr(g, '_conda_store', None)
+        if conda_store is None:
+            conda_store = g._conda_store = CondaStore(
+                store_directory=store_directory,
+                database_url=None,
+                storage_backend=storage_backend)
+        return conda_store
 
     @app.route('/create/', methods=['GET', 'POST'])
     def ui_create_get_environment():
@@ -38,58 +27,62 @@ def start_ui_server(conda_store, storage_backend, address='0.0.0.0', port=5000):
         elif request.method == 'POST':
             try:
                 spec = yaml.safe_load(request.form.get('specification'))
-                dbm = get_dbm(conda_store)
-                api.post_specification(dbm, spec)
+                conda_store = get_conda_store(store_directory, storage_backend)
+                api.post_specification(conda_store, spec)
                 return redirect('/')
             except (yaml.YAMLError, ValueError):
                 return render_template('create.html', spec=yaml.dump(spec), message=traceback.format_exc())
 
     @app.route('/', methods=['GET'])
     def ui_get_environments():
-        dbm = get_dbm(conda_store)
+        conda_store = get_conda_store(store_directory, storage_backend)
         return render_template('home.html',
-                               environments=api.list_environments(dbm),
-                               metrics=api.get_metrics(dbm))
+                               environments=api.list_environments(conda_store.db),
+                               metrics=api.get_metrics(conda_store.db))
 
     @app.route('/environment/<name>/', methods=['GET'])
     def ui_get_environment(name):
-        dbm = get_dbm(conda_store)
-        return render_template('environment.html', environment=api.get_environment(dbm, name))
+        conda_store = get_conda_store(store_directory, storage_backend)
+        return render_template('environment.html',
+                               environment=api.get_environment(conda_store.db, name),
+                               envionment_builds=api.get_environment(conda_store.db, name))
 
     @app.route('/environment/<name>/edit/', methods=['GET'])
     def ui_edit_environment(name):
-        dbm = get_dbm(conda_store)
-        environment = api.get_environment(dbm, name)
-        specification = api.get_specification(dbm, environment['spec_sha256'])
-        return render_template('create.html', spec=yaml.dump(specification['spec']))
+        conda_store = get_conda_store(store_directory, storage_backend)
+        environment = api.get_environment(conda_store.db, name)
+        specification = api.get_specification(conda_store.db, environment.sha256)
+        return render_template('create.html', spec=yaml.dump(specification.spec))
 
     @app.route('/specification/<sha256>/', methods=['GET'])
     def ui_get_specification(sha256):
-        dbm = get_dbm(conda_store)
-        specification = api.get_specification(dbm, sha256)
-        return render_template('specification.html', specification=specification, spec=yaml.dump(specification['spec']))
+        conda_store = get_conda_store(store_directory, storage_backend)
+        specification = api.get_specification(conda_store.db, sha256)
+        return render_template('specification.html', specification=specification, spec=yaml.dump(specification.spec))
 
-    @app.route('/build/<build>/', methods=['GET'])
-    def ui_get_build(build):
-        dbm = get_dbm(conda_store)
-        return render_template('build.html', build_id=build, build=api.get_build(dbm, build))
+    @app.route('/build/<build_id>/', methods=['GET'])
+    def ui_get_build(build_id):
+        conda_store = get_conda_store(store_directory, storage_backend)
+        build = api.get_build(conda_store.db, build_id)
+        return render_template('build.html', build=build)
 
-    @app.route('/build/<build>/logs/', methods=['GET'])
-    def api_get_build_logs(build):
-        dbm = get_dbm(conda_store)
-        log_key = api.get_build_log_key(dbm, build)
-        return redirect(storage_manager.get_url(log_key))
+    @app.route('/build/<build_id>/logs/', methods=['GET'])
+    def api_get_build_logs(build_id):
+        conda_store = get_conda_store(store_directory, storage_backend)
+        log_key = api.get_build(conda_store.db, build_id).log_key
+        return redirect(conda_store.storage.get_url(log_key))
 
-    @app.route('/build/<build>/lockfile/', methods=['GET'])
-    def api_get_build_lockfile(build):
-        dbm = get_dbm(conda_store)
-        return Response(api.get_build_lockfile(dbm, build), mimetype='text/plain')
+    @app.route('/build/<build_id>/lockfile/', methods=['GET'])
+    def api_get_build_lockfile(build_id):
+        conda_store = get_conda_store(store_directory, storage_backend)
+        lockfile = api.get_build_lockfile(conda_store.db, build_id)
+        return Response(lockfile, mimetype='text/plain')
 
-    @app.route('/build/<build>/archive/', methods=['GET'])
-    def api_get_build_archive(build):
-        dbm = get_dbm(conda_store)
-        archive_key = api.get_build_archive_key(dbm, build)
-        return redirect(storage_manager.get_url(archive_key))
+    @app.route('/build/<build_id>/archive/', methods=['GET'])
+    def api_get_build_archive(build_id):
+        conda_store = get_conda_store(store_directory, storage_backend)
+        conda_pack_key = api.get_build(conda_store.db, build_id).conda_pack_key
+        return redirect(conda_store.storage.get_url(conda_pack_key))
 
     @app.route('/build/<build>/docker/', methods=['GET'])
     def api_get_build_docker_archive(build):

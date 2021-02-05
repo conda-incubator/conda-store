@@ -14,19 +14,19 @@ services:
       S3_SECRET_KEY: password
       PATH: "/opt/conda/envs/conda-store/bin:/opt/conda/bin:/opt/conda/condabin:/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
-  # conda-store-ui:
-  #   build: .
-  #   volumes:
-  #     - ./data/conda-store:/opt/mount
-  #   command: ['python', '-m', 'conda_store', 'ui', '-s', '/data/store', '--port', '5000']
-  #   ports:
-  #     - "5000:5000"
-  #   environment:
-  #     TZ: America/New_York
-  #     S3_ENDPOINT: minio:9000
-  #     S3_ACCESS_KEY: admin
-  #     S3_SECRET_KEY: password
-  #     PATH: "/opt/conda/envs/conda-store/bin:/opt/conda/bin:/opt/conda/condabin:/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+  conda-store-ui:
+    build: .
+    volumes:
+      - ./data/conda-store:/data
+    command: ['python', '-m', 'conda_store', 'ui', '-s', '/data/store', '--port', '5000']
+    ports:
+      - "5000:5000"
+    environment:
+      TZ: America/New_York
+      S3_ENDPOINT: minio:9000
+      S3_ACCESS_KEY: admin
+      S3_SECRET_KEY: password
+      PATH: "/opt/conda/envs/conda-store/bin:/opt/conda/bin:/opt/conda/condabin:/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
   # conda-store-api:
   #   build: .

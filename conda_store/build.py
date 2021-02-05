@@ -11,14 +11,76 @@ import time
 import hashlib
 import gzip
 import json
+import datetime
 
 import yaml
+from sqlalchemy import and_
 
-from conda_store import api, utils, conda
+from conda_store import api, utils, conda, orm
 from conda_store.environment import discover_environments
 
 
 logger = logging.getLogger(__name__)
+
+
+def claim_build(conda_store):
+    build = conda_store.db.query(orm.Build).filter(
+        orm.Build.status == orm.BuildStatus.QUEUED,
+        orm.Build.scheduled_on < datetime.datetime.utcnow()
+    ).first()
+    build.status = orm.BuildStatus.BUILDING
+    build.started_on = datetime.datetime.utcnow()
+    conda_store.db.commit()
+    return build
+
+
+def set_build_failed(conda_store, build, logs, reschedule=True):
+    conda_store.storage.set(build.log_key, logs, content_type='text/plain')
+    build.status = orm.BuildStatus.FAILED
+    build.ended_on = datetime.datetime.utcnow()
+    conda_store.db.commit()
+
+    if reschedule:
+        num_failed_builds = conda_store.db.query(orm.Build).filter(and_(
+            orm.Build.status == orm.BuildStatus.FAILED,
+            orm.Build.specification_id == build.specification_id
+        )).count()
+        logger.info(f'specification name={build.specification.name} build has failed={num_failed_builds} times')
+        scheduled_on = datetime.datetime.utcnow() + datetime.timedelta(seconds=10*(2**num_failed_builds))
+        conda_store.db.add(orm.Build(
+            specification_id=build.specification_id,
+            scheduled_on=scheduled_on
+        ))
+        logger.info(f'rescheduling specification name={build.specification.name} on {scheduled_on}')
+    conda_store.db.commit()
+
+
+def set_build_completed(conda_store, build, logs, packages):
+    def package_query(package):
+        return conda_store.db.query(orm.CondaPackage).filter(and_(
+            orm.CondaPackage.channel == package['base_url'],
+            orm.CondaPackage.subdir == package['platform'],
+            orm.CondaPackage.name == package['name'],
+            orm.CondaPackage.version == package['version'],
+            orm.CondaPackage.build == package['build_string'],
+            orm.CondaPackage.build_number == package['build_number'],
+        )).first()
+
+    for package in packages:
+        _package = package_query(package)
+        if _package is not None:
+            build.packages.append(_package)
+
+    conda_store.storage.set(build.log_key, logs, content_type='text/plain')
+    build.status = orm.BuildStatus.COMPLETED
+    build.ended_on = datetime.datetime.utcnow()
+
+    environment = conda_store.db.query(orm.Environment).filter(
+        orm.Environment.name == build.specification.name
+    ).first()
+    environment.build = build
+    environment.specification = build.specification
+    conda_store.db.commit()
 
 
 def start_conda_build(conda_store, paths, storage_threshold, poll_interval):
@@ -26,7 +88,7 @@ def start_conda_build(conda_store, paths, storage_threshold, poll_interval):
     while True:
         environments = discover_environments(paths)
         for environment in environments:
-            conda_store.register_environment(environment)
+            conda_store.register_environment(environment, namespace='filesystem')
 
         num_queued_builds = api.get_num_queued_builds(conda_store.db)
         if num_queued_builds > 0:
@@ -46,7 +108,7 @@ def start_conda_build(conda_store, paths, storage_threshold, poll_interval):
 
 
 def conda_build(conda_store):
-    build = conda_store.claim_build()
+    build = claim_build(conda_store)
     store_directory = pathlib.Path(
         conda_store.configuration.store_directory)
     environment_directory = pathlib.Path(
@@ -78,7 +140,7 @@ def conda_build(conda_store):
                     try:
                         output = build_conda_install(conda_store, build_path, tmp_environment_filename)
                     except subprocess.CalledProcessError as e:
-                        conda_store.set_build_failed(build, e.output.encode('utf-8'))
+                        set_build_failed(conda_store, build, e.output.encode('utf-8'))
                         return
 
         utils.symlink(build_path, environment_path)
@@ -106,13 +168,13 @@ def conda_build(conda_store):
         build_conda_pack(conda_store, build_path, build)
         build_docker_image(conda_store, build_path, build)
 
-        conda_store.set_build_completed(build, output.encode('utf-8'), packages)
+        set_build_completed(conda_store, build, output.encode('utf-8'), packages)
     except Exception as e:
         logger.exception(e)
-        conda_store.set_build_failed(build, traceback.format_exc().encode('utf-8'))
+        set_build_failed(conda_store, build, traceback.format_exc().encode('utf-8'))
     except BaseException as e:
         logger.error(f'exception {e.__class__.__name__} caught causing build={build_id} to be rescheduled')
-        conda_store.set_build_failed(build, traceback.format_exc().encode('utf-8'))
+        set_build_failed(conda_store, build, traceback.format_exc().encode('utf-8'))
         sys.exit(1)
 
 

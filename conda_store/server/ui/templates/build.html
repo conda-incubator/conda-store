@@ -20,22 +20,16 @@
             <dt class="col-sm-3">ended on</dt>
             <dd class="col-sm-9">{{ build.ended_on }}</dd>
 
-            <dt class="col-sm-3">store path</dt>
-            <dd class="col-sm-9">{{ build.store_path }}</dd>
-
-            <dt class="col-sm-3">archive path</dt>
-            <dd class="col-sm-9">{{ build.archive_path }}</dd>
-
             <dt class="col-sm-3">status</dt>
-            <dd class="col-sm-9">{{ build.status }}</dd>
+            <dd class="col-sm-9">{{ build.status.name }}</dd>
 
             <dt class="col-sm-3">specification</dt>
-            <dd class="col-sm-9"><a href="/specification/{{ build.spec_sha256 }}/">{{ build.spec_sha256[:8] }}</a></dd>
+            <dd class="col-sm-9"><a href="/specification/{{ build.specification.sha256 }}/">{{ build.specification.sha256[:8] }}</a></dd>
         </dl>
     </p>
 </div>
 
-{% if build.status in ['COMPLETED'] %}
+{% if build.status.name in ['COMPLETED'] %}
 <div class="card my-2">
     <div class="card-body">
         <h3 class="card-title">Conda Packages
@@ -65,7 +59,7 @@
 </div>
 {% endif %}
 
-{% if build.status in ['COMPLETED'] %}
+{% if build.status.name in ['COMPLETED'] %}
 <div class="card my-2">
     <div class="card-body">
         <h3 class="card-title">Conda Environment Artifacts</h3>
@@ -73,21 +67,12 @@
     <ul class="list-group list-group-flush">
         <li class="list-group-item">Lockfile: <a href="/build/{{ build.id }}/lockfile/">conda-linux-64.lock</a></li>
         <li class="list-group-item">Archive: <a href="/build/{{ build.id }}/archive/">environment.tar.gz</a></li>
-        <li class="list-group-item">Docker Archive: <a href="/build/{{ build.id }}/docker/">docker.tar</a></li>
     </ul>
 </div>
 {% endif %}
 
-{% if build.status in ['COMPLETED', 'FAILED'] %}
+{% if build.status.name in ['COMPLETED', 'FAILED'] %}
 <div class="card my-2">
-    <div class="card-body">
-        <h3 class="card-title">Partial Logs</h3>
-    </div>
-
-    <pre class="bg-light px-3"><code>...
-{{ build.logs }}</code></pre>
-    </p>
-
     <div class="card-body">
         <a href="/build/{{ build.id }}/logs/" class="btn btn-primary btn-block">Full Logs</a>
     </div>

@@ -42,12 +42,27 @@ def handle_build(args):
 
     conda_store = CondaStore(
         store_directory=args.store,
-        environment_directory=args.environment,
         database_url=None,
-        storage_backend=args.storage_backend,
-        default_permissions=args.permissions,
-        default_uid=args.uid,
-        default_gid=args.gid)
+        storage_backend=args.storage_backend)
+
+    environment_directory = pathlib.Path(
+        args.environment or
+        conda_store.configuration.environment_directory or
+        (conda_store.configuration.store_directory / 'envs')).resolve()
+    if not environment_directory.is_dir():
+        logger.info(f'creating directory environment_directory={environment_directory}')
+        environment_directory.mkdir(parents=True)
+    conda_store.configuration.environment_directory = str(environment_directory)
+
+    if args.permissions:
+        conda_store.configuration.default_permissions = args.permissions
+    if args.uid:
+        conda_store.configuration.default_uid = args.uid
+    if args.gid:
+        conda_store.configuration.default_gid = args.gid
+
+    conda_store.update_storage_metrics()
+    conda_store.update_conda_channels()
 
     start_conda_build(conda_store, args.paths, args.storage_threshold, args.poll_interval)
 
@@ -67,10 +82,7 @@ def handle_ui(args):
 
     initialize_logging(args.verbose)
 
-    store_directory = pathlib.Path(args.store).expanduser().resolve()
-    store_directory.mkdir(parents=True, exist_ok=True)
-
-    start_ui_server(store_directory, args.storage_backend, args.address, args.port)
+    start_ui_server(args.store, args.storage_backend, args.address, args.port)
 
 
 def initialize_api_cli(subparser):

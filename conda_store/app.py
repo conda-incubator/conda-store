@@ -12,24 +12,11 @@ logger = logging.getLogger(__name__)
 
 
 class CondaStore:
-    def __init__(self,
-                 store_directory,
-                 environment_directory=None,
-                 database_url=None,
-                 storage_backend='s3',
-                 default_permissions=None,
-                 default_uid=None,
-                 default_gid=None):
+    def __init__(self, store_directory, database_url=None, storage_backend='s3'):
         self.store_directory = pathlib.Path(store_directory).resolve()
         if not self.store_directory.is_dir():
             logger.info(f'creating directory store_directory={store_directory}')
             self.store_directory.mkdir(parents=True)
-
-        self.environment_directory = pathlib.Path(
-            environment_directory or (self.store_directory / 'envs')).resolve()
-        if not self.environment_directory.is_dir():
-            logger.info(f'creating directory environment_directory={environment_directory}')
-            self.environment_directory.mkdir(parents=True)
 
         self.database_url = database_url or f'sqlite:///{self.store_directory / "conda_store.sqlite"}'
 
@@ -43,10 +30,6 @@ class CondaStore:
             self.storage = storage.S3Storage()
 
         self.configuration.store_directory = str(self.store_directory)
-        self.configuration.environment_directory = str(self.environment_directory)
-
-        self.update_storage_metrics()
-        self.update_conda_channels()
 
     @property
     def configuration(self):
@@ -79,7 +62,7 @@ class CondaStore:
         configuration.last_package_update = datetime.datetime.utcnow()
         self.db.commit()
 
-    def register_environment(self, specification):
+    def register_environment(self, specification, namespace='library'):
         if isinstance(specification, (str, pathlib.Path)):
             with open(str(specification)) as f:
                 specification = yaml.safe_load(f)
@@ -88,7 +71,7 @@ class CondaStore:
         query = self.db.query(orm.Environment).filter(
             orm.Environment.name == specification["name"])
         if query.count() == 0:
-            self.db.add(orm.Environment(name=specification["name"]))
+            self.db.add(orm.Environment(name=specification["name"], namespace=namespace))
         self.db.commit()
 
         specification_sha256 = utils.datastructure_hash(specification)
@@ -105,61 +88,4 @@ class CondaStore:
         logger.info(f'scheduling specification for build name={specification.name} sha256={specification.sha256}')
         build = orm.Build(specification_id=specification.id)
         self.db.add(build)
-        self.db.commit()
-
-    def claim_build(self):
-        build = self.db.query(orm.Build).filter(
-            orm.Build.status == orm.BuildStatus.QUEUED,
-            orm.Build.scheduled_on < datetime.datetime.utcnow()
-        ).first()
-        build.status = orm.BuildStatus.BUILDING
-        build.started_on = datetime.datetime.utcnow()
-        self.db.commit()
-        return build
-
-    def set_build_failed(self, build, logs, reschedule=True):
-        self.storage.set(build.log_key, logs, content_type='text/plain')
-        build.status = orm.BuildStatus.FAILED
-        build.ended_on = datetime.datetime.utcnow()
-        self.db.commit()
-
-        if reschedule:
-            num_failed_builds = self.db.query(orm.Build).filter(and_(
-                orm.Build.status == orm.BuildStatus.FAILED,
-                orm.Build.specification_id == build.specification_id
-            )).count()
-            logger.info(f'specification name={build.specification.name} build has failed={num_failed_builds} times')
-            scheduled_on = datetime.datetime.utcnow() + datetime.timedelta(seconds=10*(2**num_failed_builds))
-            self.db.add(orm.Build(
-                specification_id=build.specification_id,
-                scheduled_on=scheduled_on
-            ))
-            logger.info(f'rescheduling specification name={build.specification.name} on {scheduled_on}')
-        self.db.commit()
-
-    def set_build_completed(self, build, logs, packages):
-        def package_query(package):
-            return self.db.query(orm.CondaPackage).filter(and_(
-                orm.CondaPackage.channel == package['base_url'],
-                orm.CondaPackage.subdir == package['platform'],
-                orm.CondaPackage.name == package['name'],
-                orm.CondaPackage.version == package['version'],
-                orm.CondaPackage.build == package['build_string'],
-                orm.CondaPackage.build_number == package['build_number'],
-            )).first()
-
-        for package in packages:
-            _package = package_query(package)
-            if _package is not None:
-                build.packages.append(_package)
-
-        self.storage.set(build.log_key, logs, content_type='text/plain')
-        build.status = orm.BuildStatus.COMPLETED
-        build.ended_on = datetime.datetime.utcnow()
-
-        environment = self.db.query(orm.Environment).filter(
-            orm.Environment.name == build.specification.name
-        ).first()
-        environment.build = build
-        environment.specification = build.specification
         self.db.commit()
