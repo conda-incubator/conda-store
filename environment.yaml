@@ -4,6 +4,7 @@ channels:
 dependencies:
   - conda-docker
   - conda-pack
+  - sqlalchemy
   - requests
   - flask
   - pyyaml

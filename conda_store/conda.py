@@ -8,14 +8,20 @@ import requests
 logger = logging.getLogger(__name__)
 
 
+def normalize_channel_name(channel):
+    if channel.startswith('http'):
+        return channel
+    return f'https://conda.anaconda.org/{channel}'
+
+
 def conda_list(prefix):
     args = ['conda', 'list', '-p', prefix, '--json']
     return json.loads(subprocess.check_output(args))
 
 
 def conda_pack(prefix, output):
-    from conda_pack import pack
-    pack(prefix=str(prefix), output=str(output))
+    import conda_pack.pack
+    conda_pack.pack(prefix=str(prefix), output=str(output))
 
 
 def download_repodata(channel, architectures=None):

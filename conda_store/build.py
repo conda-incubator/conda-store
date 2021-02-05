@@ -14,55 +14,49 @@ import json
 
 import yaml
 
-from conda_store.utils import timer, chmod, chown, symlink, disk_usage, free_disk_space
-from conda_store.data_model.base import DatabaseManager
-from conda_store.data_model import build, package, api
-from conda_store.data_model.conda_store import initialize_conda_store_state, calculate_storage_metrics
-from conda_store.environments import discover_environments
+from conda_docker.conda import (
+    build_docker_environment_image,
+    find_user_conda,
+    conda_info,
+    precs_from_environment_prefix,
+    fetch_precs
+)
+
+from conda_store import api
+from conda_store.environment import discover_environments
 from conda_store.conda import conda_list, conda_pack
-from conda_store.storage import S3Storage, LocalStorage
 
 
 logger = logging.getLogger(__name__)
 
 
-def start_conda_build(store_directory, output_directory, paths, permissions, uid, gid, storage_threshold, storage_backend, poll_interval):
-    dbm = DatabaseManager(store_directory)
-
-    if storage_backend == 's3':
-        storage_manager = S3Storage()
-    else: # filesystem
-        # storage_manager = LocalStorage(store_directory / 'storage', 'http://..../')
-        raise NotImplementedError('filesystem as a storage_manager not implemented')
-
-    initialize_conda_store_state(dbm)
-    calculate_storage_metrics(dbm, store_directory)
-    package.update_conda_channels(dbm)
-
+def start_conda_build(conda_store, paths, storage_threshold, poll_interval):
     logger.info(f'polling interval set to {poll_interval} seconds')
     while True:
         environments = discover_environments(paths)
+        logger.info(str([str(_) for _ in environments]))
         for environment in environments:
-            build.register_environment(dbm, environment)
+            conda_store.register_environment(environment)
 
-        num_queued_builds = build.number_queued_conda_builds(dbm)
+        num_queued_builds = api.get_num_queued_builds(conda_store.db)
         if num_queued_builds > 0:
             logger.info(f'number of queued conda builds {num_queued_builds}')
 
-        if free_disk_space(store_directory) < storage_threshold:
+        disk_usage = conda_store.update_storage_metrics()
+        if disk_usage.free < storage_threshold:
             logger.warning(f'free disk space={storage_threshold:g} [bytes] below storage threshold')
 
-        num_schedulable_builds = build.number_schedulable_conda_builds(dbm)
+        num_schedulable_builds = api.get_num_schedulable_builds(conda_store.db)
         if num_schedulable_builds > 0:
             logger.info(f'number of schedulable conda builds {num_schedulable_builds}')
-            conda_build(dbm, storage_manager, output_directory, permissions, uid, gid)
-            calculate_storage_metrics(dbm, store_directory)
+            # conda_build(conda_store)
+            time.sleep(1)
         else:
             time.sleep(poll_interval)
 
 
-def conda_build(dbm, storage_manager, output_directory, permissions=None, uid=None, gid=None):
-    build_id, name, spec, sha256, store_path = build.claim_conda_build(dbm)
+def conda_build(conda_store):
+    build = conda_store.claim_conda_build(dbm)
     try:
         environment_store_directory = pathlib.Path(store_path)
         environment_install_directory = pathlib.Path(output_directory) / name

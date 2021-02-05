@@ -192,9 +192,8 @@ def get_build_lockfile(dbm, build_id):
 '''.format('\n'.join(['{channel}/{subdir}/{name}-{version}-{build}.tar.bz2#{md5}'.format(**v) for v in cursor.fetchall()]))
 
 
-
-
 def get_build_docker_archive(dbm, build_id):
+    # TODO
     with dbm.transaction() as cursor:
         cursor.execute('''
           SELECT
@@ -206,44 +205,3 @@ def get_build_docker_archive(dbm, build_id):
           WHERE build.id = ?
         ''', (build_id,))
         return cursor.fetchone()
-
-
-def list_conda_packages(dbm):
-    with dbm.transaction() as cursor:
-        cursor.execute('''
-          SELECT
-            channel,
-            build,
-            build_number,
-            constrains,
-            depends,
-            license,
-            license_family,
-            md5,
-            name,
-            sha256,
-            size,
-            subdir,
-            timestamp,
-            version
-          FROM conda_package
-          LIMIT 10
-        ''')
-    return cursor.fetchall()
-
-
-def get_metrics(dbm):
-    with dbm.transaction() as cursor:
-        cursor.execute('''
-          SELECT
-            free_storage AS free,
-            total_storage AS total,
-            disk_usage,
-            (SELECT COUNT(*) FROM build WHERE status = ?) AS total_completed_builds,
-            (SELECT COUNT(*) FROM environment) AS total_environments
-          FROM conda_store WHERE id = 1
-        ''', (BuildStatus.COMPLETED,))
-        metrics = cursor.fetchone()
-        metrics['used'] = metrics['total'] - metrics['free']
-        metrics['percent'] = math.ceil(metrics['used'] / metrics['total'] * 100)
-        return metrics

@@ -2,35 +2,28 @@ import argparse
 import logging
 import pathlib
 
-import yaml
-
-from conda_store.logging import init_logging
-from conda_store.build import start_conda_build
-from conda_store.ui import start_ui_server
-from conda_store.api import start_api_server
-from conda_store.registry import start_registry_server
-from conda_store import client
+from conda_store.logging import initialize_logging
+from conda_store.app import CondaStore
 
 logger = logging.getLogger(__name__)
 
 
-def init_cli():
+def initialize_cli():
     parser = argparse.ArgumentParser(description='declarative conda environments on filesystem')
     subparser = parser.add_subparsers(help='sub-command help')
-    init_build_cli(subparser)
-    init_api_cli(subparser)
-    init_ui_cli(subparser)
-    init_env_cli(subparser)
-    init_registry_cli(subparser)
+    initialize_build_cli(subparser)
+    initialize_api_cli(subparser)
+    initialize_ui_cli(subparser)
+    initialize_registry_cli(subparser)
 
     args = parser.parse_args()
     args.func(args)
 
 
-def init_build_cli(subparser):
+def initialize_build_cli(subparser):
     parser = subparser.add_parser('build', help='build conda environments on filesystem')
     parser.add_argument('-s', '--store', type=str, default='.conda-store', help='directory for conda-store state')
-    parser.add_argument('-o', '--output', type=str, help='output directory for symlinking conda environment builds', required=True)
+    parser.add_argument('-e', '--environment', type=str, help='environment directory for symlinking conda environment builds', required=True)
     parser.add_argument('-p', '--paths', action='append', help='input paths for environments directories(non-recursive) and filenames', required=False)
     parser.add_argument('--uid', type=int, help='uid to assign to built environments')
     parser.add_argument('--gid', type=int, help='gid to assign to built environments')
@@ -43,17 +36,23 @@ def init_build_cli(subparser):
 
 
 def handle_build(args):
-    init_logging(args.verbose)
+    from conda_store.build import start_conda_build
 
-    store_directory = pathlib.Path(args.store).expanduser().resolve()
-    store_directory.mkdir(parents=True, exist_ok=True)
-    output_directory = pathlib.Path(args.output).expanduser().resolve()
-    output_directory.mkdir(parents=True, exist_ok=True)
+    initialize_logging(args.verbose)
 
-    start_conda_build(store_directory, output_directory, args.paths, args.permissions, args.uid, args.gid, args.storage_threshold, args.storage_backend, args.poll_interval)
+    conda_store = CondaStore(
+        store_directory=args.store,
+        environment_directory=args.environment,
+        database_url=None,
+        storage_backend=args.storage_backend,
+        default_permissions=args.permissions,
+        default_uid=args.uid,
+        default_gid=args.gid)
+
+    start_conda_build(conda_store, args.paths, args.storage_threshold, args.poll_interval)
 
 
-def init_ui_cli(subparser):
+def initialize_ui_cli(subparser):
     parser = subparser.add_parser('ui', help='serve ui for conda build')
     parser.add_argument('--address', type=str, default='0.0.0.0', help='address to bind run conda-store ui')
     parser.add_argument('--port', type=int, default=5000, help='port to run conda-store ui')
@@ -64,7 +63,9 @@ def init_ui_cli(subparser):
 
 
 def handle_ui(args):
-    init_logging(args.verbose)
+    from conda_store.server.ui import start_ui_server
+
+    initialize_logging(args.verbose)
 
     store_directory = pathlib.Path(args.store).expanduser().resolve()
     store_directory.mkdir(parents=True, exist_ok=True)
@@ -72,7 +73,7 @@ def handle_ui(args):
     start_ui_server(store_directory, args.storage_backend, args.address, args.port)
 
 
-def init_api_cli(subparser):
+def initialize_api_cli(subparser):
     parser = subparser.add_parser('api', help='serve api for conda build')
     parser.add_argument('--address', type=str, default='0.0.0.0', help='address to bind run conda-store api')
     parser.add_argument('--port', type=int, default=5001, help='port to run conda-store api')
@@ -83,7 +84,9 @@ def init_api_cli(subparser):
 
 
 def handle_api(args):
-    init_logging(args.verbose)
+    from conda_store.server.api import start_api_server
+
+    initialize_logging(args.verbose)
 
     store_directory = pathlib.Path(args.store).expanduser().resolve()
     store_directory.mkdir(parents=True, exist_ok=True)
@@ -91,7 +94,7 @@ def handle_api(args):
     start_api_server(store_directory, args.address, args.port)
 
 
-def init_registry_cli(subparser):
+def initialize_registry_cli(subparser):
     parser = subparser.add_parser('registry', help='serve registry for conda build')
     parser.add_argument('--address', type=str, default='0.0.0.0', help='address to bind run conda-store registry')
     parser.add_argument('--port', type=int, default=5002, help='port to run conda-store registry')
@@ -102,7 +105,9 @@ def init_registry_cli(subparser):
 
 
 def handle_registry(args):
-    init_logging(args.verbose)
+    from conda_store.server.registry import start_registry_server
+
+    initialize_logging(args.verbose)
 
     store_directory = pathlib.Path(args.store).expanduser().resolve()
     store_directory.mkdir(parents=True, exist_ok=True)

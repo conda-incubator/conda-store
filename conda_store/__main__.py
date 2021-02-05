@@ -1,8 +1,8 @@
-from conda_store.cli import init_cli
+from conda_store import cli
 
 
 def main():
-    init_cli()
+    cli.initialize_cli()
 
 
 if __name__ == "__main__":

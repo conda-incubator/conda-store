@@ -1,9 +1,9 @@
-import os
 import re
-import hashlib
 import subprocess
 import contextlib
 import time
+import hashlib
+import json
 
 
 def symlink(source, target):
@@ -36,15 +36,25 @@ def timer(logger, prefix):
     logger.info(f'{prefix} took {time.time() - start_time:.3f} [s]')
 
 
-def disk_usage(path):
-    return subprocess.check_output(['du', '-sb', path], encoding='utf-8').split()[0]
+def recursive_sort(v):
+    """Recursively sort a nested python objects of lists, dicts,
+    strings, ints, and floats
+
+    """
+    def sort_key(v):
+        if isinstance(v, (list, dict, tuple)):
+            return str(type(v))
+        return f'{type(v)}-{v}'
+
+    if isinstance(v, dict):
+        sorted_keys = sorted(v.keys(), key=sort_key)
+        return {k: recursive_sort(v[k]) for k in sorted_keys}
+    elif isinstance(v, (tuple, list)):
+        sorted_items = sorted(v, key=sort_key)
+        return [recursive_sort(_) for _ in sorted_items]
+    return v
 
 
-def free_disk_space(path):
-    disk = os.statvfs(str(path))
-    return disk.f_bavail * disk.f_frsize
-
-
-def total_disk_space(path):
-    disk = os.statvfs(str(path))
-    return disk.f_blocks * disk.f_frsize
+def datastructure_hash(v):
+    json_blob = json.dumps(recursive_sort(v))
+    return hashlib.sha256(json_blob.encode('utf-8')).hexdigest()

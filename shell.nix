@@ -12,7 +12,9 @@ pkgs.mkShell {
     pythonPackages.flask
     pythonPackages.requests
     pythonPackages.minio
+    pythonPackages.sqlalchemy
 
+    pythonPackages.pytest
     pythonPackages.black
     pythonPackages.flake8
   ];
