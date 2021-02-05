@@ -39,14 +39,16 @@ class S3Storage(Storage):
 
 
 class LocalStorage(Storage):
-    def __init__(self, storage_path, base_url):
+    def __init__(self, storage_path, base_url=None):
         self.storage_path = pathlib.Path(storage_path)
+        if not self.storage_path.is_dir():
+            self.storage_path.mkdir(parents=True)
         self.base_url = base_url
 
-    def fset(self, key, filename):
+    def fset(self, key, filename, content_type=None):
         shutil.copyfile(filename, self.storage_path / key)
 
-    def set(self, key, value):
+    def set(self, key, value, content_type=None):
         with (self.storage_path / key).open('wb') as f:
             f.write(value)
 

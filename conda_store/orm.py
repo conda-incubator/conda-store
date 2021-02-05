@@ -7,7 +7,7 @@ from sqlalchemy import (
     Table, Column, Integer, String,  JSON, Enum, DateTime,
     UniqueConstraint, ForeignKey,
 )
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine
 
@@ -48,6 +48,8 @@ class Specification(Base):
     sha256 = Column(String, unique=True, nullable=False)
     created_on = Column(DateTime, default=datetime.datetime.utcnow)
 
+    builds = relationship('Build', back_populates='specification')
+
 
 class Build(Base):
     """The state of a build of a given specification
@@ -56,16 +58,37 @@ class Build(Base):
     __tablename__ = 'build'
 
     id = Column(Integer, primary_key=True)
-    specification_id = Column(Integer, ForeignKey("specification.id"))
+    specification_id = Column(Integer, ForeignKey("specification.id"), nullable=False)
+    specification = relationship(Specification, back_populates='builds')
+
     status = Column(Enum(BuildStatus), default=BuildStatus.QUEUED)
     size = Column(Integer, default=0)
     scheduled_on = Column(DateTime, default=datetime.datetime.utcnow)
     started_on = Column(DateTime, default=None)
     ended_on = Column(DateTime, default=None)
 
-    def build_path(self, store_path):
-        store_path = pathlib.Path(store_path).resolve()
-        return f'{store_path}/{self.specification.sha256}-{self.specification.name}'
+    def build_path(self, store_directory):
+        store_path = pathlib.Path(store_directory).resolve()
+        return store_path / f'{self.specification.sha256}-{self.specification.name}'
+
+    def environment_path(self, environment_directory):
+        environment_directory = pathlib.Path(environment_directory).resolve()
+        return environment_directory / self.specification.name
+
+    @property
+    def log_key(self):
+        return f'logs/{self.specification.name}/{self.specification.sha256}/{self.id}'
+
+    @property
+    def conda_pack_key(self):
+        return f'archive/{self.specification.name}/{self.specification.sha256}/{self.id}.tar.gz'
+
+    @property
+    def docker_manifest_key(self):
+        return f'docker/manifest/{self.specification.name}/{self.specification.sha256}'
+
+    def docker_blob_key(self, blob_hash):
+        return f'docker/blobs/{blob_hash}'
 
 
 class Environment(Base):

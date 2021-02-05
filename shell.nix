@@ -13,8 +13,10 @@ pkgs.mkShell {
     pythonPackages.requests
     pythonPackages.minio
     pythonPackages.sqlalchemy
+    pythonPackages.minio
 
     pythonPackages.pytest
+    pythonPackages.pytest-mock
     pythonPackages.black
     pythonPackages.flake8
   ];

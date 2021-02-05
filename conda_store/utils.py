@@ -29,6 +29,10 @@ def chown(directory, uid, gid):
     subprocess.check_output(['chown', '-R', f'{uid}:{gid}', str(directory)])
 
 
+def disk_usage(path):
+    return subprocess.check_output(['du', '-sb', path], encoding='utf-8').split()[0]
+
+
 @contextlib.contextmanager
 def timer(logger, prefix):
     start_time = time.time()

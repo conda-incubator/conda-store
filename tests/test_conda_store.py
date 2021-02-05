@@ -17,3 +17,4 @@ def test_conda_store_update_conda_channels(conda_store):
 ])
 def test_conda_store_register_specification(conda_store, environment):
     conda_store.register_environment(environment)
+    build = conda_store.claim_build()

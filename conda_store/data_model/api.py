@@ -141,34 +141,34 @@ def get_build(dbm, build_id):
         return result
 
 
-def get_build_log_key(dbm, build_id):
-    with dbm.transaction() as cursor:
-        cursor.execute('''
-          SELECT
-            specification.name,
-            specification.spec_sha256,
-            build.id
-          FROM build
-          INNER JOIN specification ON build.specification_id = specification.id
-          WHERE build.id = ?
-        ''', (build_id,))
-        result = cursor.fetchone()
-        return f'logs/{result["name"]}/{result["spec_sha256"]}/{result["id"]}.txt'
+# def get_build_log_key(dbm, build_id):
+#     with dbm.transaction() as cursor:
+#         cursor.execute('''
+#           SELECT
+#             specification.name,
+#             specification.spec_sha256,
+#             build.id
+#           FROM build
+#           INNER JOIN specification ON build.specification_id = specification.id
+#           WHERE build.id = ?
+#         ''', (build_id,))
+#         result = cursor.fetchone()
+#         return f'logs/{result["name"]}/{result["spec_sha256"]}/{result["id"]}.txt'
 
 
-def get_build_archive_key(dbm, build_id):
-    with dbm.transaction() as cursor:
-        cursor.execute('''
-          SELECT
-            specification.name,
-            specification.spec_sha256,
-            build.id
-          FROM build
-          INNER JOIN specification ON build.specification_id = specification.id
-          WHERE build.id = ?
-        ''', (build_id,))
-        result = cursor.fetchone()
-        return f'archive/{result["name"]}/{result["spec_sha256"]}/{result["id"]}.tar.gz'
+# def get_build_archive_key(dbm, build_id):
+#     with dbm.transaction() as cursor:
+#         cursor.execute('''
+#           SELECT
+#             specification.name,
+#             specification.spec_sha256,
+#             build.id
+#           FROM build
+#           INNER JOIN specification ON build.specification_id = specification.id
+#           WHERE build.id = ?
+#         ''', (build_id,))
+#         result = cursor.fetchone()
+#         return f'archive/{result["name"]}/{result["spec_sha256"]}/{result["id"]}.tar.gz'
 
 
 def get_build_lockfile(dbm, build_id):

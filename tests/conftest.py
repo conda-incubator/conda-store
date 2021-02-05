@@ -10,6 +10,9 @@ def db():
     yield Session()
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='module')
 def conda_store():
-    yield CondaStore(store_directory='/tmp', database_url='sqlite:///:memory:')
+    yield CondaStore(
+        store_directory='/tmp/conda-store',
+        database_url='sqlite:///:memory:',
+        storage_backend='filesystem')

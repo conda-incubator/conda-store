@@ -20,7 +20,7 @@ def conda_list(prefix):
 
 
 def conda_pack(prefix, output):
-    import conda_pack.pack
+    import conda_pack
     conda_pack.pack(prefix=str(prefix), output=str(output))
 
 

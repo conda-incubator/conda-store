@@ -25,7 +25,7 @@ class CondaStore:
             self.store_directory.mkdir(parents=True)
 
         self.environment_directory = pathlib.Path(
-            environment_directory or (self.store_directory / 'envs'))
+            environment_directory or (self.store_directory / 'envs')).resolve()
         if not self.environment_directory.is_dir():
             logger.info(f'creating directory environment_directory={environment_directory}')
             self.environment_directory.mkdir(parents=True)
@@ -36,9 +36,13 @@ class CondaStore:
         self.db = Session()
 
         if storage_backend == 'filesystem':
-            raise NotImplementedError(f'storage_backend={storage_backend} not supported')
+            storage_directory = self.store_directory / 'storage'
+            self.storage = storage.LocalStorage(storage_directory)
         elif storage_backend == 's3':
             self.storage = storage.S3Storage()
+
+        self.configuration.store_directory = str(self.store_directory)
+        self.configuration.environment_directory = str(self.environment_directory)
 
         self.update_storage_metrics()
         self.update_conda_channels()
@@ -89,13 +93,27 @@ class CondaStore:
         logger.info(f'registering specification name={specification["name"]} sha256={specification_sha256}')
         specification = orm.Specification(specification)
         self.db.add(specification)
+        self.db.commit()
         logger.info(f'scheduling specification for build name={specification.name} sha256={specification.sha256}')
         build = orm.Build(specification_id=specification.id)
         self.db.add(build)
         self.db.commit()
 
     def claim_build(self):
-        return self.db.query(orm.Build).filter(
+        build = self.db.query(orm.Build).filter(
             orm.Build.status == orm.BuildStatus.QUEUED,
             orm.Build.scheduled_on < datetime.datetime.utcnow()
         ).first()
+        build.status = orm.BuildStatus.BUILDING
+        self.db.commit()
+        return build
+
+    def set_build_failed(self, build, logs):
+        self.storage.set(build.log_key, logs, content_type='text/plain')
+        build.status = orm.BuildStatus.FAILED
+        self.db.commit()
+
+    def set_build_completed(self, build, logs):
+        self.storage.set(build.log_key, logs, content_type='text/plain')
+        build.status = orm.BuildStatus.COMPLETED
+        self.db.commit()
