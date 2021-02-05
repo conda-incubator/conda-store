@@ -17,7 +17,7 @@ services:
   conda-store-ui:
     build: .
     volumes:
-      - ./data/conda-store:/opt/mount
+      - ./data/conda-store:/data
     command: ['python', '-m', 'conda_store', 'ui', '-s', '/data/store', '--port', '5000']
     ports:
       - "5000:5000"
@@ -31,7 +31,7 @@ services:
   conda-store-api:
     build: .
     volumes:
-      - ./data/conda-store:/opt/mount
+      - ./data/conda-store:/data
     command: ['python', '-m', 'conda_store', 'api', '-s', '/data/store', '--port', '5001']
     ports:
       - "5001:5001"
@@ -42,7 +42,7 @@ services:
   conda-store-registry:
     build: .
     volumes:
-      - ./data/conda-store:/opt/mount
+      - ./data/conda-store:/data
     command: ['python', '-m', 'conda_store', 'registry', '-s', '/data/store', '--port', '5002', '--storage-backend', 's3']
     ports:
       - "5002:5002"
