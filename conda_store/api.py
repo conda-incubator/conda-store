@@ -4,13 +4,13 @@ import datetime
 
 from sqlalchemy import and_
 
-from conda_store import orm, environment
+from conda_store import orm
 
 
 logger = logging.getLogger(__name__)
 
 
-def list_environments(db):
+def list_environments(db, search=None):
     return db.query(orm.Environment).all()
 
 
@@ -34,6 +34,10 @@ def get_specification(db, sha256):
 
 def post_specification(conda_store, specification):
     conda_store.register_environment(specification, namespace='library')
+
+
+def list_builds(db):
+    return db.query(orm.Build).all()
 
 
 def get_build(db, build_id):
