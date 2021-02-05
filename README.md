@@ -64,3 +64,12 @@ caching, and rollbacks to previous environment states.
 docker-compose up --build
 ```
 
+In order for logs and artifacts to be downloaded properly you will
+need to set dns host `minio` -> `localhost`. The easiest way to do
+this is via `/etc/hosts`
+
+```shell
+...
+minio localhost
+...
+```
