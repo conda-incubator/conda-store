@@ -14,6 +14,7 @@ pkgs.mkShell {
     pythonPackages.minio
     pythonPackages.sqlalchemy
     pythonPackages.minio
+    pythonPackages.pydantic
 
     pythonPackages.pytest
     pythonPackages.pytest-mock

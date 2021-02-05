@@ -9,3 +9,4 @@ dependencies:
   - flask
   - pyyaml
   - minio
+  - pydantic

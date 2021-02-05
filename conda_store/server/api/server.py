@@ -2,7 +2,7 @@ import datetime
 
 from flask import jsonify, Flask, g, request, Response
 
-from conda_store import api
+from conda_store import api, schema
 from conda_store.app import CondaStore
 
 
@@ -26,16 +26,18 @@ def start_api_server(store_directory, storage_backend, address='0.0.0.0', port=5
     @app.route('/api/v1/environment/')
     def api_list_environments():
         conda_store = get_conda_store(store_directory, storage_backend)
-        return jsonify([for environment in api.list_environments(conda_store.db)])
+        environments = [schema.Environment.from_orm(_).dict() for _ in api.list_environments(conda_store.db)]
+        return jsonify(environments)
 
-    @app.route('/api/v1/environment/<name>/', methods=['DELETE'])
+    @app.route('/api/v1/environment/<name>/', methods=['GET'])
     def api_get_environment(name):
-        dbm = get_dbm(conda_store)
-        return jsonify({'name': name, 'last_modified': datetime.datetime.now()})
+        conda_store = get_conda_store(store_directory, storage_backend)
+        environment = schema.Environment.from_orm(api.get_environment(conda_store.db, name)).dict()
+        return jsonify(environment)
 
     @app.route('/api/v1/specification/', methods=['GET'])
     def api_list_specification():
-        dbm = get_dbm(conda_store)
+        conda_store = get_conda_store(store_directory, storage_backend)
         return jsonify(api.list_specifications(dbm))
 
     @app.route('/api/v1/specification/', methods=['POST'])
