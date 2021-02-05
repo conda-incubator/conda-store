@@ -117,10 +117,24 @@ class CondaStore:
         self.db.commit()
         return build
 
-    def set_build_failed(self, build, logs):
+    def set_build_failed(self, build, logs, reschedule=True):
         self.storage.set(build.log_key, logs, content_type='text/plain')
         build.status = orm.BuildStatus.FAILED
         build.ended_on = datetime.datetime.utcnow()
+        self.db.commit()
+
+        if reschedule:
+            num_failed_builds = self.db.query(orm.Build).filter(and_(
+                orm.Build.status == orm.BuildStatus.FAILED,
+                orm.Build.specification_id == build.specification_id
+            )).count()
+            logger.info(f'specification name={build.specification.name} build has failed={num_failed_builds} times')
+            scheduled_on = datetime.datetime.utcnow() + datetime.timedelta(seconds=10*(2**num_failed_builds))
+            self.db.add(orm.Build(
+                specification_id=build.specification_id,
+                scheduled_on=scheduled_on
+            ))
+            logger.info(f'rescheduling specification name={build.specification.name} on {scheduled_on}')
         self.db.commit()
 
     def set_build_completed(self, build, logs, packages):
@@ -132,8 +146,13 @@ class CondaStore:
                 orm.CondaPackage.version == package['version'],
                 orm.CondaPackage.build == package['build_string'],
                 orm.CondaPackage.build_number == package['build_number'],
-            ))
-        build.packages = [package_query(package).first() for package in packages]
+            )).first()
+
+        for package in packages:
+            _package = package_query(package)
+            if _package is not None:
+                build.packages.append(_package)
+
         self.storage.set(build.log_key, logs, content_type='text/plain')
         build.status = orm.BuildStatus.COMPLETED
         build.ended_on = datetime.datetime.utcnow()
