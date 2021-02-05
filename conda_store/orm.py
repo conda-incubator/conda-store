@@ -51,6 +51,14 @@ class Specification(Base):
     builds = relationship('Build', back_populates='specification')
 
 
+build_conda_package = Table(
+    'build_conda_package',
+    Base.metadata,
+    Column('build_id', ForeignKey('build.id', ondelete='CASCADE'), primary_key=True),
+    Column('conda_package_id', ForeignKey('conda_package.id', ondelete='CASCADE'), primary_key=True),
+)
+
+
 class Build(Base):
     """The state of a build of a given specification
 
@@ -60,6 +68,8 @@ class Build(Base):
     id = Column(Integer, primary_key=True)
     specification_id = Column(Integer, ForeignKey("specification.id"), nullable=False)
     specification = relationship(Specification, back_populates='builds')
+
+    packages = relationship('CondaPackage', secondary=build_conda_package)
 
     status = Column(Enum(BuildStatus), default=BuildStatus.QUEUED)
     size = Column(Integer, default=0)
@@ -107,15 +117,10 @@ class Environment(Base):
     name = Column(String, nullable=False)
 
     specification_id = Column(Integer, ForeignKey("specification.id"))
+    specification = relationship(Specification)
+
     build_id = Column(Integer, ForeignKey("build.id"))
-
-
-build_conda_package = Table(
-    'build_conda_package',
-    Base.metadata,
-    Column('build_id', ForeignKey('build.id', ondelete='CASCADE'), primary_key=True),
-    Column('conda_package_id', ForeignKey('conda_package.id', ondelete='CASCADE'), primary_key=True),
-)
+    build = relationship(Build)
 
 
 class CondaPackage(Base):
@@ -136,6 +141,8 @@ class CondaPackage(Base):
     subdir = Column(String, nullable=True)
     timestamp = Column(Integer, nullable=True)
     version = Column(String, nullable=False)
+
+    builds = relationship(Build, secondary=build_conda_package)
 
     @classmethod
     def add_channel_packages(cls, db, channel):

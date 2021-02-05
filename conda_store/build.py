@@ -100,13 +100,13 @@ def conda_build(conda_store):
             with utils.timer(logger, f'chown of {build_path}'):
                 utils.chown(build_path, uid, gid)
 
-        build.packages = conda.conda_list(build_path)
+        packages = conda.conda_list(build_path)
         build.size = utils.disk_usage(build_path)
 
         build_conda_pack(conda_store, build_path, build)
         build_docker_image(conda_store, build_path, build)
 
-        conda_store.set_build_completed(build, output.encode('utf-8'))
+        conda_store.set_build_completed(build, output.encode('utf-8'), packages)
     except Exception as e:
         logger.exception(e)
         conda_store.set_build_failed(build, traceback.format_exc().encode('utf-8'))
@@ -117,7 +117,7 @@ def conda_build(conda_store):
 
 
 def build_conda_install(conda_store, build_path, environment_filename):
-    args = ['conda', 'env', 'create', '-p', str(build_path), '-f', str(tmp_environment_filename)]
+    args = ['conda', 'env', 'create', '-p', str(build_path), '-f', str(environment_filename)]
     return subprocess.check_output(args, stderr=subprocess.STDOUT, encoding='utf-8')
 
 

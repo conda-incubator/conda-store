@@ -4,6 +4,7 @@ import logging
 import shutil
 
 import yaml
+from sqlalchemy import and_
 
 from conda_store import orm, utils, storage
 
@@ -83,6 +84,13 @@ class CondaStore:
             with open(str(specification)) as f:
                 specification = yaml.safe_load(f)
 
+        # Create Environment Placeholder if does not exist
+        query = self.db.query(orm.Environment).filter(
+            orm.Environment.name == specification["name"])
+        if query.count() == 0:
+            self.db.add(orm.Environment(name=specification["name"]))
+        self.db.commit()
+
         specification_sha256 = utils.datastructure_hash(specification)
         query = self.db.query(orm.Specification).filter(
             orm.Specification.sha256 == specification_sha256)
@@ -105,15 +113,34 @@ class CondaStore:
             orm.Build.scheduled_on < datetime.datetime.utcnow()
         ).first()
         build.status = orm.BuildStatus.BUILDING
+        build.started_on = datetime.datetime.utcnow()
         self.db.commit()
         return build
 
     def set_build_failed(self, build, logs):
         self.storage.set(build.log_key, logs, content_type='text/plain')
         build.status = orm.BuildStatus.FAILED
+        build.ended_on = datetime.datetime.utcnow()
         self.db.commit()
 
-    def set_build_completed(self, build, logs):
+    def set_build_completed(self, build, logs, packages):
+        def package_query(package):
+            return self.db.query(orm.CondaPackage).filter(and_(
+                orm.CondaPackage.channel == package['base_url'],
+                orm.CondaPackage.subdir == package['platform'],
+                orm.CondaPackage.name == package['name'],
+                orm.CondaPackage.version == package['version'],
+                orm.CondaPackage.build == package['build_string'],
+                orm.CondaPackage.build_number == package['build_number'],
+            ))
+        build.packages = [package_query(package).first() for package in packages]
         self.storage.set(build.log_key, logs, content_type='text/plain')
         build.status = orm.BuildStatus.COMPLETED
+        build.ended_on = datetime.datetime.utcnow()
+
+        environment = self.db.query(orm.Environment).filter(
+            orm.Environment.name == build.specification.name
+        ).first()
+        environment.build = build
+        environment.specification = build.specification
         self.db.commit()
