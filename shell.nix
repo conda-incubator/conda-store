@@ -11,6 +11,7 @@ pkgs.mkShell {
     pythonPackages.pyyaml
     pythonPackages.flask
     pythonPackages.requests
+    pythonPackages.minio
 
     pythonPackages.black
     pythonPackages.flake8

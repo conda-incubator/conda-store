@@ -3,7 +3,7 @@ import subprocess
 import logging
 
 import requests
-from conda_pack import pack
+
 
 logger = logging.getLogger(__name__)
 
@@ -14,6 +14,7 @@ def conda_list(prefix):
 
 
 def conda_pack(prefix, output):
+    from conda_pack import pack
     pack(prefix=str(prefix), output=str(output))
 
 

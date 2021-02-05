@@ -14,14 +14,6 @@ import json
 
 import yaml
 
-from conda_docker.conda import (
-    build_docker_environment_image,
-    find_user_conda,
-    conda_info,
-    precs_from_environment_prefix,
-    fetch_precs
-)
-
 from conda_store.utils import timer, chmod, chown, symlink, disk_usage, free_disk_space
 from conda_store.data_model.base import DatabaseManager
 from conda_store.data_model import build, package, api
@@ -152,6 +144,13 @@ def build_conda_archive(dbm, storage_manager, conda_prefix, build_id):
 
 
 def build_docker_image(storage_manager, conda_prefix, name, sha256):
+    from conda_docker.conda import (
+        build_docker_environment_image,
+        find_user_conda,
+        conda_info,
+        precs_from_environment_prefix,
+        fetch_precs
+    )
     logger.info(f'creating docker archive of conda environment={conda_prefix}')
 
     user_conda = find_user_conda()

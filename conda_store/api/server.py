@@ -44,7 +44,7 @@ def start_api_server(conda_store, address='0.0.0.0', port=5001):
     @app.route('/api/v1/specification/', methods=['POST'])
     def api_post_specification():
         dbm = get_dbm(conda_store)
-        return jsonify(api.post_specifications(dbm, request.json))
+        return jsonify(api.post_specification(dbm, request.json))
 
     @app.route('/api/v1/specification/<sha256>/', methods=['GET'])
     def api_get_specification(sha256):

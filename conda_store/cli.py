@@ -2,11 +2,14 @@ import argparse
 import logging
 import pathlib
 
+import yaml
+
 from conda_store.logging import init_logging
 from conda_store.build import start_conda_build
 from conda_store.ui import start_ui_server
 from conda_store.api import start_api_server
 from conda_store.registry import start_registry_server
+from conda_store import client
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +20,7 @@ def init_cli():
     init_build_cli(subparser)
     init_api_cli(subparser)
     init_ui_cli(subparser)
+    init_env_cli(subparser)
     init_registry_cli(subparser)
 
     args = parser.parse_args()
@@ -104,3 +108,23 @@ def handle_registry(args):
     store_directory.mkdir(parents=True, exist_ok=True)
 
     start_registry_server(store_directory, args.storage_backend, args.address, args.port)
+
+
+def init_env_cli(subparser):
+    parser = subparser.add_parser('env', help='manage conda environments')
+    parser.add_argument('action', choices=['create', 'list'], help='action to take on conda environments')
+    parser.add_argument('-f', '--filename', help='conda environment filename to use')
+    parser.set_defaults(func=handle_environment)
+
+
+def handle_environment(args):
+    if args.action == 'list':
+        data = client.get_environments()
+        print('{:10}{:32}{:32}'.format('BUILD', 'NAME', 'SHA256'))
+        print("="*74)
+        for row in data:
+            print(f'{row["build_id"]:<10}{row["name"]:32}{row["spec_sha256"][:32]:32}')
+    elif args.action == 'create':
+        with open(args.filename) as f:
+            data = yaml.safe_load(f)
+        client.post_specification(data)
