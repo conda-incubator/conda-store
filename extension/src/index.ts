@@ -3,6 +3,9 @@ import {
   JupyterFrontEndPlugin
 } from '@jupyterlab/application';
 
+
+import 'bootstrap/dist/css/bootstrap.min.css';
+
 import { MainAreaWidget } from '@jupyterlab/apputils';
 
 import { ILauncher } from '@jupyterlab/launcher';

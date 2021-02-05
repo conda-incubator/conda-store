@@ -51,6 +51,7 @@
     "@jupyterlab/application": "^3.0.0",
     "@jupyterlab/launcher": "^3.0.0",
     "@jupyterlab/ui-components": "^3.0.0",
+    "bootstrap": "^4.6.0",
     "js-yaml": "^4.0.0",
     "react-ace": "^9.3.0",
     "react-bootstrap": "^1.4.3"

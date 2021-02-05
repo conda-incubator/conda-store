@@ -23,10 +23,25 @@ const CardGroupComponent = (props: any) => {
   }, [
 	  envdata
   ]);
+  let test_card: IEnv = {
+	  name: "test",
+	  build_id: 4,
+	  size: 220,
+	  specification: "lol3ssdf32wef",
+	  store_path: "/the/path/to/the/store",
+  }
 
   return (
     <div>
     <p> in conda cards </p>
+      <CondaCard
+              envInfo={[test_card]}
+              handleBuildClick={props.handleBuildClick}
+              handleEditEnvClick={props.handleEditEnvClick}
+              handleInfoClick={props.handleInfoClick}
+              handleImageClick={props.handleImageClick}
+            />
+
       {showCondaCards
         ? envdata.map((envData: IEnv) => (
             <CondaCard
