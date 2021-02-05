@@ -28,16 +28,16 @@ services:
       S3_SECRET_KEY: password
       PATH: "/opt/conda/envs/conda-store/bin:/opt/conda/bin:/opt/conda/condabin:/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
-  # conda-store-api:
-  #   build: .
-  #   volumes:
-  #     - ./data/conda-store:/opt/mount
-  #   command: ['python', '-m', 'conda_store', 'api', '-s', '/data/store', '--port', '5001']
-  #   ports:
-  #     - "5001:5001"
-  #   environment:
-  #     TZ: America/New_York
-  #     PATH: "/opt/conda/envs/conda-store/bin:/opt/conda/bin:/opt/conda/condabin:/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+  conda-store-api:
+    build: .
+    volumes:
+      - ./data/conda-store:/data
+    command: ['python', '-m', 'conda_store', 'api', '-s', '/data/store', '--port', '5001']
+    ports:
+      - "5001:5001"
+    environment:
+      TZ: America/New_York
+      PATH: "/opt/conda/envs/conda-store/bin:/opt/conda/bin:/opt/conda/condabin:/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
   # conda-store-registry:
   #   build: .

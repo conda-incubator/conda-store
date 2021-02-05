@@ -100,10 +100,7 @@ def handle_api(args):
 
     initialize_logging(args.verbose)
 
-    store_directory = pathlib.Path(args.store).expanduser().resolve()
-    store_directory.mkdir(parents=True, exist_ok=True)
-
-    start_api_server(store_directory, args.address, args.port)
+    start_api_server(args.store, args.storage_backend, args.address, args.port)
 
 
 def initialize_registry_cli(subparser):

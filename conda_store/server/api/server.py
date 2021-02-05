@@ -18,12 +18,6 @@ def start_api_server(store_directory, storage_backend, address='0.0.0.0', port=5
                 storage_backend=storage_backend)
         return conda_store
 
-    @app.teardown_appcontext
-    def close_connection(exception):
-        dbm = getattr(g, '_dbm', None)
-        if dbm is not None:
-            dbm.close()
-
     # api methods
     @app.route('/api/v1/')
     def api_status():
@@ -31,8 +25,8 @@ def start_api_server(store_directory, storage_backend, address='0.0.0.0', port=5
 
     @app.route('/api/v1/environment/')
     def api_list_environments():
-        dbm = get_dbm(conda_store)
-        return jsonify(api.list_environments(dbm))
+        conda_store = get_conda_store(store_directory, storage_backend)
+        return jsonify([for environment in api.list_environments(conda_store.db)])
 
     @app.route('/api/v1/environment/<name>/', methods=['DELETE'])
     def api_get_environment(name):
