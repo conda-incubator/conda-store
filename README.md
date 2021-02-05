@@ -1,19 +1,24 @@
 # Conda Store
 
-Conda Store controls the environment lifecycle: management, builds, and
-serves. It is opinionated and highly motivated by a heavy nix
-user. 
+End users think in terms of environments not packages. The core
+philosophy of conda-store is to serve identical conda environments in
+as many ways as possible. Conda Store controls the environment
+lifecycle: management, builds, and serving of environments.
 
-It **manages** conda environments by watching specific files or
-directories for changes in environment specifications and provides a
-REST api for managing environments
+It **manages** conda environments by:
+ - watching specific files or directories for changes in environment filename specifications 
+ - provides a REST api for managing environments (which a jupyterlab plugin is being actively developed for)
+ - provides a command line utility for interacting with conda-store `conda-store env [create, list]`
+ - provides a web ui to take advantage of many of conda-stores advanced capabilities
 
-It **builds** conda specifications in a scalable manner
+It **builds** conda specifications in a scalable manner using `N`
+workers communicating with a database to keep track of queued up
+environment builds.
 
-It **serves** conda environments via a filesystem, tarballs, and as
-docker containers.
-
-We want end users to think in terms of environments and not packages.
+It **serves** conda environments via a filesystem, lockfiles,
+tarballs, and soon a docker registry. Tarballs and docker images can
+carry a lot of bandwidth which is why conda-store integrates
+optionally with `s3` to actually serve the blobs.
 
 ## Terminology
 
