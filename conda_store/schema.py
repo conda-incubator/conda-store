@@ -1,5 +1,5 @@
 import datetime
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from pydantic import BaseModel
 
@@ -51,3 +51,14 @@ class Environment(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class CondaSpecificationPip(BaseModel):
+    pip: List[str]
+
+
+class CondaSpecification(BaseModel):
+    name: str
+    channels: Optional[List[str]]
+    dependencies: List[Union[str, CondaSpecificationPip]]
+    prefix: Optional[str]
