@@ -1,10 +1,10 @@
 import os
-import traceback
 
+import pydantic
 from flask import Flask, g, request, render_template, redirect, Response, send_file
 import yaml
 
-from conda_store import api
+from conda_store import api, schema
 from conda_store.app import CondaStore
 
 
@@ -26,12 +26,16 @@ def start_ui_server(store_directory, storage_backend, address='0.0.0.0', port=50
             return render_template('create.html')
         elif request.method == 'POST':
             try:
-                spec = yaml.safe_load(request.form.get('specification'))
+                specification_text = request.form.get('specification')
                 conda_store = get_conda_store(store_directory, storage_backend)
-                api.post_specification(conda_store, spec)
+                specification = schema.CondaSpecification.parse_obj(
+                    yaml.safe_load(specification_text))
+                api.post_specification(conda_store, specification.dict())
                 return redirect('/')
-            except (yaml.YAMLError, ValueError):
-                return render_template('create.html', spec=yaml.dump(spec), message=traceback.format_exc())
+            except yaml.YAMLError:
+                return render_template('create.html', specification=specification_text, message='Unable to parse. Invalid YAML')
+            except pydantic.ValidationError as e:
+                return render_template('create.html', specification=specification_text, message=str(e))
 
     @app.route('/', methods=['GET'])
     def ui_get_environments():
