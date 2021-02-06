@@ -23,10 +23,10 @@ Base = declarative_base()
 
 
 class BuildStatus(enum.Enum):
-    QUEUED = enum.auto()
-    BUILDING = enum.auto()
-    COMPLETED = enum.auto()
-    FAILED = enum.auto()
+    QUEUED = 'QUEUED'
+    BUILDING = 'BUILDING'
+    COMPLETED = 'COMPLETED'
+    FAILED = 'FAILED'
 
 
 class Specification(Base):

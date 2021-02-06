@@ -1,4 +1,5 @@
 import datetime
+import enum
 from typing import List, Optional, Union
 
 from pydantic import BaseModel
@@ -20,14 +21,15 @@ class Build(BaseModel):
     id: int
     specification_id: int
     packages: List[CondaPackage]
-    status: str
+    status: enum.Enum
     size: int
     scheduled_on: datetime.datetime
-    started_on: datetime.datetime
-    ended_on: datetime.datetime
+    started_on: Optional[datetime.datetime]
+    ended_on: Optional[datetime.datetime]
 
     class Config:
         orm_mode = True
+        use_enum_values = True
 
 
 class Specification(BaseModel):

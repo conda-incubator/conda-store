@@ -55,7 +55,7 @@ def start_ui_server(store_directory, storage_backend, address='0.0.0.0', port=50
     def ui_edit_environment(name):
         conda_store = get_conda_store(store_directory, storage_backend)
         environment = api.get_environment(conda_store.db, name)
-        specification = api.get_specification(conda_store.db, environment.sha256)
+        specification = api.get_specification(conda_store.db, environment.specification.sha256)
         return render_template('create.html', spec=yaml.dump(specification.spec))
 
     @app.route('/specification/<sha256>/', methods=['GET'])

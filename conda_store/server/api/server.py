@@ -1,6 +1,7 @@
 import datetime
 
-from flask import jsonify, Flask, g, request, Response
+from flask import jsonify, Flask, g, request, Response, redirect
+import pydantic
 
 from conda_store import api, schema
 from conda_store.app import CondaStore
@@ -38,35 +39,49 @@ def start_api_server(store_directory, storage_backend, address='0.0.0.0', port=5
     @app.route('/api/v1/specification/', methods=['GET'])
     def api_list_specification():
         conda_store = get_conda_store(store_directory, storage_backend)
-        return jsonify(api.list_specifications(dbm))
+        specifications = [schema.Specification.from_orm(_).dict(exclude={'builds'}) for _ in api.list_specifications(conda_store.db)]
+        return jsonify(specifications)
 
     @app.route('/api/v1/specification/', methods=['POST'])
     def api_post_specification():
-        dbm = get_dbm(conda_store)
-        return jsonify(api.post_specification(dbm, request.json))
+        conda_store = get_conda_store(store_directory, storage_backend)
+        try:
+            specification = schema.CondaSpecification.parse_obj(request.json)
+            api.post_specification(conda_store, specification)
+            return jsonify({'status': 'ok'})
+        except pydantic.ValidationError as e:
+            return jsonify({'status': 'error', 'error': e.errors()}), 400
 
     @app.route('/api/v1/specification/<sha256>/', methods=['GET'])
     def api_get_specification(sha256):
-        dbm = get_dbm(conda_store)
-        return jsonify(api.get_specification(dbm, sha256))
+        conda_store = get_conda_store(store_directory, storage_backend)
+        specification = schema.Specification.from_orm(api.get_specification(conda_store.db, sha256))
+        return jsonify(specification.dict(exclude={'builds'}))
 
-    @app.route('/api/v1/build/<build>/', methods=['GET'])
-    def api_get_build(build):
-        dbm = get_dbm(conda_store)
-        return jsonify(api.get_build(dbm, build))
+    @app.route('/api/v1/build/', methods=['GET'])
+    def api_list_builds():
+        conda_store = get_conda_store(store_directory, storage_backend)
+        builds = [schema.Build.from_orm(build).dict() for build in api.list_builds(conda_store.db)]
+        return jsonify(builds)
 
-    @app.route('/api/v1/build/<build>/logs/', methods=['GET'])
-    def api_get_build_logs(build):
-        dbm = get_dbm(conda_store)
-        return Response(
-            api.get_build_logs(dbm, build),
-            mimetype='text/plain')
+    @app.route('/api/v1/build/<build_id>/', methods=['GET'])
+    def api_get_build(build_id):
+        conda_store = get_conda_store(store_directory, storage_backend)
+        build = schema.Build.from_orm(api.get_build(conda_store.db, build_id))
+        return jsonify(build.dict())
+
+    @app.route('/api/v1/build/<build_id>/logs/', methods=['GET'])
+    def api_get_build_logs(build_id):
+        conda_store = get_conda_store(store_directory, storage_backend)
+        log_key = api.get_build(conda_store.db, build_id).log_key
+        return redirect(conda_store.storage.get_url(log_key))
 
     @app.route('/api/v1/package/<provider>/', methods=['GET'])
     def api_list_packages(provider):
-        dbm = get_dbm(conda_store)
+        conda_store = get_conda_store(store_directory, storage_backend)
         if provider == 'conda':
-            return jsonify(api.list_conda_packages(dbm))
+            packages = [schema.CondaPackage.from_orm(package).dict() for package in api.list_conda_packages(conda_store.db)]
+            return jsonify(packages)
         else:
             raise ValueError(f'provider={provider} not supported')
 

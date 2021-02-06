@@ -26,6 +26,10 @@ def get_environment_builds(db, name):
     ).all()
 
 
+def list_specifications(db, search=None):
+    return db.query(orm.Specification).all()
+
+
 def get_specification(db, sha256):
     return db.query(orm.Specification).filter(
         orm.Specification.sha256 == sha256
@@ -36,8 +40,8 @@ def post_specification(conda_store, specification):
     conda_store.register_environment(specification, namespace='library')
 
 
-def list_builds(db):
-    return db.query(orm.Build).all()
+def list_builds(db, limit=25):
+    return db.query(orm.Build).limit(limit).all()
 
 
 def get_build(db, build_id):
@@ -68,27 +72,8 @@ def get_build_lockfile(db, build_id):
 '''.format('\n'.join(packages))
 
 
-def get_build_docker_archive(db, storage, build_id):
-    pass
-
-
-def list_conda_packages(db, limit=10):
-    query = db.query(
-        orm.CondaPackage.channel,
-        orm.CondaPackage.build,
-        orm.CondaPackage.build_number,
-        orm.CondaPackage.constrains,
-        orm.CondaPackage.depends,
-        orm.CondaPackage.license,
-        orm.CondaPackage.license_family,
-        orm.CondaPackage.md5,
-        orm.CondaPackage.name,
-        orm.CondaPackage.sha256,
-        orm.CondaPackage.size,
-        orm.CondaPackage.subdir,
-        orm.CondaPackage.timestamp,
-        orm.CondaPackage.version).limit(limit)
-    return [row._asdict() for row in query.all()]
+def list_conda_packages(db, limit=25):
+    return db.query(orm.CondaPackage).limit(limit).all()
 
 
 def get_metrics(db):
