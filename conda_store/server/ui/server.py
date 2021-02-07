@@ -88,11 +88,4 @@ def start_ui_server(store_directory, storage_backend, address='0.0.0.0', port=50
         conda_pack_key = api.get_build(conda_store.db, build_id).conda_pack_key
         return redirect(conda_store.storage.get_url(conda_pack_key))
 
-    @app.route('/build/<build>/docker/', methods=['GET'])
-    def api_get_build_docker_archive(build):
-        dbm = get_dbm(conda_store)
-        data = api.get_build_docker_archive(dbm, build)
-        archive_download_filename = f'{data["spec_sha256"]}-{data["name"]}.docker.tar'
-        return send_file(data['docker_path'], mimetype='application/x-tar', as_attachment=True, attachment_filename=archive_download_filename)
-
     app.run(debug=True, host=address, port=port)
