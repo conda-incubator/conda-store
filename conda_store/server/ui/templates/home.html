@@ -14,7 +14,6 @@
 {% if environment.build_id is not none %}
         <a class="card-link" href="/build/{{ environment.build_id }}/lockfile/"><ion-icon name="lock-closed-outline"></ion-icon> Lockfile</a>
         <a class="card-link" href="/build/{{ environment.build_id }}/archive/"><ion-icon name="archive-outline"></ion-icon> Archive</a>
-        <a class="card-link" href="/build/{{ environment.build_id }}/docker/"><ion-icon name="logo-docker"></ion-icon> Docker Image</a>
 {% endif %}
     </div>
 </div>
