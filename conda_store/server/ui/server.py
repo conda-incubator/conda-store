@@ -38,7 +38,7 @@ def start_ui_server(store_directory, storage_backend, address='0.0.0.0', port=50
                 return render_template('create.html', specification=specification_text, message=str(e))
 
     @app.route('/', methods=['GET'])
-    def ui_get_environments():
+    def ui_list_environments():
         conda_store = get_conda_store(store_directory, storage_backend)
         return render_template('home.html',
                                environments=api.list_environments(conda_store.db),
@@ -49,7 +49,7 @@ def start_ui_server(store_directory, storage_backend, address='0.0.0.0', port=50
         conda_store = get_conda_store(store_directory, storage_backend)
         return render_template('environment.html',
                                environment=api.get_environment(conda_store.db, name),
-                               envionment_builds=api.get_environment(conda_store.db, name))
+                               environment_builds=api.get_environment_builds(conda_store.db, name))
 
     @app.route('/environment/<name>/edit/', methods=['GET'])
     def ui_edit_environment(name):

@@ -21,8 +21,10 @@ def get_environment(db, name):
 
 
 def get_environment_builds(db, name):
-    return db.query(orm.Build).filter(
-        orm.Build.specification.name == name
+    return db.query(orm.Build).join(
+        orm.Specification, orm.Build.specification_id == orm.Specification.id
+    ).filter(
+        orm.Specification.name == name
     ).all()
 
 
