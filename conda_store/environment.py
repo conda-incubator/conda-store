@@ -1,26 +1,20 @@
 import pathlib
 import logging
-import hashlib
-import json
 
 import yaml
+import pydantic
 
-from conda_store import utils
+from conda_store import schema
 
 logger = logging.getLogger(__name__)
 
 
-def validate_environment(specification, filename=None):
-    if not isinstance(specification, dict):
-        logger.error(f'conda environment filename={filename} must be a dictionary')
+def validate_environment(specification):
+    try:
+        specification = schema.CondaSpecification.parse_obj(specification)
+        return True
+    except pydantic.ValidationError:
         return False
-    elif 'name' not in specification:
-        logger.error(f'conda environment filename={filename} requires name')
-        return False
-    elif 'dependencies' not in specification:
-        logger.error(f'conda environment name={specification["name"]} filename={filename} does not specify dependencies')
-        return False
-    return True
 
 
 def is_environment_file(filename):
