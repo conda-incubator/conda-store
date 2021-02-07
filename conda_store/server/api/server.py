@@ -61,7 +61,7 @@ def start_api_server(store_directory, storage_backend, address='0.0.0.0', port=5
     @app.route('/api/v1/build/', methods=['GET'])
     def api_list_builds():
         conda_store = get_conda_store(store_directory, storage_backend)
-        builds = [schema.Build.from_orm(build).dict() for build in api.list_builds(conda_store.db)]
+        builds = [schema.Build.from_orm(build).dict(exclude={'packages'}) for build in api.list_builds(conda_store.db)]
         return jsonify(builds)
 
     @app.route('/api/v1/build/<build_id>/', methods=['GET'])
