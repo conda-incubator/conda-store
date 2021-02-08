@@ -1,3 +1,4 @@
+import os
 import pathlib
 import datetime
 import logging
@@ -17,7 +18,9 @@ class CondaStore:
             logger.info(f'creating directory store_directory={store_directory}')
             self.store_directory.mkdir(parents=True)
 
-        self.database_url = database_url or f'sqlite:///{self.store_directory / "conda_store.sqlite"}'
+        self.database_url = database_url or os.environ.get(
+            'CONDA_STORE_DB_URL',
+            f'sqlite:///{self.store_directory / "conda_store.sqlite"}')
 
         Session = orm.new_session_factory(url=self.database_url)
         self.db = Session()

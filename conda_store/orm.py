@@ -1,10 +1,11 @@
+import os
 import enum
 import datetime
 import logging
 import pathlib
 
 from sqlalchemy import (
-    Table, Column, Integer, String,  JSON, Enum, DateTime,
+    Table, Column, BigInteger, Integer, String, JSON, Enum, DateTime,
     UniqueConstraint, ForeignKey,
 )
 from sqlalchemy.orm import sessionmaker, relationship
@@ -137,9 +138,9 @@ class CondaPackage(Base):
     md5 = Column(String, nullable=False)
     name = Column(String, nullable=False)
     sha256 = Column(String, unique=True)
-    size = Column(Integer, nullable=False)
+    size = Column(BigInteger, nullable=False)
     subdir = Column(String, nullable=True)
-    timestamp = Column(Integer, nullable=True)
+    timestamp = Column(BigInteger, nullable=True)
     version = Column(String, nullable=False)
 
     builds = relationship(Build, secondary=build_conda_package)
@@ -189,9 +190,9 @@ class CondaStoreConfiguration(Base):
 
     last_package_update = Column(DateTime)
 
-    disk_usage = Column(Integer, default=0)
-    free_storage = Column(Integer, default=0)
-    total_storage = Column(Integer, default=0)
+    disk_usage = Column(BigInteger, default=0)
+    free_storage = Column(BigInteger, default=0)
+    total_storage = Column(BigInteger, default=0)
 
     @classmethod
     def configuration(cls, db):
@@ -202,7 +203,7 @@ class CondaStoreConfiguration(Base):
         return query.first()
 
 
-def new_session_factory(url="sqlite:///:memory:", reset=False, **kwargs):
+def new_session_factory(url='sqlite:///:memory:', reset=False, **kwargs):
     engine = create_engine(url, **kwargs)
 
     if reset:
