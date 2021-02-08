@@ -10,9 +10,15 @@ pkgs.mkShell {
 
     pythonPackages.pyyaml
     pythonPackages.flask
+    pythonPackages.flask-cors
     pythonPackages.requests
     pythonPackages.minio
+    pythonPackages.sqlalchemy
+    pythonPackages.minio
+    pythonPackages.pydantic
 
+    pythonPackages.pytest
+    pythonPackages.pytest-mock
     pythonPackages.black
     pythonPackages.flake8
   ];

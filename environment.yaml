@@ -2,9 +2,15 @@ name: conda-store
 channels:
   - conda-forge
 dependencies:
+  # conda environment builds
   - conda-docker
   - conda-pack
+  # web server
+  - sqlalchemy
   - requests
   - flask
+  - flask-cors
   - pyyaml
+  - pydantic
+  # artifact storage
   - minio
