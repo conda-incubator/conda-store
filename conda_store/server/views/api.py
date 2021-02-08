@@ -15,7 +15,8 @@ def api_status():
 @app_api.route('/api/v1/environment/')
 def api_list_environments():
     conda_store = get_conda_store()
-    environments = [schema.Environment.from_orm(_).dict() for _ in api.list_environments(conda_store.db)]
+    orm_environments = api.list_environments(conda_store.db)
+    environments = [schema.Environment.from_orm(_).dict() for _ in orm_environments]
     return jsonify(environments)
 
 
@@ -29,7 +30,8 @@ def api_get_environment(name):
 @app_api.route('/api/v1/specification/', methods=['GET'])
 def api_list_specification():
     conda_store = get_conda_store()
-    specifications = [schema.Specification.from_orm(_).dict(exclude={'builds'}) for _ in api.list_specifications(conda_store.db)]
+    orm_specifications = api.list_specifications(conda_store.db)
+    specifications = [schema.Specification.from_orm(_).dict(exclude={'builds'}) for _ in orm_specifications]
     return jsonify(specifications)
 
 
@@ -50,11 +52,14 @@ def api_get_specification(sha256):
     specification = schema.Specification.from_orm(api.get_specification(conda_store.db, sha256))
     return jsonify(specification.dict(exclude={'builds'}))
 
+
 @app_api.route('/api/v1/build/', methods=['GET'])
 def api_list_builds():
     conda_store = get_conda_store()
-    builds = [schema.Build.from_orm(build).dict(exclude={'packages'}) for build in api.list_builds(conda_store.db)]
+    orm_builds = api.list_builds(conda_store.db)
+    builds = [schema.Build.from_orm(build).dict(exclude={'packages'}) for build in orm_builds]
     return jsonify(builds)
+
 
 @app_api.route('/api/v1/build/<build_id>/', methods=['GET'])
 def api_get_build(build_id):
@@ -62,17 +67,20 @@ def api_get_build(build_id):
     build = schema.Build.from_orm(api.get_build(conda_store.db, build_id))
     return jsonify(build.dict())
 
+
 @app_api.route('/api/v1/build/<build_id>/logs/', methods=['GET'])
 def api_get_build_logs(build_id):
     conda_store = get_conda_store()
     log_key = api.get_build(conda_store.db, build_id).log_key
     return redirect(conda_store.storage.get_url(log_key))
 
+
 @app_api.route('/api/v1/package/<provider>/', methods=['GET'])
 def api_list_packages(provider):
     conda_store = get_conda_store()
     if provider == 'conda':
-        packages = [schema.CondaPackage.from_orm(package).dict() for package in api.list_conda_packages(conda_store.db)]
+        orm_packages = api.list_conda_packages(conda_store.db)
+        packages = [schema.CondaPackage.from_orm(package).dict() for package in orm_packages]
         return jsonify(packages)
     else:
-        raise ValueError(f'provider={provider} not supported')
+        return jsonify({'status': 'error', 'error': f'package provider "{provider}" not supported'}), 400

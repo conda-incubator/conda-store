@@ -1,5 +1,5 @@
 from flask import Flask, g
-
+from flask_cors import CORS
 
 from conda_store.server import views
 from conda_store.app import CondaStore
@@ -15,6 +15,7 @@ def start_app(
         port=5000
 ):
     app = Flask(__name__)
+    CORS(app, resources={r"/api/v1/*": {'origins': '*'}})
 
     if not disable_api:
         app.register_blueprint(views.app_api)
