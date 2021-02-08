@@ -8,7 +8,7 @@ from pydantic import BaseModel
 class CondaPackage(BaseModel):
     id: int
     channel: str
-    license: str
+    license: Optional[str]
     sha256: str
     name: str
     version: str
@@ -50,6 +50,7 @@ class Environment(BaseModel):
     name: str
     build_id: Optional[int]
     specification_id: Optional[int]
+    specification: Optional[Specification]
 
     class Config:
         orm_mode = True

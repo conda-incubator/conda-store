@@ -16,7 +16,7 @@ def api_status():
 def api_list_environments():
     conda_store = get_conda_store()
     orm_environments = api.list_environments(conda_store.db)
-    environments = [schema.Environment.from_orm(_).dict() for _ in orm_environments]
+    environments = [schema.Environment.from_orm(_).dict(exclude={'specification': {'builds'}}) for _ in orm_environments]
     return jsonify(environments)
 
 

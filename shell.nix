@@ -10,6 +10,7 @@ pkgs.mkShell {
 
     pythonPackages.pyyaml
     pythonPackages.flask
+    pythonPackages.flask-cors
     pythonPackages.requests
     pythonPackages.minio
     pythonPackages.sqlalchemy

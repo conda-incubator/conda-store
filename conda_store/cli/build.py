@@ -18,7 +18,6 @@ def initialize_build_cli(subparser):
     parser.add_argument('--storage-threshold', type=int, default=(5 * (2**30)), help='emit warning when free disk space drops below threshold bytes')
     parser.add_argument('--storage-backend', type=str, default='s3', choices=['filesystem', 's3'], help='backend for storing build artifacts. Production should use s3')
     parser.add_argument('--poll-interval', type=int, default=10, help='poll interval to check environment directory for new environments')
-    parser.add_argument('--verbose', action='store_true', help='enable debug logging')
     parser.set_defaults(func=handle_build)
 
 

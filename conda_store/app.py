@@ -4,9 +4,8 @@ import logging
 import shutil
 
 import yaml
-from sqlalchemy import and_
 
-from conda_store import orm, utils, storage
+from conda_store import orm, utils, storage, schema
 
 logger = logging.getLogger(__name__)
 
@@ -65,24 +64,24 @@ class CondaStore:
     def register_environment(self, specification, namespace='library'):
         if isinstance(specification, (str, pathlib.Path)):
             with open(str(specification)) as f:
-                specification = yaml.safe_load(f)
+                specification = schema.CondaSpecification.parse_obj(yaml.safe_load(f))
 
         # Create Environment Placeholder if does not exist
         query = self.db.query(orm.Environment).filter(
-            orm.Environment.name == specification["name"])
+            orm.Environment.name == specification.name)
         if query.count() == 0:
-            self.db.add(orm.Environment(name=specification["name"], namespace=namespace))
+            self.db.add(orm.Environment(name=specification.name, namespace=namespace))
         self.db.commit()
 
-        specification_sha256 = utils.datastructure_hash(specification)
+        specification_sha256 = utils.datastructure_hash(specification.dict())
         query = self.db.query(orm.Specification).filter(
             orm.Specification.sha256 == specification_sha256)
         if query.count() != 0:
-            logger.debug(f'already registered specification name={specification["name"]} sha256={specification_sha256}')
+            logger.debug(f'already registered specification name={specification.name} sha256={specification_sha256}')
             return
 
-        logger.info(f'registering specification name={specification["name"]} sha256={specification_sha256}')
-        specification = orm.Specification(specification)
+        logger.info(f'registering specification name={specification.name} sha256={specification_sha256}')
+        specification = orm.Specification(specification.dict())
         self.db.add(specification)
         self.db.commit()
         logger.info(f'scheduling specification for build name={specification.name} sha256={specification.sha256}')
