@@ -31,7 +31,7 @@
 <h3 class="mt-2">Builds</h3>
 <ul class="list-group">
     {% for build in specification.builds %}
-    <li class="list-group-item"><a href="/build/{{ build.id }}/">Build {{ build.id }}</a> {{ build.status}}</li>
+    <li class="list-group-item"><a href="/build/{{ build.id }}/">Build {{ build.id }}</a> {{ build.status.value }}</li>
     {% endfor %}
 </ul>
 

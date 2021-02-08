@@ -1,1 +1,0 @@
-from conda_store.registry.server import start_registry_server

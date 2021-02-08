@@ -21,7 +21,7 @@
             <dd class="col-sm-9">{{ build.ended_on }}</dd>
 
             <dt class="col-sm-3">status</dt>
-            <dd class="col-sm-9">{{ build.status.name }}</dd>
+            <dd class="col-sm-9">{{ build.status.value }}</dd>
 
             <dt class="col-sm-3">specification</dt>
             <dd class="col-sm-9"><a href="/specification/{{ build.specification.sha256 }}/">{{ build.specification.sha256[:8] }}</a></dd>
@@ -29,7 +29,7 @@
     </p>
 </div>
 
-{% if build.status.name in ['COMPLETED'] %}
+{% if build.status.value in ['COMPLETED'] %}
 <div class="card my-2">
     <div class="card-body">
         <h3 class="card-title">Conda Packages
@@ -59,7 +59,7 @@
 </div>
 {% endif %}
 
-{% if build.status.name in ['COMPLETED'] %}
+{% if build.status.value in ['COMPLETED'] %}
 <div class="card my-2">
     <div class="card-body">
         <h3 class="card-title">Conda Environment Artifacts</h3>
@@ -71,7 +71,7 @@
 </div>
 {% endif %}
 
-{% if build.status.name in ['COMPLETED', 'FAILED'] %}
+{% if build.status.value in ['COMPLETED', 'FAILED'] %}
 <div class="card my-2">
     <div class="card-body">
         <a href="/build/{{ build.id }}/logs/" class="btn btn-primary btn-block">Full Logs</a>
