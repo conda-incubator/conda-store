@@ -67,7 +67,9 @@ class CondaStore:
     def register_environment(self, specification, namespace='library'):
         if isinstance(specification, (str, pathlib.Path)):
             with open(str(specification)) as f:
-                specification = schema.CondaSpecification.parse_obj(yaml.safe_load(f))
+                specification = yaml.safe_load(f)
+
+        specification = schema.CondaSpecification.parse_obj(specification)
 
         # Create Environment Placeholder if does not exist
         query = self.db.query(orm.Environment).filter(
