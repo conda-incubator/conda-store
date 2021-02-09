@@ -31,10 +31,12 @@ def list_tags(rest):
         image = '/'.join(parts[:-2])
         tag = parts[-1]
         manifests_key = f'docker/manifest/{image}/{tag}'
-        return redirect(conda_store.storage_manager.get_url(manifests_key))
+        return redirect(conda_store.storage.get_url(manifests_key))
     elif len(parts) > 2 and parts[-2] == 'blobs':
         image = '/'.join(parts[:-2])
-        blob = parts[-1]
+        # example
+        # /v2/data-science/blobs/sha256:3d551ef9533252d3e70a3ee55587c03581516d550af921342517e001cafbcced
+        blob = parts[-1].split(':')[1]
         blob_key = f'docker/blobs/{blob}'
         return redirect(conda_store.storage.get_url(blob_key))
     else:

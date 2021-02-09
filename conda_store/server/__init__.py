@@ -35,4 +35,4 @@ def start_app(
                 database_url=None,
                 storage_backend=storage_backend)
 
-    app.run(debug=True, host=address, port=port)
+    app.run(debug=True, host=address, port=port, ssl_context='adhoc')
