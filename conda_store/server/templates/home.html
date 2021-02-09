@@ -14,6 +14,7 @@
 {% if environment.build_id is not none %}
         <a class="card-link" href="/build/{{ environment.build_id }}/lockfile/"><ion-icon name="lock-closed-outline"></ion-icon> Lockfile</a>
         <a class="card-link" href="/build/{{ environment.build_id }}/archive/"><ion-icon name="archive-outline"></ion-icon> Archive</a>
+        <a class="card-link" onclick="setClipboard('localhost:5000/{{ environment.name }}:{{ environment.specification.sha256 }}')"><ion-icon name="logo-docker"></ion-icon> Docker</a>
 {% endif %}
     </div>
 </div>
@@ -35,4 +36,16 @@
         <h4>Number Cached Builds: {{ metrics.total_completed_builds }}</h4>
     </div>
 </div>
+
+<script>
+function setClipboard(value) {
+     var tempInput = document.createElement("input");
+     tempInput.style = "position: absolute; left: -1000px; top: -1000px";
+     tempInput.value = value;
+     document.body.appendChild(tempInput);
+     tempInput.select();
+     document.execCommand("copy");
+     document.body.removeChild(tempInput);
+}
+</script>
 {% endblock %}
