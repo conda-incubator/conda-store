@@ -10,13 +10,12 @@ import sys
 import time
 import hashlib
 import gzip
-import json
 import datetime
 
 import yaml
 from sqlalchemy import and_
 
-from conda_store import api, utils, conda, orm
+from conda_store import api, utils, conda, orm, schema
 from conda_store.environment import discover_environments
 
 
@@ -223,29 +222,49 @@ def build_docker_image(conda_store, conda_prefix, build):
         layering_strategy="layered",
     )
 
-    manifest = {
-        'schemaVersion': 2,
-        'mediaType': 'application/vnd.docker.distribution.manifest.v2+json',
-        "config": {
-            "mediaType": "application/vnd.docker.container.image.v1+json",
-            "size": None,
-            "digest": None,
-        },
-        "layers": [],
-    }
+    # https://docs.docker.com/registry/spec/manifest-v2-2/#example-image-manifest
+    docker_manifest = schema.DockerManifest.construct()
+    docker_config = schema.DockerConfig.construct(
+        config=schema.DockerConfigConfig(),
+        container_config=schema.DockerConfigConfig(),
+        rootfs=schema.DockerConfigRootFS())
 
     for layer in image.layers:
-        content_hash = hashlib.sha256(layer.content).hexdigest()
+        # https://github.com/google/nixery/pull/64#issuecomment-541019077
+        # docker manifest expects compressed hash while configuration file
+        # expects uncompressed hash -- good luck finding this detail in docs :)
+        content_uncompressed_hash = hashlib.sha256(layer.content).hexdigest()
         content_compressed = gzip.compress(layer.content)
-        conda_store.storage.set(build.docker_blob_key(content_hash), content_compressed, content_type='application/gzip')
-        manifest['layers'].append({
-            'mediaType': 'application/vnd.docker.image.rootfs.diff.tar.gzip',
-            'size': len(content_compressed),
-            'digest': f'sha256:{content_hash}'
-        })
+        content_compressed_hash = hashlib.sha256(content_compressed).hexdigest()
+        conda_store.storage.set(
+            build.docker_blob_key(content_compressed_hash),
+            content_compressed,
+            content_type='application/gzip')
+
+        docker_layer = schema.DockerManifestLayer(
+            size=len(content_compressed),
+            digest=f'sha256:{content_compressed_hash}'
+        )
+        docker_manifest.layers.append(docker_layer)
+
+        docker_config_history = schema.DockerConfigHistory()
+        docker_config.history.append(docker_config_history)
+
+        docker_config.rootfs.diff_ids.append(f'sha256:{content_uncompressed_hash}')
+
+    docker_config_content = docker_config.json().encode('utf-8')
+    docker_config_hash = hashlib.sha256(docker_config_content).hexdigest()
+    docker_manifest.config = schema.DockerManifestConfig(
+        size=len(docker_config_content),
+        digest=f'sha256:{docker_config_hash}'
+    )
+    conda_store.storage.set(
+        build.docker_blob_key(docker_config_hash),
+        docker_config_content,
+        content_type='application/vnd.docker.container.image.v1+json')
 
     conda_store.storage.set(
         build.docker_manifest_key,
-        json.dumps(manifest).encode('utf-8'),
-        content_type='application/vnd.docker.distribution.manifest.v1+json')
+        docker_manifest.json().encode('utf-8'),
+        content_type='application/vnd.docker.distribution.manifest.v2+json')
     logger.info(f'built docker image: {image.name}:{image.tag} layers={len(image.layers)}')
