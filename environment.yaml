@@ -14,3 +14,5 @@ dependencies:
   - pydantic
   # artifact storage
   - minio
+  # CLI
+  - typer
