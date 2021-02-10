@@ -13,31 +13,33 @@ def symlink(source, target):
 
 
 def chmod(directory, permissions):
-    if re.fullmatch('[0-7]{3}', permissions) is None:
-        raise ValueError(f'chmod permissions={permissions} not 3 integer values between 0-7')
+    if re.fullmatch("[0-7]{3}", permissions) is None:
+        raise ValueError(
+            f"chmod permissions={permissions} not 3 integer values between 0-7"
+        )
 
-    subprocess.check_output(['chmod', '-R', str(permissions), str(directory)])
+    subprocess.check_output(["chmod", "-R", str(permissions), str(directory)])
 
 
 def chown(directory, uid, gid):
-    if re.fullmatch('\d+', str(uid)) is None:
-        raise ValueError(f'chown uid={uid} not integer value')
+    if re.fullmatch(r"\d+", str(uid)) is None:
+        raise ValueError(f"chown uid={uid} not integer value")
 
-    if re.fullmatch('\d+', str(gid)) is None:
-        raise ValueError(f'chown gid={gid} not integer value')
+    if re.fullmatch(r"\d+", str(gid)) is None:
+        raise ValueError(f"chown gid={gid} not integer value")
 
-    subprocess.check_output(['chown', '-R', f'{uid}:{gid}', str(directory)])
+    subprocess.check_output(["chown", "-R", f"{uid}:{gid}", str(directory)])
 
 
 def disk_usage(path):
-    return subprocess.check_output(['du', '-sb', path], encoding='utf-8').split()[0]
+    return subprocess.check_output(["du", "-sb", path], encoding="utf-8").split()[0]
 
 
 @contextlib.contextmanager
 def timer(logger, prefix):
     start_time = time.time()
     yield
-    logger.info(f'{prefix} took {time.time() - start_time:.3f} [s]')
+    logger.info(f"{prefix} took {time.time() - start_time:.3f} [s]")
 
 
 def recursive_sort(v):
@@ -45,10 +47,11 @@ def recursive_sort(v):
     strings, ints, and floats
 
     """
+
     def sort_key(v):
         if isinstance(v, (list, dict, tuple)):
             return str(type(v))
-        return f'{type(v)}-{v}'
+        return f"{type(v)}-{v}"
 
     if isinstance(v, dict):
         sorted_keys = sorted(v.keys(), key=sort_key)
@@ -61,4 +64,4 @@ def recursive_sort(v):
 
 def datastructure_hash(v):
     json_blob = json.dumps(recursive_sort(v))
-    return hashlib.sha256(json_blob.encode('utf-8')).hexdigest()
+    return hashlib.sha256(json_blob.encode("utf-8")).hexdigest()

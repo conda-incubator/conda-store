@@ -3,6 +3,7 @@ import yaml
 
 from conda_store import schema
 
+
 @pytest.mark.parametrize('environment_filename', [
     'tests/assets/environments/conda-store.yaml',
     'tests/assets/environments/jupyterlab.yaml',
