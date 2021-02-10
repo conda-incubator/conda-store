@@ -96,14 +96,14 @@ def initialize_cli():
 
     @app.command("serve")
     def server_callback(
-        address: str = typer.Option("0.0.0.0", "--address"),        
+        address: str = typer.Option("0.0.0.0", "--address", help='address to bind run conda-store ui'),        
         port: int = typer.Option(5000, help="port to run conda-store ui"),
-        store: str = typer.Option(".conda-store", "--store", "-s"),
-        storage_backend: str = typer.Option(StorageBackends.s3, "--storage-backend"),
-        disable_ui: bool = typer.Option(False, "--disable-ui"),
-        disable_api: bool = typer.Option(False, "--disable-api"),
-        disable_registry: bool = typer.Option(False, "--disable-registry"),
-        verbose: bool = typer.Option(False, "--verbose")
+        store: str = typer.Option(".conda-store", "--store", "-s", help='directory for conda-store state'),
+        storage_backend: str = typer.Option(StorageBackends.s3, "--storage-backend", help='backend for storing build artifacts. Production should use s3'),
+        disable_ui: bool = typer.Option(False, "--disable-ui", help='disable ui for conda store'),
+        disable_api: bool = typer.Option(False, "--disable-api", help='disable api for conda store'),
+        disable_registry: bool = typer.Option(False, "--disable-registry", help='disable docker registry for conda store'),
+        verbose: bool = typer.Option(False, "--verbose", help="enable debugging logging")
     ):
         start_app(
             store, storage_backend,
