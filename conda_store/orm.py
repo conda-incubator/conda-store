@@ -4,8 +4,16 @@ import logging
 import pathlib
 
 from sqlalchemy import (
-    Table, Column, BigInteger, Integer, String, JSON, Enum, DateTime,
-    UniqueConstraint, ForeignKey,
+    Table,
+    Column,
+    BigInteger,
+    Integer,
+    String,
+    JSON,
+    Enum,
+    DateTime,
+    UniqueConstraint,
+    ForeignKey,
 )
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
@@ -23,22 +31,25 @@ Base = declarative_base()
 
 
 class BuildStatus(enum.Enum):
-    QUEUED = 'QUEUED'
-    BUILDING = 'BUILDING'
-    COMPLETED = 'COMPLETED'
-    FAILED = 'FAILED'
+    QUEUED = "QUEUED"
+    BUILDING = "BUILDING"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
 
 
 class Specification(Base):
     """The specifiction for a given conda environment
 
     """
-    __tablename__ = 'specification'
+
+    __tablename__ = "specification"
 
     def __init__(self, specification):
         if not validate_environment(specification):
-            raise ValueError('specification={specification} is not valid conda environment.yaml')
-        self.name = specification['name']
+            raise ValueError(
+                "specification={specification} is not valid conda environment.yaml"
+            )
+        self.name = specification["name"]
         self.spec = specification
         self.sha256 = utils.datastructure_hash(self.spec)
 
@@ -48,14 +59,18 @@ class Specification(Base):
     sha256 = Column(String, unique=True, nullable=False)
     created_on = Column(DateTime, default=datetime.datetime.utcnow)
 
-    builds = relationship('Build', back_populates='specification')
+    builds = relationship("Build", back_populates="specification")
 
 
 build_conda_package = Table(
-    'build_conda_package',
+    "build_conda_package",
     Base.metadata,
-    Column('build_id', ForeignKey('build.id', ondelete='CASCADE'), primary_key=True),
-    Column('conda_package_id', ForeignKey('conda_package.id', ondelete='CASCADE'), primary_key=True),
+    Column("build_id", ForeignKey("build.id", ondelete="CASCADE"), primary_key=True),
+    Column(
+        "conda_package_id",
+        ForeignKey("conda_package.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
 )
 
 
@@ -63,13 +78,14 @@ class Build(Base):
     """The state of a build of a given specification
 
     """
-    __tablename__ = 'build'
+
+    __tablename__ = "build"
 
     id = Column(Integer, primary_key=True)
     specification_id = Column(Integer, ForeignKey("specification.id"), nullable=False)
-    specification = relationship(Specification, back_populates='builds')
+    specification = relationship(Specification, back_populates="builds")
 
-    packages = relationship('CondaPackage', secondary=build_conda_package)
+    packages = relationship("CondaPackage", secondary=build_conda_package)
 
     status = Column(Enum(BuildStatus), default=BuildStatus.QUEUED)
     size = Column(Integer, default=0)
@@ -79,7 +95,7 @@ class Build(Base):
 
     def build_path(self, store_directory):
         store_path = pathlib.Path(store_directory).resolve()
-        return store_path / f'{self.specification.sha256}-{self.specification.name}'
+        return store_path / f"{self.specification.sha256}-{self.specification.name}"
 
     def environment_path(self, environment_directory):
         environment_directory = pathlib.Path(environment_directory).resolve()
@@ -87,18 +103,18 @@ class Build(Base):
 
     @property
     def log_key(self):
-        return f'logs/{self.specification.name}/{self.specification.sha256}/{self.id}'
+        return f"logs/{self.specification.name}/{self.specification.sha256}/{self.id}"
 
     @property
     def conda_pack_key(self):
-        return f'archive/{self.specification.name}/{self.specification.sha256}/{self.id}.tar.gz'
+        return f"archive/{self.specification.name}/{self.specification.sha256}/{self.id}.tar.gz"
 
     @property
     def docker_manifest_key(self):
-        return f'docker/manifest/{self.specification.name}/{self.specification.sha256}'
+        return f"docker/manifest/{self.specification.name}/{self.specification.sha256}"
 
     def docker_blob_key(self, blob_hash):
-        return f'docker/blobs/{blob_hash}'
+        return f"docker/blobs/{blob_hash}"
 
 
 class Environment(Base):
@@ -106,14 +122,13 @@ class Environment(Base):
     environment name
 
     """
-    __tablename__ = 'environment'
 
-    __table_args__ = (
-        UniqueConstraint('namespace', 'name', name='_namespace_name_uc'),
-    )
+    __tablename__ = "environment"
+
+    __table_args__ = (UniqueConstraint("namespace", "name", name="_namespace_name_uc"),)
 
     id = Column(Integer, primary_key=True)
-    namespace = Column(String, default='library')
+    namespace = Column(String, default="library")
     name = Column(String, nullable=False)
 
     specification_id = Column(Integer, ForeignKey("specification.id"))
@@ -124,7 +139,7 @@ class Environment(Base):
 
 
 class CondaPackage(Base):
-    __tablename__ = 'conda_package'
+    __tablename__ = "conda_package"
 
     id = Column(Integer, primary_key=True)
     channel = Column(String, nullable=False)
@@ -151,25 +166,27 @@ class CondaPackage(Base):
         existing_sha256 = {_[0] for _ in db.query(cls.sha256).all()}
 
         for architecture in repodata:
-            packages = list(repodata[architecture]['packages'].values())
+            packages = list(repodata[architecture]["packages"].values())
             for package in packages:
-                if package['sha256'] not in existing_sha256:
-                    db.add(cls(
-                        build=package['build'],
-                        build_number=package['build_number'],
-                        constrains=package.get('constrains'),
-                        depends=package['depends'],
-                        license=package.get('license'),
-                        license_family=package.get('liciense_family'),
-                        md5=package['md5'],
-                        sha256=package['sha256'],
-                        name=package['name'],
-                        size=package['size'],
-                        subdir=package.get('subdir'),
-                        timestamp=package.get('timestamp'),
-                        version=package['version'],
-                        channel=channel,
-                    ))
+                if package["sha256"] not in existing_sha256:
+                    db.add(
+                        cls(
+                            build=package["build"],
+                            build_number=package["build_number"],
+                            constrains=package.get("constrains"),
+                            depends=package["depends"],
+                            license=package.get("license"),
+                            license_family=package.get("liciense_family"),
+                            md5=package["md5"],
+                            sha256=package["sha256"],
+                            name=package["name"],
+                            size=package["size"],
+                            subdir=package.get("subdir"),
+                            timestamp=package.get("timestamp"),
+                            version=package["version"],
+                            channel=channel,
+                        )
+                    )
         db.commit()
 
     def __repr__(self):
@@ -177,7 +194,7 @@ class CondaPackage(Base):
 
 
 class CondaStoreConfiguration(Base):
-    __tablename__ = 'conda_store_configuration'
+    __tablename__ = "conda_store_configuration"
 
     id = Column(Integer, primary_key=True)
     store_directory = Column(String)
@@ -202,7 +219,7 @@ class CondaStoreConfiguration(Base):
         return query.first()
 
 
-def new_session_factory(url='sqlite:///:memory:', reset=False, **kwargs):
+def new_session_factory(url="sqlite:///:memory:", reset=False, **kwargs):
     engine = create_engine(url, **kwargs)
 
     if reset:
