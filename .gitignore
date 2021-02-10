@@ -1,6 +1,10 @@
 data/conda-store
 data/minio
+data/postgres
 
 # yarn / nuxt
 node_modules
 .nuxt
+
+# sphinx
+docs/_build

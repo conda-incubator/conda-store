@@ -7,6 +7,7 @@ dependencies:
   - conda-pack
   # web server
   - sqlalchemy
+  - psycopg2
   - requests
   - flask
   - flask-cors

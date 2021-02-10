@@ -1,3 +1,4 @@
+import os
 import pathlib
 import datetime
 import logging
@@ -17,7 +18,9 @@ class CondaStore:
             logger.info(f'creating directory store_directory={store_directory}')
             self.store_directory.mkdir(parents=True)
 
-        self.database_url = database_url or f'sqlite:///{self.store_directory / "conda_store.sqlite"}'
+        self.database_url = database_url or os.environ.get(
+            'CONDA_STORE_DB_URL',
+            f'sqlite:///{self.store_directory / "conda_store.sqlite"}')
 
         Session = orm.new_session_factory(url=self.database_url)
         self.db = Session()
@@ -64,7 +67,9 @@ class CondaStore:
     def register_environment(self, specification, namespace='library'):
         if isinstance(specification, (str, pathlib.Path)):
             with open(str(specification)) as f:
-                specification = schema.CondaSpecification.parse_obj(yaml.safe_load(f))
+                specification = yaml.safe_load(f)
+
+        specification = schema.CondaSpecification.parse_obj(specification)
 
         # Create Environment Placeholder if does not exist
         query = self.db.query(orm.Environment).filter(
