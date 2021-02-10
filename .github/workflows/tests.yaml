@@ -1,0 +1,36 @@
+name: Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  test-general:
+    name: 'Test Package'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8]
+    steps:
+      - name: 'Checkout Repository'
+        uses: actions/checkout@master
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Dependencies
+        run: |
+          pip install .[dev]
+      - name: Black Formatting
+        run: |
+          black --version
+          black conda_store --diff
+          black --check conda_store
+      - name: Flake8 Formatting
+        run: |
+          flake8 --version
+          flake8
