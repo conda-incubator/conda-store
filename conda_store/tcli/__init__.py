@@ -6,6 +6,7 @@ from enum import Enum
 from conda_store.app import CondaStore
 from conda_store.build import start_conda_build
 from conda_store import client
+from conda_store.server import start_app
 
 logger = logging.getLogger(__name__)
 
@@ -15,9 +16,11 @@ def initialize_cli():
     build_app = typer.Typer()
     server_app = typer.Typer()
     env_app = typer.Typer()
+    pkgs_app = typer.Typer()
 
     app.add_typer(build_app, name="build")
     app.add_typer(env_app, name="env")
+    env_app.add_typer(pkgs_app, name="package")
     app.add_typer(server_app, name="server")
 
     StorageBackends = Enum('StorageBackends', dict(fs='filesystem', s3='s3'))
@@ -68,7 +71,6 @@ def initialize_cli():
         with open(filename) as f:
             data = yaml.safe_load(f)
         client.post_specification(data)
-        pass
 
     @env_app.command("list")
     def _env_list():
@@ -80,5 +82,20 @@ def initialize_cli():
             build_id = row['build_id']
             sha256 = row.get('specification', {}).get('sha256')
             print(f'{build_id:<10}{name:32}{sha256[:32]:32}')
+
+    @pkgs_app.command("list")
+    def _env_list_packages(
+            name: str = typing.Option(..., "--name", "-n", help="A conda store environment name")
+            ):
+        data = client.get_environment_packages(name=name)
+        print('{:32}{:16}{:48}{:32}'.format('NAME', 'VERSION', 'LICENSE', 'SHA256'))
+        print("="*128)
+        pkgs = data['specification']['builds'][0]['packages']
+        for pkg in pkgs:
+            name = pkg['name']
+            version = pkg['version']
+            license = pkg['license']
+            sha = pkg['sha256']
+            print(f'{name:32}{version:16}{license:48}{sha:32}')
 
     app()
