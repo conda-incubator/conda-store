@@ -23,11 +23,11 @@ def initialize_cli():
 
     @app.command("build")
     def app_build(
-            environment: str = typer.Option(..., "--environment", "-e"),
-            store: str = typer.Option(".conda-store", "--store", "-s"),
-            paths: str = typer.Option("", "--paths", "-p"),
-            uid: int = typer.Option(None, "--uid"),
-            gid: int = typer.Option(None, "--gid"),
+            environment: str = typer.Option(..., "--environment", "-e", help="environment directory for symlinking conda environment builds"),
+            store: str = typer.Option(".conda-store", "--store", "-s", help="directory for conda-store state"),
+            paths: str = typer.Option("", "--paths", "-p", help="input paths for environments directories(non-recursive) and filenames"),
+            uid: int = typer.Option(None, "--uid", help="uid to assign to built environments"),
+            gid: int = typer.Option(None, "--gid", help="gid to assign to built environments"),
             permissions: str = typer.Option("",  help="permissions to assign to built environments"),
             storage_threshold: int = typer.Option((5 * (2**30)), "--storage-threshold", help="emit warning when free disk space drops below threshold bytes"),
             storage_backend: str = typer.Option(StorageBackends.s3),
