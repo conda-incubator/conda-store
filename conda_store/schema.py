@@ -60,6 +60,7 @@ class Environment(BaseModel):
     class Config:
         orm_mode = True
 
+
 # Conda Environment
 class CondaSpecificationPip(BaseModel):
     pip: List[str]
@@ -102,7 +103,9 @@ class DockerConfigConfig(BaseModel):
     Tty: bool = False
     OpenStdin: bool = False
     StdinOnce: bool = False
-    Env: List[str] = ["PATH=/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"]
+    Env: List[str] = [
+        "PATH=/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+    ]
     Cmd: List[str] = ["/bin/sh"]
     ArgsEscaped: bool = True
     Image: Optional[str] = None
@@ -110,9 +113,7 @@ class DockerConfigConfig(BaseModel):
     WorkingDir: str = ""
     Entrypoint: Optional[str] = None
     OnBuild: Optional[str] = None
-    Labels: Optional[Dict[str, str]] = {
-        'conda_store': '0.0.1'
-    }
+    Labels: Optional[Dict[str, str]] = {"conda_store": "0.0.1"}
 
 
 class DockerConfigRootFS(BaseModel):

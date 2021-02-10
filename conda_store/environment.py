@@ -18,7 +18,7 @@ def validate_environment(specification):
 
 
 def is_environment_file(filename):
-    if str(filename).endswith('.yaml') or str(filename).endswith('.yml'):
+    if str(filename).endswith(".yaml") or str(filename).endswith(".yml"):
         with filename.open() as f:
             return validate_environment(yaml.safe_load(f))
     else:
@@ -30,11 +30,11 @@ def discover_environments(paths):
     for path in paths:
         path = pathlib.Path(path).resolve()
         if path.is_file() and is_environment_file(path):
-            logger.debug(f'discoverd environment filename={path}')
+            logger.debug(f"discoverd environment filename={path}")
             environments.append(path)
         elif path.is_dir():
-            for _path in path.glob('*'):
+            for _path in path.glob("*"):
                 if is_environment_file(_path):
-                    logger.debug(f'discoverd environment filename={_path}')
+                    logger.debug(f"discoverd environment filename={_path}")
                     environments.append(_path)
     return environments

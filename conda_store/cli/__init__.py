@@ -7,9 +7,9 @@ from conda_store.cli.env import initialize_env_cli
 
 
 def initialize_cli():
-    parser = argparse.ArgumentParser(description='declarative conda environments')
-    parser.add_argument('--verbose', action='store_true', help='enable debug logging')
-    subparser = parser.add_subparsers(help='sub-command help')
+    parser = argparse.ArgumentParser(description="declarative conda environments")
+    parser.add_argument("--verbose", action="store_true", help="enable debug logging")
+    subparser = parser.add_subparsers(help="sub-command help")
 
     initialize_build_cli(subparser)
     initialize_server_cli(subparser)
