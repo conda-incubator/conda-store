@@ -21,6 +21,9 @@ pkgs.mkShell {
     pythonPackages.pytest-mock
     pythonPackages.black
     pythonPackages.flake8
+    pythonPackages.sphinx
+    pythonPackages.recommonmark
+    pythonPackages.sphinx_rtd_theme
   ];
 
   shellHook = ''

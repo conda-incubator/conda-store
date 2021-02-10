@@ -1,7 +1,7 @@
-# Conda Store
+# Architecture
 
-Conda Store itself is a collection of services:
- - conda build worker :: N conda build workers to build queued conda environments
- - conda rest api :: rest api for creating new environments
- - conda web ui :: flask webserver view of conda store
- - conda docker registry :: a python implementation of a docker registry with tight integration with conda-store
+Conda-Store was designed with the idea of scalable enterprise
+management of reproducible conda environments.
+
+![conda-store architecture](_static/images/conda-store-architecture.png)
+
