@@ -21,7 +21,7 @@ def initialize_cli():
     app.add_typer(build_app, name="build")
     app.add_typer(env_app, name="env")
     env_app.add_typer(pkgs_app, name="package")
-    app.add_typer(server_app, name="server")
+    app.add_typer(server_app, name="serve")
 
     StorageBackends = Enum('StorageBackends', dict(fs='filesystem', s3='s3'))
 
@@ -85,7 +85,7 @@ def initialize_cli():
 
     @pkgs_app.command("list")
     def _env_list_packages(
-            name: str = typing.Option(..., "--name", "-n", help="A conda store environment name")
+            name: str = typer.Option(..., "--name", "-n", help="A conda store environment name")
             ):
         data = client.get_environment_packages(name=name)
         print('{:32}{:16}{:48}{:32}'.format('NAME', 'VERSION', 'LICENSE', 'SHA256'))
@@ -97,5 +97,23 @@ def initialize_cli():
             license = pkg['license']
             sha = pkg['sha256']
             print(f'{name:32}{version:16}{license:48}{sha:32}')
+
+    @server_app.callback()
+    def _handle_conda_store_server(
+        address: str = typer.Option("0.0.0.0", "--address"),        port: int = typer.Option(5000, help="port to run conda-store ui"),
+        store: str = typer.Option(".conda-store", "--store","-s"),
+        storage_backend: str = typer.Option(StorageBackends.s3),
+        disable_ui: bool = typer.Option(False, "--disable-ui"),
+        disable_api: bool = typer.Option(False, "--disable-api"),
+        disable_registry: bool = typer.Option(False, "--disable-registry"),
+        verbose: bool = typer.Option(False, "--verbose")
+    ):
+        start_app(
+            store, storage_backend,
+            disable_ui=disable_ui,
+            disable_api=disable_api,
+            disable_registry=disable_registry,
+            address=address,
+            port=port)
 
     app()
