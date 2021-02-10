@@ -22,10 +22,10 @@ def chmod(directory, permissions):
 
 
 def chown(directory, uid, gid):
-    if re.fullmatch("\d+", str(uid)) is None:
+    if re.fullmatch(r"\d+", str(uid)) is None:
         raise ValueError(f"chown uid={uid} not integer value")
 
-    if re.fullmatch("\d+", str(gid)) is None:
+    if re.fullmatch(r"\d+", str(gid)) is None:
         raise ValueError(f"chown gid={gid} not integer value")
 
     subprocess.check_output(["chown", "-R", f"{uid}:{gid}", str(directory)])
