@@ -1,3 +1,10 @@
+# python
+__pycache__
+dist
+build
+*.egg-info
+
+# data
 data/conda-store
 data/minio
 data/postgres

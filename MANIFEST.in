@@ -1,0 +1,3 @@
+include conda_store LICENSE
+prune .github
+global-exclude *.py[cod] __pycache__ *.so *.nix .envrc
