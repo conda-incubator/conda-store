@@ -13,23 +13,19 @@ logger = logging.getLogger(__name__)
 def initialize_cli():
     app = typer.Typer()
 
-    build_app = typer.Typer()
-    server_app = typer.Typer()
     env_app = typer.Typer()
     pkgs_app = typer.Typer()
 
-    app.add_typer(build_app, name="build")
     app.add_typer(env_app, name="env")
     env_app.add_typer(pkgs_app, name="package")
-    app.add_typer(server_app, name="serve")
 
     StorageBackends = Enum('StorageBackends', dict(fs='filesystem', s3='s3'))
 
-    @build_app.callback()
-    def _handle_conda_store_build(
+    @app.command("build")
+    def app_build(
             environment: str = typer.Option(..., "--environment", "-e"),
             store: str = typer.Option(".conda-store", "--store", "-s"),
-            paths: pathlib.Path = typer.Option("", "--paths", "-p", show_default=False),
+            paths: str = typer.Option("", "--paths", "-p"),
             uid: int = typer.Option(None, "--uid"),
             gid: int = typer.Option(None, "--gid"),
             permissions: str = typer.Option("",  help="permissions to assign to built environments"),
@@ -65,7 +61,7 @@ def initialize_cli():
         start_conda_build(conda_store, paths, storage_threshold, poll_interval)
 
     @env_app.command("create")
-    def _env_create_from_file(
+    def env_app_create(
             filename: typer.FileText = typer.Option(..., "--filename", "-f", help="A conda file supplied with the environment details"),
             ):
         with open(filename) as f:
@@ -98,11 +94,12 @@ def initialize_cli():
             sha = pkg['sha256']
             print(f'{name:32}{version:16}{license:48}{sha:32}')
 
-    @server_app.callback()
-    def _handle_conda_store_server(
-        address: str = typer.Option("0.0.0.0", "--address"),        port: int = typer.Option(5000, help="port to run conda-store ui"),
-        store: str = typer.Option(".conda-store", "--store","-s"),
-        storage_backend: str = typer.Option(StorageBackends.s3),
+    @app.command("serve")
+    def server_callback(
+        address: str = typer.Option("0.0.0.0", "--address"),        
+        port: int = typer.Option(5000, help="port to run conda-store ui"),
+        store: str = typer.Option(".conda-store", "--store", "-s"),
+        storage_backend: str = typer.Option(StorageBackends.s3, "--storage-backend"),
         disable_ui: bool = typer.Option(False, "--disable-ui"),
         disable_api: bool = typer.Option(False, "--disable-api"),
         disable_registry: bool = typer.Option(False, "--disable-registry"),
