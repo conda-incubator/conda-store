@@ -9,7 +9,7 @@ services:
     volumes:
       - ./tests/assets/environments:/opt/environments:ro
       - ./data/conda-store:/data
-    command: ['python', '-m', 'conda_store', 'build', '-p', '/opt/environments', '-e', '/data/envs', '-s', '/data/store', '--uid', '1000', '--gid', '100', '--permissions', '775', '--storage-backend', 's3']
+    command: ["wait-for-it", "postgres:5432", '--', 'python', '-m', 'conda_store', 'build', '-p', '/opt/environments', '-e', '/data/envs', '-s', '/data/store', '--uid', '1000', '--gid', '100', '--permissions', '775', '--storage-backend', 's3']
     environment:
       TZ: America/New_York
       CONDA_STORE_DB_URL: "postgresql+psycopg2://admin:password@postgres/conda-store"
@@ -23,7 +23,7 @@ services:
     depends_on:
       - "postgres"
       - "minio"
-    command: ['python', '-m', 'conda_store', 'serve', '-s', '/data/store', '--port', '5000']
+    command: ["wait-for-it", "postgres:5432", '--', 'python', '-m', 'conda_store', 'serve', '-s', '/data/store', '--port', '5000']
     ports:
       - "5000:5000"
     environment:
