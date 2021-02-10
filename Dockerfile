@@ -9,6 +9,11 @@ COPY environment.yaml /opt/conda-store/environment.yaml
 
 RUN conda env create -f /opt/conda-store/environment.yaml
 
-COPY conda_store /opt/conda-store/conda_store
+COPY README.md setup.py /opt/conda-store/
+COPY conda_store /opt/conda-store/conda_store/
 
-ENV PYTHONPATH=/opt/conda-store:${PYTHONPATH}
+RUN cd /opt/conda-store && \
+    ls -la && \
+    /opt/conda/envs/conda-store/bin/pip install -e .
+
+ENV PATH=/opt/conda/condabin:/opt/conda/envs/conda-store/bin:${PATH}
