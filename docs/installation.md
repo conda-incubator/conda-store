@@ -57,7 +57,7 @@ docker-compose up
 
 Then visit via your web browser http://localhost:5000
 
-## Local Systemd Install
+## Local Automated Systemd Install
 
 Not all environment are containerized and conda-store recognizes
 that. The goal of conda-store is to provide conda environments in as
