@@ -6,8 +6,9 @@ build
 
 # data from deployments
 data
-data
-data
+
+# vagrant
+.vagrant
 
 # yarn / nuxt
 node_modules

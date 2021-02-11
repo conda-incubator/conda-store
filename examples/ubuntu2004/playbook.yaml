@@ -1,0 +1,12 @@
+---
+ - name: conda-store deployment
+   hosts: all
+   tasks:
+     - name: Install conda
+       include_tasks: tasks/conda.yaml
+
+     - name: Install minio
+       include_tasks: tasks/minio.yaml
+
+     - name: Install postgres
+       include_tasks: tasks/postgres.yaml

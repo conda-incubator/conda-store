@@ -5,11 +5,11 @@ let
 in
 pkgs.mkShell {
   buildInputs = [
-    pkgs.yarn
     pkgs.docker-compose
     pkgs.kubectl
     pkgs.minikube
-    pkgs.kompose
+    pkgs.vagrant
+    pkgs.ansible
 
     pythonPackages.pyyaml
     pythonPackages.flask

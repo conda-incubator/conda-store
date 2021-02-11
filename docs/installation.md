@@ -2,7 +2,7 @@
 
 ## Kubernetes
 
-![conda-store installation kubernetes](_static/images/conda-store-installation-kubernetes.png)
+![Conda Store Kubernetes architecture diagram](_static/images/conda-store-installation-kubernetes.png)
 
 The following will describe a local kubernetes installation via
 minikube. The example files required are in `examples/kubernetes`
@@ -62,6 +62,22 @@ Then visit via your web browser http://localhost:5000
 Not all environment are containerized and conda-store recognizes
 that. The goal of conda-store is to provide conda environments in as
 many ways as possible so it SHOULD support non-contianerized
-environments.
+environments. The example files required are in
+`examples/ubuntu2004`. 
 
+This example is not fully complete in that it does not install
+`conda-store` and get it running due to the [conda-forge
+package](https://github.com/conda-forge/staged-recipes/pull/13933).
 
+If you would like to test it in a VM use the following. The following
+`Vagrantfile` is only compatible with [libvirt](https://libvirt.org/).
+
+```shell
+vagrant up
+```
+
+However if you want to do a local deployment use
+
+```shell
+ansible-playbook -i <inventory> playbook.yaml
+```

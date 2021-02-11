@@ -1,0 +1,78 @@
+---
+ - name: Ubuntu Release
+   command: "lsb_release -sc"
+   register: _postgres_ubuntu_release
+
+ - name: Add apt keys for postgresql
+   become: true
+   apt_key:
+     url: "https://www.postgresql.org/media/keys/ACCC4CF8.asc"
+     state: present
+
+ - name: Add postgresql ppa
+   become: true
+   apt_repository:
+     repo: "{{ item }}"
+   with_items:
+     - "deb http://apt.postgresql.org/pub/repos/apt {{ _postgres_ubuntu_release.stdout }}-pgdg main"
+
+ - name: Add postgresql
+   become: true
+   apt:
+     name: postgresql-12
+     state: latest
+     cache_valid_time: 3600
+
+ - name: Add acl package required for postgresql user change
+   become: true
+   apt:
+     name: acl
+     state: latest
+     cache_valid_time: 3600
+
+ - name: Add psycopg2 python module
+   become: true
+   apt:
+     name: python3-psycopg2
+     state: latest
+
+ - name: Postgresql listen on 0.0.0.0
+   become: true
+   lineinfile:
+     path: /etc/postgresql/12/main/postgresql.conf
+     regexp: '^listen_addresses='
+     line: "listen_addresses='*'"
+
+ - name: Adds conda-store database to postgresql cluster
+   become: true
+   become_user: postgres
+   postgresql_db:
+     name: "{{ postgres.database }}"
+
+ - name: Connect to quansight database and create users
+   become: true
+   become_user: postgres
+   postgresql_user:
+     db: "{{ postgres.database }}"
+     name: "{{ item.username }}"
+     password: "{{ item.password }}"
+     priv: "{{ item.postgresql_priv | default('ALL') }}"
+     role_attr_flags: "{{ item.postgresql_role | default('NOSUPERUSER') }}"
+   with_items: "{{ postgres.users }}"
+
+ - name: Grant users access to databases
+   become: true
+   postgresql_pg_hba:
+     dest: /etc/postgresql/12/main/pg_hba.conf
+     contype: host
+     source: "0.0.0.0/0"
+     databases: all
+     method: password
+     create: true
+
+ - name: Restart Postgresql
+   become: true
+   systemd:
+     name: postgresql
+     state: restarted
+     daemon_reload: true

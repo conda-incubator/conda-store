@@ -1,0 +1,18 @@
+miniforge:
+  version: "4.9.2-3"
+  sha256: de5b309312e9b2e3ad777262324865cbc40a61bfd1f497d7eb9925bf593b9d94
+  home: /opt/conda
+  environments: []
+
+minio:
+  version: "RELEASE.2021-02-11T08-23-43Z"
+  sha256: b965214b7e61ef04087addf0c5da62e4ceff88adb2a0af7e38566c40be306e28
+  username: admin
+  password: password
+
+postgres:
+  database: conda-store
+  users:
+    - username: conda-store
+      password: password
+      postgresql_role: SUPERUSER
