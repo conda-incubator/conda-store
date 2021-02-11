@@ -5,8 +5,9 @@ Conda-Store
    :maxdepth: 2
    :caption: Contents:
 
-   development
+   installation
    architecture
+   development
 
 
 Indices and tables
