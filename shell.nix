@@ -7,6 +7,9 @@ pkgs.mkShell {
   buildInputs = [
     pkgs.yarn
     pkgs.docker-compose
+    pkgs.kubectl
+    pkgs.minikube
+    pkgs.kompose
 
     pythonPackages.pyyaml
     pythonPackages.flask

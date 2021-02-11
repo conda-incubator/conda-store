@@ -5,6 +5,7 @@ Conda-Store
    :maxdepth: 2
    :caption: Contents:
 
+   development
    architecture
 
 
