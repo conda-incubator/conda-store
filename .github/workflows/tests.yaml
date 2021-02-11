@@ -34,3 +34,16 @@ jobs:
         run: |
           flake8 --version
           flake8
+
+  build-general:
+    name: 'Build Docker Image'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout Infrastructure'
+        uses: actions/checkout@master
+      - name: Docker Build, Tag, Push Image
+        env:
+          IMAGE_NAME: quansight/conda-store
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -f Dockerfile -t $IMAGE_NAME:$IMAGE_TAG .
