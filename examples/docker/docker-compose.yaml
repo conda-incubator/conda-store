@@ -2,12 +2,12 @@ version: "2"
 
 services:
   conda-store-build:
-    build: .
+    image: quansight/conda-store:v0.1.4
     depends_on:
       - "postgres"
       - "minio"
     volumes:
-      - ./examples/environments:/opt/environments:ro
+      - ../environments:/opt/environments:ro
       - ./data/conda-store:/data
     command: ["wait-for-it", "postgres:5432", '--', 'conda-store', 'build', '-p', '/opt/environments', '-e', '/data/envs', '-s', '/data/store', '--uid', '1000', '--gid', '100', '--permissions', '775', '--storage-backend', 's3']
     environment:
@@ -19,7 +19,7 @@ services:
       PATH: "/opt/conda/envs/conda-store/bin:/opt/conda/bin:/opt/conda/condabin:/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
   conda-store-server:
-    build: .
+    image: quansight/conda-store:v0.1.4
     depends_on:
       - "postgres"
       - "minio"

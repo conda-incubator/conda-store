@@ -2,20 +2,28 @@
 
 ## Kubernetes
 
+![conda-store installation kubernetes](_static/images/conda-store-installation-kubernetes.png)
+
 The following will describe a local kubernetes installation via
-minikube. 
+minikube. The example files required are in `examples/kubernetes`
 
 ```shell
 minikube start --cpus 2 --memory 4096 --driver=docker
 ```
 
 Now we deploy the `conda-store` components. Note that conda-store is
-compatible with any general s3 provider and any general database via
-sqlalchemy. Currently the docker image is build with support for
+compatible with any general s3 like provider and any general database
+via sqlalchemy. Currently the docker image is build with support for
 postgresql and sqlite. Consult the [sqlalchemy
 documentation](https://docs.sqlalchemy.org/en/14/core/engines.html#database-urls)
-on supporting your given database. You may not need to use minio and
-postgresql deployments and use existing infrastructure.
+on supporting your given database and then creating a custom docker
+image with your required database. Not all database engines were added
+to save on image size. Additionally You may not need to use minio and
+postgresql deployments and use existing infrastructure. In the case of
+AWS this may mean using [rds](https://aws.amazon.com/rds/) and
+[s3](https://aws.amazon.com/s3/). Consult your cloud provider for
+compatible services. In general if it is supported by sqlalchemy and
+there is a s3 compatible object store conda-store will work.
 
 ```shell
 kubectl apply -f minio.yaml
@@ -23,3 +31,37 @@ kubectl apply -f postgres.yaml
 kubectl apply -f conda-store-worker.yaml
 kubectl apply -f conda-store-server.yaml
 ```
+
+Make sure to change all the usernames and passwords for the
+deployment.
+
+If your installation worked you should be able to port forward the
+conda store web server.
+
+```
+kubectl port-forward service/conda-store-server 5000:5000
+```
+
+Then visit via your web browser http://localhost:5000
+
+
+## Docker
+
+To install on a local docker daemon there is an existing
+docker-compose.yaml for deployment. The example files required are in
+`examples/docker`
+
+```shell
+docker-compose up
+```
+
+Then visit via your web browser http://localhost:5000
+
+## Local Systemd Install
+
+Not all environment are containerized and conda-store recognizes
+that. The goal of conda-store is to provide conda environments in as
+many ways as possible so it SHOULD support non-contianerized
+environments.
+
+

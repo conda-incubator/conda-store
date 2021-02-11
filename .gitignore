@@ -4,10 +4,10 @@ dist
 build
 *.egg-info
 
-# data
-data/conda-store
-data/minio
-data/postgres
+# data from deployments
+data
+data
+data
 
 # yarn / nuxt
 node_modules
