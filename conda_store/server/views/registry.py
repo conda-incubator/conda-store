@@ -42,28 +42,26 @@ def dynamic_conda_store_environment(conda_store, packages):
         ".ge.": ">=",
         ".lt.": "<",
         ".le.": "<=",
-        ".eq.": "=="
+        ".eq.": "==",
     }
 
     # TODO: should really be doing checking on package names to
     # validate user input
     packages = [replace_words(_, constraint_mapper) for _ in sorted(packages)]
-    environment_name = '|'.join(packages)
+    environment_name = "|".join(packages)
     environment = api.get_environment(
-        conda_store.db, environment_name, namespace='conda-store-dynamic'
+        conda_store.db, environment_name, namespace="conda-store-dynamic"
     )
 
     if environment is None:
         environment_specification = {
             "name": environment_name,
-            "channels": [
-                "conda-forge",
-            ],
-            "dependencies": packages
+            "channels": ["conda-forge",],
+            "dependencies": packages,
         }
         conda_store.register_environment(
-            environment_specification,
-            namespace="conda-store-dynamic")
+            environment_specification, namespace="conda-store-dynamic"
+        )
     return environment_name
 
 
@@ -74,7 +72,7 @@ def get_docker_image_manifest(conda_store, image, tag, timeout=10 * 60):
     if len(image_name) == 0:
         return docker_error_message(schema.DockerRegistryError.NAME_UNKNOWN)
 
-    if namespace == 'conda-store-dynamic':
+    if namespace == "conda-store-dynamic":
         environment_name = dynamic_conda_store_environment(conda_store, image_name)
     elif len(image_name) > 1:
         return docker_error_message(schema.DockerRegistryError.NAME_UNKNOWN)

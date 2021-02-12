@@ -174,5 +174,5 @@ class DockerRegistryError(enum.Enum):
     DENIED = {
         "message": "requested access to the resource is denied",
         "detail": "The access controller denied access for the operation on a resource",
-        "status": 403
+        "status": 403,
     }
