@@ -35,6 +35,8 @@ powering the conda-store web server ui, api, and docker registry.
 
 ## Terminology
 
+![Conda Store terminology](_static/images/conda-store-terminology.png)
+
  - environment :: a pointer to a build of a given specification
  - specification :: a Conda environment.yaml file
  - build :: a attempt of `conda env install -f environment.yaml`
