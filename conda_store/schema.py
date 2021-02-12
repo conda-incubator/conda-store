@@ -10,6 +10,11 @@ def docker_datetime_factory():
     return datetime.datetime.utcnow().astimezone().isoformat()
 
 
+class StorageBackend(enum.Enum):
+    FILESYSTEM = "filesystem"
+    S3 = "s3"
+
+
 class CondaPackage(BaseModel):
     id: int
     channel: str

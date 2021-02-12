@@ -7,7 +7,7 @@ services:
       - "postgres"
       - "minio"
     volumes:
-      - ./examples/environments:/opt/environments:ro
+      - ./tests/assets/environments:/opt/environments:ro
       - ./data/conda-store:/data
     command: ["wait-for-it", "postgres:5432", '--', 'conda-store', 'build', '-p', '/opt/environments', '-e', '/data/envs', '-s', '/data/store', '--uid', '1000', '--gid', '100', '--permissions', '775', '--storage-backend', 's3']
     environment:
@@ -23,7 +23,7 @@ services:
     depends_on:
       - "postgres"
       - "minio"
-    command: ["wait-for-it", "postgres:5432", '--', 'conda-store', 'serve', '-s', '/data/store', '--port', '5000']
+    command: ["wait-for-it", "postgres:5432", '--', 'conda-store', 'server', '-s', '/data/store', '--port', '5000']
     ports:
       - "5000:5000"
     environment:

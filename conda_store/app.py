@@ -26,10 +26,10 @@ class CondaStore:
         Session = orm.new_session_factory(url=self.database_url)
         self.db = Session()
 
-        if storage_backend == "filesystem":
+        if storage_backend == schema.StorageBackend.FILESYSTEM:
             storage_directory = self.store_directory / "storage"
             self.storage = storage.LocalStorage(storage_directory)
-        elif storage_backend == "s3":
+        elif storage_backend == schema.StorageBackend.S3:
             self.storage = storage.S3Storage()
 
         self.configuration.store_directory = str(self.store_directory)

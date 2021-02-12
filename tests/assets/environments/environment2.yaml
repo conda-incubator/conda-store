@@ -1,0 +1,6 @@
+name: env-name-2
+channels:
+  - conda-forge
+dependencies:
+  - python ==3.8
+  - pyyaml
