@@ -56,7 +56,7 @@ def dynamic_conda_store_environment(conda_store, packages):
     if environment is None:
         environment_specification = {
             "name": environment_name,
-            "channels": ["conda-forge",],
+            "channels": ["conda-forge"],
             "dependencies": packages,
         }
         conda_store.register_environment(

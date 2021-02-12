@@ -69,7 +69,7 @@ spec:
           value: /opt/conda/envs/conda-store/bin:/opt/conda/bin:/opt/conda/condabin:/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
         - name: TZ
           value: America/New_York
-        image: quansight/conda-store:v0.1.5
+        image: quansight/conda-store:v0.1.6
         imagePullPolicy: ""
         name: conda-store-worker
         resources: {}
