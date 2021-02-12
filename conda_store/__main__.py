@@ -1,7 +1,8 @@
-from conda_store import cli
+from conda_store import cli, logging
 
 
 def main():
+    logging.initialize_logging()
     cli.cli_conda_store()
 
 
