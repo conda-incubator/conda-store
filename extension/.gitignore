@@ -1,0 +1,8 @@
+*.bundle.*
+lib/
+node_modules/
+*.egg-info/
+.ipynb_checkpoints
+*.tsbuildinfo
+__pycache__
+.DS_Store
