@@ -72,6 +72,7 @@ class CondaSpecificationPip(BaseModel):
 
 
 class CondaSpecification(BaseModel):
+    # not allowed charaters in conda environment name '/', ' ', ':'
     name: str
     channels: Optional[List[str]]
     dependencies: List[Union[str, CondaSpecificationPip]]
@@ -169,4 +170,9 @@ class DockerRegistryError(enum.Enum):
         "message": "The operation is unsupported",
         "detail": "The operation was unsupported due to a missing implementation or invalid set of parameters",
         "status": 405,
+    }
+    DENIED = {
+        "message": "requested access to the resource is denied",
+        "detail": "The access controller denied access for the operation on a resource",
+        "status": 403
     }

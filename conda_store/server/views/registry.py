@@ -1,4 +1,5 @@
 import json
+import time
 
 from flask import Blueprint, redirect, Response
 
@@ -30,16 +31,57 @@ def docker_error_message(docker_registry_error: schema.DockerRegistryError):
     )
 
 
-def get_docker_image_manifest(conda_store, image, tag):
-    namespace, *environment_name = image.split("/")
+def dynamic_conda_store_environment(conda_store, packages):
+    def replace_words(s, words):
+        for k, v in words.items():
+            s = s.replace(k, v)
+        return s
+
+    constraint_mapper = {
+        ".gt.": ">",
+        ".ge.": ">=",
+        ".lt.": "<",
+        ".le.": "<=",
+        ".eq.": "=="
+    }
+
+    # TODO: should really be doing checking on package names to
+    # validate user input
+    packages = [replace_words(_, constraint_mapper) for _ in sorted(packages)]
+    environment_name = '|'.join(packages)
+    environment = api.get_environment(
+        conda_store.db, environment_name, namespace='conda-store-dynamic'
+    )
+
+    if environment is None:
+        environment_specification = {
+            "name": environment_name,
+            "channels": [
+                "conda-forge",
+            ],
+            "dependencies": packages
+        }
+        conda_store.register_environment(
+            environment_specification,
+            namespace="conda-store-dynamic")
+    return environment_name
+
+
+def get_docker_image_manifest(conda_store, image, tag, timeout=10 * 60):
+    namespace, *image_name = image.split("/")
 
     # /v2/<image-name>/manifest/<tag>
-    if len(environment_name) == 0:
+    if len(image_name) == 0:
         return docker_error_message(schema.DockerRegistryError.NAME_UNKNOWN)
-    if len(environment_name) > 1:
-        return docker_error_message(schema.DockerRegistryError.NAME_UNKNOWN)
-    environment_name = environment_name[0]
 
+    if namespace == 'conda-store-dynamic':
+        environment_name = dynamic_conda_store_environment(conda_store, image_name)
+    elif len(image_name) > 1:
+        return docker_error_message(schema.DockerRegistryError.NAME_UNKNOWN)
+    else:
+        environment_name = image_name[0]
+
+    # check that namespace/environment_name exist
     environment = api.get_environment(
         conda_store.db, environment_name, namespace=namespace
     )
@@ -47,6 +89,14 @@ def get_docker_image_manifest(conda_store, image, tag):
         return docker_error_message(schema.DockerRegistryError.NAME_UNKNOWN)
 
     if tag == "latest":
+        # waiting for image to be built by conda-store
+        start_time = time.time()
+        while environment.specification is None:
+            conda_store.db.refresh(environment)
+            time.sleep(10)
+            if time.time() - start_time > timeout:
+                return docker_error_message(schema.DockerRegistryError.MANIFEST_UNKNOWN)
+
         specification_sha256 = environment.specification.sha256
     else:
         specification_sha256 = tag
