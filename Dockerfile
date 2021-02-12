@@ -13,7 +13,6 @@ COPY README.md setup.py /opt/conda-store/
 COPY conda_store /opt/conda-store/conda_store/
 
 RUN cd /opt/conda-store && \
-    ls -la && \
     /opt/conda/envs/conda-store/bin/pip install -e .
 
 ENV PATH=/opt/conda/condabin:/opt/conda/envs/conda-store/bin:${PATH}
