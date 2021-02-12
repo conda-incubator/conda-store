@@ -1,10 +1,6 @@
 apiVersion: v1
 kind: Service
 metadata:
-  annotations:
-    kompose.cmd: kompose convert
-    kompose.version: 1.21.0 (HEAD)
-  creationTimestamp: null
   labels:
     io.kompose.service: conda-store-server
   name: conda-store-server
@@ -16,16 +12,10 @@ spec:
     targetPort: 5000
   selector:
     io.kompose.service: conda-store-server
-status:
-  loadBalancer: {}
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    kompose.cmd: kompose convert
-    kompose.version: 1.21.0 (HEAD)
-  creationTimestamp: null
   labels:
     io.kompose.service: conda-store-server
   name: conda-store-server
@@ -37,10 +27,6 @@ spec:
   strategy: {}
   template:
     metadata:
-      annotations:
-        kompose.cmd: kompose convert
-        kompose.version: 1.21.0 (HEAD)
-      creationTimestamp: null
       labels:
         io.kompose.service: conda-store-server
     spec:
@@ -65,7 +51,7 @@ spec:
           value: /opt/conda/envs/conda-store/bin:/opt/conda/bin:/opt/conda/condabin:/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
         - name: TZ
           value: America/New_York
-        image: quansight/conda-store:v0.1.4
+        image: quansight/conda-store:v0.1.5
         imagePullPolicy: ""
         name: conda-store-server
         ports:
@@ -74,4 +60,3 @@ spec:
       restartPolicy: Always
       serviceAccountName: ""
       volumes: null
-status: {}
