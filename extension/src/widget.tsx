@@ -138,7 +138,7 @@ function handleServerSelect(e: any) {
 				      handleClose={handleImageCancel}
 				      />
 			      </div> : null}
-          </Container>
+        </Container>
         </div>
       ) :
         <Container fluid style={{ height: '100vh' }}>
@@ -149,7 +149,6 @@ function handleServerSelect(e: any) {
             <Col xs={4} sm={6} md={8} className="my-auto">
               <Jumbotron>
                 <h1> Welcome to Conda-Store </h1>
-                <h3> The one-stop-shop to manage environments! </h3>
                 <BackendSelector
                   handleServerSelect={handleServerSelect}
                   serverConnectionData={servers}

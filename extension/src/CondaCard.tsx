@@ -19,23 +19,23 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
  * A special _jupyter_ name, to link it to the KernelMap
  */
 const CondaCard = (props: any) => {
-  let sizemb = Math.round(props.envInfo.size * 10 ** -6) + 'MB';
+  //let sizemb = Math.round(props.envInfo.size * 10 ** -6) + 'MB';
   return (
     <Card
-//      style={{
+      style={{
 //        width: '18rem',
-//        marginTop: '2rem',
-//        marginBottom: '2rem',
-//      }}
+        marginTop: '2rem',
+        marginBottom: '2rem',
+      }}
     >
       <Card.Body>
         <Card.Title>{props.envInfo.name}</Card.Title>
         <Card.Subtitle className="mb-2 text-info">
-          Size: {sizemb || null}
+		{props.envInfo.namespace}
         </Card.Subtitle>
         <Card.Text>
           {props.envInfo.conda_desc ||
-            'Some quick example text to build on the card title and make up the bulk of the card content.'}
+            ''}
         </Card.Text>
       </Card.Body>
       <Card.Footer>
