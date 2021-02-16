@@ -28,9 +28,9 @@ const HomeArea = (): JSX.Element => {
  const servers = [
    {
      display_name: 'Local Filesystem',
-     url: 'http://localhost:5001/api/v1/environment/',
-     url_specification: 'http://localhost:5001/api/v1/specification/',
-     url_build: 'http://localhost:5001/api/v1/build/',
+     url: 'http://localhost:5000/api/v1/environment/',
+     url_specification: 'http://localhost:5000/api/v1/specification/',
+     url_build: 'http://localhost:5000/api/v1/build/',
    },
    {},
  ];
@@ -104,14 +104,8 @@ function handleServerSelect(e: any) {
       <div>
       {serverAddress ? (
         <div>
-	 <Container fluid style={{ height: '100vh' }}>
+	<Container fluid style={{ marginTop: '20rem' }}>
             {toggleCondaCards ? (
-              <Row
-                className="justify-content-center align-items-center"
-                style={{ height: '100vh' }}
-              >
-                <Col xs={6} sm={6} md={6} className="mx-auto">
-		<h1> logged in! </h1>
                   <CardGroupComponent
                     url={serverAddress}
                     handleBuildClick={handleBuildClick}
@@ -119,8 +113,6 @@ function handleServerSelect(e: any) {
                     handleInfoClick={handleInfoClick}
                     handleImageClick={handleImageClick}
                   />
-                </Col>
-              </Row>
             ) : null}
 
             {toggleEnvironment ? (

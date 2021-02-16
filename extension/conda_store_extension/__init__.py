@@ -9,5 +9,5 @@ with open(osp.join(HERE, 'labextension', 'package.json')) as fid:
 def _jupyter_labextension_paths():
     return [{
         'src': 'labextension',
-        'dest': data[name]
+        'dest': data['name']
         }]

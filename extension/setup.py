@@ -30,7 +30,7 @@ package_data_spec = {
     ]
 }
 
-labext_name = "@jupyterlab-examples/react-widget"
+labext_name = "@Quansight/conda-store"
 
 data_files_spec = [
     ("share/jupyter/labextensions/%s" % labext_name, lab_path, "**"),
@@ -58,7 +58,7 @@ with open("README.md", "r") as fh:
 
 setup_args = dict(
     name=name,
-    version=0.0.1,
+    version='0.0.1',
     url="https://github.com/Quansight/conda-store",
     author="Anirrudh Krishnan",
     description="A JupterLab Extension to interface with conda-store",

@@ -22,11 +22,11 @@ const CondaCard = (props: any) => {
   let sizemb = Math.round(props.envInfo.size * 10 ** -6) + 'MB';
   return (
     <Card
-      style={{
-        width: '24rem',
-        marginTop: '2rem',
-        marginBottom: '2rem',
-      }}
+//      style={{
+//        width: '18rem',
+//        marginTop: '2rem',
+//        marginBottom: '2rem',
+//      }}
     >
       <Card.Body>
         <Card.Title>{props.envInfo.name}</Card.Title>

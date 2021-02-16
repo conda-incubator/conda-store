@@ -33,7 +33,6 @@ const CardGroupComponent = (props: any) => {
 
   return (
     <div>
-    <p> in conda cards </p>
       <CondaCard
               envInfo={[test_card]}
               handleBuildClick={props.handleBuildClick}
