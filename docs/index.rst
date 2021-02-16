@@ -6,6 +6,7 @@ Conda-Store
    :caption: Contents:
 
    installation
+   usage
    architecture
    development
 

@@ -10,6 +10,11 @@ def docker_datetime_factory():
     return datetime.datetime.utcnow().astimezone().isoformat()
 
 
+class StorageBackend(enum.Enum):
+    FILESYSTEM = "filesystem"
+    S3 = "s3"
+
+
 class CondaPackage(BaseModel):
     id: int
     channel: str
@@ -67,6 +72,7 @@ class CondaSpecificationPip(BaseModel):
 
 
 class CondaSpecification(BaseModel):
+    # not allowed charaters in conda environment name '/', ' ', ':'
     name: str
     channels: Optional[List[str]]
     dependencies: List[Union[str, CondaSpecificationPip]]
@@ -136,3 +142,37 @@ class DockerConfig(BaseModel):
     docker_version: str = "18.09.7"
     history: List[DockerConfigHistory] = []
     rootfs: DockerConfigRootFS
+
+
+# https://docs.docker.com/registry/spec/api/#errors-2
+class DockerRegistryError(enum.Enum):
+    NAME_UNKNOWN = {
+        "message": "repository name not known to registry",
+        "detail": "This is returned if the name used during an operation is unknown to the registry",
+        "status": 404,
+    }
+    BLOB_UNKNOWN = {
+        "message": "blob unknown to registry",
+        "detail": "This error may be returned when a blob is unknown to the registry in a specified repository. This can be returned with a standard get or if a manifest references an unknown layer during upload",
+        "status": 404,
+    }
+    MANIFEST_UNKNOWN = {
+        "message": "manifest unknown",
+        "detail": "This error is returned when the manifest, identified by name and tag is unknown to the repository",
+        "status": 404,
+    }
+    UNAUTHORIZED = {
+        "message": "authentication required",
+        "detail": "The access controller was unable to authenticate the client. Often this will be accompanied by a Www-Authenticate HTTP response header indicating how to authenticate",
+        "status": 401,
+    }
+    UNSUPPORTED = {
+        "message": "The operation is unsupported",
+        "detail": "The operation was unsupported due to a missing implementation or invalid set of parameters",
+        "status": 405,
+    }
+    DENIED = {
+        "message": "requested access to the resource is denied",
+        "detail": "The access controller denied access for the operation on a resource",
+        "status": 403,
+    }

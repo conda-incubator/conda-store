@@ -1,0 +1,102 @@
+---
+ - name: Check that the minio binary exists
+   stat:
+     path: "/usr/local/bin/minio"
+   register: _minio_stat
+
+ - name: Download minio binary to local folder
+   become: true
+   get_url:
+     url: "https://dl.minio.io/server/minio/release/linux-amd64/archive/minio.{{ minio.version }}"
+     checksum: "sha256:{{ minio.sha256 }}"
+     dest: "/usr/local/bin/minio"
+     force: false
+     mode: 0755
+   when: not _minio_stat.stat.exists
+
+ - name: Create minio group
+   become: true
+   group:
+    name: minio
+    state: present
+    system: true
+
+ - name: Create the minio user
+   become: true
+   user:
+     name: minio
+     groups: minio
+     append: true
+     shell: /usr/sbin/nologin
+     system: true
+     create_home: false
+     home: /
+
+ - name: Ensure that minio data directory exists
+   become: true
+   file:
+     path: /var/lib/minio
+     state: directory
+     mode: '0700'
+     owner: minio
+     group: minio
+
+ - name: Ensure that minio configuration directory exists
+   become: true
+   file:
+     path: /etc/minio
+     state: directory
+     mode: '0700'
+     owner: minio
+     group: minio
+
+ - name: Copy minio configuration
+   become: true
+   copy:
+     content: |
+       MINIO_ROOT_USER={{ minio.username }}
+       MINIO_ROOT_PASSWORD={{ minio.password }}
+     dest: /etc/minio/minio.env
+     mode: '0600'
+     owner: minio
+     group: minio
+   register: _minio_configuration
+
+ - name: Copy the prometheus systemd service file
+   become: true
+   copy:
+     content: |
+       [Unit]
+       Description=MinIO
+       Wants=network-online.target
+       After=network-online.target
+       AssertFileIsExecutable=/usr/local/bin/minio
+
+       [Service]
+       WorkingDirectory=/var/lib/minio/
+       User=minio
+       Group=minio
+       EnvironmentFile=/etc/minio/minio.env
+       ExecStart=/usr/local/bin/minio server /var/lib/minio/
+       Restart=always
+       LimitNOFILE=65536
+       TasksMax=infinity
+       TimeoutStopSec=infinity
+       SendSIGKILL=no
+
+       [Install]
+       WantedBy=multi-user.target
+     dest: /etc/systemd/system/minio.service
+     owner: root
+     group: root
+     mode: 0644
+   register: _minio_service
+
+ - name: Ensure minio is enabled on boot
+   become: true
+   systemd:
+     daemon_reload: true
+     name: minio
+     enabled: true
+     state: restarted
+   when: _minio_service.changed or _minio_configuration.changed
