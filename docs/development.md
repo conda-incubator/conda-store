@@ -24,3 +24,24 @@ The following resources will be available:
      - `data/postgres` postgresql state
      - `data/conda-store` conda-store state
 
+## Jupyterlab Extension
+
+To enable the jupyterlab extension, ensure that an instance of `conda-store` is running.
+
+To build, activate the conda-store environemnt. 
+
+Ensure that you are in the `extensions/` folder. 
+
+Then: 
+
+```shell
+pip install .
+jupyter labextension develop . --overwrite
+jlpm build
+```
+
+These commands should build the extension. Then, 
+
+`jupyter lab`
+
+
