@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { IEnv } from './interfaces';
 import CondaCard from './CondaCard';
-//import Row from 'react-bootstrap/Row';
-//import Col from 'react-bootstrap/Col';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
+import Container from 'react-bootstrap/Container';
 
 /**
  * React component for a group of conda card generated from an array.
@@ -34,8 +35,11 @@ const CardGroupComponent = (props: any) => {
 
   return (
     <div>
+	    <Container fluid="md">
+		    <Row>
       {showCondaCards
 	      ? envdata.map((envData: IEnv) => (
+		      <Col md={6}>
             <CondaCard
               envInfo={envData}
               handleBuildClick={props.handleBuildClick}
@@ -43,8 +47,12 @@ const CardGroupComponent = (props: any) => {
               handleInfoClick={props.handleInfoClick}
               handleImageClick={props.handleImageClick}
             />
+
+		      </Col>
           ))
         : null}
+		    </Row>
+	    </Container>
     </div>
   );
 };

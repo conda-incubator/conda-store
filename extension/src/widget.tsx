@@ -1,6 +1,5 @@
 import { ReactWidget } from '@jupyterlab/apputils';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Jumbotron from 'react-bootstrap/Jumbotron';
@@ -104,7 +103,6 @@ function handleServerSelect(e: any) {
       <div>
       {serverAddress ? (
         <div>
-	<Container fluid style={{ marginTop: '20rem' }}>
             {toggleCondaCards ? (
                   <CardGroupComponent
                     url={serverAddress}
@@ -138,10 +136,8 @@ function handleServerSelect(e: any) {
 				      handleClose={handleImageCancel}
 				      />
 			      </div> : null}
-        </Container>
         </div>
       ) :
-        <Container fluid style={{ height: '100vh' }}>
           <Row
             className="justify-content-center align-items-center"
             style={{ height: '100vh' }}
@@ -156,7 +152,6 @@ function handleServerSelect(e: any) {
               </Jumbotron>
             </Col>
           </Row>
-        </Container>
       }
     </div>
   );
