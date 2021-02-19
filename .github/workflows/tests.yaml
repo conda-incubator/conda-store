@@ -47,3 +47,21 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
         run: |
           docker build -f Dockerfile -t $IMAGE_NAME:$IMAGE_TAG .
+
+  build-extension:
+    name: 'Build JupyterLab Extension'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout Frontend'
+        uses: actions checkout/@master
+      - name: 'Setup conda'
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          environment-file: extension/environment.yaml
+          activate-environment: conda-store-extension
+      - run: |
+          cd extension
+          pip install .
+          jupyterlab install develop . --overwrite
+          jlpm build
+        
