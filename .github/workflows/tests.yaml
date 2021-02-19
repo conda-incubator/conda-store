@@ -65,6 +65,7 @@ jobs:
         shell: bash -l {0}
         run: |
           cd extension
+          yarn
           pip install .
           jupyter labextension develop . --overwrite
           jlpm build

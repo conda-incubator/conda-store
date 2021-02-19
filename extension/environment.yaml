@@ -4,3 +4,4 @@ channels:
 dependencies:
   - jupyter-packaging
   - jupyterlab
+  - yarn
