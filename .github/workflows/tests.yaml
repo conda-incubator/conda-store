@@ -61,7 +61,9 @@ jobs:
         with:
           environment-file: extension/environment.yaml
           activate-environment: conda-store-extension
-      - run: |
+      - name: Bash
+        shell: bash -l {0}
+        run: |
           cd extension
           pip install .
           jupyterlab install develop . --overwrite
