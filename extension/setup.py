@@ -62,13 +62,18 @@ setup_args = dict(
     url="https://github.com/Quansight/conda-store",
     author="Anirrudh Krishnan",
     description="A JupterLab Extension to interface with conda-store",
-    long_description= long_description,
+    long_description=long_description,
     long_description_content_type="text/markdown",
-    cmdclass= cmdclass,
+    cmdclass=cmdclass,
     packages=setuptools.find_packages(),
     install_requires=[
         "jupyterlab>=3.0.0",
     ],
+    extras_require={
+        'dev': [
+            'jupyter-packaging'
+        ],
+    },
     zip_safe=False,
     include_package_data=True,
     python_requires=">=3.6",

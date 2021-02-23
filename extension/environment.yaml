@@ -1,7 +1,0 @@
-name: conda-store-extension
-channels:
-  - conda-forge
-dependencies:
-  - jupyter-packaging
-  - jupyterlab
-  - yarn

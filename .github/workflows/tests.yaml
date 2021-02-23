@@ -61,13 +61,20 @@ jobs:
       - name: 'Install Yarn'
         run: |
           npm install --global yarn
+      - name: 'Check Versions'
+        run: |
           npm --version
           yarn --version
-      # - name: Bash
-      #   shell: bash -l {0}
-      #   run: |
-      #     cd extension
-      #     yarn --version
-      #     pip install .
-      #     jupyter labextension develop . --overwrite
-      #     jlpm build
+      - name: Install conda-store extension python dependencies
+        working-directory: ./extension
+        run: |
+          pip install .[dev]
+      - name: Install conda-store extension node dependencies
+        working-directory: ./extension
+        run: |
+          yarn install
+      - name: Build Jupyterlab extension
+        working-directory: ./extension
+        run: |
+           jupyter labextension develop . --overwrite
+           jlpm build
