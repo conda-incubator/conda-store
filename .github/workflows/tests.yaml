@@ -54,8 +54,6 @@ jobs:
     steps:
       - name: 'Checkout Frontend'
         uses: actions/checkout@v2
-        with:
-          ref: frontend
       - name: 'Setup conda'
         uses: conda-incubator/setup-miniconda@v2
         with:
@@ -69,4 +67,3 @@ jobs:
           pip install .
           jupyter labextension develop . --overwrite
           jlpm build
-        
