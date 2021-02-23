@@ -54,16 +54,20 @@ jobs:
     steps:
       - name: 'Checkout Frontend'
         uses: actions/checkout@v2
-      - name: 'Setup conda'
-        uses: conda-incubator/setup-miniconda@v2
+      - name: 'Install Node'
+        uses: actions/setup-node@v1
         with:
-          environment-file: extension/environment.yaml
-          activate-environment: conda-store-extension
-      - name: Bash
-        shell: bash -l {0}
+          node-version: '12'
+      - name: 'Install Yarn'
         run: |
-          cd extension
-          yarn
-          pip install .
-          jupyter labextension develop . --overwrite
-          jlpm build
+          npm install --global yarn
+          npm --version
+          yarn --version
+      # - name: Bash
+      #   shell: bash -l {0}
+      #   run: |
+      #     cd extension
+      #     yarn --version
+      #     pip install .
+      #     jupyter labextension develop . --overwrite
+      #     jlpm build
