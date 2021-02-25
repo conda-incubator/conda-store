@@ -4,7 +4,7 @@ import logging
 import yaml
 import pydantic
 
-from conda_store import schema
+from conda_store_server import schema
 
 logger = logging.getLogger(__name__)
 

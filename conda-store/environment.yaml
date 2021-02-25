@@ -1,7 +1,7 @@
-name: conda-store-extension
+name: conda-store
 channels:
   - conda-forge
 dependencies:
   - jupyter-packaging
-  - jupyterlab
+  - jupyterlab>=3.0.0
   - yarn

@@ -9,9 +9,12 @@ on:
       - main
 
 jobs:
-  test-general:
-    name: 'Test Package'
+  test-conda-store-server:
+    name: 'Test conda-store-server'
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: conda-store-server
     strategy:
       matrix:
         python-version: [3.6, 3.7, 3.8]
@@ -28,16 +31,19 @@ jobs:
       - name: Black Formatting
         run: |
           black --version
-          black conda_store --diff
-          black --check conda_store
+          black conda_store_server --diff
+          black --check conda_store_server
       - name: Flake8 Formatting
         run: |
           flake8 --version
           flake8
 
-  build-general:
-    name: 'Build Docker Image'
+  build-conda-store-server:
+    name: 'Build conda-store-server docker image'
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: conda-store-server
     steps:
       - name: 'Checkout Infrastructure'
         uses: actions/checkout@master
@@ -48,21 +54,23 @@ jobs:
         run: |
           docker build -f Dockerfile -t $IMAGE_NAME:$IMAGE_TAG .
 
-  build-extension:
+  build-conda-store:
     name: 'Build JupyterLab Extension'
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: conda-store
     steps:
       - name: 'Checkout Frontend'
         uses: actions/checkout@v2
       - name: 'Setup conda'
         uses: conda-incubator/setup-miniconda@v2
         with:
-          environment-file: extension/environment.yaml
-          activate-environment: conda-store-extension
+          environment-file: conda-store/environment.yaml
+          activate-environment: conda-store
       - name: Bash
         shell: bash -l {0}
         run: |
-          cd extension
           yarn
           pip install .
           jupyter labextension develop . --overwrite

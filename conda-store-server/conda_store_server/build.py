@@ -15,8 +15,8 @@ import datetime
 import yaml
 from sqlalchemy import and_
 
-from conda_store import api, utils, conda, orm, schema
-from conda_store.environment import discover_environments
+from conda_store_server import api, utils, conda, orm, schema
+from conda_store_server.environment import discover_environments
 
 
 logger = logging.getLogger(__name__)

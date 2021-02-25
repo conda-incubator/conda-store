@@ -1,8 +1,8 @@
 from flask import Blueprint, jsonify, redirect, request
 import pydantic
 
-from conda_store import api, schema
-from conda_store.server.utils import get_conda_store
+from conda_store_server import api, schema
+from conda_store_server.server.utils import get_conda_store
 
 app_api = Blueprint("api", __name__)
 

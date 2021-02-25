@@ -7,7 +7,7 @@ from jupyter_packaging import (
 import setuptools
 
 HERE = os.path.abspath(os.path.dirname(__file__))
-name="conda_store_extension"
+name="conda_store"
 lab_path = os.path.join(HERE, name, "labextension")
 
 jstargets = [

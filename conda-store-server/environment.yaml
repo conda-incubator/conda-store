@@ -1,4 +1,4 @@
-name: conda-store
+name: conda-store-server
 channels:
   - conda-forge
 dependencies:
