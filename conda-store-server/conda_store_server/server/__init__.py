@@ -1,8 +1,8 @@
 from flask import Flask, g
 from flask_cors import CORS
 
-from conda_store.server import views
-from conda_store.app import CondaStore
+from conda_store_server.server import views
+from conda_store_server.app import CondaStore
 
 
 def start_app(

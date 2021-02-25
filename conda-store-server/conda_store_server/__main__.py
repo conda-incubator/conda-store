@@ -1,4 +1,4 @@
-from conda_store import cli, logging
+from conda_store_server import cli, logging
 
 
 def main():

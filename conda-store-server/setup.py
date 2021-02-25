@@ -53,7 +53,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'conda-store=conda_store.__main__:main',
+            'conda-store-server=conda_store_server.__main__:main',
         ],
     },
     project_urls={

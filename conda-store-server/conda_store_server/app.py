@@ -6,7 +6,7 @@ import shutil
 
 import yaml
 
-from conda_store import orm, utils, storage, schema
+from conda_store_server import orm, utils, storage, schema
 
 logger = logging.getLogger(__name__)
 

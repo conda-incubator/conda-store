@@ -2,8 +2,8 @@ from flask import Blueprint, render_template, request, redirect, Response
 import pydantic
 import yaml
 
-from conda_store import api, schema
-from conda_store.server.utils import get_conda_store
+from conda_store_server import api, schema
+from conda_store_server.server.utils import get_conda_store
 
 app_ui = Blueprint("ui", __name__, template_folder="templates")
 

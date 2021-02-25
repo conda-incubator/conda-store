@@ -1,4 +1,4 @@
-name: conda-store-extension
+name: conda-store
 channels:
   - conda-forge
 dependencies:
