@@ -76,6 +76,6 @@
   ],
   "jupyterlab": {
     "extension": true,
-    "outputDir": "conda_store_extension/labextension"
+    "outputDir": "conda_store/labextension"
   }
 }

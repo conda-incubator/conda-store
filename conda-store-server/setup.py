@@ -7,7 +7,7 @@ long_description = (here / 'README.md').read_text(encoding='utf-8')
 
 
 setup(
-    name='conda-store',
+    name='conda-store-server',
     version='0.1.6',
     description='Conda Environment Management, Builds, and Serve',
     long_description=long_description,
