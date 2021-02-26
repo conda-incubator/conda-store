@@ -80,10 +80,11 @@ jobs:
           npm install --global yarn
       - name: Install Python build dependencies
         run: |
-          pip install jupyter-packaging
+          pip install jupyter-packaging jupyterlab>=3.0.0
       - name: Bash
         shell: bash -l {0}
         run: |
+          export PATH=$PATH:/usr/local/bin
           yarn
           pip install .
           jupyter labextension develop . --overwrite

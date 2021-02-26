@@ -51,7 +51,7 @@ jobs:
           npm install --global yarn
       - name: Install twine and jupyter-packaging
         run: |
-          pip install twine jupyter-packaging
+          pip install twine jupyter-packaging jupyterlab>=3.0.0
       - name: Build and Distribute
         env:
           PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
