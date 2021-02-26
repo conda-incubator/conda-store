@@ -60,14 +60,25 @@ jobs:
     defaults:
       run:
         working-directory: conda-store
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8]
     steps:
-      - name: 'Checkout Frontend'
+      - name: 'Checkout Repository'
         uses: actions/checkout@v2
-      - name: 'Setup conda'
-        uses: conda-incubator/setup-miniconda@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
         with:
-          environment-file: conda-store/environment.yaml
-          activate-environment: conda-store
+          python-version: ${{ matrix.python-version }}
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      - name: Install yarn
+        run: |
+          npm install --global yarn
+      - name: Install Python build dependencies
+        run: |
+          pip install jupyter-packaging
       - name: Bash
         shell: bash -l {0}
         run: |
