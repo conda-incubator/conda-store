@@ -40,7 +40,7 @@ with open("README.md", "r") as fh:
 
 setup_args = dict(
     name="conda_store",
-    version='0.2.0',
+    version='0.2.1',
     url="https://github.com/Quansight/conda-store",
     author="Anirrudh Krishnan",
     description="A JupterLab Extension and client to interface with conda-store",
