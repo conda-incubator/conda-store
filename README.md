@@ -3,6 +3,7 @@
 [![Documentation Status](https://readthedocs.org/projects/conda-store/badge/?version=latest)](https://conda-store.readthedocs.io/en/latest/?badge=latest)
 
 ![PyPI](https://img.shields.io/pypi/v/conda-store-server) Conda Store server
+
 ![PyPI](https://img.shields.io/pypi/v/conda-store) Conda Store client
 
 End users think in terms of environments not packages. The core
