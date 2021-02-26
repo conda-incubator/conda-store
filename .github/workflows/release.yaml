@@ -49,7 +49,7 @@ jobs:
       - name: Install yarn
         run: |
           npm install --global yarn
-      - name: Install twine
+      - name: Install twine and jupyter-packaging
         run: |
           pip install twine jupyter-packaging
       - name: Build and Distribute

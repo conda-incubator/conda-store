@@ -57,7 +57,7 @@ jobs:
           docker build -t $IMAGE_NAME:$IMAGE_TAG ${{ matrix.docker-image }}
 
   test-conda-store:
-    name: 'Test conda-store-server'
+    name: 'Test conda-store'
     runs-on: ubuntu-latest
     defaults:
       run:
