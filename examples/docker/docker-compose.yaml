@@ -2,7 +2,7 @@ version: "2"
 
 services:
   conda-store-build:
-    image: quansight/conda-store-server:v0.2.4
+    image: quansight/conda-store-server:v0.2.5
     depends_on:
       - "postgres"
       - "minio"
@@ -17,7 +17,7 @@ services:
       CONDA_STORE_S3_SECRET_KEY: password
 
   conda-store-server:
-    image: quansight/conda-store-server:v0.2.4
+    image: quansight/conda-store-server:v0.2.5
     depends_on:
       - "postgres"
       - "minio"
@@ -31,7 +31,7 @@ services:
       CONDA_STORE_S3_SECRET_KEY: password
 
   jupyterlab:
-    image: quansight/conda-store:v0.2.4
+    image: quansight/conda-store:v0.2.5
     command: /opt/conda/envs/conda-store/bin/jupyter lab --allow-root --ip=0.0.0.0 --NotebookApp.token=''
     ports:
       - "8888:8888"
