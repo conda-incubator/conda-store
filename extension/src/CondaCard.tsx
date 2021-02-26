@@ -43,7 +43,7 @@ const CondaCard = (props: any) => {
           <Button
             variant="primary"
             onClick={(e) => {
-              props.handleEditEnvClick(e);
+              props.handleEditEnvClick(e, props.envInfo.name);
             }}
           >
             <FontAwesomeIcon icon={faEdit} /> Edit

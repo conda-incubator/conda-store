@@ -1,5 +1,4 @@
 import { ReactWidget } from '@jupyterlab/apputils';
-import { IEnv } from './interfaces';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
@@ -23,11 +22,12 @@ const HomeArea = (): JSX.Element => {
   const [toggleCondaCards, setToggleCondaCards] = useState(true);
   const [toggleImageDl, setToggleImageDl] = useState(false);
   const [environmentData, setEnvironmentData] = useState(null);
+  const [environmentHash, setEnvironmentHash] = useState(null);
 
  const servers = [
    {
      display_name: 'Local Filesystem',
-     url: 'http://localhost:5000/api/v1/environment/',
+     url: 'http://localhost:5000/api/v1/',
      url_build: 'http://localhost:5000/api/v1/build/',
    },
    {},
@@ -37,7 +37,6 @@ const HomeArea = (): JSX.Element => {
  function handleSetEnvironmentData(data: any) {
    setEnvironmentData(data);
    console.log(environmentData);
-   unpackEnvironments(data);
  }
 
   function handleServerSelect(e: any) {
@@ -51,10 +50,13 @@ const HomeArea = (): JSX.Element => {
   /*
    * Handles the edit environment button click
    */
-  function handleEditEnv(e: any) {
+ function handleEditEnv(e: any, name: string) {
     e.preventDefault(); //Prevent a reload
     setToggleEnvironment(true); //
     setToggleCondaCards(false);
+    const ed = environmentData.find((e: any) => e.name == name);
+    const hash = ed.specification.sha256;
+    setEnvironmentHash(hash);
   }
 
   /*
@@ -97,7 +99,7 @@ const HomeArea = (): JSX.Element => {
             {toggleCondaCards ? (
                   <CardGroupComponent
 		    setEnvData={handleSetEnvironmentData}
-                    url={serverAddress}
+                    url={serverAddress+'/environment/'}
                     handleEditEnvClick={handleEditEnv}
                     handleInfoClick={handleInfoClick}
                     handleImageClick={handleImageClick}
@@ -107,7 +109,8 @@ const HomeArea = (): JSX.Element => {
             {toggleEnvironment ? (
               <div>
                 <EnvironmentEditorPanel
-                  url={serverAddress}
+                  url={serverAddress+'/specification/'}
+		  hash={environmentHash}
                   handleCancelClick={handleCancel}
                 />
               </div>
