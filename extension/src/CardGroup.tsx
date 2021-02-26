@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { IEnv } from './interfaces';
 import CondaCard from './CondaCard';
 import Row from 'react-bootstrap/Row';
@@ -11,27 +11,36 @@ import Container from 'react-bootstrap/Container';
  * @returns The React component
  */
 const CardGroupComponent = (props: any) => {
-//  const [envdata, setEnvdata] = useState(null);
-  const [showCondaCards] = useState(true);
+  //const [envdata, setEnvdata] = useState(null);
+  const [showCondaCards, setShowCondaCards] = useState(false);
+  const [cardData, setCardData] = useState(null);
 
-//  useEffect(() => {
-//    const renderCondaCards = async () => {
-//      const response = await fetch(props.url);
-//      const jsondata = await response.json();
-//      setEnvdata(jsondata);
-//      setShowCondaCards(true);
-//    };
-//    renderCondaCards();
-//  }, [
-//	  envdata
-//  ]);
-//
+  useEffect(() => {
+   const renderCondaCards = async () => {
+      const response = await fetch(props.url);
+      const jsondata = await response.json();
+      setCardData(jsondata);
+      setShowCondaCards(true);
+      props.setEnvData(jsondata);
+    };
+
+  const timeout = setTimeout(() => {
+    renderCondaCards(); 
+  }, 3000);
+
+
+  return () => clearTimeout(timeout);
+  }, [
+	 cardData, 
+	 props.setEnvData
+  ]);
+
   return (
     <div>
 	    <Container fluid="md">
 		    <Row>
       {showCondaCards
-	      ? props.envdata.map((envData: IEnv) => (
+	      ? cardData.map((envData: IEnv) => (
 		      <Col md={6}>
             <CondaCard
               envInfo={envData}

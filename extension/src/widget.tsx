@@ -1,4 +1,5 @@
 import { ReactWidget } from '@jupyterlab/apputils';
+import { IEnv } from './interfaces';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
@@ -19,9 +20,9 @@ const HomeArea = (): JSX.Element => {
   const [serverAddress, setServerAddress] = useState(null); // Server Address String.
   const [toggleEnvironment, setToggleEnvironment] = useState(false); // Show/Hide the Env Panel
   const [toggleInfo, setToggleInfo] = useState(false);
-  const [toggleCondaCards, setToggleCondaCards] = useState(false);
+  const [toggleCondaCards, setToggleCondaCards] = useState(true);
   const [toggleImageDl, setToggleImageDl] = useState(false);
-  const [envData, setEnvData] = useState(null);
+  const [environmentData, setEnvironmentData] = useState(null);
 
  const servers = [
    {
@@ -32,24 +33,21 @@ const HomeArea = (): JSX.Element => {
    {},
  ];
 
-
- const getData = async(url: string)  => {
-    let res = await fetch(url);
-    let json = await res.json();
-    setEnvData(json);
-  }
 	
+ function handleSetEnvironmentData(data: any) {
+   setEnvironmentData(data);
+   console.log(environmentData);
+   unpackEnvironments(data);
+ }
+
   function handleServerSelect(e: any) {
     e.preventDefault(); //Prevent a reload
     //TODO: Find a way to figure out which index was selected
     //TODO: Write script to check connections - for now, assuming connection
     setServerAddress(servers[0].url);
-    getData(servers[0].url).then(
-	    () => console.log(envData));
     setToggleCondaCards(true);
    }
-
-  
+ 
   /*
    * Handles the edit environment button click
    */
@@ -98,7 +96,7 @@ const HomeArea = (): JSX.Element => {
         <div>
             {toggleCondaCards ? (
                   <CardGroupComponent
-		    envdata={envData}
+		    setEnvData={handleSetEnvironmentData}
                     url={serverAddress}
                     handleEditEnvClick={handleEditEnv}
                     handleInfoClick={handleInfoClick}
