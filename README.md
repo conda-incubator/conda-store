@@ -1,10 +1,8 @@
 # Conda Store
 
 [![Documentation Status](https://readthedocs.org/projects/conda-store/badge/?version=latest)](https://conda-store.readthedocs.io/en/latest/?badge=latest)
-
-![PyPI](https://img.shields.io/pypi/v/conda-store-server) Conda Store server
-
-![PyPI](https://img.shields.io/pypi/v/conda-store) Conda Store client
+![PyPI](https://img.shields.io/pypi/v/conda-store-server?label=conda-store-server)
+![PyPI](https://img.shields.io/pypi/v/conda-store?label=conda-store)
 
 End users think in terms of environments not packages. The core
 philosophy of conda-store is to serve identical conda environments in
