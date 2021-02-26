@@ -29,7 +29,7 @@ jobs:
           twine upload -u $PYPI_USERNAME -p $PYPI_PASSWORD dist/*
 
   release-conda-store:
-    name: 'PyPi Release conda-store-server'
+    name: 'PyPi Release conda-store'
     runs-on: ubuntu-latest
     steps:
       - name: 'Checkout Infrastructure'
@@ -51,6 +51,7 @@ jobs:
         env:
           PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
           PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        shell: bash -l {0}
         run: |
           cd conda-store
           yarn
