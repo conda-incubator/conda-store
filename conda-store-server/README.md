@@ -77,3 +77,20 @@ this is via `/etc/hosts`
 minio localhost
 ...
 ```
+
+## Extension Local Testing
+
+This extension for jupyterlab providees kernel management from within
+the Jupyter intereface and ecosystem.
+
+*NOTE*: In nixOS, use `conda-shell` and this method will work.
+
+```shell
+cd conda-store
+conda env update -f environment.yaml
+conda activate conda-store
+pip install .
+jupyter labextension develop . --overwrite
+jlpm run build
+jupyter lab
+```
