@@ -14,10 +14,15 @@ const EnvironmentEditorPanel = (props: any) => {
 
   useEffect(() => {
     const getEnvironmentEditorData = async () => {
+      if (props.hash != null) { 
       const response = await fetch(props.url + props.hash);
       const jsondata = await response.json();
       setEnvironmentData(jsondata);
-      setEnvironmentYaml(yaml.load(JSON.stringify(jsondata.spec)));
+      setEnvironmentYaml(yaml.load(JSON.stringify(jsondata.spec))); 
+    }
+    else{
+      console.log('no env data!!');
+    }
     };
     getEnvironmentEditorData();
   }, []);

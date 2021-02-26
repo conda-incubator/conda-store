@@ -17,38 +17,39 @@ import ImageDownloadModal from './ImageDownloadModal';
  */
 const HomeArea = (): JSX.Element => {
   const [serverAddress, setServerAddress] = useState(null); // Server Address String.
-  const [toggleEnvironment, setToggleEnvironment] = useState(false); // Show/Hide the Env Edit Panel
-//  const [toggleErr, setToggleErr] = useState(false);
+  const [toggleEnvironment, setToggleEnvironment] = useState(false); // Show/Hide the Env Panel
   const [toggleInfo, setToggleInfo] = useState(false);
-  const [toggleCondaCards, setToggleCondaCards] = useState(true);
+  const [toggleCondaCards, setToggleCondaCards] = useState(false);
   const [toggleImageDl, setToggleImageDl] = useState(false);
-  const [environmentHash, setEnvironmentHash] = useState('');
+  const [envData, setEnvData] = useState(null);
 
  const servers = [
    {
      display_name: 'Local Filesystem',
      url: 'http://localhost:5000/api/v1/environment/',
-     url_specification: 'http://localhost:5000/api/v1/specification/',
      url_build: 'http://localhost:5000/api/v1/build/',
    },
    {},
  ];
 
+
+ const getData = async(url: string)  => {
+    let res = await fetch(url);
+    let json = await res.json();
+    setEnvData(json);
+  }
 	
-function handleServerSelect(e: any) {
+  function handleServerSelect(e: any) {
     e.preventDefault(); //Prevent a reload
     //TODO: Find a way to figure out which index was selected
     //TODO: Write script to check connections - for now, assuming connection
- 	setServerAddress(servers[0].url);
-}
+    setServerAddress(servers[0].url);
+    getData(servers[0].url).then(
+	    () => console.log(envData));
+    setToggleCondaCards(true);
+   }
 
-  /*
-   * Handles setting the current environment hash value
-   */
-  function handleBuildClick(build_sha: string) {
-    setEnvironmentHash(build_sha);
-  }
-
+  
   /*
    * Handles the edit environment button click
    */
@@ -79,16 +80,7 @@ function handleServerSelect(e: any) {
     e.preventDefault(); //Prevent a reload
     setToggleImageDl(false);
   }
- /*
-   * Handles a "Go Back" when an error occurs.
-   */
-  //function handleBack(e: any) {
-  // e.preventDefault(); //Prevent a reload
-  // setServerAddress('null');
-  // setToggleCondaCards(true);
-  //}
-
- 
+  
   /*
    * Handles a "Cancel"
    */
@@ -99,14 +91,15 @@ function handleServerSelect(e: any) {
     setToggleEnvironment(false);
     setToggleCondaCards(true);
   }
+
   return (
       <div>
       {serverAddress ? (
         <div>
             {toggleCondaCards ? (
                   <CardGroupComponent
+		    envdata={envData}
                     url={serverAddress}
-                    handleBuildClick={handleBuildClick}
                     handleEditEnvClick={handleEditEnv}
                     handleInfoClick={handleInfoClick}
                     handleImageClick={handleImageClick}
@@ -116,12 +109,12 @@ function handleServerSelect(e: any) {
             {toggleEnvironment ? (
               <div>
                 <EnvironmentEditorPanel
-                  url={servers[0].url_specification}
-                  hash={environmentHash}
+                  url={serverAddress}
                   handleCancelClick={handleCancel}
                 />
               </div>
             ) : null}
+
             {toggleInfo ? (
               <div>
                 <BuildInformationPanel

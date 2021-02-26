@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { IEnv } from './interfaces';
 import CondaCard from './CondaCard';
 import Row from 'react-bootstrap/Row';
@@ -11,38 +11,30 @@ import Container from 'react-bootstrap/Container';
  * @returns The React component
  */
 const CardGroupComponent = (props: any) => {
-  const [envdata, setEnvdata] = useState(null);
-  const [showCondaCards, setShowCondaCards] = useState(false);
+//  const [envdata, setEnvdata] = useState(null);
+  const [showCondaCards] = useState(true);
 
-  useEffect(() => {
-    const renderCondaCards = async () => {
-      const response = await fetch(props.url);
-      const jsondata = await response.json();
-      setEnvdata(jsondata);
-      setShowCondaCards(true);
-    };
-    renderCondaCards();
-  }, [
-	  envdata
-  ]);
-//  let test_card: IEnv = {
-//	  name: "test",
-//	  build_id: 4,
-//	  size: 220,
-//	  specification: "lol3ssdf32wef",
-//	  store_path: "/the/path/to/the/store",
-//  }
-
+//  useEffect(() => {
+//    const renderCondaCards = async () => {
+//      const response = await fetch(props.url);
+//      const jsondata = await response.json();
+//      setEnvdata(jsondata);
+//      setShowCondaCards(true);
+//    };
+//    renderCondaCards();
+//  }, [
+//	  envdata
+//  ]);
+//
   return (
     <div>
 	    <Container fluid="md">
 		    <Row>
       {showCondaCards
-	      ? envdata.map((envData: IEnv) => (
+	      ? props.envdata.map((envData: IEnv) => (
 		      <Col md={6}>
             <CondaCard
               envInfo={envData}
-              handleBuildClick={props.handleBuildClick}
               handleEditEnvClick={props.handleEditEnvClick}
               handleInfoClick={props.handleInfoClick}
               handleImageClick={props.handleImageClick}
