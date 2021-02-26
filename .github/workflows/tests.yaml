@@ -56,8 +56,8 @@ jobs:
         run: |
           docker build -t $IMAGE_NAME:$IMAGE_TAG ${{ matrix.docker-image }}
 
-  build-conda-store:
-    name: 'Build JupyterLab Extension'
+  test-conda-store:
+    name: 'Test conda-store-server'
     runs-on: ubuntu-latest
     defaults:
       run:

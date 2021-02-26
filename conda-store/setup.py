@@ -57,6 +57,22 @@ setup_args = dict(
     license="BSD-3-Clause",
     platforms="Linux, Mac OS X, Windows",
     keywords=["Jupyter", "JupyterLab", "JupyterLab3", "conda-store"],
+    classifiers=[
+        'Development Status :: 3 - Alpha',
+        'Intended Audience :: Developers',
+        'Topic :: Software Development :: Build Tools',
+        'License :: OSI Approved :: BSD License',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3 :: Only',
+    ],
+    project_urls={
+        "Bug Reports": "https://github.com/quansight/conda-store",
+        "Documentation": "https://conda-store.readthedocs.io/",
+        "Source": "https://github.com/quansight/conda-store",
+    },
 )
 
 
