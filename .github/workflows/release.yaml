@@ -6,9 +6,12 @@ on:
       - 'v*'
 
 jobs:
-  release:
-    name: 'PyPi Release'
+  release-conda-store-server:
+    name: 'PyPi Release conda-store-server'
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: conda-store-server
     steps:
       - name: 'Checkout Infrastructure'
         uses: actions/checkout@main
@@ -16,7 +19,7 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.8
-      - name: Install QHub
+      - name: Install twine
         run: |
           pip install twine
       - name: Build and Distribute
@@ -27,9 +30,46 @@ jobs:
           python setup.py sdist
           twine upload -u $PYPI_USERNAME -p $PYPI_PASSWORD dist/*
 
-  docker:
-    name: 'Build Docker Release Image'
+  release-conda-store:
+    name: 'PyPi Release conda-store'
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: conda-store
+    steps:
+      - name: 'Checkout Infrastructure'
+        uses: actions/checkout@main
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      - name: Install yarn
+        run: |
+          npm install --global yarn
+      - name: Install twine and jupyter-packaging
+        run: |
+          pip install twine jupyter-packaging jupyterlab>=3.0.0
+      - name: Build and Distribute
+        env:
+          PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        shell: bash -l {0}
+        run: |
+          yarn
+          python setup.py sdist
+          twine upload -u $PYPI_USERNAME -p $PYPI_PASSWORD dist/*
+
+  docker:
+    name: 'Build Docker Release Images'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        docker-image:
+          - conda-store
+          - conda-store-server
     steps:
       - name: 'Checkout Infrastructure'
         uses: actions/checkout@master
@@ -41,9 +81,9 @@ jobs:
           docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
       - name: Docker Build, Tag, Push Image
         env:
-          IMAGE_NAME: quansight/conda-store
+          IMAGE_NAME: quansight/${{ matrix.docker-image }}
         run: |
-          docker build -f Dockerfile -t $IMAGE_NAME:${GITHUB_REF#refs/*/} .
+          docker build -t $IMAGE_NAME:${GITHUB_REF#refs/*/} ${{ matrix.docker-image }}
           docker push $IMAGE_NAME:${GITHUB_REF#refs/*/}
       - name: Docker Logout
         run: |

@@ -1,8 +1,8 @@
 # Conda Store
 
 [![Documentation Status](https://readthedocs.org/projects/conda-store/badge/?version=latest)](https://conda-store.readthedocs.io/en/latest/?badge=latest)
-
-![PyPI](https://img.shields.io/pypi/v/conda-store)
+[![PyPI](https://img.shields.io/pypi/v/conda-store-server?label=conda-store-server)](https://pypi.org/project/conda-store-server/)
+[![PyPI](https://img.shields.io/pypi/v/conda-store?label=conda-store)](https://pypi.org/project/conda-store/)
 
 End users think in terms of environments not packages. The core
 philosophy of conda-store is to serve identical conda environments in
@@ -76,4 +76,21 @@ this is via `/etc/hosts`
 ...
 minio localhost
 ...
+```
+
+## Extension Local Testing
+
+This extension for jupyterlab providees kernel management from within
+the Jupyter intereface and ecosystem.
+
+*NOTE*: In nixOS, use `conda-shell` and this method will work.
+
+```shell
+cd conda-store
+conda env update -f environment.yaml
+conda activate conda-store
+pip install .
+jupyter labextension develop . --overwrite
+jlpm run build
+jupyter lab
 ```

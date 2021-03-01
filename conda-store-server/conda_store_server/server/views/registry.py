@@ -3,8 +3,8 @@ import time
 
 from flask import Blueprint, redirect, Response
 
-from conda_store.server.utils import get_conda_store
-from conda_store import schema, api
+from conda_store_server.server.utils import get_conda_store
+from conda_store_server import schema, api
 
 
 app_registry = Blueprint("registry", __name__)

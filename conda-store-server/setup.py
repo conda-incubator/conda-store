@@ -7,8 +7,8 @@ long_description = (here / 'README.md').read_text(encoding='utf-8')
 
 
 setup(
-    name='conda-store',
-    version='0.1.6',
+    name='conda-store-server',
+    version='0.2.5',
     description='Conda Environment Management, Builds, and Serve',
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -53,7 +53,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'conda-store=conda_store.__main__:main',
+            'conda-store-server=conda_store_server.__main__:main',
         ],
     },
     project_urls={

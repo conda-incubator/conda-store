@@ -2,37 +2,39 @@ version: "2"
 
 services:
   conda-store-build:
-    image: quansight/conda-store:v0.1.6
+    image: quansight/conda-store-server:v0.2.5
     depends_on:
       - "postgres"
       - "minio"
     volumes:
       - ../environments:/opt/environments:ro
       - ./data/conda-store:/data
-    command: ["wait-for-it", "postgres:5432", '--', 'conda-store', 'build', '-p', '/opt/environments', '-e', '/data/envs', '-s', '/data/store', '--uid', '1000', '--gid', '100', '--permissions', '775', '--storage-backend', 's3']
+    command: ["wait-for-it", "postgres:5432", '--', 'conda-store-server', 'build', '-p', '/opt/environments', '-e', '/data/envs', '-s', '/data/store', '--uid', '1000', '--gid', '100', '--permissions', '775', '--storage-backend', 's3']
     environment:
-      TZ: America/New_York
       CONDA_STORE_DB_URL: "postgresql+psycopg2://admin:password@postgres/conda-store"
       CONDA_STORE_S3_ENDPOINT: minio:9000
       CONDA_STORE_S3_ACCESS_KEY: admin
       CONDA_STORE_S3_SECRET_KEY: password
-      PATH: "/opt/conda/envs/conda-store/bin:/opt/conda/bin:/opt/conda/condabin:/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
   conda-store-server:
-    image: quansight/conda-store:v0.1.6
+    image: quansight/conda-store-server:v0.2.5
     depends_on:
       - "postgres"
       - "minio"
-    command: ["wait-for-it", "postgres:5432", '--', 'conda-store', 'serve', '-s', '/data/store', '--port', '5000']
+    command: ["wait-for-it", "postgres:5432", '--', 'conda-store-server', 'server', '-s', '/data/store', '--port', '5000']
     ports:
       - "5000:5000"
     environment:
-      TZ: America/New_York
       CONDA_STORE_DB_URL: "postgresql+psycopg2://admin:password@postgres/conda-store"
       CONDA_STORE_S3_ENDPOINT: minio:9000
       CONDA_STORE_S3_ACCESS_KEY: admin
       CONDA_STORE_S3_SECRET_KEY: password
-      PATH: "/opt/conda/envs/conda-store/bin:/opt/conda/bin:/opt/conda/condabin:/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+  jupyterlab:
+    image: quansight/conda-store:v0.2.5
+    command: /opt/conda/envs/conda-store/bin/jupyter lab --allow-root --ip=0.0.0.0 --NotebookApp.token=''
+    ports:
+      - "8888:8888"
 
   minio:
     image: minio/minio:RELEASE.2020-11-10T21-02-24Z

@@ -4,7 +4,7 @@ import datetime
 
 from sqlalchemy import and_
 
-from conda_store import orm
+from conda_store_server import orm
 
 
 logger = logging.getLogger(__name__)

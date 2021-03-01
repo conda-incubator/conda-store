@@ -9,9 +9,12 @@ on:
       - main
 
 jobs:
-  test-general:
-    name: 'Test Package'
+  test-conda-store-server:
+    name: 'Test conda-store-server'
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: conda-store-server
     strategy:
       matrix:
         python-version: [3.6, 3.7, 3.8]
@@ -28,41 +31,60 @@ jobs:
       - name: Black Formatting
         run: |
           black --version
-          black conda_store --diff
-          black --check conda_store
+          black conda_store_server --diff
+          black --check conda_store_server
       - name: Flake8 Formatting
         run: |
           flake8 --version
           flake8
 
-  build-general:
-    name: 'Build Docker Image'
+  build-docker-image:
+    name: 'Build docker images'
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        docker-image:
+          - conda-store
+          - conda-store-server
     steps:
       - name: 'Checkout Infrastructure'
-        uses: actions/checkout@master
+        uses: actions/checkout@v2
       - name: Docker Build, Tag, Push Image
         env:
-          IMAGE_NAME: quansight/conda-store
+          IMAGE_NAME: quansight/${{ matrix.docker-image }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -f Dockerfile -t $IMAGE_NAME:$IMAGE_TAG .
+          docker build -t $IMAGE_NAME:$IMAGE_TAG ${{ matrix.docker-image }}
 
-  build-extension:
-    name: 'Build JupyterLab Extension'
+  test-conda-store:
+    name: 'Test conda-store'
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: conda-store
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8]
     steps:
-      - name: 'Checkout Frontend'
+      - name: 'Checkout Repository'
         uses: actions/checkout@v2
-      - name: 'Setup conda'
-        uses: conda-incubator/setup-miniconda@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
         with:
-          environment-file: extension/environment.yaml
-          activate-environment: conda-store-extension
+          python-version: ${{ matrix.python-version }}
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+      - name: Install yarn
+        run: |
+          npm install --global yarn
+      - name: Install Python build dependencies
+        run: |
+          pip install jupyter-packaging jupyterlab>=3.0.0
       - name: Bash
         shell: bash -l {0}
         run: |
-          cd extension
+          export PATH=$PATH:/usr/local/bin
           yarn
           pip install .
           jupyter labextension develop . --overwrite

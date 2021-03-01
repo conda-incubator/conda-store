@@ -5,8 +5,8 @@ from typing import List
 import typer
 import yaml
 
-from conda_store import schema, server, build, client
-from conda_store.app import CondaStore
+from conda_store_server import schema, server, build, client
+from conda_store_server.app import CondaStore
 
 
 logger = logging.getLogger(__name__)

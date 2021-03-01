@@ -19,9 +19,9 @@ from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine
 
-from conda_store import utils
-from conda_store.environment import validate_environment
-from conda_store.conda import download_repodata, normalize_channel_name
+from conda_store_server import utils
+from conda_store_server.environment import validate_environment
+from conda_store_server.conda import download_repodata, normalize_channel_name
 
 
 logger = logging.getLogger(__name__)

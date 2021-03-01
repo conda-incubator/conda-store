@@ -15,8 +15,8 @@ import datetime
 import yaml
 from sqlalchemy import and_
 
-from conda_store import api, utils, conda, orm, schema
-from conda_store.environment import discover_environments
+from conda_store_server import api, utils, conda, orm, schema
+from conda_store_server.environment import discover_environments
 
 
 logger = logging.getLogger(__name__)
@@ -264,7 +264,7 @@ def build_docker_image(conda_store, conda_prefix, build):
         base_image="frolvlad/alpine-glibc:latest",
         output_image=f"{build.specification.name}:{build.specification.sha256}",
         records=records,
-        default_prefix=info["default_prefix"],
+        default_prefix=info["env_vars"]["CONDA_ROOT"],
         download_dir=download_dir,
         user_conda=user_conda,
         channels_remap=info.get("channels_remap", []),
