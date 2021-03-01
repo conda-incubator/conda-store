@@ -11,38 +11,39 @@ import Container from 'react-bootstrap/Container';
  * @returns The React component
  */
 const CardGroupComponent = (props: any) => {
-  const [envdata, setEnvdata] = useState(null);
+  //const [envdata, setEnvdata] = useState(null);
   const [showCondaCards, setShowCondaCards] = useState(false);
+  const [cardData, setCardData] = useState(null);
 
   useEffect(() => {
-    const renderCondaCards = async () => {
+   const renderCondaCards = async () => {
       const response = await fetch(props.url);
       const jsondata = await response.json();
-      setEnvdata(jsondata);
+      setCardData(jsondata);
       setShowCondaCards(true);
+      props.setEnvData(jsondata);
     };
-    renderCondaCards();
+
+  const timeout = setTimeout(() => {
+    renderCondaCards(); 
+  }, 3000);
+
+
+  return () => clearTimeout(timeout);
   }, [
-	  envdata
+	 cardData, 
+	 props.setEnvData
   ]);
-//  let test_card: IEnv = {
-//	  name: "test",
-//	  build_id: 4,
-//	  size: 220,
-//	  specification: "lol3ssdf32wef",
-//	  store_path: "/the/path/to/the/store",
-//  }
 
   return (
     <div>
 	    <Container fluid="md">
 		    <Row>
       {showCondaCards
-	      ? envdata.map((envData: IEnv) => (
+	      ? cardData.map((envData: IEnv) => (
 		      <Col md={6}>
             <CondaCard
               envInfo={envData}
-              handleBuildClick={props.handleBuildClick}
               handleEditEnvClick={props.handleEditEnvClick}
               handleInfoClick={props.handleInfoClick}
               handleImageClick={props.handleImageClick}
