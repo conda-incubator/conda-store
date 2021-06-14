@@ -15,6 +15,8 @@ To deploy `conda-store` run the following command
 docker-compose up --build
 ```
 
+Note: If you are not running this command from a Linux `amd64` system, make sure to export `DOCKER_DEFAULT_PLATFORM=linux/amd64` before.
+
 The following resources will be available:
   - conda-store web server running at http://localhost:5000
   - minio s3 running at http://localhost:9000 with username `admin` and password `password`
