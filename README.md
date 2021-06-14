@@ -1,8 +1,10 @@
 # Conda Store
 
 [![Documentation Status](https://readthedocs.org/projects/conda-store/badge/?version=latest)](https://conda-store.readthedocs.io/en/latest/?badge=latest)
-[![PyPI](https://img.shields.io/pypi/v/conda-store-server?label=conda-store-server)](https://pypi.org/project/conda-store-server/)
-[![PyPI](https://img.shields.io/pypi/v/conda-store?label=conda-store)](https://pypi.org/project/conda-store/)
+[![PyPI](https://img.shields.io/pypi/v/conda-store-server?label=pypi|conda-store-server)](https://pypi.org/project/conda-store-server/)
+[![PyPI](https://img.shields.io/pypi/v/conda-store?label=pypi|conda-store)](https://anaconda.org/conda-forge/conda-store)
+[![Conda](https://img.shields.io/conda/vn/conda-forge/conda-store-server?color=green&label=conda-forge%7Cconda-store-server)](https://anaconda.org/conda-forge/conda-store-server)
+[![Conda](https://img.shields.io/conda/vn/conda-forge/conda-store?color=green&label=conda-forge%7Cconda-store)](https://anaconda.org/conda-forge/conda-store)
 
 End users think in terms of environments not packages. The core
 philosophy of conda-store is to serve identical conda environments in
