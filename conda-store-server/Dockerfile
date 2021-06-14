@@ -1,4 +1,4 @@
-FROM condaforge/miniforge3:latest
+FROM mambaorg/micromamba
 
 
 RUN apt-get update \
@@ -10,7 +10,7 @@ RUN apt-get update \
 
 COPY environment.yaml /opt/conda-store-server/environment.yaml
 
-RUN conda env create -f /opt/conda-store-server/environment.yaml
+RUN micromamba create -y -f /opt/conda-store-server/environment.yaml
 
 COPY ./ /opt/conda-store-server/
 

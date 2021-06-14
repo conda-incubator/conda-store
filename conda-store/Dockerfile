@@ -1,8 +1,8 @@
-FROM condaforge/miniforge3:latest
+FROM mambaorg/micromamba
 
 COPY environment.yaml /opt/conda-store/environment.yaml
 
-RUN conda env create -f /opt/conda-store/environment.yaml
+RUN micromamba create -y -f /opt/conda-store/environment.yaml
 
 COPY ./ /opt/conda-store/
 
