@@ -1,5 +1,4 @@
-FROM mambaorg/micromamba
-
+FROM --platform=linux/amd64 mambaorg/micromamba
 
 RUN apt-get update \
     # https://docs.anaconda.org/anaconda/install/linux/#installing-on-linux
