@@ -1,4 +1,4 @@
-FROM condaforge/miniforge3:latest
+FROM --platform=linux/amd64 condaforge/miniforge3:latest
 
 
 RUN apt-get update \

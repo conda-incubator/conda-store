@@ -28,11 +28,11 @@ The following resources will be available:
 
 To enable the jupyterlab extension, ensure that an instance of `conda-store` is running.
 
-To build, activate the conda-store environemnt. 
+To build, activate the conda-store environemnt.
 
-Ensure that you are in the `extensions/` folder. 
+Ensure that you are in the `extensions/` folder.
 
-Then: 
+Then:
 
 ```shell
 pip install .
@@ -40,7 +40,7 @@ jupyter labextension develop . --overwrite
 jlpm build
 ```
 
-These commands should build the extension. Then, 
+These commands should build the extension. Then,
 
 `jupyter lab`
 
