@@ -87,7 +87,7 @@ class Build(Base):
 
     def build_path(self, store_directory):
         store_path = pathlib.Path(store_directory).resolve()
-        return store_path / f"{self.specification.sha256}-{self.specification.name}"
+        return store_path / f"{self.specification.sha256}-{self.specification.created_on}-{self.specification.name}"
 
     def environment_path(self, environment_directory):
         environment_directory = pathlib.Path(environment_directory).resolve()
@@ -95,15 +95,15 @@ class Build(Base):
 
     @property
     def log_key(self):
-        return f"logs/{self.specification.name}/{self.specification.sha256}/{self.id}"
+        return f"logs/{self.specification.name}/{self.specification.sha256}/{self.specification.created_on}/{self.id}"
 
     @property
     def conda_pack_key(self):
-        return f"archive/{self.specification.name}/{self.specification.sha256}/{self.id}.tar.gz"
+        return f"archive/{self.specification.name}/{self.specification.sha256}/{self.specification.created_on}/{self.id}.tar.gz"
 
     @property
     def docker_manifest_key(self):
-        return f"docker/manifest/{self.specification.name}/{self.specification.sha256}"
+        return f"docker/manifest/{self.specification.name}/{self.specification.sha256}/{self.specification.created_on}"
 
     def docker_blob_key(self, blob_hash):
         return f"docker/blobs/{blob_hash}"
