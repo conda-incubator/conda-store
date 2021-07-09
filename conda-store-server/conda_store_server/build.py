@@ -110,6 +110,10 @@ def set_build_completed(conda_store, build, logs, packages):
 
 def start_conda_build(conda_store, paths, storage_threshold, poll_interval):
     logger.info(f"polling interval set to {poll_interval} seconds")
+    # negative intervals make this function behave as a one shot (no loop)
+    # it will exit after finishing all schedulable builds, no retries
+    one_shot = poll_interval <= 0
+    any_failures = False
     while True:
         environments = discover_environments(paths)
         for environment in environments:
@@ -128,13 +132,19 @@ def start_conda_build(conda_store, paths, storage_threshold, poll_interval):
         num_schedulable_builds = api.get_num_schedulable_builds(conda_store.db)
         if num_schedulable_builds > 0:
             logger.info(f"number of schedulable conda builds {num_schedulable_builds}")
-            conda_build(conda_store)
+            result = conda_build(conda_store, reschedule=not one_shot)
+            any_failures = result is False
             time.sleep(1)
         else:
+            if one_shot:
+                if any_failures:
+                    raise ValueError("Some builds didn't succeed")
+                else:
+                    return
             time.sleep(poll_interval)
 
 
-def conda_build(conda_store):
+def conda_build(conda_store, reschedule=True):
     build = claim_build(conda_store)
     store_directory = pathlib.Path(conda_store.configuration.store_directory)
     environment_directory = pathlib.Path(
@@ -173,8 +183,8 @@ def conda_build(conda_store):
                             conda_store, build_path, tmp_environment_filename
                         )
                     except subprocess.CalledProcessError as e:
-                        set_build_failed(conda_store, build, e.output.encode("utf-8"))
-                        return
+                        set_build_failed(conda_store, build, e.output.encode("utf-8"), reschedule=reschedule)
+                        return False
 
         utils.symlink(build_path, environment_path)
 
@@ -212,14 +222,16 @@ def conda_build(conda_store):
             build_docker_image(conda_store, build_path, build)
 
         set_build_completed(conda_store, build, output.encode("utf-8"), packages)
+        return True
     except Exception as e:
         logger.exception(e)
-        set_build_failed(conda_store, build, traceback.format_exc().encode("utf-8"))
+        set_build_failed(conda_store, build, traceback.format_exc().encode("utf-8"), reschedule=reschedule)
+        return False
     except BaseException as e:
         logger.error(
             f"exception {e.__class__.__name__} caught causing build={build.id} to be rescheduled"
         )
-        set_build_failed(conda_store, build, traceback.format_exc().encode("utf-8"))
+        set_build_failed(conda_store, build, traceback.format_exc().encode("utf-8"), reschedule=reschedule)
         sys.exit(1)
 
 

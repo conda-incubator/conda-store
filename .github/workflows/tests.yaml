@@ -89,3 +89,22 @@ jobs:
           pip install .
           jupyter labextension develop . --overwrite
           jlpm build
+
+  test-compose:
+    name: Test conda-store-build on Docker
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      - name: Run tests
+        run: |
+          docker compose run conda-store-build \
+            conda-store-server build \
+              -p /opt/environments
+              -e /data/envs \
+              -s /data/store \
+              --uid $(id -u) \
+              --gid $(id -g) \
+              --permissions 755 \
+              --storage-backend s3 \
+              --poll-interval -1
