@@ -100,7 +100,7 @@ jobs:
         run: |
           docker compose run conda-store-build \
             conda-store-server build \
-              -p /opt/environments
+              -p /opt/environments \
               -e /data/envs \
               -s /data/store \
               --uid $(id -u) \
