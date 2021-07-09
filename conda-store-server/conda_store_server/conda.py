@@ -30,9 +30,11 @@ def download_repodata(channel, architectures=None):
 
     A channel consists of several architectures: linux-32, linux-64,
     linux-aarch64, linux-armv6l, linux-armv7l, linux-ppc64le, noarch,
-    osx-64, win-32, win-64, zos-z (possibly others)
+    osx-64, win-32, win-64, zos-z (possibly others).
+
+    Check ``conda.base.constants.KNOWN_SUBDIRS`` for the full list.
     """
-    architectures = set(architectures or ["linux-64", "noarch"])
+    architectures = set(architectures or [conda_platform(), "noarch"])
 
     url = f"{channel}/channeldata.json"
     logger.info(f"downloading channeldata url={url}")
@@ -47,3 +49,13 @@ def download_repodata(channel, architectures=None):
         repodata[architecture] = requests.get(url).json()
 
     return repodata
+
+
+def conda_platform():
+    """
+    Return the platform (in ``conda`` style) the server is running on.
+
+    It will be one of the values in ``conda.base.constants.KNOWN_SUBDIRS``.
+    """
+    from conda.base.context import context
+    return context.subdir
