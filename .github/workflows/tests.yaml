@@ -93,6 +93,12 @@ jobs:
   test-compose:
     name: Test conda-store-build on Docker
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        storage-backend:
+          - s3
+          - filesystem
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
@@ -107,5 +113,5 @@ jobs:
               --uid $(id -u) \
               --gid $(id -g) \
               --permissions 755 \
-              --storage-backend filesystem \
+              --storage-backend ${{ matrix.storage-backend }} \
               --poll-interval -1
