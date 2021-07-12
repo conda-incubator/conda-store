@@ -99,6 +99,7 @@ jobs:
       - name: Run tests
         run: |
           docker-compose run conda-store-build \
+            wait-for-it postgres:5432 -- \
             conda-store-server build \
               -p /opt/environments \
               -e /data/envs \
