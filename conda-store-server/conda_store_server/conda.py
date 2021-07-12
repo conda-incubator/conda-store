@@ -21,9 +21,15 @@ def conda_list(prefix):
 
 
 def conda_pack(prefix, output):
+    import os
     import conda_pack
 
-    conda_pack.pack(prefix=str(prefix), output=str(output))
+    ignore = os.environ.get("CONDA_PACK_IGNORE_MISSING_FILES", "") == "1"
+    conda_pack.pack(
+        prefix=str(prefix),
+        output=str(output),
+        ignore_missing_files=ignore,
+    )
 
 
 def download_repodata(channel, architectures=None):
