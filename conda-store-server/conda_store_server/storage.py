@@ -59,7 +59,9 @@ class LocalStorage(Storage):
         self.base_url = base_url
 
     def fset(self, key, filename, content_type=None):
-        shutil.copyfile(filename, self.storage_path / key)
+        dest = self.storage_path / key
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(filename, dest)
 
     def set(self, key, value, content_type=None):
         with (self.storage_path / key).open("wb") as f:
