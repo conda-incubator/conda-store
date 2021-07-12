@@ -91,7 +91,7 @@ jobs:
           jlpm build
 
   test-compose:
-    name: Test conda-store-build on Docker
+    name: Test conda-store-build on Docker, backend=${{ matrix.store-backend }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
