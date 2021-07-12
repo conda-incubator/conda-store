@@ -107,5 +107,5 @@ jobs:
               --uid $(id -u) \
               --gid $(id -g) \
               --permissions 755 \
-              --storage-backend s3 \
+              --storage-backend filesystem \
               --poll-interval -1
