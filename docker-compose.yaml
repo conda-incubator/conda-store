@@ -8,7 +8,7 @@ services:
       - "minio"
     volumes:
       - ./tests/assets/environments:/opt/environments:ro
-      - ./data/conda-store:/data
+      # - ./data/conda-store:/data
     platform: linux/amd64
     command: ["wait-for-it", "postgres:5432", '--', 'conda-store-server', 'build', '-p', '/opt/environments', '-e', '/data/envs', '-s', '/data/store', '--uid', '1000', '--gid', '100', '--permissions', '775', '--storage-backend', 's3']
     environment:
@@ -44,8 +44,8 @@ services:
       - "9000:9000"
     entrypoint: sh
     command: -c 'mkdir -p /data/conda-store && /usr/bin/minio server /data'
-    volumes:
-      - ./data/minio:/data
+    # volumes:
+      # - ./data/minio:/data
     environment:
       MINIO_ACCESS_KEY: admin
       MINIO_SECRET_KEY: password
@@ -55,8 +55,8 @@ services:
     # TODO: need to properly fix this without this hack
     # reuse sqlalchemy connections
     command: postgres -c 'max_connections=200'
-    volumes:
-      - ./data/postgresql:/var/lib/postgresql/data
+    # volumes:
+      # - ./data/postgresql:/var/lib/postgresql/data
     ports:
       - 5432:5432
     environment:
