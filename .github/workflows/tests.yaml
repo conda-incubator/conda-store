@@ -42,6 +42,7 @@ jobs:
     name: 'Build docker images'
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         docker-image:
           - conda-store
@@ -94,6 +95,7 @@ jobs:
     name: Test conda-store-build on Docker, backend=${{ matrix.storage-backend }}
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         storage-backend:
           - s3
