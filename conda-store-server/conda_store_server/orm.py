@@ -38,9 +38,7 @@ class BuildStatus(enum.Enum):
 
 
 class Specification(Base):
-    """The specifiction for a given conda environment
-
-    """
+    """The specifiction for a given conda environment"""
 
     __tablename__ = "specification"
 
@@ -75,9 +73,7 @@ build_conda_package = Table(
 
 
 class Build(Base):
-    """The state of a build of a given specification
-
-    """
+    """The state of a build of a given specification"""
 
     __tablename__ = "build"
 

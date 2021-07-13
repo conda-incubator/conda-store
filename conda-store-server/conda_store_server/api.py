@@ -5,7 +5,7 @@ import datetime
 from sqlalchemy import and_
 
 from conda_store_server import orm
-
+from .conda import conda_platform
 
 logger = logging.getLogger(__name__)
 
@@ -79,11 +79,11 @@ def get_build_lockfile(db, build_id):
         f"{row.channel}/{row.subdir}/{row.name}-{row.version}-{row.build}.tar.bz2#{row.md5}"
         for row in build.packages
     ]
-    return """#platform: linux-64
+    return """#platform: {0}
 @EXPLICIT
-{0}
+{1}
 """.format(
-        "\n".join(packages)
+        conda_platform(), "\n".join(packages)
     )
 
 

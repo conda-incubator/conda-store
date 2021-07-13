@@ -4,6 +4,7 @@ import yaml
 
 from conda_store_server import api, schema
 from conda_store_server.server.utils import get_conda_store
+from conda_store_server.conda import conda_platform
 
 app_ui = Blueprint("ui", __name__, template_folder="templates")
 
@@ -78,7 +79,7 @@ def ui_get_specification(sha256):
 def ui_get_build(build_id):
     conda_store = get_conda_store()
     build = api.get_build(conda_store.db, build_id)
-    return render_template("build.html", build=build)
+    return render_template("build.html", build=build, platform=conda_platform())
 
 
 @app_ui.route("/build/<build_id>/logs/", methods=["GET"])
