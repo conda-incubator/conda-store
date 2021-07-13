@@ -87,7 +87,10 @@ class Build(Base):
 
     def build_path(self, store_directory):
         store_path = pathlib.Path(store_directory).resolve()
-        return store_path / f"{self.specification.sha256}-{self.specification.created_on}-{self.specification.name}"
+        return (
+            store_path
+            / f"{self.specification.sha256}-{self.specification.created_on}-{self.specification.name}"
+        )
 
     def environment_path(self, environment_directory):
         environment_directory = pathlib.Path(environment_directory).resolve()
