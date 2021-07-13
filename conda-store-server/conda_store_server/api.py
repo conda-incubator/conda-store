@@ -83,8 +83,7 @@ def get_build_lockfile(db, build_id):
 @EXPLICIT
 {1}
 """.format(
-        conda_platform(),
-        "\n".join(packages)
+        conda_platform(), "\n".join(packages)
     )
 
 
