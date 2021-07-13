@@ -5,6 +5,7 @@ dependencies:
   # conda environment builds
   - conda-docker
   - conda-pack
+  - micromamba
   # web server
   - sqlalchemy
   - psycopg2
