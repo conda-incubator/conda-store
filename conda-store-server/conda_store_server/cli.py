@@ -96,7 +96,7 @@ def cli_conda_store_build_command(
         10,
         "--poll-interval",
         help="poll interval to check environment directory for new environments."
-             "If negative, it will exit after trying to build all environments.",
+        "If negative, it will exit after trying to build all environments.",
     ),
 ):
     conda_store = CondaStore(

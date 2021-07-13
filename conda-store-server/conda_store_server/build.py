@@ -183,7 +183,12 @@ def conda_build(conda_store, reschedule=True):
                             conda_store, build_path, tmp_environment_filename
                         )
                     except subprocess.CalledProcessError as e:
-                        set_build_failed(conda_store, build, e.output.encode("utf-8"), reschedule=reschedule)
+                        set_build_failed(
+                            conda_store,
+                            build,
+                            e.output.encode("utf-8"),
+                            reschedule=reschedule,
+                        )
                         return False
 
         utils.symlink(build_path, environment_path)
@@ -225,13 +230,23 @@ def conda_build(conda_store, reschedule=True):
         return True
     except Exception as e:
         logger.exception(e)
-        set_build_failed(conda_store, build, traceback.format_exc().encode("utf-8"), reschedule=reschedule)
+        set_build_failed(
+            conda_store,
+            build,
+            traceback.format_exc().encode("utf-8"),
+            reschedule=reschedule,
+        )
         return False
     except BaseException as e:
         logger.error(
             f"exception {e.__class__.__name__} caught causing build={build.id} to be rescheduled"
         )
-        set_build_failed(conda_store, build, traceback.format_exc().encode("utf-8"), reschedule=reschedule)
+        set_build_failed(
+            conda_store,
+            build,
+            traceback.format_exc().encode("utf-8"),
+            reschedule=reschedule,
+        )
         sys.exit(1)
 
 
