@@ -1,6 +1,7 @@
 import json
 import subprocess
 import logging
+import bz2
 
 import requests
 
@@ -36,14 +37,18 @@ def download_repodata(channel, architectures=None):
 
     url = f"{channel}/channeldata.json"
     logger.info(f"downloading channeldata url={url}")
-    data = requests.get(url).json()
+    resp = requests.get(url)
+    resp.raise_for_status()
+    data = resp.json()
     if not (architectures <= set(data["subdirs"])):
         raise ValueError("required architectures from channel not available")
 
     repodata = {}
     for architecture in architectures:
-        url = f"{channel}/{architecture}/repodata.json"
+        url = f"{channel}/{architecture}/repodata.json.bz2"
         logger.info(f"downloading repodata url={url}")
-        repodata[architecture] = requests.get(url).json()
+        resp = requests.get(url)
+        resp.raise_for_status()
+        repodata[architecture] = json.loads(bz2.decompress(resp.content))
 
     return repodata

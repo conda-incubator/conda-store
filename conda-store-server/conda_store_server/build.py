@@ -207,7 +207,8 @@ def conda_build(conda_store):
         build.size = utils.disk_usage(build_path)
 
         build_conda_pack(conda_store, build_path, build)
-        build_docker_image(conda_store, build_path, build)
+        if os.environ.get("CONDA_STORE_DO_NOT_CREATE_DOCKER_IMAGES") != "1":
+            build_docker_image(conda_store, build_path, build)
 
         set_build_completed(conda_store, build, output.encode("utf-8"), packages)
     except Exception as e:
