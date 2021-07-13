@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 mambaorg/micromamba
+FROM --platform=linux/amd64 condaforge/mambaforge
 
 RUN apt-get update \
     # https://docs.anaconda.org/anaconda/install/linux/#installing-on-linux
@@ -9,7 +9,7 @@ RUN apt-get update \
 
 COPY environment.yaml /opt/conda-store-server/environment.yaml
 
-RUN micromamba create -y -f /opt/conda-store-server/environment.yaml
+RUN mamba env create -f /opt/conda-store-server/environment.yaml
 
 COPY ./ /opt/conda-store-server/
 

@@ -11,6 +11,7 @@ import time
 import hashlib
 import gzip
 import datetime
+from distutils.spawn import find_executable
 
 import yaml
 from sqlalchemy import and_
@@ -224,7 +225,7 @@ def conda_build(conda_store):
 
 def build_conda_install(conda_store, build_path, environment_filename):
     args = [
-        "conda",
+        "mamba" if find_executable("mamba") else "conda",
         "env",
         "create",
         "-p",
