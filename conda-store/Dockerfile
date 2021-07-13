@@ -1,5 +1,7 @@
 FROM mambaorg/micromamba
 
+USER root
+
 COPY environment.yaml /opt/conda-store/environment.yaml
 
 RUN micromamba create -y -f /opt/conda-store/environment.yaml
