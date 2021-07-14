@@ -309,6 +309,9 @@ def build_docker_image(conda_store, conda_prefix, build):
     docker_manifest.config = schema.DockerManifestConfig(
         size=len(docker_config_content), digest=f"sha256:{docker_config_hash}"
     )
+    docker_manifest_content = docker_manifest.json().encode("utf-8")
+    docker_manifest_hash = hashlib.sha256(docker_manifest_content).hexdigest()
+
     conda_store.storage.set(
         build.docker_blob_key(docker_config_hash),
         docker_config_content,
@@ -317,9 +320,19 @@ def build_docker_image(conda_store, conda_prefix, build):
 
     conda_store.storage.set(
         build.docker_manifest_key,
-        docker_manifest.json().encode("utf-8"),
+        docker_manifest_content,
         content_type="application/vnd.docker.distribution.manifest.v2+json",
     )
+
+    # docker likes to have a sha256 key version of the manifest this
+    # is sort of hack to avoid having to figure out which sha256
+    # refers to which manifest.
+    conda_store.storage.set(
+        f"docker/manifest/{build.specification.name}/sha256:{docker_manifest_hash}",
+        docker_manifest_content,
+        content_type="application/vnd.docker.distribution.manifest.v2+json",
+    )
+
     logger.info(
         f"built docker image: {image.name}:{image.tag} layers={len(image.layers)}"
     )
