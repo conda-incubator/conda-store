@@ -101,8 +101,9 @@ def get_metrics(db):
         ._asdict()
     )
 
-    query = (db.query(func.count(orm.Build.status), orm.Build.status)
-             .group_by(orm.Build.status))
+    query = db.query(func.count(orm.Build.status), orm.Build.status).group_by(
+        orm.Build.status
+    )
     for build_count, build_status_enum in query.all():
         metrics[f"build_{build_status_enum.value.lower()}"] = build_count
 

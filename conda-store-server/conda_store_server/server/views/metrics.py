@@ -11,6 +11,8 @@ app_metrics = Blueprint("metrics", __name__)
 def prometheus_metrics():
     conda_store = get_conda_store()
     metrics = api.get_metrics(conda_store.db)
-    response = make_response('\n'.join(f'conda_store_{key} {value}' for key, value in metrics.items()))
+    response = make_response(
+        "\n".join(f"conda_store_{key} {value}" for key, value in metrics.items())
+    )
     response.mimetype = "text/plain"
     return response
