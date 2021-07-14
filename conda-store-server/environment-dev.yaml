@@ -1,0 +1,28 @@
+name: conda-store-server-dev
+channels:
+  - conda-forge
+dependencies:
+  # conda environment builds
+  - conda-docker
+  - conda-pack
+  # web server
+  - sqlalchemy
+  - psycopg2
+  - requests
+  - flask
+  - flask-cors
+  - pyyaml
+  - pydantic
+  # artifact storage
+  - minio
+  # CLI
+  - typer
+
+  # dev dependencies
+  - pytest
+  - pytest-mock
+  - black ==21.5b0
+  - flake8
+  - sphinx
+  - recommonmark
+  - sphinx_rtd_theme
