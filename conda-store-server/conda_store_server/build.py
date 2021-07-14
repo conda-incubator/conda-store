@@ -207,6 +207,7 @@ def conda_build(conda_store):
         packages = conda.conda_list(build_path)
         build.size = utils.disk_usage(build_path)
 
+        build_conda_env_export(conda_store, build_path, build)
         build_conda_pack(conda_store, build_path, build)
         if os.environ.get("CONDA_STORE_DO_NOT_CREATE_DOCKER_IMAGES") != "1":
             build_docker_image(conda_store, build_path, build)
@@ -336,3 +337,15 @@ def build_docker_image(conda_store, conda_prefix, build):
     logger.info(
         f"built docker image: {image.name}:{image.tag} layers={len(image.layers)}"
     )
+
+
+def build_conda_env_export(conda_store, conda_prefix, build):
+    args = ["conda", "env", "export", "-p", str(conda_prefix)]
+    output = subprocess.check_output(args)
+
+    # check output is valid yaml
+    parsed = yaml.safe_load(output)
+    msg = f"`conda env export` did not produce valid YAML:\n{output}"
+    assert "dependencies" in parsed, msg
+    conda_store.storage.set(build.conda_env_export_key, output, content_type="text/yaml")
+    logger.info(f"`conda env export` wrote {build.conda_env_export_key}")

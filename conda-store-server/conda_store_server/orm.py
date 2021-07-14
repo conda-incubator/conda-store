@@ -106,6 +106,12 @@ class Build(Base):
         return f"archive/{self.specification.name}/{self.specification.sha256}/{self.id}.tar.gz"
 
     @property
+    def conda_env_export_key(self):
+        return (
+            f"yaml/{self.specification.name}/{self.specification.sha256}/{self.id}.yml"
+        )
+
+    @property
     def docker_manifest_key(self):
         return f"docker/manifest/{self.specification.name}/{self.specification.sha256}"
 

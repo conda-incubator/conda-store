@@ -101,3 +101,10 @@ def api_get_build_archive(build_id):
     conda_store = get_conda_store()
     conda_pack_key = api.get_build(conda_store.db, build_id).conda_pack_key
     return redirect(conda_store.storage.get_url(conda_pack_key))
+
+
+@app_ui.route("/build/<build_id>/yaml/", methods=["GET"])
+def api_get_build_yaml(build_id):
+    conda_store = get_conda_store()
+    key = api.get_build(conda_store.db, build_id).conda_env_export_key
+    return redirect(conda_store.storage.get_url(key))
