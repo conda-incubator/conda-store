@@ -26,9 +26,7 @@ def conda_pack(prefix, output):
 
     ignore = os.environ.get("CONDA_PACK_IGNORE_MISSING_FILES", "") == "1"
     conda_pack.pack(
-        prefix=str(prefix),
-        output=str(output),
-        ignore_missing_files=ignore,
+        prefix=str(prefix), output=str(output), ignore_missing_files=ignore,
     )
 
 
