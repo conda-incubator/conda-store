@@ -347,5 +347,7 @@ def build_conda_env_export(conda_store, conda_prefix, build):
     parsed = yaml.safe_load(output)
     msg = f"`conda env export` did not produce valid YAML:\n{output}"
     assert "dependencies" in parsed, msg
-    conda_store.storage.set(build.conda_env_export_key, output, content_type="text/yaml")
+    conda_store.storage.set(
+        build.conda_env_export_key, output, content_type="text/yaml"
+    )
     logger.info(f"`conda env export` wrote {build.conda_env_export_key}")
