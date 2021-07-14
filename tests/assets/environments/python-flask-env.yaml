@@ -1,6 +1,6 @@
-name: env-name-1
+name: python-flask-env
 channels:
   - conda-forge
 dependencies:
-  - python ==3.7
+  - python ==3.9
   - flask

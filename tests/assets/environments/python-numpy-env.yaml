@@ -1,6 +1,6 @@
-name: env-name-2
+name: python-numpy-env
 channels:
   - conda-forge
 dependencies:
   - python ==3.8
-  - pyyaml
+  - numpy
