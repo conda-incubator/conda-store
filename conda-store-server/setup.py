@@ -44,7 +44,7 @@ setup(
         "dev": [
             "pytest",
             "pytest-mock",
-            "black==19.10b0",
+            "black==21.5b0",
             "flake8",
             "sphinx",
             "recommonmark",

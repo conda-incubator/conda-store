@@ -1,8 +1,7 @@
 import logging
-import math
 import datetime
 
-from sqlalchemy import and_
+from sqlalchemy import and_, func
 
 from conda_store_server import orm
 from .conda import conda_platform
@@ -94,20 +93,19 @@ def list_conda_packages(db, limit=25):
 def get_metrics(db):
     metrics = (
         db.query(
-            orm.CondaStoreConfiguration.free_storage.label("free"),
-            orm.CondaStoreConfiguration.total_storage.label("total"),
+            orm.CondaStoreConfiguration.free_storage.label("disk_free"),
+            orm.CondaStoreConfiguration.total_storage.label("disk_total"),
             orm.CondaStoreConfiguration.disk_usage,
         )
         .first()
         ._asdict()
     )
 
-    metrics["total_completed_builds"] = (
-        db.query(orm.Build)
-        .filter(orm.Build.status == orm.BuildStatus.COMPLETED)
-        .count()
+    query = db.query(func.count(orm.Build.status), orm.Build.status).group_by(
+        orm.Build.status
     )
-    metrics["total_environments"] = db.query(orm.Environment).count()
-    metrics["used"] = metrics["total"] - metrics["free"]
-    metrics["percent"] = math.ceil(metrics["used"] / metrics["total"] * 100)
+    for build_count, build_status_enum in query.all():
+        metrics[f"build_{build_status_enum.value.lower()}"] = build_count
+
+    metrics["environments"] = db.query(orm.Environment).count()
     return metrics
