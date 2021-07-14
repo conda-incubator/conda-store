@@ -11,6 +11,7 @@ def start_app(
     disable_ui=False,
     disable_api=False,
     disable_registry=False,
+    disable_metrics=False,
     address="0.0.0.0",
     port=5000,
 ):
@@ -25,6 +26,9 @@ def start_app(
 
     if not disable_ui:
         app.register_blueprint(views.app_ui)
+
+    if not disable_metrics:
+        app.register_blueprint(views.app_metrics)
 
     @app.before_request
     def ensure_conda_store():

@@ -20,23 +20,6 @@
 </div>
 {% endfor %}
 
-<div class="card my-2">
-    <div class="card-body">
-        <h3 class="card-title">Metrics</h3>
-    </div>
-    <div class="card-body">
-        <h4>Disk Usage: {{ metrics.used | filesizeformat }} / {{ metrics.total | filesizeformat }}</h4>
-
-        <div class="progress">
-            <div class="progress-bar" role="progressbar" style="width: {{ metrics.percent }}%;" aria-valuenow="{{ metrics.percent }}" aria-valuemin="0" aria-valuemax="100">{{ metrics.percent }}%</div>
-        </div>
-
-        <h4>Conda Store Usage: {{ metrics.disk_usage | filesizeformat }}</h4>
-        <h4>Number Environments: {{ metrics.total_environments }}</h4>
-        <h4>Number Cached Builds: {{ metrics.total_completed_builds }}</h4>
-    </div>
-</div>
-
 <script>
  function setClipboard(value) {
      var tempInput = document.createElement("input");

@@ -40,7 +40,6 @@ def ui_list_environments():
     return render_template(
         "home.html",
         environments=api.list_environments(conda_store.db),
-        metrics=api.get_metrics(conda_store.db),
     )
 
 
