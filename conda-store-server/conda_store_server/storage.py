@@ -26,14 +26,14 @@ class S3Storage(Storage):
             self.internal_endpoint,
             os.environ["CONDA_STORE_S3_ACCESS_KEY"],
             os.environ["CONDA_STORE_S3_SECRET_KEY"],
-            region='us-east-1',
+            region="us-east-1",
             secure=False,
         )
         self.external_client = minio.Minio(
             self.external_endpoint,
             os.environ["CONDA_STORE_S3_ACCESS_KEY"],
             os.environ["CONDA_STORE_S3_SECRET_KEY"],
-            region='us-east-1',
+            region="us-east-1",
             secure=False,
         )
         self._check_bucket_exists()
