@@ -1,12 +1,9 @@
-import logging
 import datetime
 
 from sqlalchemy import and_, func
 
 from conda_store_server import orm
 from .conda import conda_platform
-
-logger = logging.getLogger(__name__)
 
 
 def list_environments(db, search=None):

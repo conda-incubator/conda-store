@@ -13,6 +13,7 @@ dependencies:
   - flask-cors
   - pyyaml
   - pydantic
+  - traitlets
   # artifact storage
   - minio
   # CLI
