@@ -1,12 +1,8 @@
 import json
 import subprocess
-import logging
 import bz2
 
 import requests
-
-
-logger = logging.getLogger(__name__)
 
 
 def normalize_channel_name(channel):
@@ -38,7 +34,6 @@ def download_repodata(channel, architectures=None):
     architectures = set(architectures or [conda_platform(), "noarch"])
 
     url = f"{channel}/channeldata.json"
-    logger.info(f"downloading channeldata url={url}")
     resp = requests.get(url)
     resp.raise_for_status()
     data = resp.json()
@@ -48,7 +43,6 @@ def download_repodata(channel, architectures=None):
     repodata = {}
     for architecture in architectures:
         url = f"{channel}/{architecture}/repodata.json.bz2"
-        logger.info(f"downloading repodata url={url}")
         resp = requests.get(url)
         resp.raise_for_status()
         repodata[architecture] = json.loads(bz2.decompress(resp.content))

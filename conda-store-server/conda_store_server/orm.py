@@ -1,6 +1,5 @@
 import enum
 import datetime
-import logging
 import pathlib
 
 from sqlalchemy import (
@@ -22,9 +21,6 @@ from sqlalchemy import create_engine
 from conda_store_server import utils
 from conda_store_server.environment import validate_environment
 from conda_store_server.conda import download_repodata, normalize_channel_name
-
-
-logger = logging.getLogger(__name__)
 
 
 Base = declarative_base()
@@ -193,12 +189,6 @@ class CondaStoreConfiguration(Base):
     __tablename__ = "conda_store_configuration"
 
     id = Column(Integer, primary_key=True)
-    store_directory = Column(String)
-    environment_directory = Column(String)
-
-    default_permissions = Column(String, default=None)
-    default_uid = Column(String, default=None)
-    default_gid = Column(String, default=None)
 
     last_package_update = Column(DateTime)
 

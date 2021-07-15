@@ -1,42 +1,89 @@
 import os
 import pathlib
 import datetime
-import logging
 import shutil
 
 import yaml
+from traitlets import Type, Unicode, Integer
+from traitlets.config import LoggingConfigurable
 
 from conda_store_server import orm, utils, storage, schema
 
-logger = logging.getLogger(__name__)
 
+class CondaStore(LoggingConfigurable):
+    storage_class = Type(
+        default_value=storage.S3Storage,
+        klass=storage.Storage,
+        allow_none=False,
+        config=True,
+    )
 
-class CondaStore:
-    def __init__(self, store_directory, database_url=None, storage_backend="s3"):
-        self.store_directory = pathlib.Path(store_directory).resolve()
-        if not self.store_directory.is_dir():
-            logger.info(f"creating directory store_directory={store_directory}")
-            self.store_directory.mkdir(parents=True)
+    store_directory = Unicode(
+        "conda-store-state",
+        help="directory for conda-store to build environments and store state",
+        config=True,
+    )
 
-        self.database_url = database_url or os.environ.get(
-            "CONDA_STORE_DB_URL",
-            f'sqlite:///{self.store_directory / "conda_store.sqlite"}',
-        )
+    environment_directory = Unicode(
+        "conda-store-state/envs",
+        help="directory for symlinking conda environment builds",
+        config=True,
+    )
 
-        Session = orm.new_session_factory(url=self.database_url)
-        self.db = Session()
+    database_url = Unicode(
+        "sqlite:///conda-store.sqlite",
+        help="url for the database. e.g. 'sqlite:///conda-store.sqlite'",
+        config=True,
+    )
 
-        if storage_backend == schema.StorageBackend.FILESYSTEM:
-            storage_directory = self.store_directory / "storage"
-            self.storage = storage.LocalStorage(storage_directory)
-        elif storage_backend == schema.StorageBackend.S3:
-            self.storage = storage.S3Storage()
+    default_uid = Integer(
+        os.getuid(),
+        help="default uid to assign to built environments",
+        config=True,
+    )
 
-        self.configuration.store_directory = str(self.store_directory)
+    default_gid = Integer(
+        os.getgid(),
+        help="default gid to assign to built environments",
+        config=True,
+    )
+
+    default_permissions = Unicode(
+        "775",
+        help="default file permissions to assign to built environments",
+        config=True,
+    )
+
+    @property
+    def session_factory(self):
+        if hasattr(self, "_session_factory"):
+            return self._session_factory
+
+        self._session_factory = orm.new_session_factory(url=self.database_url)
+        return self._session_factory
+
+    @property
+    def db(self):
+        if hasattr(self, "_db"):
+            return self._db
+
+        self._db = self.session_factory()
+        return self._db
 
     @property
     def configuration(self):
         return orm.CondaStoreConfiguration.configuration(self.db)
+
+    @property
+    def storage(self):
+        if hasattr(self, "_storage"):
+            return self._storage
+        self._storage = self.storage_class(parent=self, log=self.log)
+        return self._storage
+
+    def ensure_directories(self):
+        os.makedirs(self.store_directory, exist_ok=True)
+        os.makedirs(self.environment_directory, exist_ok=True)
 
     def update_storage_metrics(self):
         configuration = self.configuration
@@ -59,7 +106,9 @@ class CondaStore:
             + datetime.timedelta(seconds=update_interval)
             < datetime.datetime.now()
         ):
-            logger.info(f"packages were updated in the last seconds={update_interval}")
+            self.log.info(
+                f"packages were updated in the last seconds={update_interval}"
+            )
             return
 
         for channel in channels:
@@ -88,18 +137,18 @@ class CondaStore:
             orm.Specification.sha256 == specification_sha256
         )
         if query.count() != 0:
-            logger.debug(
+            self.log.debug(
                 f"already registered specification name={specification.name} sha256={specification_sha256}"
             )
             return
 
-        logger.info(
+        self.log.info(
             f"registering specification name={specification.name} sha256={specification_sha256}"
         )
         specification = orm.Specification(specification.dict())
         self.db.add(specification)
         self.db.commit()
-        logger.info(
+        self.log.info(
             f"scheduling specification for build name={specification.name} sha256={specification.sha256}"
         )
         build = orm.Build(specification_id=specification.id)

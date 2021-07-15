@@ -39,6 +39,7 @@ setup(
         "pyyaml",
         "pydantic",
         "minio",
+        "traitlets",
     ],
     extras_require={
         "dev": [
@@ -53,7 +54,8 @@ setup(
     },
     entry_points={
         "console_scripts": [
-            "conda-store-server=conda_store_server.__main__:main",
+            "conda-store-server=conda_store_server.server.__main__:main",
+            "conda-store-worker=conda_store_server.worker.__main__:main",
         ],
     },
     project_urls={
