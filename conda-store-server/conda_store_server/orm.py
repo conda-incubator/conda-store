@@ -1,6 +1,7 @@
 import enum
 import datetime
 import pathlib
+import shutil
 
 from sqlalchemy import (
     Table,
@@ -87,23 +88,37 @@ class Build(Base):
 
     def build_path(self, store_directory):
         store_path = pathlib.Path(store_directory).resolve()
-        return store_path / f"{self.specification.sha256}-{self.specification.name}"
+        return store_path / self.build_key
 
     def environment_path(self, environment_directory):
         environment_directory = pathlib.Path(environment_directory).resolve()
         return environment_directory / self.specification.name
 
     @property
+    def build_key(self):
+        """A conda environment build is a function of the sha256 of the
+        environment.yaml along with the time that the package was built.
+
+        The last two parts of the build key are to assist finding the
+        record in the database.
+
+        The build key should be a key that allows for the environment
+        build to be easily identified and found in the database.
+        """
+        datetime_format = "%Y%m%d-%H%M%S-%f"
+        return f"{self.specification.sha256}-{self.scheduled_on.strftime(datetime_format)}-{self.id}-{self.specification.name}"
+
+    @property
     def log_key(self):
-        return f"logs/{self.specification.name}/{self.specification.sha256}/{self.id}"
+        return f"logs/{self.build_key}.log"
 
     @property
     def conda_pack_key(self):
-        return f"archive/{self.specification.name}/{self.specification.sha256}/{self.id}.tar.gz"
+        return f"archive/{self.build_key}.tar.gz"
 
     @property
     def docker_manifest_key(self):
-        return f"docker/manifest/{self.specification.name}/{self.specification.sha256}"
+        return f"docker/manifest/{self.build_key}"
 
     def docker_blob_key(self, blob_hash):
         return f"docker/blobs/{blob_hash}"
@@ -130,39 +145,29 @@ class Environment(Base):
     build = relationship(Build)
 
 
-class CondaPackage(Base):
-    __tablename__ = "conda_package"
+class CondaChannel(Base):
+    __tablename__ = "conda_channel"
 
     id = Column(Integer, primary_key=True)
-    channel = Column(String, nullable=False)
-    build = Column(String, nullable=False)
-    build_number = Column(Integer, nullable=False)
-    constrains = Column(JSON, nullable=True)
-    depends = Column(JSON, nullable=False)
-    license = Column(String, nullable=True)
-    license_family = Column(String, nullable=True)
-    md5 = Column(String, nullable=False)
-    name = Column(String, nullable=False)
-    sha256 = Column(String, unique=True)
-    size = Column(BigInteger, nullable=False)
-    subdir = Column(String, nullable=True)
-    timestamp = Column(BigInteger, nullable=True)
-    version = Column(String, nullable=False)
+    name = Column(String, unique=True, nullable=False)
+    last_update = Column(DateTime)
 
-    builds = relationship(Build, secondary=build_conda_package)
+    def update_packages(self, db):
+        repodata = download_repodata(self.name, self.last_update)
+        if not repodata:
+            # nothing to update
+            return
 
-    @classmethod
-    def add_channel_packages(cls, db, channel):
-        channel = normalize_channel_name(channel)
-        repodata = download_repodata(channel)
-        existing_sha256 = {_[0] for _ in db.query(cls.sha256).all()}
+        existing_sha256 = {_[0] for _ in db.query(CondaPackage.sha256).filter(
+            CondaPackage.channel_id == self.id
+        ).all()}
 
         for architecture in repodata:
             packages = list(repodata[architecture]["packages"].values())
             for package in packages:
                 if package["sha256"] not in existing_sha256:
                     db.add(
-                        cls(
+                        CondaPackage(
                             build=package["build"],
                             build_number=package["build_number"],
                             constrains=package.get("constrains"),
@@ -176,10 +181,43 @@ class CondaPackage(Base):
                             subdir=package.get("subdir"),
                             timestamp=package.get("timestamp"),
                             version=package["version"],
-                            channel=channel,
+                            channel_id=self.id,
                         )
                     )
+        self.last_update = datetime.datetime.utcnow()
         db.commit()
+
+
+class CondaPackage(Base):
+    __tablename__ = "conda_package"
+
+    __table_args__ = (UniqueConstraint(
+        "channel_id",
+        "subdir",
+        "name",
+        "version",
+        "build",
+        "build_number",
+        name="_conda_package_uc"),)
+
+    id = Column(Integer, primary_key=True)
+
+    channel_id = Column(Integer, ForeignKey("conda_channel.id"))
+    channel = relationship(CondaChannel)
+
+    build = Column(String, nullable=False)
+    build_number = Column(Integer, nullable=False)
+    constrains = Column(JSON, nullable=True)
+    depends = Column(JSON, nullable=False)
+    license = Column(String, nullable=True)
+    license_family = Column(String, nullable=True)
+    md5 = Column(String, nullable=False)
+    name = Column(String, nullable=False)
+    sha256 = Column(String, nullable=False)
+    size = Column(BigInteger, nullable=False)
+    subdir = Column(String, nullable=True)
+    timestamp = Column(BigInteger, nullable=True)
+    version = Column(String, nullable=False)
 
     def __repr__(self):
         return f"<CondaPackage (channel={self.channel} name={self.name} version={self.version} sha256={self.sha256})>"
@@ -189,8 +227,6 @@ class CondaStoreConfiguration(Base):
     __tablename__ = "conda_store_configuration"
 
     id = Column(Integer, primary_key=True)
-
-    last_package_update = Column(DateTime)
 
     disk_usage = Column(BigInteger, default=0)
     free_storage = Column(BigInteger, default=0)
@@ -203,6 +239,16 @@ class CondaStoreConfiguration(Base):
             db.add(cls(id=1))
             db.commit()
         return query.first()
+
+    @classmethod
+    def update_storage_metrics(cls, db, store_directory):
+        configuration = cls.configuration(db)
+
+        disk_usage = shutil.disk_usage(store_directory)
+        configuration.disk_usage = disk_usage.used
+        configuration.free_storage = disk_usage.free
+        configuration.total_storage = disk_usage.total
+        db.commit()
 
 
 def new_session_factory(url="sqlite:///:memory:", reset=False, **kwargs):

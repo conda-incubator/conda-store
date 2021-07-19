@@ -62,7 +62,7 @@ class S3Storage(Storage):
         if hasattr(self, "_internal_client"):
             return self._internal_client
 
-        self.log.info(
+        self.log.debug(
             f"setting up internal client endpoint={self.internal_endpoint} region={self.region} secure={self.secure}"
         )
         self._internal_client = minio.Minio(
@@ -80,7 +80,7 @@ class S3Storage(Storage):
         if hasattr(self, "_external_client"):
             return self._external_client
 
-        self.log.info(
+        self.log.debug(
             f"setting up external client endpoint={self.external_endpoint} region={self.region} secure={self.secure}"
         )
         self._external_client = minio.Minio(

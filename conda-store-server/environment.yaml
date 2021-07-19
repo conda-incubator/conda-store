@@ -6,6 +6,9 @@ dependencies:
   - conda-docker
   - conda-pack
   # web server
+  - celery
+  - flower
+  - redis-py
   - sqlalchemy
   - psycopg2
   - requests
@@ -14,6 +17,7 @@ dependencies:
   - pyyaml
   - pydantic
   - traitlets
+  - yarl
   # artifact storage
   - minio
   # CLI

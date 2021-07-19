@@ -36,6 +36,4 @@ c.CondaStoreServer.port = 5000
 #         worker settings
 # ==================================
 c.CondaStoreWorker.log_level = logging.INFO
-c.CondaStoreWorker.storage_threshold = 5 * (2 ** 30)  # 5 GB
-c.CondaStoreWorker.poll_interval = 10
 c.CondaStoreWorker.watch_paths = ["/opt/environments"]

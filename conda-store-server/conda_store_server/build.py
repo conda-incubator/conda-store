@@ -1,80 +1,48 @@
+import datetime
+import gzip
+import hashlib
 import os
 import shutil
-import subprocess
-import pathlib
 import stat
+import subprocess
 import tempfile
 import traceback
-import sys
-import time
-import hashlib
-import gzip
-import datetime
-from distutils.spawn import find_executable
 
-import yaml
 from sqlalchemy import and_
+import yaml
 
-from conda_store_server import api, utils, conda, orm, schema
-from conda_store_server.environment import discover_environments
+from conda_store_server import api, conda, orm, utils, schema
 
 
-def claim_build(conda_store):
-    build = (
-        conda_store.db.query(orm.Build)
-        .filter(
-            orm.Build.status == orm.BuildStatus.QUEUED,
-            orm.Build.scheduled_on < datetime.datetime.utcnow(),
-        )
-        .first()
-    )
+def set_build_started(conda_store, build):
     build.status = orm.BuildStatus.BUILDING
     build.started_on = datetime.datetime.utcnow()
     conda_store.db.commit()
-    return build
 
 
-def set_build_failed(conda_store, build, logs, reschedule=True):
+def set_build_failed(conda_store, build, logs):
     conda_store.storage.set(build.log_key, logs, content_type="text/plain")
     build.status = orm.BuildStatus.FAILED
     build.ended_on = datetime.datetime.utcnow()
     conda_store.db.commit()
 
-    if reschedule:
-        num_failed_builds = (
-            conda_store.db.query(orm.Build)
-            .filter(
-                and_(
-                    orm.Build.status == orm.BuildStatus.FAILED,
-                    orm.Build.specification_id == build.specification_id,
-                )
-            )
-            .count()
-        )
-        conda_store.log.info(
-            f"specification name={build.specification.name} build has failed={num_failed_builds} times"
-        )
-        scheduled_on = datetime.datetime.utcnow() + datetime.timedelta(
-            seconds=10 * (2 ** num_failed_builds)
-        )
-        conda_store.db.add(
-            orm.Build(
-                specification_id=build.specification_id, scheduled_on=scheduled_on
-            )
-        )
-        conda_store.log.info(
-            f"rescheduling specification name={build.specification.name} on {scheduled_on}"
-        )
-    conda_store.db.commit()
-
 
 def set_build_completed(conda_store, build, logs, packages):
+    unique_channel_urls = {p["base_url"] for p in packages}
+
+    channel_url_to_id_map = {}
+    for channel in unique_channel_urls:
+        channel_id = api.get_conda_channel(conda_store.db, channel)
+        if channel_id is None:
+            raise ValueError(f'channel url={channel} not recognized in conda-store channel database')
+        channel_url_to_id_map[channel] = channel_id.id
+
     def package_query(package):
         return (
             conda_store.db.query(orm.CondaPackage)
             .filter(
                 and_(
-                    orm.CondaPackage.channel == package["base_url"],
+                    orm.CondaPackage.channel_id == channel_url_to_id_map[package["base_url"]],
                     orm.CondaPackage.subdir == package["platform"],
                     orm.CondaPackage.name == package["name"],
                     orm.CondaPackage.version == package["version"],
@@ -104,82 +72,42 @@ def set_build_completed(conda_store, build, logs, packages):
     conda_store.db.commit()
 
 
-def start_conda_build(conda_store, paths, storage_threshold, poll_interval):
-    conda_store.log.info(f"polling interval set to {poll_interval} seconds")
-    while True:
-        environments = discover_environments(paths)
-        for environment in environments:
-            conda_store.register_environment(environment, namespace="filesystem")
+def build_conda_environment(conda_store, build):
+    """Build a conda environment with set uid/gid/and permissions and
+    symlink the build to a named environment
 
-        num_queued_builds = api.get_num_queued_builds(conda_store.db)
-        if num_queued_builds > 0:
-            conda_store.log.info(f"number of queued conda builds {num_queued_builds}")
+    """
+    set_build_started(conda_store, build)
 
-        disk_usage = conda_store.update_storage_metrics()
-        if disk_usage.free < storage_threshold:
-            conda_store.log.warning(
-                f"free disk space={storage_threshold:g} [bytes] below storage threshold"
-            )
+    conda_prefix = build.build_path(conda_store.store_directory)
+    environment_prefix = build.environment_path(conda_store.environment_directory)
 
-        num_schedulable_builds = api.get_num_schedulable_builds(conda_store.db)
-        if num_schedulable_builds > 0:
-            conda_store.log.info(
-                f"number of schedulable conda builds {num_schedulable_builds}"
-            )
-            conda_build(conda_store)
-            time.sleep(1)
-        else:
-            time.sleep(poll_interval)
+    conda_store.log.info(f"building conda environment={conda_prefix}")
 
-
-def conda_build(conda_store):
-    build = claim_build(conda_store)
-    store_directory = pathlib.Path(conda_store.store_directory)
-    environment_directory = pathlib.Path(conda_store.environment_directory)
-    build_path = build.build_path(store_directory)
-    environment_path = build.environment_path(environment_directory)
     try:
-        # environment installation is an atomic process if a symlink at
-        # "install_directory/environment_name" points to
-        # "store_directory/environment_hash" installation is guarenteed to
-        # have succeeded otherwise conda build is restarted
-        # this is robust and the same concept that nixos uses
-        if (
-            environment_path.is_symlink()
-            and build_path.is_dir()
-            and environment_path.resolve() == build_path
-        ):
-            conda_store.log.debug(
-                f"found cached {build_path} symlinked to {environment_path}"
-            )
-        else:
-            conda_store.log.info(
-                f"building {build_path} symlinked to {environment_path}"
-            )
+        with utils.timer(conda_store.log, f"building {conda_prefix}"):
+            with tempfile.TemporaryDirectory() as tmpdir:
+                tmp_environment_filename = os.path.join(tmpdir, "environment.yaml")
+                with open(tmp_environment_filename, "w") as f:
+                    yaml.dump(build.specification.spec, f)
+                try:
+                    output = subprocess.check_output([
+                        conda_store.conda_command,
+                        "env",
+                        "create",
+                        "-p",
+                        conda_prefix,
+                        "-f",
+                        str(tmp_environment_filename),
+                    ], stderr=subprocess.STDOUT, encoding="utf-8")
+                except subprocess.CalledProcessError as e:
+                    set_build_failed(conda_store, build, e.output.encode("utf-8"))
+                    return
 
-            conda_store.log.info(
-                f"previously unfinished build of {build_path} cleaning directory"
-            )
-            if build_path.is_dir():
-                shutil.rmtree(str(build_path))
-
-            with utils.timer(conda_store.log, f"building {build_path}"):
-                with tempfile.TemporaryDirectory() as tmpdir:
-                    tmp_environment_filename = pathlib.Path(tmpdir) / "environment.yaml"
-                    with tmp_environment_filename.open("w") as f:
-                        yaml.dump(build.specification.spec, f)
-                    try:
-                        output = build_conda_install(
-                            conda_store, build_path, tmp_environment_filename
-                        )
-                    except subprocess.CalledProcessError as e:
-                        set_build_failed(conda_store, build, e.output.encode("utf-8"))
-                        return
-
-        utils.symlink(build_path, environment_path)
+        utils.symlink(conda_prefix, environment_prefix)
 
         # modify permissions, uid, gid if they do not match
-        stat_info = os.stat(build_path)
+        stat_info = os.stat(conda_prefix)
         permissions = conda_store.default_permissions
         uid = conda_store.default_uid
         gid = conda_store.default_gid
@@ -188,10 +116,10 @@ def conda_build(conda_store):
             permissions
         ):
             conda_store.log.info(
-                f"modifying permissions of {build_path} to permissions={permissions}"
+                f"modifying permissions of {conda_prefix} to permissions={permissions}"
             )
-            with utils.timer(conda_store.log, f"chmod of {build_path}"):
-                utils.chmod(build_path, permissions)
+            with utils.timer(conda_store.log, f"chmod of {conda_prefix}"):
+                utils.chmod(conda_prefix, permissions)
 
         if (
             uid is not None
@@ -199,54 +127,33 @@ def conda_build(conda_store):
             and (str(uid) != str(stat_info.st_uid) or str(gid) != str(stat_info.st_gid))
         ):
             conda_store.log.info(
-                f"modifying permissions of {build_path} to uid={uid} and gid={gid}"
+                f"modifying permissions of {conda_prefix} to uid={uid} and gid={gid}"
             )
-            with utils.timer(conda_store.log, f"chown of {build_path}"):
-                utils.chown(build_path, uid, gid)
+            with utils.timer(conda_store.log, f"chown of {conda_prefix}"):
+                utils.chown(conda_prefix, uid, gid)
 
-        packages = conda.conda_list(build_path)
-        build.size = utils.disk_usage(build_path)
-
-        build_conda_pack(conda_store, build_path, build)
-        if os.environ.get("CONDA_STORE_DO_NOT_CREATE_DOCKER_IMAGES") != "1":
-            build_docker_image(conda_store, build_path, build)
+        packages = conda.conda_list(conda_prefix)
+        build.size = utils.disk_usage(conda_prefix)
 
         set_build_completed(conda_store, build, output.encode("utf-8"), packages)
     except Exception as e:
         conda_store.log.exception(e)
         set_build_failed(conda_store, build, traceback.format_exc().encode("utf-8"))
-    except BaseException as e:
-        conda_store.log.error(
-            f"exception {e.__class__.__name__} caught causing build={build.id} to be rescheduled"
-        )
-        set_build_failed(conda_store, build, traceback.format_exc().encode("utf-8"))
-        sys.exit(1)
 
 
-def build_conda_install(conda_store, build_path, environment_filename):
-    args = [
-        "mamba" if find_executable("mamba") else "conda",
-        "env",
-        "create",
-        "-p",
-        str(build_path),
-        "-f",
-        str(environment_filename),
-    ]
-    return subprocess.check_output(args, stderr=subprocess.STDOUT, encoding="utf-8")
+def build_conda_pack(conda_store, build):
+    conda_prefix = build.build_path(conda_store.store_directory)
 
-
-def build_conda_pack(conda_store, conda_prefix, build):
     conda_store.log.info(f"packaging archive of conda environment={conda_prefix}")
     with tempfile.TemporaryDirectory() as tmpdir:
-        output_filename = pathlib.Path(tmpdir) / "environment.tar.gz"
+        output_filename = os.path.join(tmpdir, "environment.tar.gz")
         conda.conda_pack(prefix=conda_prefix, output=output_filename)
         conda_store.storage.fset(
             build.conda_pack_key, output_filename, content_type="application/gzip"
         )
 
 
-def build_docker_image(conda_store, conda_prefix, build):
+def build_conda_docker(conda_store, build):
     from conda_docker.conda import (
         build_docker_environment_image,
         find_user_conda,
@@ -254,6 +161,8 @@ def build_docker_image(conda_store, conda_prefix, build):
         precs_from_environment_prefix,
         fetch_precs,
     )
+
+    conda_prefix = build.build_path(conda_store.store_directory)
 
     conda_store.log.info(f"creating docker archive of conda environment={conda_prefix}")
 
@@ -263,8 +172,8 @@ def build_docker_image(conda_store, conda_prefix, build):
     precs = precs_from_environment_prefix(conda_prefix, download_dir, user_conda)
     records = fetch_precs(download_dir, precs)
     image = build_docker_environment_image(
-        base_image="frolvlad/alpine-glibc:latest",
-        output_image=f"{build.specification.name}:{build.specification.sha256}",
+        base_image=conda_store.default_docker_base_image,
+        output_image=f"{build.specification.name}:{build.build_key}",
         records=records,
         default_prefix=info["env_vars"]["CONDA_ROOT"],
         download_dir=download_dir,
