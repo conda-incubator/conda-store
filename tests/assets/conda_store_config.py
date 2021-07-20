@@ -8,7 +8,13 @@ from conda_store_server.storage import S3Storage
 c.CondaStore.storage_class = S3Storage
 c.CondaStore.store_directory = "/var/lib/conda-store/"
 c.CondaStore.environment_directory = "/opt/conda-store/envs/"
-c.CondaStore.database_url = "postgresql+psycopg2://admin:password@postgres/conda-store"
+# c.CondaStore.database_raw_url = "postgresql+psycopg2://admin:password@postgres/conda-store"
+c.CondaStore.database_backend = "postgresql+psycopg2"
+c.CondaStore.database_username = "admin"
+c.CondaStore.database_password = "password"
+c.CondaStore.database_host = "postgres"
+c.CondaStore.database_port = 5432
+c.CondaStore.database_path = "conda-store"
 c.CondaStore.default_uid = 1000
 c.CondaStore.default_gid = 100
 c.CondaStore.default_permissions = "775"

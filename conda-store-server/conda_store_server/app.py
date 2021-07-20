@@ -6,6 +6,7 @@ import shutil
 import yaml
 from traitlets import Type, Unicode, Integer
 from traitlets.config import LoggingConfigurable
+from sqlalchemy.engine.url import URL
 
 from conda_store_server import orm, utils, storage, schema
 
@@ -30,10 +31,55 @@ class CondaStore(LoggingConfigurable):
         config=True,
     )
 
-    database_url = Unicode(
-        "sqlite:///conda-store.sqlite",
-        help="url for the database. e.g. 'sqlite:///conda-store.sqlite'",
+    database_raw_url = Unicode(
+        None,
+        help="RFC-1738 compliant url for the database. e.g. 'sqlite:///conda-store.sqlite';"
+        " see https://docs.sqlalchemy.org/en/14/core/engines.html#database-urls for"
+        " more information. to avoid handling character escape yourself, consider using"
+        " the individual `database_*` settings.",
         config=True,
+        allow_none=True,
+    )
+
+    database_backend = Unicode(
+        "sqlite",
+        help="backend (+ driver) sqlalchemy will use. e.g. 'sqlite' or 'postgresql+psycopg2'",
+        config=True,
+    )
+
+    database_username = Unicode(
+        None,
+        help="login name for the database. e.g. 'admin'",
+        config=True,
+        allow_none=True,
+    )
+
+    database_password = Unicode(
+        None,
+        help="password to log in the database. e.g. 'p4ssw0rd'",
+        config=True,
+        allow_none=True,
+    )
+
+    database_host = Unicode(
+        None,
+        help="server address where the database is running. e.g. 'localhost'",
+        config=True,
+        allow_none=True,
+    )
+
+    database_port = Integer(
+        None,
+        help="port where the database accepts connections. e.g. '5432'",
+        config=True,
+        allow_none=True,
+    )
+
+    database_path = Unicode(
+        "conda-store.sqlite",
+        help="path in the server where the database is located. e.g. 'conda-store.sqlite'",
+        config=True,
+        allow_none=True,
     )
 
     default_uid = Integer(
@@ -53,6 +99,20 @@ class CondaStore(LoggingConfigurable):
         help="default file permissions to assign to built environments",
         config=True,
     )
+
+    @property
+    def database_url(self):
+        if self.database_raw_url:
+            return self.database_raw_url
+
+        return URL.create(
+            self.database_backend,
+            self.database_username,
+            self.database_password,
+            self.database_host,
+            self.database_port,
+            self.database_path,
+        )
 
     @property
     def session_factory(self):
