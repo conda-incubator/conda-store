@@ -54,6 +54,12 @@ class CondaStore(LoggingConfigurable):
         config=True,
     )
 
+    default_base_image = Unicode(
+        "frolvlad/alpine-glibc:latest",
+        help="default base image used for the Dockerized environments",
+        config=True,
+    )
+
     @property
     def session_factory(self):
         if hasattr(self, "_session_factory"):

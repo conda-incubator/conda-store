@@ -263,7 +263,7 @@ def build_docker_image(conda_store, conda_prefix, build):
     precs = precs_from_environment_prefix(conda_prefix, download_dir, user_conda)
     records = fetch_precs(download_dir, precs)
     image = build_docker_environment_image(
-        base_image="frolvlad/alpine-glibc:latest",
+        base_image=conda_store.default_base_image,
         output_image=f"{build.specification.name}:{build.specification.sha256}",
         records=records,
         default_prefix=info["env_vars"]["CONDA_ROOT"],
