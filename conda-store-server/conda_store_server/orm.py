@@ -124,6 +124,20 @@ class Build(Base):
         return f"docker/blobs/{blob_hash}"
 
 
+class BuildArtifact(Base):
+    """Artifacts of a given build"""
+
+    __tablename__ = "build_artifact"
+
+    id = Column(Integer, primary_key=True)
+
+    build_id = Column(Integer, ForeignKey("build.id"))
+    build = relationship(Build)
+
+    key = Column(String)
+
+
+
 class Environment(Base):
     """Pointer to the current build and specification for a given
     environment name

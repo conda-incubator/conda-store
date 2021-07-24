@@ -64,7 +64,6 @@ def get_num_queued_builds(db, status):
     )
 
 
-
 def get_build_lockfile(db, build_id):
     build = db.query(orm.Build).filter(orm.Build.id == build_id).first()
     packages = [
@@ -77,6 +76,23 @@ def get_build_lockfile(db, build_id):
 """.format(
         conda_platform(), "\n".join(packages)
     )
+
+
+def list_build_artifacts(db, limit : int=25, build_id : int=None, key : str=None):
+    filters = []
+    if build_id:
+        filters.append(orm.BuildArtifact.build_id == build_id)
+    if key:
+        filters.append(orm.BuildArtifact.key == key)
+
+    return db.query(orm.BuildArtifact).filter(**filters).limit(limit).all()
+
+
+def get_build_artifact(db, build_id, key):
+    return db.query(orm.BuildArtifact).filter(
+        orm.BuildArtifact.build_id == build_id,
+        orm.BuildArtifact.key == key
+    ).first()
 
 
 def list_conda_channels(db, limit=25):

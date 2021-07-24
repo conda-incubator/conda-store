@@ -21,7 +21,7 @@ def set_build_started(conda_store, build):
 
 
 def set_build_failed(conda_store, build, logs):
-    conda_store.storage.set(build.log_key, logs, content_type="text/plain")
+    conda_store.storage.set(conda_store.db, build.id, build.log_key, logs, content_type="text/plain")
     build.status = orm.BuildStatus.FAILED
     build.ended_on = datetime.datetime.utcnow()
     conda_store.db.commit()
@@ -58,7 +58,7 @@ def set_build_completed(conda_store, build, logs, packages):
         if _package is not None:
             build.packages.append(_package)
 
-    conda_store.storage.set(build.log_key, logs, content_type="text/plain")
+    conda_store.storage.set(conda_store.db, build.id, build.log_key, logs, content_type="text/plain")
     build.status = orm.BuildStatus.COMPLETED
     build.ended_on = datetime.datetime.utcnow()
 
@@ -148,9 +148,7 @@ def build_conda_pack(conda_store, build):
     with tempfile.TemporaryDirectory() as tmpdir:
         output_filename = os.path.join(tmpdir, "environment.tar.gz")
         conda.conda_pack(prefix=conda_prefix, output=output_filename)
-        conda_store.storage.fset(
-            build.conda_pack_key, output_filename, content_type="application/gzip"
-        )
+        conda_store.storage.fset(conda_store.db, build.id, build.conda_pack_key, output_filename, content_type="application/gzip")
 
 
 def build_conda_docker(conda_store, build):
@@ -198,6 +196,8 @@ def build_conda_docker(conda_store, build):
         content_compressed = gzip.compress(layer.content)
         content_compressed_hash = hashlib.sha256(content_compressed).hexdigest()
         conda_store.storage.set(
+            conda_store.db,
+            build.id,
             build.docker_blob_key(content_compressed_hash),
             content_compressed,
             content_type="application/gzip",
@@ -222,12 +222,16 @@ def build_conda_docker(conda_store, build):
     docker_manifest_hash = hashlib.sha256(docker_manifest_content).hexdigest()
 
     conda_store.storage.set(
+        conda_store.db,
+        build.id,
         build.docker_blob_key(docker_config_hash),
         docker_config_content,
         content_type="application/vnd.docker.container.image.v1+json",
     )
 
     conda_store.storage.set(
+        conda_store.db,
+        build.id,
         build.docker_manifest_key,
         docker_manifest_content,
         content_type="application/vnd.docker.distribution.manifest.v2+json",
@@ -237,6 +241,8 @@ def build_conda_docker(conda_store, build):
     # is sort of hack to avoid having to figure out which sha256
     # refers to which manifest.
     conda_store.storage.set(
+        conda_store.db,
+        build.id,
         f"docker/manifest/{build.specification.name}/sha256:{docker_manifest_hash}",
         docker_manifest_content,
         content_type="application/vnd.docker.distribution.manifest.v2+json",
