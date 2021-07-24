@@ -11,7 +11,8 @@
             <a href="/environment/{{ environment.name }}/">{{ environment.namespace }}/{{ environment.name }}</a>
             <span class="badge badge-light">{{ (environment.build.size or 0) | filesizeformat(true) }}</span>
         </h5>
-        {% if environment.build_id is not none %}
+        {% if environment.build.status.value == 'COMPLETED' %}
+        <a class="card-link" href="/build/{{ environment.build_id }}/yaml/"><ion-icon name="code-download"></ion-icon> YAML</a>
         <a class="card-link" href="/build/{{ environment.build_id }}/lockfile/"><ion-icon name="lock-closed-outline"></ion-icon> Lockfile</a>
         <a class="card-link" href="/build/{{ environment.build_id }}/archive/"><ion-icon name="archive-outline"></ion-icon> Archive</a>
         <a class="card-link" onclick="setClipboard('localhost:5000/{{ environment.namespace }}/{{ environment.name }}:{{ environment.specification.sha256 }}')"><ion-icon name="logo-docker"></ion-icon> Docker</a>
