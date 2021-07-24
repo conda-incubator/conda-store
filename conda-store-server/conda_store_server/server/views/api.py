@@ -80,6 +80,17 @@ def api_get_build(build_id):
     return jsonify(build.dict())
 
 
+@app_api.route("/api/v1/build/<build_id>/", methods=["PUT"])
+def api_put_build(build_id):
+    conda_store = get_conda_store()
+    build = api.get_build(conda_store.db, build_id)
+    if build is not None:
+        conda_store.create_build(build.specification.sha256)
+        return jsonify({"status": "ok"})
+    else:
+        return jsonify({"status": "error", "error": "build id does not exist"}), 400
+
+
 @app_api.route("/api/v1/build/<build_id>/logs/", methods=["GET"])
 def api_get_build_logs(build_id):
     conda_store = get_conda_store()
@@ -87,22 +98,21 @@ def api_get_build_logs(build_id):
     return redirect(conda_store.storage.get_url(log_key))
 
 
-@app_api.route("/api/v1/package/<provider>/", methods=["GET"])
-def api_list_packages(provider):
+@app_api.route("/api/v1/channel/", methods=["GET"])
+def api_list_channels():
     conda_store = get_conda_store()
-    if provider == "conda":
-        orm_packages = api.list_conda_packages(conda_store.db)
-        packages = [
-            schema.CondaPackage.from_orm(package).dict() for package in orm_packages
-        ]
-        return jsonify(packages)
-    else:
-        return (
-            jsonify(
-                {
-                    "status": "error",
-                    "error": f'package provider "{provider}" not supported',
-                }
-            ),
-            400,
-        )
+    orm_channels = api.list_conda_channels(conda_store.db)
+    channels = [
+        schema.CondaChannel.from_orm(channel).dict() for channel in orm_channels
+    ]
+    return jsonify(channels)
+
+
+@app_api.route("/api/v1/package/", methods=["GET"])
+def api_list_packages():
+    conda_store = get_conda_store()
+    orm_packages = api.list_conda_packages(conda_store.db)
+    packages = [
+        schema.CondaPackage.from_orm(package).dict() for package in orm_packages
+    ]
+    return jsonify(packages)

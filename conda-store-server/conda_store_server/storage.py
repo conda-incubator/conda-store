@@ -6,16 +6,25 @@ import minio
 from traitlets.config import LoggingConfigurable
 from traitlets import Unicode, Bool
 
+from conda_store_server import orm, api
+
 
 class Storage(LoggingConfigurable):
-    def fset(self, key, filename):
+    def fset(self, db, build_id: int, key: str, filename: str):
+        db.add(orm.BuildArtifact(build_id=build_id, key=key))
+        db.commit()
+
+    def set(self, db, build_id: int, key: str, value):
+        db.add(orm.BuildArtifact(build_id=build_id, key=key))
+        db.commit()
+
+    def get_url(self, key: str):
         raise NotImplementedError()
 
-    def set(self, key, value):
-        raise NotImplementedError()
-
-    def get_url(self, key):
-        raise NotImplementedError()
+    def delete(self, db, build_id: int, key: str):
+        build_artifact = api.get_build_artifact(db, build_id, key)
+        db.delete(build_artifact)
+        db.commit()
 
 
 class S3Storage(Storage):
@@ -62,7 +71,7 @@ class S3Storage(Storage):
         if hasattr(self, "_internal_client"):
             return self._internal_client
 
-        self.log.info(
+        self.log.debug(
             f"setting up internal client endpoint={self.internal_endpoint} region={self.region} secure={self.secure}"
         )
         self._internal_client = minio.Minio(
@@ -80,7 +89,7 @@ class S3Storage(Storage):
         if hasattr(self, "_external_client"):
             return self._external_client
 
-        self.log.info(
+        self.log.debug(
             f"setting up external client endpoint={self.external_endpoint} region={self.region} secure={self.secure}"
         )
         self._external_client = minio.Minio(
@@ -96,12 +105,15 @@ class S3Storage(Storage):
         if not self._internal_client.bucket_exists(self.bucket_name):
             raise ValueError(f"S3 bucket={self.bucket_name} does not exist")
 
-    def fset(self, key, filename, content_type="application/octet-stream"):
+    def fset(
+        self, db, build_id, key, filename, content_type="application/octet-stream"
+    ):
         self.internal_client.fput_object(
             self.bucket_name, key, filename, content_type=content_type
         )
+        super().fset(db, build_id, key, filename)
 
-    def set(self, key, value, content_type="application/octet-stream"):
+    def set(self, db, build_id, key, value, content_type="application/octet-stream"):
         self.internal_client.put_object(
             self.bucket_name,
             key,
@@ -109,9 +121,14 @@ class S3Storage(Storage):
             length=len(value),
             content_type=content_type,
         )
+        super().fset(db, build_id, key, value)
 
     def get_url(self, key):
         return self.external_client.presigned_get_object(self.bucket_name, key)
+
+    def delete(self, db, build_id, key):
+        self.internal_client.remove_object(self.bucket_name, key)
+        super().delete(db, build_id, key)
 
 
 class LocalStorage(Storage):
@@ -126,18 +143,25 @@ class LocalStorage(Storage):
         config=True,
     )
 
-    def fset(self, key, filename, content_type=None):
+    def fset(self, db, build_id, key, filename, content_type=None):
         filename = os.path.join(self.storage_path, key)
         os.makedirs(os.path.dirname(filename), exist_ok=True)
 
         shutil.copyfile(filename, os.path.join(self.storage_path, key))
+        super().fset(db, build_id, key, filename)
 
-    def set(self, key, value, content_type=None):
+    def set(self, db, build_id, key, value, content_type=None):
         filename = os.path.join(self.storage_path, key)
         os.makedirs(os.path.dirname(filename), exist_ok=True)
 
         with open(filename, "wb") as f:
             f.write(value)
+        super().set(db, build_id, key, value)
 
     def get_url(self, key):
         return os.path.join(self.storage_url, key)
+
+    def delete(self, db, build_id, key):
+        filename = os.path.join(self.storage_path, key)
+        os.remove(filename)
+        super().delete(db, build_id, key)

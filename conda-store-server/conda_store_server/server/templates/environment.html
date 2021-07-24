@@ -26,7 +26,26 @@
 <h3>Builds</h3>
 <ul class="list-group">
     {% for build in environment_builds %}
-    <li class="list-group-item {{ 'list-group-item-secondary' if build.id == environment.build_id else ''}}"><a href="/build/{{ build.id }}/">Build {{ build.id }}</a> {{ build.status.value }}</li>
+    <li class="list-group-item d-flex justify-content-between align-items-center {{ 'list-group-item-secondary' if build.id == environment.build_id else ''}}">
+        <a href="/build/{{ build.id }}/">Build {{ build.id }}</a>
+        <span>{{ build.status.value }}</span>
+        <div class="btn-group" role="group" aria-label="Build actions">
+            <button type="button" onclick="buildAction('PUT', '{{ build.id }}')" class="btn btn-primary mb-2">
+                <ion-icon name="refresh"></ion-icon>
+            </button>
+            <button type="button" onclick="buildAction('DELETE', '{{ build.id }}')" class="btn btn-primary mb-2">
+                <ion-icon name="trash"></ion-icon>
+            </button>
+        </div>
+    </li>
     {% endfor %}
 </ul>
+
+<script>
+ function buildAction(method, buildId) {
+     fetch(`/api/v1/build/${buildId}/`, {
+         method: method,
+     }).then(response => window.location.reload(true));
+ }
+</script>
 {% endblock %}

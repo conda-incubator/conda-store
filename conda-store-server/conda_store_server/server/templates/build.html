@@ -51,7 +51,7 @@
                 <th scope="row">{{ loop.index }}</th>
                 <td>{{ package.name }}</td>
                 <td>{{ package.version }}</td>
-                <td>{{ package.channel }}</td>
+                <td>{{ package.channel.name }}</td>
             </tr>
 {% endfor %}
         </tbody>

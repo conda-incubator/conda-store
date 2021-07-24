@@ -1,5 +1,5 @@
-from flask import g
+from flask import current_app
 
 
 def get_conda_store():
-    return g._conda_store
+    return current_app.conda_store

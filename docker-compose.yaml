@@ -10,7 +10,7 @@ services:
       - ./tests/assets/environments:/opt/environments:ro
       - ./tests/assets/conda_store_config.py:/opt/conda_store/conda_store_config.py:ro
     platform: linux/amd64
-    command: ["wait-for-it", "postgres:5432", '--', 'conda-store-worker', '--config', '/opt/conda_store/conda_store_config.py']
+    command: ["wait-for-it", "conda-store-server:5000", "-t", "60", '--', 'conda-store-worker', '--config', '/opt/conda_store/conda_store_config.py']
 
   conda-store-server:
     build: conda-store-server

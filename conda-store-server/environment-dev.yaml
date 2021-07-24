@@ -2,10 +2,13 @@ name: conda-store-server-dev
 channels:
   - conda-forge
 dependencies:
-  # conda environment builds
+  # conda builds
   - conda-docker
   - conda-pack
   # web server
+  - celery
+  - flower
+  - redis-py
   - sqlalchemy
   - psycopg2
   - requests
@@ -14,6 +17,7 @@ dependencies:
   - pyyaml
   - pydantic
   - traitlets
+  - yarl
   # artifact storage
   - minio
   # CLI

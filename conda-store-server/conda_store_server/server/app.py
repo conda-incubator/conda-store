@@ -1,6 +1,6 @@
 import logging
 
-from flask import Flask, g
+from flask import Flask
 from flask_cors import CORS
 from traitlets import Bool, Unicode, Integer
 from traitlets.config import Application
@@ -50,7 +50,6 @@ class CondaStoreServer(Application):
 
     def initialize(self, *args, **kwargs):
         super().initialize(*args, **kwargs)
-        self.log.info(f"reading configuration file {self.config_file}")
         self.load_config_file(self.config_file)
 
     def start(self):
@@ -69,9 +68,12 @@ class CondaStoreServer(Application):
         if self.enable_metrics:
             app.register_blueprint(views.app_metrics)
 
-        @app.before_request
-        def ensure_conda_store():
-            if not hasattr(g, "_conda_store"):
-                g._conda_store = CondaStore(parent=self, log=self.log)
+        app.conda_store = CondaStore(parent=self, log=self.log)
+
+        app.conda_store.ensure_directories()
+        app.conda_store.configuration.update_storage_metrics(
+            app.conda_store.db, app.conda_store.store_directory
+        )
+        app.conda_store.ensure_conda_channels()
 
         app.run(debug=True, host=self.address, port=self.port)

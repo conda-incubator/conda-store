@@ -15,9 +15,18 @@ class StorageBackend(enum.Enum):
     S3 = "s3"
 
 
+class CondaChannel(BaseModel):
+    id: int
+    name: str
+    last_update: Optional[datetime.datetime]
+
+    class Config:
+        orm_mode = True
+
+
 class CondaPackage(BaseModel):
     id: int
-    channel: str
+    channel_id: int
     license: Optional[str]
     sha256: str
     name: str

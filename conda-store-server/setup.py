@@ -31,6 +31,7 @@ setup(
     install_requires=[
         "conda-docker",
         "conda-pack",
+        "celery",
         "sqlalchemy",
         "psycopg2",
         "requests",
