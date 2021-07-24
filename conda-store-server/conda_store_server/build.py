@@ -154,22 +154,20 @@ def build_conda_environment(conda_store, build):
 def build_conda_env_export(conda_store, build):
     conda_prefix = build.build_path(conda_store.store_directory)
 
-    output = subprocess.check_output([
-        conda_store.conda_command,
-        "env",
-        "export",
-        "-p",
-        conda_prefix
-    ])
+    output = subprocess.check_output(
+        [conda_store.conda_command, "env", "export", "-p", conda_prefix]
+    )
 
     parsed = yaml.safe_load(output)
     if "dependencies" not in parsed:
-        raise ValueError(f'conda env export` did not produce valid YAML:\n{output}')
+        raise ValueError(f"conda env export` did not produce valid YAML:\n{output}")
 
     conda_store.storage.set(
         conda_store.db,
         build.id,
-        build.conda_env_export_key, output, content_type="text/yaml"
+        build.conda_env_export_key,
+        output,
+        content_type="text/yaml",
     )
 
 
