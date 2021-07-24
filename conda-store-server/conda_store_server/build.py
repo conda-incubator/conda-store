@@ -151,6 +151,26 @@ def build_conda_environment(conda_store, build):
         set_build_failed(conda_store, build, traceback.format_exc().encode("utf-8"))
 
 
+def build_conda_env_export(conda_store, build):
+    conda_prefix = build.build_path(conda_store.store_directory)
+
+    output = subprocess.check_output(
+        [conda_store.conda_command, "env", "export", "-p", conda_prefix]
+    )
+
+    parsed = yaml.safe_load(output)
+    if "dependencies" not in parsed:
+        raise ValueError(f"conda env export` did not produce valid YAML:\n{output}")
+
+    conda_store.storage.set(
+        conda_store.db,
+        build.id,
+        build.conda_env_export_key,
+        output,
+        content_type="text/yaml",
+    )
+
+
 def build_conda_pack(conda_store, build):
     conda_prefix = build.build_path(conda_store.store_directory)
 

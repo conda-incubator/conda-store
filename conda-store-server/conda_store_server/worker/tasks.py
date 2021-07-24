@@ -5,6 +5,7 @@ from conda_store_server.worker.utils import create_worker
 from conda_store_server import api, environment
 from conda_store_server.build import (
     build_conda_environment,
+    build_conda_env_export,
     build_conda_pack,
     build_conda_docker,
 )
@@ -45,6 +46,13 @@ def task_build_conda_environment(build_id):
     conda_store = create_worker().conda_store
     build = api.get_build(conda_store.db, build_id)
     build_conda_environment(conda_store, build)
+
+
+@task(name="task_build_conda_env_export")
+def task_build_conda_env_export(build_id):
+    conda_store = create_worker().conda_store
+    build = api.get_build(conda_store.db, build_id)
+    build_conda_env_export(conda_store, build)
 
 
 @task(name="task_build_conda_pack")

@@ -113,6 +113,10 @@ class Build(Base):
         return f"logs/{self.build_key}.log"
 
     @property
+    def conda_env_export_key(self):
+        return f"yaml/{self.build_key}.yml"
+
+    @property
     def conda_pack_key(self):
         return f"archive/{self.build_key}.tar.gz"
 
