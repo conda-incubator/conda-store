@@ -1,12 +1,10 @@
-import datetime
-
-from sqlalchemy import and_, func
+from sqlalchemy import func
 
 from conda_store_server import orm
 from .conda import conda_platform
 
 
-def list_environments(db, namespace : str=None, search=None):
+def list_environments(db, namespace: str = None, search=None):
     filters = []
     if namespace:
         filters.append(orm.Environment.namespace == namespace)
@@ -14,7 +12,7 @@ def list_environments(db, namespace : str=None, search=None):
     return db.query(orm.Environment).filter(*filters).all()
 
 
-def get_environment(db, name, namespace : str=None):
+def get_environment(db, name, namespace: str = None):
     filters = [orm.Environment.name == name]
 
     if namespace:
@@ -46,7 +44,7 @@ def post_specification(conda_store, specification, namespace="library"):
     conda_store.register_environment(specification, namespace="library")
 
 
-def list_builds(db, limit : int=25, status : orm.BuildStatus=None):
+def list_builds(db, limit: int = 25, status: orm.BuildStatus = None):
     filters = []
     if status:
         filters.append(orm.Build.status == status)
@@ -78,7 +76,7 @@ def get_build_lockfile(db, build_id):
     )
 
 
-def list_build_artifacts(db, limit : int=25, build_id : int=None, key : str=None):
+def list_build_artifacts(db, limit: int = 25, build_id: int = None, key: str = None):
     filters = []
     if build_id:
         filters.append(orm.BuildArtifact.build_id == build_id)
@@ -89,10 +87,11 @@ def list_build_artifacts(db, limit : int=25, build_id : int=None, key : str=None
 
 
 def get_build_artifact(db, build_id, key):
-    return db.query(orm.BuildArtifact).filter(
-        orm.BuildArtifact.build_id == build_id,
-        orm.BuildArtifact.key == key
-    ).first()
+    return (
+        db.query(orm.BuildArtifact)
+        .filter(orm.BuildArtifact.build_id == build_id, orm.BuildArtifact.key == key)
+        .first()
+    )
 
 
 def list_conda_channels(db, limit=25):
@@ -100,7 +99,9 @@ def list_conda_channels(db, limit=25):
 
 
 def get_conda_channel(db, channel_name):
-    return db.query(orm.CondaChannel).filter(orm.CondaChannel.name == channel_name).first()
+    return (
+        db.query(orm.CondaChannel).filter(orm.CondaChannel.name == channel_name).first()
+    )
 
 
 def list_conda_packages(db, limit=25):

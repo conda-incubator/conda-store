@@ -2,7 +2,6 @@ import datetime
 import gzip
 import hashlib
 import os
-import shutil
 import stat
 import subprocess
 import tempfile
@@ -21,7 +20,9 @@ def set_build_started(conda_store, build):
 
 
 def set_build_failed(conda_store, build, logs):
-    conda_store.storage.set(conda_store.db, build.id, build.log_key, logs, content_type="text/plain")
+    conda_store.storage.set(
+        conda_store.db, build.id, build.log_key, logs, content_type="text/plain"
+    )
     build.status = orm.BuildStatus.FAILED
     build.ended_on = datetime.datetime.utcnow()
     conda_store.db.commit()
@@ -34,7 +35,9 @@ def set_build_completed(conda_store, build, logs, packages):
     for channel in unique_channel_urls:
         channel_id = api.get_conda_channel(conda_store.db, channel)
         if channel_id is None:
-            raise ValueError(f'channel url={channel} not recognized in conda-store channel database')
+            raise ValueError(
+                f"channel url={channel} not recognized in conda-store channel database"
+            )
         channel_url_to_id_map[channel] = channel_id.id
 
     def package_query(package):
@@ -42,7 +45,8 @@ def set_build_completed(conda_store, build, logs, packages):
             conda_store.db.query(orm.CondaPackage)
             .filter(
                 and_(
-                    orm.CondaPackage.channel_id == channel_url_to_id_map[package["base_url"]],
+                    orm.CondaPackage.channel_id
+                    == channel_url_to_id_map[package["base_url"]],
                     orm.CondaPackage.subdir == package["platform"],
                     orm.CondaPackage.name == package["name"],
                     orm.CondaPackage.version == package["version"],
@@ -58,7 +62,9 @@ def set_build_completed(conda_store, build, logs, packages):
         if _package is not None:
             build.packages.append(_package)
 
-    conda_store.storage.set(conda_store.db, build.id, build.log_key, logs, content_type="text/plain")
+    conda_store.storage.set(
+        conda_store.db, build.id, build.log_key, logs, content_type="text/plain"
+    )
     build.status = orm.BuildStatus.COMPLETED
     build.ended_on = datetime.datetime.utcnow()
 
@@ -91,15 +97,19 @@ def build_conda_environment(conda_store, build):
                 with open(tmp_environment_filename, "w") as f:
                     yaml.dump(build.specification.spec, f)
                 try:
-                    output = subprocess.check_output([
-                        conda_store.conda_command,
-                        "env",
-                        "create",
-                        "-p",
-                        conda_prefix,
-                        "-f",
-                        str(tmp_environment_filename),
-                    ], stderr=subprocess.STDOUT, encoding="utf-8")
+                    output = subprocess.check_output(
+                        [
+                            conda_store.conda_command,
+                            "env",
+                            "create",
+                            "-p",
+                            conda_prefix,
+                            "-f",
+                            str(tmp_environment_filename),
+                        ],
+                        stderr=subprocess.STDOUT,
+                        encoding="utf-8",
+                    )
                 except subprocess.CalledProcessError as e:
                     set_build_failed(conda_store, build, e.output.encode("utf-8"))
                     return
@@ -148,7 +158,13 @@ def build_conda_pack(conda_store, build):
     with tempfile.TemporaryDirectory() as tmpdir:
         output_filename = os.path.join(tmpdir, "environment.tar.gz")
         conda.conda_pack(prefix=conda_prefix, output=output_filename)
-        conda_store.storage.fset(conda_store.db, build.id, build.conda_pack_key, output_filename, content_type="application/gzip")
+        conda_store.storage.fset(
+            conda_store.db,
+            build.id,
+            build.conda_pack_key,
+            output_filename,
+            content_type="application/gzip",
+        )
 
 
 def build_conda_docker(conda_store, build):

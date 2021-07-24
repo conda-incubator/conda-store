@@ -1,6 +1,6 @@
 import logging
 
-from flask import Flask, g
+from flask import Flask
 from flask_cors import CORS
 from traitlets import Bool, Unicode, Integer
 from traitlets.config import Application
@@ -72,8 +72,8 @@ class CondaStoreServer(Application):
 
         app.conda_store.ensure_directories()
         app.conda_store.configuration.update_storage_metrics(
-            app.conda_store.db,
-            app.conda_store.store_directory)
+            app.conda_store.db, app.conda_store.store_directory
+        )
         app.conda_store.ensure_conda_channels()
 
         app.run(debug=True, host=self.address, port=self.port)

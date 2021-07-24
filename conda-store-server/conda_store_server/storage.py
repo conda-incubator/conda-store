@@ -10,18 +10,18 @@ from conda_store_server import orm, api
 
 
 class Storage(LoggingConfigurable):
-    def fset(self, db, build_id : int, key : str, filename : str):
+    def fset(self, db, build_id: int, key: str, filename: str):
         db.add(orm.BuildArtifact(build_id=build_id, key=key))
         db.commit()
 
-    def set(self, db, build_id : int, key : str, value):
+    def set(self, db, build_id: int, key: str, value):
         db.add(orm.BuildArtifact(build_id=build_id, key=key))
         db.commit()
 
-    def get_url(self, key : str):
+    def get_url(self, key: str):
         raise NotImplementedError()
 
-    def delete(self, db, build_id : int, key : str):
+    def delete(self, db, build_id: int, key: str):
         build_artifact = api.get_build_artifact(db, build_id, key)
         db.delete(build_artifact)
         db.commit()
@@ -105,7 +105,9 @@ class S3Storage(Storage):
         if not self._internal_client.bucket_exists(self.bucket_name):
             raise ValueError(f"S3 bucket={self.bucket_name} does not exist")
 
-    def fset(self, db, build_id, key, filename, content_type="application/octet-stream"):
+    def fset(
+        self, db, build_id, key, filename, content_type="application/octet-stream"
+    ):
         self.internal_client.fput_object(
             self.bucket_name, key, filename, content_type=content_type
         )
@@ -160,6 +162,6 @@ class LocalStorage(Storage):
         return os.path.join(self.storage_url, key)
 
     def delete(self, db, build_id, key):
-        filename = os.path.join(self, storage_path, key)
+        filename = os.path.join(self.storage_path, key)
         os.remove(filename)
         super().delete(db, build_id, key)

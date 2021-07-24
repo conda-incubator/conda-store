@@ -21,7 +21,7 @@ from sqlalchemy import create_engine
 
 from conda_store_server import utils
 from conda_store_server.environment import validate_environment
-from conda_store_server.conda import download_repodata, normalize_channel_name
+from conda_store_server.conda import download_repodata
 
 
 Base = declarative_base()
@@ -137,7 +137,6 @@ class BuildArtifact(Base):
     key = Column(String)
 
 
-
 class Environment(Base):
     """Pointer to the current build and specification for a given
     environment name
@@ -172,9 +171,12 @@ class CondaChannel(Base):
             # nothing to update
             return
 
-        existing_sha256 = {_[0] for _ in db.query(CondaPackage.sha256).filter(
-            CondaPackage.channel_id == self.id
-        ).all()}
+        existing_sha256 = {
+            _[0]
+            for _ in db.query(CondaPackage.sha256)
+            .filter(CondaPackage.channel_id == self.id)
+            .all()
+        }
 
         for architecture in repodata:
             packages = list(repodata[architecture]["packages"].values())
@@ -205,14 +207,17 @@ class CondaChannel(Base):
 class CondaPackage(Base):
     __tablename__ = "conda_package"
 
-    __table_args__ = (UniqueConstraint(
-        "channel_id",
-        "subdir",
-        "name",
-        "version",
-        "build",
-        "build_number",
-        name="_conda_package_uc"),)
+    __table_args__ = (
+        UniqueConstraint(
+            "channel_id",
+            "subdir",
+            "name",
+            "version",
+            "build",
+            "build_number",
+            name="_conda_package_uc",
+        ),
+    )
 
     id = Column(Integer, primary_key=True)
 

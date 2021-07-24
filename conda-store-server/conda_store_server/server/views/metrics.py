@@ -30,11 +30,11 @@ def trigger_task():
         active_tasks = i.active()
         scheduled_tasks = i.scheduled()
         result = {
-            'availability': availability,
-            'stats': stats,
-            'registered_tasks': registered_tasks,
-            'active_tasks': active_tasks,
-            'scheduled_tasks': scheduled_tasks
+            "availability": availability,
+            "stats": stats,
+            "registered_tasks": registered_tasks,
+            "active_tasks": active_tasks,
+            "scheduled_tasks": scheduled_tasks,
         }
         return result
 

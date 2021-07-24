@@ -26,7 +26,9 @@ def conda_pack(prefix, output):
     conda_pack.pack(prefix=str(prefix), output=str(output))
 
 
-def download_repodata(channel : str, last_update : datetime.datetime=None, architectures=None):
+def download_repodata(
+    channel: str, last_update: datetime.datetime = None, architectures=None
+):
     """Download repodata for channel only if changed since last update
 
     A channel consists of several architectures: linux-32, linux-64,
@@ -45,7 +47,7 @@ def download_repodata(channel : str, last_update : datetime.datetime=None, archi
         # last update to minimize bandwidth usage of channel updates
         # most static web servers obey this header otherwise it will
         # be ignored
-        headers['If-Modified-Since'] = last_update.strftime('%a, %d %b %Y %H:%M:%S GMT')
+        headers["If-Modified-Since"] = last_update.strftime("%a, %d %b %Y %H:%M:%S GMT")
 
     response = requests.get(channel_url / "channeldata.json", headers=headers)
     if response.status_code == 304:  # 304 Not Modified since last_update

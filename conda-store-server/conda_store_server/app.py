@@ -1,9 +1,5 @@
 import os
-import pathlib
-import datetime
-import shutil
 
-import yaml
 from celery import Celery
 from traitlets import Type, Unicode, Integer, List, default
 from traitlets.config import LoggingConfigurable
@@ -44,10 +40,7 @@ class CondaStore(LoggingConfigurable):
     )
 
     conda_allowed_channels = List(
-        [
-            "https://repo.anaconda.com/pkgs/main",
-            "conda-forge"
-        ],
+        ["https://repo.anaconda.com/pkgs/main", "conda-forge"],
         help="Allowed conda channels to be used in conda environments. Currently not enforced",
         config=True,
     )
@@ -63,7 +56,7 @@ class CondaStore(LoggingConfigurable):
         config=True,
     )
 
-    @default('celery_broker_url')
+    @default("celery_broker_url")
     def _default_celery_broker_url(self):
         return f"sqla+{self.database_url}"
 
@@ -72,7 +65,7 @@ class CondaStore(LoggingConfigurable):
         config=True,
     )
 
-    @default('celery_results_backend')
+    @default("celery_results_backend")
     def _default_celery_results_backend(self):
         return f"db+{self.database_url}"
 
@@ -110,7 +103,7 @@ class CondaStore(LoggingConfigurable):
 
     @property
     def db(self):
-        if hasattr(self, '_db'):
+        if hasattr(self, "_db"):
             return self._db
         self._db = self.session_factory()
         return self._db
@@ -128,38 +121,39 @@ class CondaStore(LoggingConfigurable):
 
     @property
     def celery_app(self):
-        if hasattr(self, '_celery_app'):
+        if hasattr(self, "_celery_app"):
             return self._celery_app
 
         self._celery_app = Celery(
-            'tasks',
+            "tasks",
             backend=self.celery_results_backend,
             broker=self.celery_broker_url,
             include=[
-                'conda_store_server.worker.tasks',
+                "conda_store_server.worker.tasks",
             ],
         )
         self._celery_app.conf.beat_schedule = {
-            'watch-paths': {
-                'task': 'task_watch_paths',
-                'schedule': 60.0,  # 1 minute
-                'args': [],
-                'kwargs': {},
+            "watch-paths": {
+                "task": "task_watch_paths",
+                "schedule": 60.0,  # 1 minute
+                "args": [],
+                "kwargs": {},
             },
-            'update-conda-channels': {
-                'task': 'task_update_conda_channels',
-                'schedule': 15.0 * 60.0,  # 15 minutes
-                'args': [],
-                'kwargs': {}
-            }
+            "update-conda-channels": {
+                "task": "task_update_conda_channels",
+                "schedule": 15.0 * 60.0,  # 15 minutes
+                "args": [],
+                "kwargs": {},
+            },
         }
 
-        if self.celery_results_backend.startswith('sqla'):
+        if self.celery_results_backend.startswith("sqla"):
             # https://github.com/celery/celery/issues/4653#issuecomment-400029147
             # race condition in table construction in celery
             # despite issue being closed still causes first task to fail
             # in celery if tables not created
             from celery.backends.database import SessionManager
+
             session = SessionManager()
             engine = session.get_engine(self._celery_app.backend.url)
             session.prepare_models(engine)
@@ -177,19 +171,23 @@ class CondaStore(LoggingConfigurable):
 
         for channel in self.conda_allowed_channels:
             normalized_channel = conda.normalize_channel_name(
-                self.conda_channel_alias, channel)
+                self.conda_channel_alias, channel
+            )
 
             conda_channel = api.get_conda_channel(self.db, normalized_channel)
             if conda_channel is None:
-                conda_channel = orm.CondaChannel(name=normalized_channel, last_update=None)
+                conda_channel = orm.CondaChannel(
+                    name=normalized_channel, last_update=None
+                )
                 self.db.add(conda_channel)
                 self.db.commit()
 
         for channel in api.list_conda_channels(self.db):
             channel.update_packages(self.db)
 
-
-    def register_environment(self, specification : dict, namespace : str="default", force_build=False):
+    def register_environment(
+        self, specification: dict, namespace: str = "default", force_build=False
+    ):
         """Register a given specification to conda store with given namespace/name.
 
         If force_build is True a build will be triggered even if
@@ -219,14 +217,17 @@ class CondaStore(LoggingConfigurable):
         # Create Environment if specification of given namespace/name
         # does not exist yet
         environment = api.get_environment(
-            self.db, namespace=namespace, name=specification.name)
+            self.db, namespace=namespace, name=specification.name
+        )
         if environment is None:
-            self.db.add(orm.Environment(
-                name=specification.name,
-                namespace=namespace,
-                specification_id=specification.id,
-                build_id=build.id
-            ))
+            self.db.add(
+                orm.Environment(
+                    name=specification.name,
+                    namespace=namespace,
+                    specification_id=specification.id,
+                    build_id=build.id,
+                )
+            )
             self.db.commit()
 
     def create_build(self, specification_sha256):
@@ -239,10 +240,13 @@ class CondaStore(LoggingConfigurable):
 
         # must import tasks after a celery app has been initialized
         from conda_store_server.worker import tasks
-        (tasks.task_update_storage_metrics.si() |
-         tasks.task_build_conda_environment.si(build.id) |
-         tasks.task_build_conda_pack.si(build.id) |
-         tasks.task_build_conda_docker.si(build.id) |
-         tasks.task_update_storage_metrics.si()).apply_async()
+
+        (
+            tasks.task_update_storage_metrics.si()
+            | tasks.task_build_conda_environment.si(build.id)
+            | tasks.task_build_conda_pack.si(build.id)
+            | tasks.task_build_conda_docker.si(build.id)
+            | tasks.task_update_storage_metrics.si()
+        ).apply_async()
 
         return build

@@ -18,9 +18,7 @@ class CondaStoreWorker(Application):
     )
 
     watch_paths = List(
-        [],
-        help="list of paths to watch for environment changes",
-        config=True
+        [], help="list of paths to watch for environment changes", config=True
     )
 
     config_file = Unicode(
@@ -33,7 +31,7 @@ class CondaStoreWorker(Application):
 
     @property
     def conda_store(self):
-        if hasattr(self, '_conda_store'):
+        if hasattr(self, "_conda_store"):
             return self._conda_store
 
         self._conda_store = CondaStore(parent=self, log=self.log)
@@ -41,9 +39,9 @@ class CondaStoreWorker(Application):
 
     def start(self):
         argv = [
-            'worker',
-            '--loglevel=INFO',
-            '--beat',
+            "worker",
+            "--loglevel=INFO",
+            "--beat",
         ]
         self.conda_store.ensure_directories()
         self.conda_store.celery_app.worker_main(argv)
