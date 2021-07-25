@@ -96,11 +96,10 @@ def task_delete_build(build_id):
 
     shutil.rmtree(conda_prefix)
 
-    for build_artifact in api.list_build_artifacts(conda_store.db, limit=None, build_id=build_id):
-        conda_store.storage.delete(
-            conda_store.db,
-            build_id,
-            build_artifact.key)
+    for build_artifact in api.list_build_artifacts(
+        conda_store.db, limit=None, build_id=build_id
+    ):
+        conda_store.storage.delete(conda_store.db, build_id, build_artifact.key)
 
     conda_store.db.delete(build)
     conda_store.db.commit()

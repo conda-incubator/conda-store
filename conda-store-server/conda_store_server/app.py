@@ -276,9 +276,7 @@ class CondaStore(LoggingConfigurable):
     def delete_build(self, build_id):
         build = api.get_build(self.db, build_id)
         if build.status not in [orm.BuildStatus.FAILED, orm.BuildStatus.COMPLETED]:
-            raise ValueError(
-                "cannot delete build since not finished building"
-            )
+            raise ValueError("cannot delete build since not finished building")
 
         self.celery_app
 
