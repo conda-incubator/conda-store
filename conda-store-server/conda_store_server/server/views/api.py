@@ -32,6 +32,14 @@ def api_get_environment(name):
     return jsonify(environment)
 
 
+@app_api.route("/api/v1/environment/<name>/", methods=["PUT"])
+def api_update_environment_build(name):
+    conda_store = get_conda_store()
+    build_id = request.json['buildId']
+    conda_store.update_environment_build(name, build_id)
+    return jsonify({"status": "ok"})
+
+
 @app_api.route("/api/v1/specification/", methods=["GET"])
 def api_list_specification():
     conda_store = get_conda_store()

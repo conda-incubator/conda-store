@@ -30,6 +30,11 @@
         <a href="/build/{{ build.id }}/">Build {{ build.id }}</a>
         <span>{{ build.status.value }}</span>
         <div class="btn-group" role="group" aria-label="Build actions">
+            {% if build.id != environment.build_id and build.status.value == 'COMPLETED' %}
+            <button type="button" onclick="updateEnvironmentBuild('{{ build.id }}')" class="btn btn-primary mb-2">
+                <ion-icon name="checkmark"></ion-icon>
+            </button>
+            {% endif %}
             <button type="button" onclick="buildAction('PUT', '{{ build.id }}')" class="btn btn-primary mb-2">
                 <ion-icon name="refresh"></ion-icon>
             </button>
@@ -42,6 +47,16 @@
 </ul>
 
 <script>
+  function updateEnvironmentBuild(buildId) {
+     fetch(`/api/v1/environment/{{ environment.name }}/`, {
+         method: 'PUT',
+         headers: {
+             'Content-Type': 'application/json',
+         },
+         body: JSON.stringify({"buildId": buildId})
+     })
+  }
+
  function buildAction(method, buildId) {
      fetch(`/api/v1/build/${buildId}/`, {
          method: method,

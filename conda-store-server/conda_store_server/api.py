@@ -12,11 +12,14 @@ def list_environments(db, namespace: str = None, search=None):
     return db.query(orm.Environment).filter(*filters).all()
 
 
-def get_environment(db, name, namespace: str = None):
-    filters = [orm.Environment.name == name]
-
+def get_environment(db, name : str = None, namespace: str = None, id : int = None):
+    filters = []
+    if name:
+        filters.append(orm.Environment.name == name)
     if namespace:
         filters.append(orm.Environment.namespace == namespace)
+    if id:
+        filters.append(orm.Environment.id == id)
 
     return db.query(orm.Environment).filter(*filters).first()
 

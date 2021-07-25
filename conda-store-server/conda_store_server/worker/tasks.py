@@ -2,7 +2,7 @@ from celery.decorators import task
 import yaml
 
 from conda_store_server.worker.utils import create_worker
-from conda_store_server import api, environment
+from conda_store_server import api, environment, utils
 from conda_store_server.build import (
     build_conda_environment,
     build_conda_env_export,
@@ -67,3 +67,19 @@ def task_build_conda_docker(build_id):
     conda_store = create_worker().conda_store
     build = api.get_build(conda_store.db, build_id)
     build_conda_docker(conda_store, build)
+
+
+@task(name="task_update_environment_build")
+def task_update_environment_build(environment_id, build_id):
+    conda_store = create_worker().conda_store
+    build = api.get_build(conda_store.db, build_id)
+
+    conda_prefix = build.build_path(conda_store.store_directory)
+    environment_prefix = build.environment_path(conda_store.environment_directory)
+
+    utils.symlink(conda_prefix, environment_prefix)
+
+    environment = api.get_environment(conda_store.db, id=environment_id)
+    environment.build_id = build.id
+    environment.specification_id = build.specification.id
+    conda_store.db.commit()
