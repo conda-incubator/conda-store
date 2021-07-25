@@ -272,3 +272,15 @@ class CondaStore(LoggingConfigurable):
         from conda_store_server.worker import tasks
 
         tasks.task_update_environment_build.si(environment.id, build.id).apply_async()
+
+    def delete_build(self, build_id):
+        build = api.get_build(self.db, build_id)
+        if build.status not in [orm.BuildStatus.FAILED, orm.BuildStatus.COMPLETED]:
+            raise ValueError("cannot delete build since not finished building")
+
+        self.celery_app
+
+        # must import tasks after a celery app has been initialized
+        from conda_store_server.worker import tasks
+
+        tasks.task_delete_build.si(build.id).apply_async()
