@@ -251,3 +251,24 @@ class CondaStore(LoggingConfigurable):
         ).apply_async()
 
         return build
+
+    def update_environment_build(self, name, build_id):
+        build = api.get_build(self.db, build_id)
+        if build.status != orm.BuildStatus.COMPLETED:
+            raise ValueError(
+                "cannot update environment to build id since not completed"
+            )
+
+        if build.specification.name != name:
+            raise ValueError(
+                "cannot update environment to build id since specification does not match environment name"
+            )
+
+        environment = api.get_environment(self.db, name)
+
+        self.celery_app
+
+        # must import tasks after a celery app has been initialized
+        from conda_store_server.worker import tasks
+
+        tasks.task_update_environment_build.si(environment.id, build.id).apply_async()
