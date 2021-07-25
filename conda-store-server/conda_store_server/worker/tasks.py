@@ -1,3 +1,5 @@
+import shutil
+
 from celery.decorators import task
 import yaml
 
@@ -82,4 +84,23 @@ def task_update_environment_build(environment_id, build_id):
     environment = api.get_environment(conda_store.db, id=environment_id)
     environment.build_id = build.id
     environment.specification_id = build.specification.id
+    conda_store.db.commit()
+
+
+@task(name="task_delete_build")
+def task_delete_build(build_id):
+    conda_store = create_worker().conda_store
+    build = api.get_build(conda_store.db, build_id)
+
+    conda_prefix = build.build_path(conda_store.store_directory)
+
+    shutil.rmtree(conda_prefix)
+
+    for build_artifact in api.list_build_artifacts(conda_store.db, limit=None, build_id=build_id):
+        conda_store.storage.delete(
+            conda_store.db,
+            build_id,
+            build_artifact.key)
+
+    conda_store.db.delete(build)
     conda_store.db.commit()

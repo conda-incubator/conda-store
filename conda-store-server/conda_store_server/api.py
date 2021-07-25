@@ -86,7 +86,7 @@ def list_build_artifacts(db, limit: int = 25, build_id: int = None, key: str = N
     if key:
         filters.append(orm.BuildArtifact.key == key)
 
-    return db.query(orm.BuildArtifact).filter(**filters).limit(limit).all()
+    return db.query(orm.BuildArtifact).filter(*filters).limit(limit).all()
 
 
 def get_build_artifact(db, build_id, key):

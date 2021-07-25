@@ -99,6 +99,17 @@ def api_put_build(build_id):
         return jsonify({"status": "error", "error": "build id does not exist"}), 400
 
 
+@app_api.route("/api/v1/build/<build_id>/", methods=["DELETE"])
+def api_delete_build(build_id):
+    conda_store = get_conda_store()
+    build = api.get_build(conda_store.db, build_id)
+    if build is not None:
+        conda_store.delete_build(build_id)
+        return jsonify({"status": "ok"})
+    else:
+        return jsonify({"status": "error", "error": "build id does not exist"}), 400
+
+
 @app_api.route("/api/v1/build/<build_id>/logs/", methods=["GET"])
 def api_get_build_logs(build_id):
     conda_store = get_conda_store()
