@@ -11,26 +11,38 @@ app_ui = Blueprint("ui", __name__, template_folder="templates")
 
 @app_ui.route("/create/", methods=["GET", "POST"])
 def ui_create_get_environment():
+    conda_store = get_conda_store()
+    namespaces = api.list_namespaces(conda_store.db)
+
     if request.method == "GET":
-        return render_template("create.html")
+        return render_template(
+            "create.html",
+            namespaces=namespaces,
+        )
     elif request.method == "POST":
         try:
+            namespace_id = int(request.form.get("namespace"))
             specification_text = request.form.get("specification")
             conda_store = get_conda_store()
             specification = schema.CondaSpecification.parse_obj(
                 yaml.safe_load(specification_text)
             )
-            api.post_specification(conda_store, specification.dict())
+            namespace = api.get_namespace(conda_store.db, id=namespace_id)
+            api.post_specification(conda_store, specification.dict(), namespace.name)
             return redirect("/")
         except yaml.YAMLError:
             return render_template(
                 "create.html",
                 specification=specification_text,
                 message="Unable to parse. Invalid YAML",
+                namespaces=namespaces,
             )
         except pydantic.ValidationError as e:
             return render_template(
-                "create.html", specification=specification_text, message=str(e)
+                "create.html",
+                specification=specification_text,
+                message=str(e),
+                namespaces=namespaces,
             )
 
 
@@ -43,24 +55,30 @@ def ui_list_environments():
     )
 
 
-@app_ui.route("/environment/<name>/", methods=["GET"])
-def ui_get_environment(name):
+@app_ui.route("/environment/<namespace>/<name>/", methods=["GET"])
+def ui_get_environment(namespace, name):
     conda_store = get_conda_store()
     return render_template(
         "environment.html",
-        environment=api.get_environment(conda_store.db, name),
-        environment_builds=api.get_environment_builds(conda_store.db, name),
+        environment=api.get_environment(conda_store.db, namespace=namespace, name=name),
+        environment_builds=api.get_environment_builds(conda_store.db, namespace, name),
     )
 
 
-@app_ui.route("/environment/<name>/edit/", methods=["GET"])
-def ui_edit_environment(name):
+@app_ui.route("/environment/<namespace>/<name>/edit/", methods=["GET"])
+def ui_edit_environment(namespace, name):
     conda_store = get_conda_store()
-    environment = api.get_environment(conda_store.db, name)
+    environment = api.get_environment(conda_store.db, namespace=namespace, name=name)
     specification = api.get_specification(
-        conda_store.db, environment.specification.sha256
+        conda_store.db,
+        environment.specification.sha256,
     )
-    return render_template("create.html", specification=yaml.dump(specification.spec))
+    namespace = api.get_namespace(conda_store.db, namespace)
+    return render_template(
+        "create.html",
+        specification=yaml.dump(specification.spec),
+        namespaces=[namespace],
+    )
 
 
 @app_ui.route("/specification/<sha256>/", methods=["GET"])

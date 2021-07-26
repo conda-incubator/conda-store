@@ -8,7 +8,7 @@
 <div class="card my-2">
     <div class="card-body">
         <h5 class="card-title">
-            <a href="/environment/{{ environment.name }}/">{{ environment.namespace }}/{{ environment.name }}</a>
+            <a href="/environment/{{environment.namespace.name }}/{{ environment.name }}/">{{ environment.namespace.name }}/{{ environment.name }}</a>
             <span class="badge badge-light">{{ (environment.build.size or 0) | filesizeformat(true) }}</span>
         </h5>
         {% if environment.build.status.value == 'COMPLETED' %}

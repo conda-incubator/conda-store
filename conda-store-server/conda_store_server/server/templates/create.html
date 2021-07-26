@@ -8,8 +8,17 @@
 {% endif %}
 
 <form action="/create/" method="post">
+    <div>
+        <label for="namespace">Namespace</label>
+        <select class="form-select" name="namespace" id="namespace" aria-label="namespace">
+            {% for namespace in namespaces %}
+            <option {% if loop.index == 0 %}selected{% endif %} value="{{ namespace.id }}">{{ namespace.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
     <div class="custom-file">
-        <input name="file" type="file" class="custom-file-input" id="customFile">
+        <input type="file" class="custom-file-input" id="customFile">
         <label class="custom-file-label" for="customFile">Choose file</label>
     </div>
 

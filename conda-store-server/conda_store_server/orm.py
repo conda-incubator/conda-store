@@ -1,6 +1,6 @@
+import os
 import enum
 import datetime
-import pathlib
 import shutil
 
 from sqlalchemy import (
@@ -32,6 +32,15 @@ class BuildStatus(enum.Enum):
     BUILDING = "BUILDING"
     COMPLETED = "COMPLETED"
     FAILED = "FAILED"
+
+
+class Namespace(Base):
+    """Namespace for resources"""
+
+    __tablename__ = "namespace"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True)
 
 
 class Specification(Base):
@@ -78,21 +87,24 @@ class Build(Base):
     specification_id = Column(Integer, ForeignKey("specification.id"), nullable=False)
     specification = relationship(Specification, back_populates="builds")
 
+    namespace_id = Column(Integer, ForeignKey("namespace.id"), nullable=False)
+    namespace = relationship(Namespace)
+
     packages = relationship("CondaPackage", secondary=build_conda_package)
 
     status = Column(Enum(BuildStatus), default=BuildStatus.QUEUED)
-    size = Column(Integer, default=0)
+    size = Column(BigInteger, default=0)
     scheduled_on = Column(DateTime, default=datetime.datetime.utcnow)
     started_on = Column(DateTime, default=None)
     ended_on = Column(DateTime, default=None)
 
     def build_path(self, store_directory):
-        store_path = pathlib.Path(store_directory).resolve()
-        return store_path / self.build_key
+        store_path = os.path.abspath(store_directory)
+        return os.path.join(store_path, self.build_key)
 
     def environment_path(self, environment_directory):
-        environment_directory = pathlib.Path(environment_directory).resolve()
-        return environment_directory / self.specification.name
+        environment_directory = os.path.abspath(environment_directory)
+        return os.path.join(environment_directory, self.specification.name)
 
     @property
     def build_key(self):
@@ -149,10 +161,13 @@ class Environment(Base):
 
     __tablename__ = "environment"
 
-    __table_args__ = (UniqueConstraint("namespace", "name", name="_namespace_name_uc"),)
+    __table_args__ = (UniqueConstraint("namespace_id", "name", name="_namespace_name_uc"),)
 
     id = Column(Integer, primary_key=True)
-    namespace = Column(String, default="library")
+
+    namespace_id = Column(Integer, ForeignKey("namespace.id"), nullable=False)
+    namespace = relationship(Namespace)
+
     name = Column(String, nullable=False)
 
     specification_id = Column(Integer, ForeignKey("specification.id"))

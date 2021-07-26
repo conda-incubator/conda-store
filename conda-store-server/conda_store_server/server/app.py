@@ -70,6 +70,7 @@ class CondaStoreServer(Application):
 
         app.conda_store = CondaStore(parent=self, log=self.log)
 
+        app.conda_store.ensure_namespace()
         app.conda_store.ensure_directories()
         app.conda_store.configuration.update_storage_metrics(
             app.conda_store.db, app.conda_store.store_directory

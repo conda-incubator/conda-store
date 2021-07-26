@@ -69,6 +69,12 @@ class CondaStore(LoggingConfigurable):
     def _default_celery_results_backend(self):
         return f"db+{self.database_url}"
 
+    default_namespace = Unicode(
+        "default",
+        help="default namespace for conda-store",
+        config=True
+    )
+
     default_uid = Integer(
         os.getuid(),
         help="default uid to assign to built environments",
@@ -160,6 +166,12 @@ class CondaStore(LoggingConfigurable):
 
         return self._celery_app
 
+    def ensure_namespace(self):
+        """Ensure that conda-store default namespaces exists"""
+        namespace = api.get_namespace(self.db, name=self.default_namespace)
+        if namespace is None:
+            self.db.add(orm.Namespace(name=self.default_namespace))
+
     def ensure_directories(self):
         """Ensure that conda-store filesystem directories exist"""
         os.makedirs(self.store_directory, exist_ok=True)
@@ -186,7 +198,7 @@ class CondaStore(LoggingConfigurable):
             channel.update_packages(self.db)
 
     def register_environment(
-        self, specification: dict, namespace: str = "default", force_build=False
+        self, specification: dict, namespace: str = None, force_build=False
     ):
         """Register a given specification to conda store with given namespace/name.
 
@@ -194,6 +206,19 @@ class CondaStore(LoggingConfigurable):
         specification already exists.
 
         """
+        namespace = namespace or self.default_namespace
+
+        # Create Namespace if namespace if it does not exist
+        namespace_model = api.get_namespace(
+            self.db, name=namespace
+        )
+        if namespace_model is None:
+            namespace = orm.Namespace(name=namespace)
+            self.db.add(namespace)
+            self.db.commit()
+        else:
+            namespace = namespace_model
+
         specification_model = schema.CondaSpecification.parse_obj(specification)
         specification_sha256 = utils.datastructure_hash(specification_model.dict())
 
@@ -212,27 +237,27 @@ class CondaStore(LoggingConfigurable):
             if not force_build:
                 return
 
-        build = self.create_build(specification.sha256)
+        build = self.create_build(namespace.id, specification.sha256)
 
         # Create Environment if specification of given namespace/name
         # does not exist yet
         environment = api.get_environment(
-            self.db, namespace=namespace, name=specification.name
+            self.db, namespace_id=namespace.id, name=specification.name
         )
         if environment is None:
             self.db.add(
                 orm.Environment(
                     name=specification.name,
-                    namespace=namespace,
+                    namespace_id=namespace.id,
                     specification_id=specification.id,
                     build_id=build.id,
                 )
             )
             self.db.commit()
 
-    def create_build(self, specification_sha256):
+    def create_build(self, namespace_id : int, specification_sha256 : str):
         specification = api.get_specification(self.db, specification_sha256)
-        build = orm.Build(specification_id=specification.id)
+        build = orm.Build(namespace_id=namespace_id, specification_id=specification.id)
         self.db.add(build)
         self.db.commit()
 
@@ -252,7 +277,7 @@ class CondaStore(LoggingConfigurable):
 
         return build
 
-    def update_environment_build(self, name, build_id):
+    def update_environment_build(self, namespace, name, build_id):
         build = api.get_build(self.db, build_id)
         if build.status != orm.BuildStatus.COMPLETED:
             raise ValueError(
@@ -264,7 +289,7 @@ class CondaStore(LoggingConfigurable):
                 "cannot update environment to build id since specification does not match environment name"
             )
 
-        environment = api.get_environment(self.db, name)
+        environment = api.get_environment(self.db, namespace=namespace, name=name)
 
         self.celery_app
 

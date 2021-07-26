@@ -23,20 +23,20 @@ def api_list_environments():
     return jsonify(environments)
 
 
-@app_api.route("/api/v1/environment/<name>/", methods=["GET"])
+@app_api.route("/api/v1/environment/<namespace>/<name>/", methods=["GET"])
 def api_get_environment(name):
     conda_store = get_conda_store()
     environment = schema.Environment.from_orm(
-        api.get_environment(conda_store.db, name)
+        api.get_environment(conda_store.db, namespace=namespace, name=name)
     ).dict()
     return jsonify(environment)
 
 
-@app_api.route("/api/v1/environment/<name>/", methods=["PUT"])
-def api_update_environment_build(name):
+@app_api.route("/api/v1/environment/<namespace>/<name>/", methods=["PUT"])
+def api_update_environment_build(namespace, name):
     conda_store = get_conda_store()
     build_id = request.json["buildId"]
-    conda_store.update_environment_build(name, build_id)
+    conda_store.update_environment_build(namespace, name, build_id)
     return jsonify({"status": "ok"})
 
 
@@ -93,7 +93,7 @@ def api_put_build(build_id):
     conda_store = get_conda_store()
     build = api.get_build(conda_store.db, build_id)
     if build is not None:
-        conda_store.create_build(build.specification.sha256)
+        conda_store.create_build(build.namespace_id, build.specification.sha256)
         return jsonify({"status": "ok"})
     else:
         return jsonify({"status": "error", "error": "build id does not exist"}), 400
