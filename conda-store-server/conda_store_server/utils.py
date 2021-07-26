@@ -1,3 +1,4 @@
+import os
 import re
 import subprocess
 import contextlib
@@ -7,9 +8,9 @@ import json
 
 
 def symlink(source, target):
-    if target.is_symlink():
-        target.unlink()
-    target.symlink_to(source)
+    if os.path.islink(target):
+        os.unlink(target)
+    os.symlink(source, target)
 
 
 def chmod(directory, permissions):
@@ -18,7 +19,7 @@ def chmod(directory, permissions):
             f"chmod permissions={permissions} not 3 integer values between 0-7"
         )
 
-    subprocess.check_output(["chmod", "-R", str(permissions), str(directory)])
+    subprocess.check_output(["chmod", "-R", str(permissions), directory])
 
 
 def chown(directory, uid, gid):
@@ -28,7 +29,7 @@ def chown(directory, uid, gid):
     if re.fullmatch(r"\d+", str(gid)) is None:
         raise ValueError(f"chown gid={gid} not integer value")
 
-    subprocess.check_output(["chown", "-R", f"{uid}:{gid}", str(directory)])
+    subprocess.check_output(["chown", "-R", f"{uid}:{gid}", directory])
 
 
 def disk_usage(path):

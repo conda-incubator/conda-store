@@ -33,6 +33,10 @@ def set_build_completed(conda_store, build, logs, packages):
 
     channel_url_to_id_map = {}
     for channel in unique_channel_urls:
+        if channel == "https://conda.anaconda.org/pypi":
+            # ignore pypi packages
+            continue
+
         channel_id = api.get_conda_channel(conda_store.db, channel)
         if channel_id is None:
             raise ValueError(
@@ -58,7 +62,12 @@ def set_build_completed(conda_store, build, logs, packages):
         )
 
     for package in packages:
+        if package["base_url"] == "https://conda.anaconda.org/pypi":
+            # ignore pypi packages
+            continue
+
         _package = package_query(package)
+
         if _package is not None:
             build.packages.append(_package)
 
@@ -96,7 +105,6 @@ def build_conda_environment(conda_store, build):
                 tmp_environment_filename = os.path.join(tmpdir, "environment.yaml")
                 with open(tmp_environment_filename, "w") as f:
                     yaml.dump(build.specification.spec, f)
-                try:
                     output = subprocess.check_output(
                         [
                             conda_store.conda_command,
@@ -110,9 +118,6 @@ def build_conda_environment(conda_store, build):
                         stderr=subprocess.STDOUT,
                         encoding="utf-8",
                     )
-                except subprocess.CalledProcessError as e:
-                    set_build_failed(conda_store, build, e.output.encode("utf-8"))
-                    return
 
         utils.symlink(conda_prefix, environment_prefix)
 
@@ -146,9 +151,14 @@ def build_conda_environment(conda_store, build):
         build.size = utils.disk_usage(conda_prefix)
 
         set_build_completed(conda_store, build, output.encode("utf-8"), packages)
+    except subprocess.CalledProcessError as e:
+        conda_store.log.exception(e)
+        set_build_failed(conda_store, build, e.output.encode("utf-8"))
+        raise e
     except Exception as e:
         conda_store.log.exception(e)
         set_build_failed(conda_store, build, traceback.format_exc().encode("utf-8"))
+        raise e
 
 
 def build_conda_env_export(conda_store, build):

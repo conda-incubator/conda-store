@@ -1,4 +1,5 @@
 import shutil
+import os
 
 from celery.decorators import task
 import yaml
@@ -94,7 +95,11 @@ def task_delete_build(build_id):
 
     conda_prefix = build.build_path(conda_store.store_directory)
 
-    shutil.rmtree(conda_prefix)
+    # be REALLY sure this is a directory within store directory
+    if conda_prefix.startswith(conda_store.store_directory) and os.path.isdir(
+        conda_prefix
+    ):
+        shutil.rmtree(conda_prefix)
 
     for build_artifact in api.list_build_artifacts(
         conda_store.db, limit=None, build_id=build_id

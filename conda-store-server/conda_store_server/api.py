@@ -4,31 +4,54 @@ from conda_store_server import orm
 from .conda import conda_platform
 
 
+def list_namespaces(db, limit: int = 25):
+    filters = []
+    return db.query(orm.Namespace).filter(*filters).all()
+
+
+def get_namespace(db, name: str = None, id: int = None):
+    filters = []
+    if name:
+        filters.append(orm.Namespace.name == name)
+    if id:
+        filters.append(orm.Namespace.id == id)
+    return db.query(orm.Namespace).filter(*filters).first()
+
+
 def list_environments(db, namespace: str = None, search=None):
     filters = []
     if namespace:
-        filters.append(orm.Environment.namespace == namespace)
+        filters.append(orm.Namespace.name == namespace)
 
-    return db.query(orm.Environment).filter(*filters).all()
+    return db.query(orm.Environment).join(orm.Namespace).filter(*filters).all()
 
 
-def get_environment(db, name: str = None, namespace: str = None, id: int = None):
+def get_environment(
+    db,
+    name: str = None,
+    namespace: str = None,
+    namespace_id: int = None,
+    id: int = None,
+):
     filters = []
+    if namespace:
+        filters.append(orm.Namespace.name == namespace)
+    if namespace_id:
+        filters.append(orm.Namespace.id == namespace_id)
     if name:
         filters.append(orm.Environment.name == name)
-    if namespace:
-        filters.append(orm.Environment.namespace == namespace)
     if id:
         filters.append(orm.Environment.id == id)
 
-    return db.query(orm.Environment).filter(*filters).first()
+    return db.query(orm.Environment).join(orm.Namespace).filter(*filters).first()
 
 
-def get_environment_builds(db, name):
+def get_environment_builds(db, namespace, name):
     return (
         db.query(orm.Build)
         .join(orm.Specification, orm.Build.specification_id == orm.Specification.id)
-        .filter(orm.Specification.name == name)
+        .join(orm.Namespace, orm.Build.namespace_id == orm.Namespace.id)
+        .filter(orm.Namespace.name == namespace, orm.Specification.name == name)
         .all()
     )
 
@@ -43,8 +66,8 @@ def get_specification(db, sha256):
     )
 
 
-def post_specification(conda_store, specification, namespace="library"):
-    conda_store.register_environment(specification, namespace="library")
+def post_specification(conda_store, specification, namespace=None):
+    conda_store.register_environment(specification, namespace)
 
 
 def list_builds(db, limit: int = 25, status: orm.BuildStatus = None):
