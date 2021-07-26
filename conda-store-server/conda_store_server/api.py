@@ -4,12 +4,12 @@ from conda_store_server import orm
 from .conda import conda_platform
 
 
-def list_namespaces(db, limit : int = 25):
+def list_namespaces(db, limit: int = 25):
     filters = []
     return db.query(orm.Namespace).filter(*filters).all()
 
 
-def get_namespace(db, name : str = None, id : int = None):
+def get_namespace(db, name: str = None, id: int = None):
     filters = []
     if name:
         filters.append(orm.Namespace.name == name)
@@ -26,7 +26,13 @@ def list_environments(db, namespace: str = None, search=None):
     return db.query(orm.Environment).join(orm.Namespace).filter(*filters).all()
 
 
-def get_environment(db, name: str = None, namespace: str = None, namespace_id: int = None, id: int = None):
+def get_environment(
+    db,
+    name: str = None,
+    namespace: str = None,
+    namespace_id: int = None,
+    id: int = None,
+):
     filters = []
     if namespace:
         filters.append(orm.Namespace.name == namespace)

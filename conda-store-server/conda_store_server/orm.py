@@ -161,7 +161,9 @@ class Environment(Base):
 
     __tablename__ = "environment"
 
-    __table_args__ = (UniqueConstraint("namespace_id", "name", name="_namespace_name_uc"),)
+    __table_args__ = (
+        UniqueConstraint("namespace_id", "name", name="_namespace_name_uc"),
+    )
 
     id = Column(Integer, primary_key=True)
 

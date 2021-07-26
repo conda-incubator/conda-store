@@ -70,9 +70,7 @@ class CondaStore(LoggingConfigurable):
         return f"db+{self.database_url}"
 
     default_namespace = Unicode(
-        "default",
-        help="default namespace for conda-store",
-        config=True
+        "default", help="default namespace for conda-store", config=True
     )
 
     default_uid = Integer(
@@ -209,9 +207,7 @@ class CondaStore(LoggingConfigurable):
         namespace = namespace or self.default_namespace
 
         # Create Namespace if namespace if it does not exist
-        namespace_model = api.get_namespace(
-            self.db, name=namespace
-        )
+        namespace_model = api.get_namespace(self.db, name=namespace)
         if namespace_model is None:
             namespace = orm.Namespace(name=namespace)
             self.db.add(namespace)
@@ -255,7 +251,7 @@ class CondaStore(LoggingConfigurable):
             )
             self.db.commit()
 
-    def create_build(self, namespace_id : int, specification_sha256 : str):
+    def create_build(self, namespace_id: int, specification_sha256: str):
         specification = api.get_specification(self.db, specification_sha256)
         build = orm.Build(namespace_id=namespace_id, specification_id=specification.id)
         self.db.add(build)

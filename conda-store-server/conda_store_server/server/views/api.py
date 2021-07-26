@@ -24,7 +24,7 @@ def api_list_environments():
 
 
 @app_api.route("/api/v1/environment/<namespace>/<name>/", methods=["GET"])
-def api_get_environment(name):
+def api_get_environment(namespace, name):
     conda_store = get_conda_store()
     environment = schema.Environment.from_orm(
         api.get_environment(conda_store.db, namespace=namespace, name=name)
