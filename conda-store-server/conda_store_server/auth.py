@@ -15,6 +15,16 @@ class Permissions(enum.Enum):
     ENVIRONMENT_DELETE = "build::delete"
 
 
+class Authentication(LoggingConfigurable):
+    authentication_secret = Unicode(
+
+    )
+
+    def authenticate(self, token):
+        pass
+
+
+
 class RBACAuthorization(LoggingConfigurable):
     role_mappings = Dict(
         {
