@@ -105,10 +105,11 @@ def build_conda_environment(conda_store, build):
                 tmp_environment_filename = os.path.join(tmpdir, "environment.yaml")
                 with open(tmp_environment_filename, "w") as f:
                     yaml.dump(build.specification.spec, f)
+                    cmd = conda_store.conda_command
                     output = subprocess.check_output(
-                        [
-                            conda_store.conda_command,
-                            "env",
+                        [cmd]
+                        + ([] if cmd == "micromamba" else ["env"])
+                        + [
                             "create",
                             "-p",
                             conda_prefix,
@@ -164,9 +165,11 @@ def build_conda_environment(conda_store, build):
 def build_conda_env_export(conda_store, build):
     conda_prefix = build.build_path(conda_store.store_directory)
 
-    output = subprocess.check_output(
-        [conda_store.conda_command, "env", "export", "-p", conda_prefix]
-    )
+    cmd = conda_store.conda_command
+    # micromamba does not implement `env export` as of 2021.07.28
+    if cmd == "micromamba":
+        cmd = "mamba"
+    output = subprocess.check_output([cmd, "env", "export", "-p", conda_prefix])
 
     parsed = yaml.safe_load(output)
     if "dependencies" not in parsed:

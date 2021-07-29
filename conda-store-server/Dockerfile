@@ -9,7 +9,9 @@ RUN apt-get update \
 
 COPY environment.yaml /opt/conda-store-server/environment.yaml
 
-RUN mamba env create -f /opt/conda-store-server/environment.yaml
+RUN cd /opt/conda/condabin \
+    && wget -qO- https://micromamba.snakepit.net/api/micromamba/linux-64/latest | tar xvj bin/micromamba --strip-components=1 \
+    && mamba env create -f /opt/conda-store-server/environment.yaml
 
 COPY ./ /opt/conda-store-server/
 
