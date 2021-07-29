@@ -8,28 +8,28 @@ from traitlets import Dict
 ARN_ALLOWED_REGEX = re.compile('[A-Za-z\_\-\*]+/[A-Za-z\_\-\*]+')
 
 
-class Permissions(Enum):
+class Permissions(enum.Enum):
     ENVIRONMENT_CREATE = "build::create"
     ENVIRONMENT_READ = "build::read"
     ENVIRONMENT_UPDATE = "build::update"
     ENVIRONMENT_DELETE = "build::delete"
 
 
-class RBACAuthentication(LoggingConfigurable):
+class RBACAuthorization(LoggingConfigurable):
     role_mappings = Dict(
         {
-            'viewer': set(Permissions.ENVIRONMENT_READ),
-            'developer': set(
+            'viewer': {Permissions.ENVIRONMENT_READ},
+            'developer': {
                 Permissions.ENVIRONMENT_CREATE,
                 Permissions.ENVIRONMENT_READ,
                 Permissions.ENVIRONMENT_DELETE,
-            ),
-            'admin': set(
+            },
+            'admin': {
                 Permissions.ENVIRONMENT_CREATE,
                 Permissions.ENVIRONMENT_READ,
                 Permissions.ENVIRONMENT_UPDATE,
                 Permissions.ENVIRONMENT_DELETE,
-            )
+            }
         },
         help="default role to permissions mapping to use",
         config=True,
@@ -79,6 +79,6 @@ class RBACAuthentication(LoggingConfigurable):
             permissions = permissions | self.role_mappings[role]
         return permissions
 
-    def authorized(self, entity_bindings, arn, permissions):
-        roles = self.entity_roles(arn, entity_bindings)
-        return permissions <= self.entity_roles(roles)
+    def authorized(self, entity_bindings, arn, permissions, authenticated=False):
+        roles = self.entity_roles(arn, entity_bindings, authenticated=False)
+        return permissions <= self.convert_roles_to_permissions(roles)
