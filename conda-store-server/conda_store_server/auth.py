@@ -1,11 +1,16 @@
 import enum
 import re
+import secrets
+import datetime
 
+import jwt
 from traitlets.config import LoggingConfigurable
-from traitlets import Dict
+from traitlets import Dict, Unicode
+
+from conda_store_server import schema
 
 
-ARN_ALLOWED_REGEX = re.compile('[A-Za-z\_\-\*]+/[A-Za-z\_\-\*]+')
+ARN_ALLOWED_REGEX = re.compile(r'[A-Za-z\_\-\*]+/[A-Za-z\_\-\*]+')
 
 
 class Permissions(enum.Enum):
@@ -16,13 +21,28 @@ class Permissions(enum.Enum):
 
 
 class Authentication(LoggingConfigurable):
-    authentication_secret = Unicode(
-
+    secret = Unicode(
+        help="symetric secret to use for encrypting tokens",
+        config=True,
     )
 
-    def authenticate(self, token):
-        pass
+    jwt_algorithm = Unicode(
+        "HS256",
+        help="jwt algorithm to use for encryption/decryption",
+        config=True,
+    )
 
+    def encrypt_token(self, token : schema.AuthenticationToken):
+        return jwt.encode(token.dict(), self.secret, algorithm=self.jwt_algorithm)
+
+    def decrypt_token(self, token : str):
+        return jwt.decode(token, self.secret, algorithms=[self.jwt_algorithm])
+
+    def authenticate(self, token):
+        try:
+            return schema.AuthenticationToken.parse_obj(self.decrypt_token(token))
+        except:
+            return None
 
 
 class RBACAuthorization(LoggingConfigurable):
@@ -53,8 +73,8 @@ class RBACAuthorization(LoggingConfigurable):
 
     authenticated_role_bindings = Dict(
         {
-            'default/*': 'viewer',
-            'filesystem/*': 'viewer',
+            'default/*': {'viewer'},
+            'filesystem/*': {'viewer'},
         },
         help='default permissions to apply to specific resources'
     )
@@ -67,21 +87,20 @@ class RBACAuthorization(LoggingConfigurable):
         if not ARN_ALLOWED_REGEX.match(arn):
             raise ValueError(f'invalid arn={arn}')
 
-        regex_arn = '^' + re.sub('\*', '[A-Za-z_\-]*', arn) + '$'
+        regex_arn = '^' + re.sub(r'\*', r'[A-Za-z_\-]*', arn) + '$'
         return re.compile(regex_arn)
 
     def entity_roles(self, arn, entity_bindings, authenticated=False):
-        roles = set()
-
         if authenticated:
             entity_bindings = {**self.authenticated_role_bindings, **entity_bindings}
         else:
             entity_bindings = {**self.unauthenticated_role_bindings, **entity_bindings}
 
+        roles = set()
         for entity_arn, entity_roles in entity_bindings.items():
             if self.compile_arn(entity_arn).match(arn):
                 roles = roles | set(entity_roles)
-            return roles
+        return roles
 
     def convert_roles_to_permissions(self, roles):
         permissions = set()

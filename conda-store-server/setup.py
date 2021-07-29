@@ -41,6 +41,7 @@ setup(
         "pydantic",
         "minio",
         "traitlets",
+        "pyjwt",
     ],
     extras_require={
         "dev": [

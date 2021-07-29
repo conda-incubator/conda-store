@@ -18,6 +18,7 @@ dependencies:
   - pydantic
   - traitlets
   - yarl
+  - pyjwt
   # artifact storage
   - minio
   # CLI
