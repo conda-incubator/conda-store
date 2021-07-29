@@ -56,6 +56,8 @@ class CondaStoreServer(Application):
         app = Flask(__name__)
         CORS(app, resources={r"/api/v1/*": {"origins": "*"}})
 
+        app.register_blueprint(views.app_auth)
+
         if self.enable_api:
             app.register_blueprint(views.app_api)
 
