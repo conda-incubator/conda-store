@@ -5,7 +5,8 @@ import datetime
 
 import jwt
 from traitlets.config import LoggingConfigurable
-from traitlets import Dict, Unicode
+from traitlets import Dict, Unicode, Type
+from flask import response, request
 
 from conda_store_server import schema
 
@@ -20,7 +21,7 @@ class Permissions(enum.Enum):
     ENVIRONMENT_DELETE = "build::delete"
 
 
-class Authentication(LoggingConfigurable):
+class AuthenticationBackend(LoggingConfigurable):
     secret = Unicode(
         help="symetric secret to use for encrypting tokens",
         config=True,
@@ -31,6 +32,10 @@ class Authentication(LoggingConfigurable):
         help="jwt algorithm to use for encryption/decryption",
         config=True,
     )
+
+    @property
+    def routes(self):
+        raise NotImplementedError()
 
     def encrypt_token(self, token : schema.AuthenticationToken):
         return jwt.encode(token.dict(), self.secret, algorithm=self.jwt_algorithm)
@@ -45,7 +50,7 @@ class Authentication(LoggingConfigurable):
             return None
 
 
-class RBACAuthorization(LoggingConfigurable):
+class RBACAuthorizationBackend(LoggingConfigurable):
     role_mappings = Dict(
         {
             'viewer': {Permissions.ENVIRONMENT_READ},
@@ -111,3 +116,72 @@ class RBACAuthorization(LoggingConfigurable):
     def authorized(self, entity_bindings, arn, permissions, authenticated=False):
         roles = self.entity_roles(arn, entity_bindings, authenticated=False)
         return permissions <= self.convert_roles_to_permissions(roles)
+
+
+class Authentication(LoggingConfigurable):
+    cookie_name = Unicode(
+        'conda-store-auth',
+        help="name of cookie used for authentication",
+        config=True,
+    )
+
+    authentication_backend = Type(
+        AuthenticationBackend,
+        help='class for authentication implementation',
+        config=True
+    )
+
+    authorization_backend = Type(
+        AuthorizationBackend,
+        help='clas for authorization implementation',
+        config=True,
+    )
+
+    @property
+    def authentication(self):
+        if hasattr(self, '_authentication'):
+            return self._authentication
+        self._authentication = self.authentication_backend(self, log=self.log)
+        return self._authentication
+
+    @property
+    def authorization(self):
+        if hasattr(self, '_authorization'):
+            return self._authorization
+        self._authorization = self.authorization_backend(self, log=self.log)
+        return self._authorization
+
+    @property
+    def routes(self):
+        return [
+            ('/login/', 'GET', self.get_login_method),
+            ('/login/', 'POST', self.post_login_method),
+            ('/logout/', 'POST', self.post_logout_method),
+        ]
+
+    def authenticate(self, request):
+        return AuthenticationToken(
+            primary_namespace="default",
+            role_bindings={
+                '*/*': ['admin'],
+            }
+        )
+
+    def get_login_method(self):
+        return render_template('login.html')
+
+    def post_login_method(self):
+        redirect_url = request.args.get('next', '/')
+        response = redirect(redirect_url)
+        authentication_token = self.authenticate(request)
+        if authentication_token is None:
+            return ..., 403
+
+        response.set_cookie(self.cookie_name, self.authentication.encrypt_token(authentication_token))
+        return response
+
+    def post_logout_method(self):
+        redirect_url = request.args.get('next', '/')
+        response = redirect(redirect_url)
+        response.set_cookie(self.cookie_name, '', expires=0)
+        return response
