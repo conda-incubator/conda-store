@@ -6,7 +6,7 @@ import datetime
 import jwt
 from traitlets.config import LoggingConfigurable
 from traitlets import Dict, Unicode, Type
-from flask import response, request
+from flask import response, request, make_response
 
 from conda_store_server import schema
 
@@ -141,14 +141,14 @@ class Authentication(LoggingConfigurable):
     def authentication(self):
         if hasattr(self, '_authentication'):
             return self._authentication
-        self._authentication = self.authentication_backend(self, log=self.log)
+        self._authentication = self.authentication_backend(parent=self, log=self.log)
         return self._authentication
 
     @property
     def authorization(self):
         if hasattr(self, '_authorization'):
             return self._authorization
-        self._authorization = self.authorization_backend(self, log=self.log)
+        self._authorization = self.authorization_backend(parent=self, log=self.log)
         return self._authorization
 
     @property
@@ -175,9 +175,18 @@ class Authentication(LoggingConfigurable):
         response = redirect(redirect_url)
         authentication_token = self.authenticate(request)
         if authentication_token is None:
-            return ..., 403
+            return make_response(
+                jsonify({'status': 'error', 'message': 'invalid authentication'}),
+                403)
 
-        response.set_cookie(self.cookie_name, self.authentication.encrypt_token(authentication_token))
+        response.set_cookie(
+            self.cookie_name,
+            self.authentication.encrypt_token(authentication_token),
+            http_only=True,
+            samesite='strict',
+            # set cookie to expire at same time as jwt
+            max_age=(authentication_token.exp - datetime.datetime.utcnow()).seconds,
+        )
         return response
 
     def post_logout_method(self):

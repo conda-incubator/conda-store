@@ -5,7 +5,7 @@ from flask_cors import CORS
 from traitlets import Bool, Unicode, Integer
 from traitlets.config import Application
 
-from conda_store_server.server import views
+from conda_store_server.server import views, auth
 from conda_store_server.app import CondaStore
 
 
@@ -56,8 +56,6 @@ class CondaStoreServer(Application):
         app = Flask(__name__)
         CORS(app, resources={r"/api/v1/*": {"origins": "*"}})
 
-        app.register_blueprint(views.app_auth)
-
         if self.enable_api:
             app.register_blueprint(views.app_api)
 
@@ -71,6 +69,11 @@ class CondaStoreServer(Application):
             app.register_blueprint(views.app_metrics)
 
         app.conda_store = CondaStore(parent=self, log=self.log)
+        app.authentication = auth.Authentication(parent=self, log=self.log)
+
+        # add dynamic routes
+        for route, method, func in app.authentication.routes:
+            app.add_url_rule(route, func.__name__, func, methods=[method])
 
         app.conda_store.ensure_namespace()
         app.conda_store.ensure_directories()
