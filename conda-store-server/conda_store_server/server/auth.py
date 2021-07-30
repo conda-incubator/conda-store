@@ -6,7 +6,7 @@ import datetime
 import jwt
 from traitlets.config import LoggingConfigurable
 from traitlets import Dict, Unicode, Type
-from flask import response, request, make_response
+from flask import request, make_response
 
 from conda_store_server import schema
 
@@ -132,8 +132,29 @@ class Authentication(LoggingConfigurable):
     )
 
     authorization_backend = Type(
-        AuthorizationBackend,
-        help='clas for authorization implementation',
+        RBACAuthorizationBackend,
+        help='class for authorization implementation',
+        config=True,
+    )
+
+    login_html = Unicode(
+        '''
+<div class="text-center">
+    <form class="form-signin" method="POST">
+        <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
+        <div class="form-floating">
+            <input name="username" class="form-control" id="floatingInput" placeholder="Username">
+            <label for="floatingInput">Username</label>
+        </div>
+        <div class="form-floating">
+            <input name="password" type="password" class="form-control" id="floatingPassword" placeholder="Password">
+            <label for="floatingPassword">Password</label>
+        </div>
+        <button class="w-100 btn btn-lg btn-primary" type="submit">Sign in</button>
+    </form>
+</div>
+        ''',
+        help='html form to use for login',
         config=True,
     )
 
@@ -168,7 +189,10 @@ class Authentication(LoggingConfigurable):
         )
 
     def get_login_method(self):
-        return render_template('login.html')
+        return render_template(
+            'login.html',
+            login_html=self.login_html
+        )
 
     def post_login_method(self):
         redirect_url = request.args.get('next', '/')
