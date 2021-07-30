@@ -6,12 +6,13 @@ import datetime
 import jwt
 from traitlets.config import LoggingConfigurable
 from traitlets import Dict, Unicode, Type
-from flask import request, make_response
+from flask import request, make_response, render_template, redirect, g, abort, jsonify
+from sqlalchemy import or_, and_
 
-from conda_store_server import schema
+from conda_store_server import schema, orm
 
 
-ARN_ALLOWED_REGEX = re.compile(r'[A-Za-z\_\-\*]+/[A-Za-z\_\-\*]+')
+ARN_ALLOWED_REGEX = re.compile(r'^([A-Za-z\_\-\*]+)/([A-Za-z\_\-\*]+)$')
 
 
 class Permissions(enum.Enum):
@@ -71,7 +72,9 @@ class RBACAuthorizationBackend(LoggingConfigurable):
     )
 
     unauthenticated_role_bindings = Dict(
-        {},
+        {
+            'default/*': {'viewer'},
+        },
         help='default roles bindings to asign to unauthenticated users',
         config=True,
     )
@@ -85,7 +88,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
     )
 
     @staticmethod
-    def compile_arn(arn):
+    def compile_arn_regex(arn):
         """Take an arn of form "example-*/example-*" and compile to regular expression
 
         """
@@ -95,15 +98,32 @@ class RBACAuthorizationBackend(LoggingConfigurable):
         regex_arn = '^' + re.sub(r'\*', r'[A-Za-z_\-]*', arn) + '$'
         return re.compile(regex_arn)
 
-    def entity_roles(self, arn, entity_bindings, authenticated=False):
+    @staticmethod
+    def compile_arn_sql_like(arn):
+        match = ARN_ALLOWED_REGEX.match(arn)
+        if match is None:
+            raise ValueError(f'invalid arn={arn}')
+
+        return re.sub(r'\*', '%', match.group(1)), re.sub(r'\*', '%', match.group(2))
+
+    def get_entity_bindings(self, entity_bindings, authenticated=False):
         if authenticated:
-            entity_bindings = {**self.authenticated_role_bindings, **entity_bindings}
+            return {
+                **self.authenticated_role_bindings,
+                **entity_bindings,
+            }
         else:
-            entity_bindings = {**self.unauthenticated_role_bindings, **entity_bindings}
+            return {
+                **self.unauthenticated_role_bindings,
+                **entity_bindings,
+            }
+
+    def entity_roles(self, arn, entity_bindings, authenticated=False):
+        entity_bindings = self.get_entity_bindings(entity_bindings, authenticated)
 
         roles = set()
         for entity_arn, entity_roles in entity_bindings.items():
-            if self.compile_arn(entity_arn).match(arn):
+            if self.compile_arn_regex(entity_arn).match(arn):
                 roles = roles | set(entity_roles)
         return roles
 
@@ -113,8 +133,9 @@ class RBACAuthorizationBackend(LoggingConfigurable):
             permissions = permissions | self.role_mappings[role]
         return permissions
 
-    def authorized(self, entity_bindings, arn, permissions, authenticated=False):
-        roles = self.entity_roles(arn, entity_bindings, authenticated=False)
+    def authorize(self, entity_bindings, arn, permissions, authenticated=False):
+        entity_bindings = self.get_entity_bindings(entity_bindings, authenticated)
+        roles = self.entity_roles(arn, entity_bindings)
         return permissions <= self.convert_roles_to_permissions(roles)
 
 
@@ -181,7 +202,7 @@ class Authentication(LoggingConfigurable):
         ]
 
     def authenticate(self, request):
-        return AuthenticationToken(
+        return schema.AuthenticationToken(
             primary_namespace="default",
             role_bindings={
                 '*/*': ['admin'],
@@ -199,14 +220,14 @@ class Authentication(LoggingConfigurable):
         response = redirect(redirect_url)
         authentication_token = self.authenticate(request)
         if authentication_token is None:
-            return make_response(
-                jsonify({'status': 'error', 'message': 'invalid authentication'}),
+            abort(
+                jsonify({'status': 'error', 'message': 'invalid authentication credentials'}),
                 403)
 
         response.set_cookie(
             self.cookie_name,
             self.authentication.encrypt_token(authentication_token),
-            http_only=True,
+            httponly=True,
             samesite='strict',
             # set cookie to expire at same time as jwt
             max_age=(authentication_token.exp - datetime.datetime.utcnow()).seconds,
@@ -218,3 +239,92 @@ class Authentication(LoggingConfigurable):
         response = redirect(redirect_url)
         response.set_cookie(self.cookie_name, '', expires=0)
         return response
+
+    def authenticate_request(self, require=False):
+        if hasattr(g, 'entity'):
+            pass  # only authenticate once
+        elif request.cookies.get(self.cookie_name):
+            # cookie based authentication
+            token = request.cookies.get(self.cookie_name)
+            g.entity = self.authentication.authenticate(token)
+        elif request.headers.get('Authorization'):
+            # auth bearer based authentication
+            token = request.headers.get('Authorization').split(' ')[1]
+            g.entity = self.authentication.authenticate(token)
+        else:
+            g.entity = None
+
+        if require and g.entity is None:
+            response = jsonify({'status': 'error', 'message': 'request not authenticated'})
+            response.status_code = 401
+            abort(response)
+
+        return g.entity
+
+    @property
+    def entity_bindings(self):
+        entity = self.authenticate_request()
+        return self.authorization.get_entity_bindings(
+            {} if entity is None else entity.role_bindings,
+            entity is not None)
+
+    def authorize_request(self, arn, permissions, require=False):
+        if not hasattr(g, 'entity'):
+            self.authenticate_request()
+
+        if not hasattr(g, 'authorized'):
+            role_bindings = {} if (g.entity is None) else g.entity.role_bindings
+            g.authorized = self.authorization.authorize(
+                role_bindings, arn, permissions, g.entity is not None)
+
+        if require and not g.authorized:
+            response = jsonify({'status': 'error', 'message': 'request not authorized'})
+            response.status_code = 403
+            abort(response)
+
+        return g.authorized
+
+    def filter_builds(self, query):
+        cases = []
+        for entity_arn, entity_roles in self.entity_bindings.items():
+            namespace, name = self.authorization.compile_arn_sql_like(entity_arn)
+            cases.append(
+                and_(
+                    orm.Namespace.name.like(namespace),
+                    orm.Specification.name.like(name)))
+
+        if not cases:
+            return query.filter(False)
+
+        return query.join(
+            orm.Build.namespace
+        ).join(
+            orm.Build.specification
+        ).filter(or_(*cases))
+
+    def filter_environments(self, query):
+        cases = []
+        for entity_arn, entity_roles in self.entity_bindings.items():
+            namespace, name = self.authorization.compile_arn_sql_like(entity_arn)
+            cases.append(
+                and_(
+                    orm.Namespace.name.like(namespace),
+                    orm.Environment.name.like(name)))
+
+        if not cases:
+            return query.filter(False)
+
+        return query.join(
+            orm.Environment.namespace
+        ).filter(or_(*cases))
+
+    def filter_namespaces(self, query):
+        cases = []
+        for entity_arn, entity_roles in self.entity_bindings.items():
+            namespace, name = self.authorization.compile_arn_sql_like(entity_arn)
+            cases.append(orm.Namespace.name.like(namespace))
+
+        if not cases:
+            return query.filter(False)
+
+        return query.filter(or_(*cases))

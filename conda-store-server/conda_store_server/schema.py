@@ -51,8 +51,17 @@ class CondaPackage(BaseModel):
         orm_mode = True
 
 
+class Namespace(BaseModel):
+    id: int
+    name: str
+
+    class Config:
+        orm_mode = True
+
+
 class Build(BaseModel):
     id: int
+    namespace: Namespace
     specification_id: int
     packages: List[CondaPackage]
     status: enum.Enum
@@ -80,7 +89,7 @@ class Specification(BaseModel):
 
 class Environment(BaseModel):
     id: int
-    namespace: str
+    namespace: Namespace
     name: str
     build_id: Optional[int]
     specification_id: Optional[int]

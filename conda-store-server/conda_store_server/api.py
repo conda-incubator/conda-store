@@ -4,9 +4,9 @@ from conda_store_server import orm
 from .conda import conda_platform
 
 
-def list_namespaces(db, limit: int = 25):
+def list_namespaces(db):
     filters = []
-    return db.query(orm.Namespace).filter(*filters).all()
+    return db.query(orm.Namespace).filter(*filters)
 
 
 def get_namespace(db, name: str = None, id: int = None):
@@ -23,7 +23,7 @@ def list_environments(db, namespace: str = None, search=None):
     if namespace:
         filters.append(orm.Namespace.name == namespace)
 
-    return db.query(orm.Environment).join(orm.Namespace).filter(*filters).all()
+    return db.query(orm.Environment).join(orm.Environment.namespace).filter(*filters)
 
 
 def get_environment(
@@ -70,12 +70,12 @@ def post_specification(conda_store, specification, namespace=None):
     conda_store.register_environment(specification, namespace)
 
 
-def list_builds(db, limit: int = 25, status: orm.BuildStatus = None):
+def list_builds(db, status: orm.BuildStatus = None):
     filters = []
     if status:
         filters.append(orm.Build.status == status)
 
-    return db.query(orm.Build).filter(*filters).limit(limit).all()
+    return db.query(orm.Build).filter(*filters)
 
 
 def get_build(db, build_id):
