@@ -1,4 +1,10 @@
-from flask import Blueprint, render_template, request, redirect, Response, g, abort, jsonify
+from flask import (
+    Blueprint,
+    render_template,
+    request,
+    redirect,
+    Response,
+)
 import pydantic
 import yaml
 
@@ -15,8 +21,7 @@ def ui_create_get_environment():
     conda_store = get_conda_store()
     auth = get_auth()
 
-    orm_namespaces = auth.filter_namespaces(
-        api.list_namespaces(conda_store.db))
+    orm_namespaces = auth.filter_namespaces(api.list_namespaces(conda_store.db))
 
     if request.method == "GET":
         return render_template(
@@ -54,8 +59,7 @@ def ui_list_environments():
     conda_store = get_conda_store()
     auth = get_auth()
 
-    orm_environments = auth.filter_environments(
-        api.list_environments(conda_store.db))
+    orm_environments = auth.filter_environments(api.list_environments(conda_store.db))
 
     return render_template(
         "home.html",
@@ -69,13 +73,18 @@ def ui_get_environment(namespace, name):
     auth = get_auth()
 
     auth.authorize_request(
-        f'{namespace}/{name}',
-        {Permissions.ENVIRONMENT_READ},
-        require=True)
+        f"{namespace}/{name}", {Permissions.ENVIRONMENT_READ}, require=True
+    )
 
     environment = api.get_environment(conda_store.db, namespace=namespace, name=name)
     if environment is None:
-        return render_template("404.html", message=f"environment namespace={namespace} name={name} not found"), 404
+        return (
+            render_template(
+                "404.html",
+                message=f"environment namespace={namespace} name={name} not found",
+            ),
+            404,
+        )
 
     return render_template(
         "environment.html",
@@ -91,16 +100,18 @@ def ui_edit_environment(namespace, name):
 
     auth = get_auth()
     auth.authorize_request(
-        f'{namespace}/{name}',
-        {Permissions.ENVIRONMENT_CREATE},
-        require=True)
+        f"{namespace}/{name}", {Permissions.ENVIRONMENT_CREATE}, require=True
+    )
 
-    environment = api.get_environment(
-        conda_store.db,
-        namespace=namespace,
-        name=name)
+    environment = api.get_environment(conda_store.db, namespace=namespace, name=name)
     if environment is None:
-        return render_template("404.html", message=f"environment namespace={namespace} name={nme} not found"), 404
+        return (
+            render_template(
+                "404.html",
+                message=f"environment namespace={namespace} name={name} not found",
+            ),
+            404,
+        )
 
     return render_template(
         "create.html",
@@ -116,12 +127,16 @@ def ui_get_build(build_id):
 
     build = api.get_build(conda_store.db, build_id)
     if build is None:
-        return render_template("404.html", message=f"build id={build_id} not found"), 404
+        return (
+            render_template("404.html", message=f"build id={build_id} not found"),
+            404,
+        )
 
     auth.authorize_request(
-        f'{build.namespace.name}/{build.specification.name}',
+        f"{build.namespace.name}/{build.specification.name}",
         {Permissions.ENVIRONMENT_READ},
-        require=True)
+        require=True,
+    )
 
     return render_template(
         "build.html",
@@ -138,9 +153,10 @@ def api_get_build_logs(build_id):
 
     build = api.get_build(conda_store.db, build_id)
     auth.authorize_request(
-        f'{build.namespace.name}/{build.specification.name}',
+        f"{build.namespace.name}/{build.specification.name}",
         {Permissions.ENVIRONMENT_READ},
-        require=True)
+        require=True,
+    )
 
     return redirect(conda_store.storage.get_url(build.log_key))
 
@@ -152,9 +168,10 @@ def api_get_build_lockfile(build_id):
 
     build = api.get_build(conda_store.db, build_id)
     auth.authorize_request(
-        f'{build.namespace.name}/{build.specification.name}',
+        f"{build.namespace.name}/{build.specification.name}",
         {Permissions.ENVIRONMENT_READ},
-        require=True)
+        require=True,
+    )
 
     lockfile = api.get_build_lockfile(conda_store.db, build_id)
     return Response(lockfile, mimetype="text/plain")
@@ -167,9 +184,10 @@ def api_get_build_yaml(build_id):
 
     build = api.get_build(conda_store.db, build_id)
     auth.authorize_request(
-        f'{build.namespace.name}/{build.specification.name}',
+        f"{build.namespace.name}/{build.specification.name}",
         {Permissions.ENVIRONMENT_READ},
-        require=True)
+        require=True,
+    )
 
     return redirect(conda_store.storage.get_url(build.conda_env_export_key))
 
@@ -181,8 +199,9 @@ def api_get_build_archive(build_id):
 
     build = api.get_build(conda_store.db, build_id)
     auth.authorize_request(
-        f'{build.namespace.name}/{build.specification.name}',
+        f"{build.namespace.name}/{build.specification.name}",
         {Permissions.ENVIRONMENT_READ},
-        require=True)
+        require=True,
+    )
 
     return redirect(conda_store.storage.get_url(build.conda_pack_key))

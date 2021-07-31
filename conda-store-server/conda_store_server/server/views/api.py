@@ -19,12 +19,9 @@ def api_list_namespaces():
     conda_store = get_conda_store()
     auth = get_auth()
 
-    orm_environments = auth.filter_namespaces(
-        api.list_namespaces(conda_store.db))
+    orm_environments = auth.filter_namespaces(api.list_namespaces(conda_store.db))
 
-    namespaces = [
-        schema.Namespace.from_orm(_).dict() for _ in orm_environments.all()
-    ]
+    namespaces = [schema.Namespace.from_orm(_).dict() for _ in orm_environments.all()]
     return jsonify(namespaces)
 
 
@@ -33,8 +30,7 @@ def api_list_environments():
     conda_store = get_conda_store()
     auth = get_auth()
 
-    orm_environments = auth.filter_environments(
-        api.list_environments(conda_store.db))
+    orm_environments = auth.filter_environments(api.list_environments(conda_store.db))
     environments = [
         schema.Environment.from_orm(_).dict(exclude={"build"})
         for _ in orm_environments.all()
@@ -48,9 +44,8 @@ def api_get_environment(namespace, name):
     auth = get_auth()
 
     auth.authorize_request(
-        f'{namespace}/{name}',
-        {Permissions.ENVIRONMENT_READ},
-        require=True)
+        f"{namespace}/{name}", {Permissions.ENVIRONMENT_READ}, require=True
+    )
 
     environment = api.get_environment(conda_store.db, namespace=namespace, name=name)
     if environment is None:
@@ -65,9 +60,8 @@ def api_update_environment_build(namespace, name):
     auth = get_auth()
 
     auth.authorize_request(
-        f'{namespace}/{name}',
-        {Permissions.ENVIRONMENT_CREATE},
-        require=True)
+        f"{namespace}/{name}", {Permissions.ENVIRONMENT_CREATE}, require=True
+    )
 
     build_id = request.json["buildId"]
     conda_store.update_environment_build(namespace, name, build_id)
@@ -90,10 +84,10 @@ def api_list_builds():
     conda_store = get_conda_store()
     auth = get_auth()
 
-    orm_builds = auth.filter_builds(
-        api.list_builds(conda_store.db))
+    orm_builds = auth.filter_builds(api.list_builds(conda_store.db))
     builds = [
-        schema.Build.from_orm(build).dict(exclude={"specification", "packages"}) for build in orm_builds.all()
+        schema.Build.from_orm(build).dict(exclude={"specification", "packages"})
+        for build in orm_builds.all()
     ]
     return jsonify(builds)
 
@@ -108,9 +102,10 @@ def api_get_build(build_id):
         return jsonify({"status": "error", "error": "build id does not exist"}), 404
 
     auth.authorize_request(
-        f'{build.namespace.name}/{build.specification.name}',
+        f"{build.namespace.name}/{build.specification.name}",
         {Permissions.ENVIRONMENT_READ},
-        require=True)
+        require=True,
+    )
 
     return jsonify(schema.Build.from_orm(build).dict())
 
@@ -125,9 +120,10 @@ def api_put_build(build_id):
         return jsonify({"status": "error", "error": "build id does not exist"}), 404
 
     auth.authorize_request(
-        f'{build.namespace.name}/{build.specification.name}',
+        f"{build.namespace.name}/{build.specification.name}",
         {Permissions.ENVIRONMENT_READ},
-        require=True)
+        require=True,
+    )
 
     conda_store.create_build(build.namespace_id, build.specification.sha256)
     return jsonify({"status": "ok", "message": "rebuild triggered"})
@@ -143,9 +139,10 @@ def api_delete_build(build_id):
         return jsonify({"status": "error", "error": "build id does not exist"}), 404
 
     auth.authorize_request(
-        f'{build.namespace.name}/{build.specification.name}',
+        f"{build.namespace.name}/{build.specification.name}",
         {Permissions.ENVIRONMENT_DELETE},
-        require=True)
+        require=True,
+    )
 
     conda_store.delete_build(build_id)
     return jsonify({"status": "ok"})
@@ -161,9 +158,10 @@ def api_get_build_logs(build_id):
         return jsonify({"status": "error", "error": "build id does not exist"}), 404
 
     auth.authorize_request(
-        f'{build.namespace.name}/{build.specification.name}',
+        f"{build.namespace.name}/{build.specification.name}",
         {Permissions.ENVIRONMENT_DELETE},
-        require=True)
+        require=True,
+    )
 
     return redirect(conda_store.storage.get_url(build.log_key))
 

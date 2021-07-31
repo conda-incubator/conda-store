@@ -6,7 +6,7 @@ import functools
 from pydantic import BaseModel, Field
 
 
-def _datetime_factory(offset : datetime.timedelta):
+def _datetime_factory(offset: datetime.timedelta):
     """utcnow datetime + timezone as string"""
     return datetime.datetime.utcnow() + offset
 
@@ -15,15 +15,19 @@ def _datetime_factory(offset : datetime.timedelta):
 # Authentication Schema
 #########################
 
+
 class AuthenticationToken(BaseModel):
-    exp : datetime.datetime = Field(default_factory=functools.partial(_datetime_factory, datetime.timedelta(days=1)))
-    primary_namespace : str = "default"
-    role_bindings : Dict[str,List[str]] = {}
+    exp: datetime.datetime = Field(
+        default_factory=functools.partial(_datetime_factory, datetime.timedelta(days=1))
+    )
+    primary_namespace: str = "default"
+    role_bindings: Dict[str, List[str]] = {}
 
 
 ##########################
 # Database Schema
 ##########################
+
 
 class StorageBackend(enum.Enum):
     FILESYSTEM = "filesystem"
@@ -113,6 +117,7 @@ class CondaSpecification(BaseModel):
 ###############################
 #  Docker Registry Schema
 ###############################
+
 
 def _docker_datetime_factory():
     """utcnow datetime + timezone as string"""
