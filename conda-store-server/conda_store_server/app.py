@@ -245,7 +245,6 @@ class CondaStore(LoggingConfigurable):
                 orm.Environment(
                     name=specification.name,
                     namespace_id=namespace.id,
-                    specification_id=specification.id,
                     build_id=build.id,
                 )
             )

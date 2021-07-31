@@ -36,7 +36,7 @@ def api_list_environments():
     orm_environments = auth.filter_environments(
         api.list_environments(conda_store.db))
     environments = [
-        schema.Environment.from_orm(_).dict(exclude={"specification": {"builds"}})
+        schema.Environment.from_orm(_).dict(exclude={"build"})
         for _ in orm_environments.all()
     ]
     return jsonify(environments)
@@ -52,10 +52,11 @@ def api_get_environment(namespace, name):
         {Permissions.ENVIRONMENT_READ},
         require=True)
 
-    environment = schema.Environment.from_orm(
-        api.get_environment(conda_store.db, namespace=namespace, name=name)
-    ).dict()
-    return jsonify(environment)
+    environment = api.get_environment(conda_store.db, namespace=namespace, name=name)
+    if environment is None:
+        return jsonify({"status": "error", "error": "environment does not exist"}), 404
+
+    return jsonify(schema.Environment.from_orm(environment).dict())
 
 
 @app_api.route("/api/v1/environment/<namespace>/<name>/", methods=["PUT"])
@@ -73,17 +74,6 @@ def api_update_environment_build(namespace, name):
     return jsonify({"status": "ok"})
 
 
-@app_api.route("/api/v1/specification/", methods=["GET"])
-def api_list_specification():
-    conda_store = get_conda_store()
-    orm_specifications = api.list_specifications(conda_store.db)
-    specifications = [
-        schema.Specification.from_orm(_).dict(exclude={"builds"})
-        for _ in orm_specifications
-    ]
-    return jsonify(specifications)
-
-
 @app_api.route("/api/v1/specification/", methods=["POST"])
 def api_post_specification():
     conda_store = get_conda_store()
@@ -95,15 +85,6 @@ def api_post_specification():
         return jsonify({"status": "error", "error": e.errors()}), 400
 
 
-@app_api.route("/api/v1/specification/<sha256>/", methods=["GET"])
-def api_get_specification(sha256):
-    conda_store = get_conda_store()
-    specification = schema.Specification.from_orm(
-        api.get_specification(conda_store.db, sha256)
-    )
-    return jsonify(specification.dict(exclude={"builds"}))
-
-
 @app_api.route("/api/v1/build/", methods=["GET"])
 def api_list_builds():
     conda_store = get_conda_store()
@@ -112,7 +93,7 @@ def api_list_builds():
     orm_builds = auth.filter_builds(
         api.list_builds(conda_store.db))
     builds = [
-        schema.Build.from_orm(build).dict(exclude={"packages"}) for build in orm_builds.all()
+        schema.Build.from_orm(build).dict(exclude={"specification", "packages"}) for build in orm_builds.all()
     ]
     return jsonify(builds)
 

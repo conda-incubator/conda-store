@@ -15,7 +15,7 @@
         <a class="card-link" href="/build/{{ environment.build_id }}/yaml/"><ion-icon name="code-download"></ion-icon> YAML</a>
         <a class="card-link" href="/build/{{ environment.build_id }}/lockfile/"><ion-icon name="lock-closed-outline"></ion-icon> Lockfile</a>
         <a class="card-link" href="/build/{{ environment.build_id }}/archive/"><ion-icon name="archive-outline"></ion-icon> Archive</a>
-        <a class="card-link" onclick="setClipboard('localhost:5000/{{ environment.namespace }}/{{ environment.name }}:{{ environment.specification.sha256 }}')"><ion-icon name="logo-docker"></ion-icon> Docker</a>
+        <a class="card-link" onclick="setClipboard('localhost:5000/{{ environment.namespace }}/{{ environment.name }}:{{ environment.build.specification.sha256 }}')"><ion-icon name="logo-docker"></ion-icon> Docker</a>
         {% endif %}
     </div>
 </div>

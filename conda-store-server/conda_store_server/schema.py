@@ -59,10 +59,21 @@ class Namespace(BaseModel):
         orm_mode = True
 
 
+class Specification(BaseModel):
+    id: int
+    name: str
+    spec: dict
+    sha256: str
+    created_on: datetime.datetime
+
+    class Config:
+        orm_mode = True
+
+
 class Build(BaseModel):
     id: int
     namespace: Namespace
-    specification_id: int
+    specification: Specification
     packages: List[CondaPackage]
     status: enum.Enum
     size: int
@@ -75,25 +86,12 @@ class Build(BaseModel):
         use_enum_values = True
 
 
-class Specification(BaseModel):
-    id: int
-    name: str
-    spec: dict
-    sha256: str
-    created_on: datetime.datetime
-    builds: List[Build]
-
-    class Config:
-        orm_mode = True
-
-
 class Environment(BaseModel):
     id: int
     namespace: Namespace
     name: str
     build_id: Optional[int]
-    specification_id: Optional[int]
-    specification: Optional[Specification]
+    build: Optional[Build]
 
     class Config:
         orm_mode = True

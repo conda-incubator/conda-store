@@ -73,10 +73,15 @@ def ui_get_environment(namespace, name):
         {Permissions.ENVIRONMENT_READ},
         require=True)
 
+    environment = api.get_environment(conda_store.db, namespace=namespace, name=name)
+    if environment is None:
+        return render_template("404.html", message=f"environment namespace={namespace} name={name} not found"), 404
+
     return render_template(
         "environment.html",
-        environment=api.get_environment(conda_store.db, namespace=namespace, name=name),
+        environment=environment,
         environment_builds=api.get_environment_builds(conda_store.db, namespace, name),
+        spec=yaml.dump(environment.build.specification.spec),
     )
 
 
@@ -86,29 +91,21 @@ def ui_edit_environment(namespace, name):
 
     auth = get_auth()
     auth.authorize_request(
-        f'{namespace}/{name}', {Permissions.ENVIRONMENT_CREATE}, require=True)
+        f'{namespace}/{name}',
+        {Permissions.ENVIRONMENT_CREATE},
+        require=True)
 
-    environment = api.get_environment(conda_store.db, namespace=namespace, name=name)
-    specification = api.get_specification(
+    environment = api.get_environment(
         conda_store.db,
-        environment.specification.sha256,
-    )
-    namespace = api.get_namespace(conda_store.db, namespace)
+        namespace=namespace,
+        name=name)
+    if environment is None:
+        return render_template("404.html", message=f"environment namespace={namespace} name={nme} not found"), 404
+
     return render_template(
         "create.html",
-        specification=yaml.dump(specification.spec),
-        namespaces=[namespace],
-    )
-
-
-@app_ui.route("/specification/<sha256>/", methods=["GET"])
-def ui_get_specification(sha256):
-    conda_store = get_conda_store()
-    specification = api.get_specification(conda_store.db, sha256)
-    return render_template(
-        "specification.html",
-        specification=specification,
-        spec=yaml.dump(specification.spec),
+        specification=yaml.dump(environment.build.specification.spec),
+        namespaces=[environment.namespace],
     )
 
 
@@ -119,14 +116,19 @@ def ui_get_build(build_id):
 
     build = api.get_build(conda_store.db, build_id)
     if build is None:
-        return render_template("404.html", message=f"build {build_id} not found"), 404
+        return render_template("404.html", message=f"build id={build_id} not found"), 404
 
     auth.authorize_request(
         f'{build.namespace.name}/{build.specification.name}',
         {Permissions.ENVIRONMENT_READ},
         require=True)
 
-    return render_template("build.html", build=build, platform=conda_platform())
+    return render_template(
+        "build.html",
+        build=build,
+        platform=conda_platform(),
+        spec=yaml.dump(build.specification.spec),
+    )
 
 
 @app_ui.route("/build/<build_id>/logs/", methods=["GET"])
