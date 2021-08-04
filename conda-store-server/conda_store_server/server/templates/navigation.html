@@ -4,19 +4,27 @@
             <a class="navbar-brand" href="/">Conda-Store</a>
         </div>
 
-        <!-- <div class="navbar-nav mr-auto">
-            <ul class="nav navbar-nav">
-                <a class="nav-item nav-link" href="#">Left-aligned item example</a>
-            </ul>
-        </div> -->
-
         <div class="nav navbar-right">
             <ul class="nav navbar-nav">
+{% if entity is none %}
+                <li>
+                    <a class="btn btn-outline-success my-2 my-sm-0 mr-2" href="/login/" role="button">
+                        Login
+                    </a>
+                </li>
+{% else %}
+                <li>
+                    <form action="/logout/" method="POST">
+                        <button type="submit" class="btn btn-outline-success my-2 my-sm-0 mr-2">Logout</button>
+                    </form>
+                </li>
+{% endif %}
                 <li>
                     <a class="btn btn-outline-success my-2 my-sm-0 mr-2" href="/create/" role="button">
                         Create Environment
                     </a>
                 </li>
+
                 <li>
                     <a class="btn btn-outline-secondary my-2 my-sm-0" href="https://conda-store.readthedocs.io/"
                         target="_blank" role="button">

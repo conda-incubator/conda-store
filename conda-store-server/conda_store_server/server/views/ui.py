@@ -23,11 +23,13 @@ def ui_create_get_environment():
 
     orm_namespaces = auth.filter_namespaces(api.list_namespaces(conda_store.db))
 
+    context = {
+        'namespaces': orm_namespaces.all(),
+        'entity': auth.authenticate_request(),
+    }
+
     if request.method == "GET":
-        return render_template(
-            "create.html",
-            namespaces=orm_namespaces.all(),
-        )
+        return render_template("create.html", **context)
     elif request.method == "POST":
         try:
             namespace_id = int(request.form.get("namespace"))
@@ -43,14 +45,14 @@ def ui_create_get_environment():
                 "create.html",
                 specification=specification_text,
                 message="Unable to parse. Invalid YAML",
-                namespaces=orm_namespaces.all(),
+                **context,
             )
         except pydantic.ValidationError as e:
             return render_template(
                 "create.html",
                 specification=specification_text,
                 message=str(e),
-                namespaces=orm_namespaces.all(),
+                **context,
             )
 
 
@@ -61,10 +63,12 @@ def ui_list_environments():
 
     orm_environments = auth.filter_environments(api.list_environments(conda_store.db))
 
-    return render_template(
-        "home.html",
-        environments=orm_environments.all(),
-    )
+    context = {
+        'environments': orm_environments.all(),
+        'entity': auth.authenticate_request(),
+    }
+
+    return render_template("home.html", **context)
 
 
 @app_ui.route("/environment/<namespace>/<name>/", methods=["GET"])
@@ -86,12 +90,14 @@ def ui_get_environment(namespace, name):
             404,
         )
 
-    return render_template(
-        "environment.html",
-        environment=environment,
-        environment_builds=api.get_environment_builds(conda_store.db, namespace, name),
-        spec=yaml.dump(environment.build.specification.spec),
-    )
+    context = {
+        'environment': environment,
+        'entity': auth.authenticate_request(),
+        'environment_builds': api.get_environment_builds(conda_store.db, namespace, name),
+        'spec': yaml.dump(environment.build.specification.spec)
+    }
+
+    return render_template("environment.html", **context)
 
 
 @app_ui.route("/environment/<namespace>/<name>/edit/", methods=["GET"])
@@ -113,11 +119,14 @@ def ui_edit_environment(namespace, name):
             404,
         )
 
-    return render_template(
-        "create.html",
-        specification=yaml.dump(environment.build.specification.spec),
-        namespaces=[environment.namespace],
-    )
+    context = {
+        'environment': environment,
+        'entity': auth.authenticate_request(),
+        'specification': yaml.dump(environment.build.specification.spec),
+        'namespaces': [environment.namespace],
+    }
+
+    return render_template("create.html", **context)
 
 
 @app_ui.route("/build/<build_id>/", methods=["GET"])
@@ -138,12 +147,14 @@ def ui_get_build(build_id):
         require=True,
     )
 
-    return render_template(
-        "build.html",
-        build=build,
-        platform=conda_platform(),
-        spec=yaml.dump(build.specification.spec),
-    )
+    context = {
+        'build': build,
+        'entity': auth.authenticate_request(),
+        'platform': conda_platform(),
+        'spec': yaml.dump(build.specification.spec),
+    }
+
+    return render_template("build.html", **context)
 
 
 @app_ui.route("/build/<build_id>/logs/", methods=["GET"])
