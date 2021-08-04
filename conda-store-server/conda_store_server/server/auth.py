@@ -59,7 +59,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
             "developer": {
                 Permissions.ENVIRONMENT_CREATE,
                 Permissions.ENVIRONMENT_READ,
-                Permissions.ENVIRONMENT_DELETE,
+                Permissions.ENVIRONMENT_UPDATE,
             },
             "admin": {
                 Permissions.ENVIRONMENT_CREATE,
