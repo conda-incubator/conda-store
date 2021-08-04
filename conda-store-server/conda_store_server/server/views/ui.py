@@ -24,8 +24,8 @@ def ui_create_get_environment():
     orm_namespaces = auth.filter_namespaces(api.list_namespaces(conda_store.db))
 
     context = {
-        'namespaces': orm_namespaces.all(),
-        'entity': auth.authenticate_request(),
+        "namespaces": orm_namespaces.all(),
+        "entity": auth.authenticate_request(),
     }
 
     if request.method == "GET":
@@ -64,8 +64,8 @@ def ui_list_environments():
     orm_environments = auth.filter_environments(api.list_environments(conda_store.db))
 
     context = {
-        'environments': orm_environments.all(),
-        'entity': auth.authenticate_request(),
+        "environments": orm_environments.all(),
+        "entity": auth.authenticate_request(),
     }
 
     return render_template("home.html", **context)
@@ -91,10 +91,12 @@ def ui_get_environment(namespace, name):
         )
 
     context = {
-        'environment': environment,
-        'entity': auth.authenticate_request(),
-        'environment_builds': api.get_environment_builds(conda_store.db, namespace, name),
-        'spec': yaml.dump(environment.build.specification.spec)
+        "environment": environment,
+        "entity": auth.authenticate_request(),
+        "environment_builds": api.get_environment_builds(
+            conda_store.db, namespace, name
+        ),
+        "spec": yaml.dump(environment.build.specification.spec),
     }
 
     return render_template("environment.html", **context)
@@ -120,10 +122,10 @@ def ui_edit_environment(namespace, name):
         )
 
     context = {
-        'environment': environment,
-        'entity': auth.authenticate_request(),
-        'specification': yaml.dump(environment.build.specification.spec),
-        'namespaces': [environment.namespace],
+        "environment": environment,
+        "entity": auth.authenticate_request(),
+        "specification": yaml.dump(environment.build.specification.spec),
+        "namespaces": [environment.namespace],
     }
 
     return render_template("create.html", **context)
@@ -148,10 +150,10 @@ def ui_get_build(build_id):
     )
 
     context = {
-        'build': build,
-        'entity': auth.authenticate_request(),
-        'platform': conda_platform(),
-        'spec': yaml.dump(build.specification.spec),
+        "build": build,
+        "entity": auth.authenticate_request(),
+        "platform": conda_platform(),
+        "spec": yaml.dump(build.specification.spec),
     }
 
     return render_template("build.html", **context)
