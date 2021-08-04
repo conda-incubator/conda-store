@@ -11,12 +11,11 @@
         </h5>
     </div>
     <ul class="list-group list-group-flush">
-{% if environment.specification_id is not none %}
-        <li class="list-group-item"><a href="/specification/{{ environment.specification.sha256 }}/">Current Specification</a></li>
-{% endif %}
-{% if environment.build_id is not none %}
-        <li class="list-group-item"><a href="/build/{{ environment.build_id }}/">Current Build</a></li>
-{% endif %}
+        <li class="list-group-item">
+            <div class="card-body">
+                <div id="editor" style="height: 300px;">{{ spec }}</div>
+            </div>
+        </li>
     </ul>
     <div class="card-body">
         <a href="/environment/{{ environment.namespace.name }}/{{ environment.name }}/edit/" class="btn btn-primary btn-block">Edit</a>
@@ -46,8 +45,15 @@
     {% endfor %}
 </ul>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js" integrity="sha512-GZ1RIgZaSc8rnco/8CXfRdCpDxRCphenIiZ2ztLy3XQfCbQUSCuk8IudvNHxkRA3oUg6q0qejgN/qqyG1duv5Q==" crossorigin="anonymous"></script>
 <script>
-  function updateEnvironmentBuild(buildId) {
+ var editor = ace.edit("editor");
+ editor.setTheme("ace/theme/github");
+ editor.getSession().setMode("ace/mode/yaml");
+ editor.setFontSize("20px");
+ editor.setReadOnly(true);
+
+ function updateEnvironmentBuild(buildId) {
      fetch(`/api/v1/environment/{{ environment.namespace.name }}/{{ environment.name }}/`, {
          method: 'PUT',
          headers: {
@@ -55,7 +61,7 @@
          },
          body: JSON.stringify({"buildId": buildId})
      })
-  }
+ }
 
  function buildAction(method, buildId) {
      fetch(`/api/v1/build/${buildId}/`, {

@@ -22,10 +22,11 @@
 
             <dt class="col-sm-3">status</dt>
             <dd class="col-sm-9">{{ build.status.value }}</dd>
-
-            <dt class="col-sm-3">specification</dt>
-            <dd class="col-sm-9"><a href="/specification/{{ build.specification.sha256 }}/">{{ build.specification.sha256[:8] }}</a></dd>
         </dl>
+
+        <div class="card-body">
+            <div id="editor" style="height: 300px;">{{ spec }}</div>
+        </div>
     </p>
 </div>
 
@@ -79,4 +80,13 @@
     </div>
 </div>
 {% endif %}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js" integrity="sha512-GZ1RIgZaSc8rnco/8CXfRdCpDxRCphenIiZ2ztLy3XQfCbQUSCuk8IudvNHxkRA3oUg6q0qejgN/qqyG1duv5Q==" crossorigin="anonymous"></script>
+<script>
+    var editor = ace.edit("editor");
+    editor.setTheme("ace/theme/github");
+    editor.getSession().setMode("ace/mode/yaml");
+    editor.setFontSize("20px");
+    editor.setReadOnly(true);
+</script>
 {% endblock %}

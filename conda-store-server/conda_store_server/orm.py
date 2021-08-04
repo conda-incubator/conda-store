@@ -172,9 +172,6 @@ class Environment(Base):
 
     name = Column(String, nullable=False)
 
-    specification_id = Column(Integer, ForeignKey("specification.id"))
-    specification = relationship(Specification)
-
     build_id = Column(Integer, ForeignKey("build.id"))
     build = relationship(Build)
 

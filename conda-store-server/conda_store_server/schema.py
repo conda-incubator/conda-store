@@ -1,13 +1,32 @@
 import datetime
 import enum
 from typing import List, Optional, Union, Dict
+import functools
 
 from pydantic import BaseModel, Field
 
 
-def docker_datetime_factory():
+def _datetime_factory(offset: datetime.timedelta):
     """utcnow datetime + timezone as string"""
-    return datetime.datetime.utcnow().astimezone().isoformat()
+    return datetime.datetime.utcnow() + offset
+
+
+#########################
+# Authentication Schema
+#########################
+
+
+class AuthenticationToken(BaseModel):
+    exp: datetime.datetime = Field(
+        default_factory=functools.partial(_datetime_factory, datetime.timedelta(days=1))
+    )
+    primary_namespace: str = "default"
+    role_bindings: Dict[str, List[str]] = {}
+
+
+##########################
+# Database Schema
+##########################
 
 
 class StorageBackend(enum.Enum):
@@ -36,9 +55,29 @@ class CondaPackage(BaseModel):
         orm_mode = True
 
 
+class Namespace(BaseModel):
+    id: int
+    name: str
+
+    class Config:
+        orm_mode = True
+
+
+class Specification(BaseModel):
+    id: int
+    name: str
+    spec: dict
+    sha256: str
+    created_on: datetime.datetime
+
+    class Config:
+        orm_mode = True
+
+
 class Build(BaseModel):
     id: int
-    specification_id: int
+    namespace: Namespace
+    specification: Specification
     packages: List[CondaPackage]
     status: enum.Enum
     size: int
@@ -51,25 +90,12 @@ class Build(BaseModel):
         use_enum_values = True
 
 
-class Specification(BaseModel):
-    id: int
-    name: str
-    spec: dict
-    sha256: str
-    created_on: datetime.datetime
-    builds: List[Build]
-
-    class Config:
-        orm_mode = True
-
-
 class Environment(BaseModel):
     id: int
-    namespace: str
+    namespace: Namespace
     name: str
     build_id: Optional[int]
-    specification_id: Optional[int]
-    specification: Optional[Specification]
+    build: Optional[Build]
 
     class Config:
         orm_mode = True
@@ -88,7 +114,16 @@ class CondaSpecification(BaseModel):
     prefix: Optional[str]
 
 
-# Docker Registry
+###############################
+#  Docker Registry Schema
+###############################
+
+
+def _docker_datetime_factory():
+    """utcnow datetime + timezone as string"""
+    return datetime.datetime.utcnow().astimezone().isoformat()
+
+
 class DockerManifestLayer(BaseModel):
     mediaType: str = "application/vnd.docker.image.rootfs.diff.tar.gzip"
     size: int
@@ -137,7 +172,7 @@ class DockerConfigRootFS(BaseModel):
 
 
 class DockerConfigHistory(BaseModel):
-    created: str = Field(default_factory=docker_datetime_factory)
+    created: str = Field(default_factory=_docker_datetime_factory)
     created_by: str = ""
 
 
@@ -147,7 +182,7 @@ class DockerConfig(BaseModel):
     config: DockerConfigConfig
     container: str
     container_config: DockerConfigConfig
-    created: str = Field(default_factory=docker_datetime_factory)
+    created: str = Field(default_factory=_docker_datetime_factory)
     docker_version: str = "18.09.7"
     history: List[DockerConfigHistory] = []
     rootfs: DockerConfigRootFS

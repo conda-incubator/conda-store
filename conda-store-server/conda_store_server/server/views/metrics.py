@@ -21,6 +21,7 @@ def prometheus_metrics():
 @app_metrics.route("/celery")
 def trigger_task():
     conda_store = get_conda_store()
+    conda_store.celery_app
 
     def get_celery_worker_status(app):
         i = app.control.inspect()

@@ -2,6 +2,7 @@ name: conda-store
 channels:
   - conda-forge
 dependencies:
+  - jupyterhub
   - jupyter-packaging
   - jupyterlab>=3.0.0
   - yarn
