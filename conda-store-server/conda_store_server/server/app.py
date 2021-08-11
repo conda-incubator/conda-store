@@ -76,7 +76,9 @@ class CondaStoreServer(Application):
             app.register_blueprint(views.app_metrics)
 
         app.conda_store = CondaStore(parent=self, log=self.log)
-        app.authentication = self.authentication_class(parent=self, log=self.log)
+        app.authentication = self.authentication_class(
+            parent=self, log=self.log, app=app
+        )
 
         # add dynamic routes
         for route, method, func in app.authentication.routes:
