@@ -1,12 +1,15 @@
 import enum
+from os import access
 import re
 import secrets
 import datetime
+from time import sleep
 
 import jwt
+import requests
 from traitlets.config import LoggingConfigurable
 from traitlets import Dict, Unicode, Type
-from flask import request, render_template, redirect, g, abort, jsonify
+from flask import request, render_template, redirect, g, abort, jsonify, session, url_for
 from sqlalchemy import or_, and_
 
 from conda_store_server import schema, orm
@@ -170,12 +173,18 @@ class Authentication(LoggingConfigurable):
             <input name="password" type="password" class="form-control" id="floatingPassword" placeholder="Password">
             <label for="floatingPassword">Password</label>
         </div>
-        <button class="w-100 btn btn-lg btn-primary" type="submit">Sign in</button>
+        <button class="w-100 btn btn-lg btn-primary" type="submit">{SIGN_IN_BUTTON_TEXT}</button>
     </form>
 </div>
         """,
         help="html form to use for login",
         config=True,
+    )
+
+    sign_in_button_text = Unicode(
+        "Sign In",
+        config=True,
+        help="Text that will be displayed in the Sign In button.",
     )
 
     @property
@@ -209,7 +218,10 @@ class Authentication(LoggingConfigurable):
         )
 
     def get_login_method(self):
-        return render_template("login.html", login_html=self.login_html)
+        return render_template(
+            "login.html",
+            login_html=self.login_html.format(SIGN_IN_BUTTON_TEXT=self.sign_in_button_text),
+        )
 
     def post_login_method(self):
         redirect_url = request.args.get("next", "/")
@@ -217,9 +229,7 @@ class Authentication(LoggingConfigurable):
         authentication_token = self.authenticate(request)
         if authentication_token is None:
             abort(
-                jsonify(
-                    {"status": "error", "message": "invalid authentication credentials"}
-                ),
+                jsonify({"status": "error", "message": "invalid authentication credentials"}),
                 403,
             )
 
@@ -254,9 +264,7 @@ class Authentication(LoggingConfigurable):
             g.entity = None
 
         if require and g.entity is None:
-            response = jsonify(
-                {"status": "error", "message": "request not authenticated"}
-            )
+            response = jsonify({"status": "error", "message": "request not authenticated"})
             response.status_code = 401
             abort(response)
 
@@ -300,21 +308,13 @@ class Authentication(LoggingConfigurable):
         if not cases:
             return query.filter(False)
 
-        return (
-            query.join(orm.Build.namespace)
-            .join(orm.Build.specification)
-            .filter(or_(*cases))
-        )
+        return query.join(orm.Build.namespace).join(orm.Build.specification).filter(or_(*cases))
 
     def filter_environments(self, query):
         cases = []
         for entity_arn, entity_roles in self.entity_bindings.items():
             namespace, name = self.authorization.compile_arn_sql_like(entity_arn)
-            cases.append(
-                and_(
-                    orm.Namespace.name.like(namespace), orm.Environment.name.like(name)
-                )
-            )
+            cases.append(and_(orm.Namespace.name.like(namespace), orm.Environment.name.like(name)))
 
         if not cases:
             return query.filter(False)
@@ -366,3 +366,95 @@ class DummyAuthentication(Authentication):
                 "*/*": ["admin"],
             },
         )
+
+
+class GenericOAuthAuthentication(Authentication):
+    """ """
+
+    access_token_url = Unicode("https://github.com/login/oauth/access_token", config=True, help="")
+    authorize_url = Unicode("https://github.com/login/oauth/authorize", config=True, help="")
+    client_id = Unicode("", config=True, help="")
+    client_secret = Unicode("", config=True, help="")
+    access_scope = Unicode("user:email", config=True, help="")
+    user_data_url = Unicode(
+        "https://api.github.com/user",
+        config=True,
+        help="API endpoint for OAuth provider that returns a JSON dict with user data",
+    )
+
+    login_html = Unicode(
+        """
+<div class="text-center">
+    <form class="form-signin" method="POST">
+        <h1 class="h3 mb-3 fw-normal">Please sign in via OAuth</h1>
+        <button class="w-100 btn btn-lg btn-primary" type="submit">{SIGN_IN_BUTTON_TEXT}</button>
+    </form>
+</div>
+        """,
+        help="html form to use for login",
+        config=True,
+    )
+
+    sign_in_button_text = Unicode(
+        "Sign in with GitHub",
+        config=True,
+        help="Text that will be displayed in the Sign In button.",
+    )
+
+    @staticmethod
+    def oauth_route(auth_url, client_id, redirect_uri, scope=None):
+        return f"{auth_url}?client_id={client_id}&redirect_uri={redirect_uri}&response_type=code&scope={scope}"
+
+    def routes(self):
+        return super().routes + [
+            ("/oauth_callback/", "GET", self.get_oauth_callback_method),
+            ("/user/", "GET", self.get_oauth_user_method),
+        ]
+
+    def authenticate(self, request):
+        response = self.redirect_oauth_provider()
+
+        # poll until we get a token ?? 60s total
+        waiting_times = 1, 1, 1, 1, 1, 5, 5, 5, 5, 5, 10, 10, 10
+        for wait in waiting_times:
+            access_token = session.get("access_token")
+            if access_token:
+                del session["access_token"]
+                # return access_token  # shouldn't we keep the GH token somewhere?
+                return schema.AuthenticationToken(
+                    primary_namespace="default",
+                    role_bindings={
+                        "*/*": ["admin"],
+                    },
+                )
+
+            sleep(wait)
+
+    def redirect_oauth_provider(self):
+        return redirect(
+            self.oauth_route(
+                auth_url=self.authorize_url,
+                client_id=self.client_id,
+                redirect_uri=url_for("/oauth_callback", _external=True),
+                scope=self.access_scope,
+            )
+        )
+
+    def get_oauth_callback_method(self):
+        code = request.args.get("code")
+        response = requests.post(
+            self.access_token_url,
+            json={
+                "code": code,
+                "client_id": self.client_id,
+                "client_secret": self.client_secret,
+                "grant_type": "authorization_code",
+                "redirect_uri": url_for("/oauth_callback", _external=True),
+                "scope": self.access_scope,
+            },
+        )
+        response.raise_for_status()
+        session["access_token"] = response.json()["access_token"]
+
+    def get_oauth_user_method():
+        pass
