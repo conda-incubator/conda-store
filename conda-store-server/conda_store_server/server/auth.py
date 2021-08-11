@@ -230,7 +230,9 @@ class Authentication(LoggingConfigurable):
     def get_login_method(self):
         return render_template(
             "login.html",
-            login_html=self.login_html.format(SIGN_IN_BUTTON_TEXT=self.sign_in_button_text),
+            login_html=self.login_html.format(
+                SIGN_IN_BUTTON_TEXT=self.sign_in_button_text
+            ),
         )
 
     def post_login_method(self):
@@ -239,7 +241,9 @@ class Authentication(LoggingConfigurable):
         authentication_token = self.authenticate(request)
         if authentication_token is None:
             abort(
-                jsonify({"status": "error", "message": "invalid authentication credentials"}),
+                jsonify(
+                    {"status": "error", "message": "invalid authentication credentials"}
+                ),
                 403,
             )
 
@@ -274,7 +278,9 @@ class Authentication(LoggingConfigurable):
             g.entity = None
 
         if require and g.entity is None:
-            response = jsonify({"status": "error", "message": "request not authenticated"})
+            response = jsonify(
+                {"status": "error", "message": "request not authenticated"}
+            )
             response.status_code = 401
             abort(response)
 
@@ -318,13 +324,21 @@ class Authentication(LoggingConfigurable):
         if not cases:
             return query.filter(False)
 
-        return query.join(orm.Build.namespace).join(orm.Build.specification).filter(or_(*cases))
+        return (
+            query.join(orm.Build.namespace)
+            .join(orm.Build.specification)
+            .filter(or_(*cases))
+        )
 
     def filter_environments(self, query):
         cases = []
         for entity_arn, entity_roles in self.entity_bindings.items():
             namespace, name = self.authorization.compile_arn_sql_like(entity_arn)
-            cases.append(and_(orm.Namespace.name.like(namespace), orm.Environment.name.like(name)))
+            cases.append(
+                and_(
+                    orm.Namespace.name.like(namespace), orm.Environment.name.like(name)
+                )
+            )
 
         if not cases:
             return query.filter(False)
@@ -381,8 +395,12 @@ class DummyAuthentication(Authentication):
 class GenericOAuthAuthentication(Authentication):
     """ """
 
-    access_token_url = Unicode("https://github.com/login/oauth/access_token", config=True, help="")
-    authorize_url = Unicode("https://github.com/login/oauth/authorize", config=True, help="")
+    access_token_url = Unicode(
+        "https://github.com/login/oauth/access_token", config=True, help=""
+    )
+    authorize_url = Unicode(
+        "https://github.com/login/oauth/authorize", config=True, help=""
+    )
     client_id = Unicode("", config=True, help="")
     client_secret = Unicode("", config=True, help="")
     access_scope = Unicode("user:email", config=True, help="")
@@ -502,8 +520,12 @@ class DanceOAuthAuthentication(Authentication):
         help="A secret key needed for some authentication methods.",
     )
 
-    oauth_client_id = Unicode("", config=True, help="Identifier for the OAuth client chosen")
-    oauth_client_secret = Unicode("", config=True, help="Secret token for the OAuth client chosen")
+    oauth_client_id = Unicode(
+        "", config=True, help="Identifier for the OAuth client chosen"
+    )
+    oauth_client_secret = Unicode(
+        "", config=True, help="Secret token for the OAuth client chosen"
+    )
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -512,8 +534,12 @@ class DanceOAuthAuthentication(Authentication):
         self.app.config["GITHUB_OAUTH_CLIENT_SECRET"] = self.oauth_client_secret
 
         provider_str = self.flask_dance_oauth_provider
-        self.oauth_provider = import_string(f"flask_dance.contrib.{provider_str}.{provider_str}")
+        self.oauth_provider = import_string(
+            f"flask_dance.contrib.{provider_str}.{provider_str}"
+        )
         self.oauth_blueprint_factory = import_string(
             f"flask_dance.contrib.{provider_str}.make_{provider_str}_blueprint"
         )
-        self.app.register_blueprint(self.oauth_blueprint_factory(), url_prefix="/oauth_login")
+        self.app.register_blueprint(
+            self.oauth_blueprint_factory(), url_prefix="/oauth_login"
+        )
