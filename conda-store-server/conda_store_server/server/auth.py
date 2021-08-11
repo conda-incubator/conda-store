@@ -331,3 +331,38 @@ class Authentication(LoggingConfigurable):
             return query.filter(False)
 
         return query.filter(or_(*cases))
+
+
+class DummyAuthentication(Authentication):
+    """Dummy Authentication for testing
+    By default, any username + password is allowed
+    If a non-empty password is set, any username will be allowed
+    if it logs in with that password.
+    """
+
+    password = Unicode(
+        "password",
+        config=True,
+        help="""
+        Set a global password for all users wanting to log in.
+        This allows users with any username to log in with the same static password.
+        """,
+    )
+
+    # login_html = Unicode()
+
+    def authenticate(self, request):
+        """Checks against a global password if it's been set. If not, allow any user/pass combo"""
+        if self.password:
+            if request.form["password"] == self.password:
+                namespace = request.form["username"]
+            else:
+                return None
+        namespace = request.form["username"]
+
+        return schema.AuthenticationToken(
+            primary_namespace=namespace,
+            role_bindings={
+                "*/*": ["admin"],
+            },
+        )

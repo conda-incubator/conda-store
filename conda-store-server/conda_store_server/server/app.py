@@ -2,7 +2,7 @@ import logging
 
 from flask import Flask
 from flask_cors import CORS
-from traitlets import Bool, Unicode, Integer
+from traitlets import Bool, Unicode, Integer, Type
 from traitlets.config import Application
 
 from conda_store_server.server import views, auth
@@ -48,6 +48,13 @@ class CondaStoreServer(Application):
         "conda_store_config.py", help="config file to load for conda-store", config=True
     )
 
+    authentication_class = Type(
+        default_value=auth.DummyAuthentication,
+        klass=auth.Authentication,
+        allow_none=False,
+        config=True,
+    )
+
     def initialize(self, *args, **kwargs):
         super().initialize(*args, **kwargs)
         self.load_config_file(self.config_file)
@@ -69,7 +76,7 @@ class CondaStoreServer(Application):
             app.register_blueprint(views.app_metrics)
 
         app.conda_store = CondaStore(parent=self, log=self.log)
-        app.authentication = auth.Authentication(parent=self, log=self.log)
+        app.authentication = self.authentication_class(parent=self, log=self.log)
 
         # add dynamic routes
         for route, method, func in app.authentication.routes:

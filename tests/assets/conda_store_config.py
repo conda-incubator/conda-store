@@ -1,6 +1,7 @@
 import logging
 
 from conda_store_server.storage import S3Storage
+from conda_store_server.server.auth import DummyAuthentication
 
 # ==================================
 #      conda-store settings
@@ -31,6 +32,7 @@ c.CondaStoreServer.enable_registry = True
 c.CondaStoreServer.enable_metrics = True
 c.CondaStoreServer.address = "0.0.0.0"
 c.CondaStoreServer.port = 5000
+c.CondaStoreServer.authentication_class = DummyAuthentication
 
 # ==================================
 #         worker settings
