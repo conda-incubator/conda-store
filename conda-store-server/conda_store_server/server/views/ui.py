@@ -165,14 +165,16 @@ def ui_get_build(build_id):
 def ui_get_user():
     conda_store = get_conda_store()
     auth = get_auth()
+
+    # TODO: how does authorization work?
     # auth.authorize_request(
     #     f"user",
     #     {Permissions.ENVIRONMENT_READ},
     #     require=True,
     # )
 
-    context = json.loads(request.cookies[current_app.authentication.user_cookie_name])
-    return render_template("user.html", **context)
+    username = request.cookies[current_app.authentication.user_cookie_name]
+    return render_template("user.html", username=username)
 
 
 @app_ui.route("/build/<build_id>/logs/", methods=["GET"])

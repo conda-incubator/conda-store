@@ -2,9 +2,6 @@ import enum
 import re
 import secrets
 import datetime
-from time import sleep
-import random
-from string import ascii_letters, digits
 
 import jwt
 import requests
@@ -20,10 +17,8 @@ from flask import (
     url_for,
     json,
     session,
-    current_app,
 )
 from sqlalchemy import or_, and_
-from werkzeug.utils import html, import_string
 
 from conda_store_server import schema, orm
 
@@ -395,7 +390,10 @@ class DummyAuthentication(Authentication):
 
 
 class GenericOAuthAuthentication(Authentication):
-    """ """
+    """
+    A provider-agnostic OAuth authentication provider. Configure endpoints, secrets and other
+    parameters to enable any OAuth-compatible platform.
+    """
 
     access_token_url = Unicode(
         "https://github.com/login/oauth/access_token",
@@ -426,6 +424,11 @@ class GenericOAuthAuthentication(Authentication):
         "https://api.github.com/user",
         config=True,
         help="API endpoint for OAuth provider that returns a JSON dict with user data",
+    )
+    user_data_key = Unicode(
+        "login",
+        config=True,
+        help="Key in the payload returned by `user_data_url` endpoint that provides the username",
     )
     user_cookie_name = Unicode(
         "conda-store-user",
@@ -458,23 +461,25 @@ class GenericOAuthAuthentication(Authentication):
             ("/login/", "GET", self.get_login_method),
             ("/logout/", "POST", self.post_logout_method),
             ("/oauth_request/", "GET", self.redirect_oauth_provider),
-            ("/oauth_callback/", "GET", self.get_oauth_callback_method),
+            ("/oauth_callback/", "GET", self.authenticate),
         ]
 
     def redirect_oauth_provider(self):
-        state = "".join(random.choices(ascii_letters + digits, k=16))
+        state = secrets.token_urlsafe()
         session["oauth_state"] = state
         return redirect(
             self.oauth_route(
                 auth_url=self.authorize_url,
                 client_id=self.client_id,
-                redirect_uri=url_for("get_oauth_callback_method", _external=True),
+                redirect_uri=url_for("authenticate", _external=True),
                 scope=self.access_scope,
                 state=state,
             )
         )
 
-    def get_oauth_callback_method(self):
+    def authenticate(self):
+        # 1. Get callback URI params, which include `code` and `state`
+        #    `code` will be used to request the token; `state` must match our session's!
         code = request.args.get("code")
         state = request.args.get("state")
         if session["oauth_state"] != state:
@@ -485,7 +490,8 @@ class GenericOAuthAuthentication(Authentication):
             abort(response)
         del session["oauth_state"]
 
-        response = requests.post(
+        # 2. Request actual access token with code and secret
+        r_response = requests.post(
             self.access_token_url,
             json={
                 "code": code,
@@ -494,53 +500,49 @@ class GenericOAuthAuthentication(Authentication):
             },
             headers={"Accept": "application/json"},
         )
-        response.raise_for_status()
-        data = response.json()
+        r_response.raise_for_status()
+        data = r_response.json()
         if "error" in data:
-            response.status_code = 401
-            abort(response)
+            f_response = jsonify(data)
+            f_response.status_code = 401
+            abort(f_response)
         oauth_access_token = data["access_token"]
 
-        response = requests.get(
-            self.user_data_url, headers={"Authorization": f"token {oauth_access_token}"}
-        )
-        response.raise_for_status()
-        user_data = self._process_user_data(response.json())
+        # 3. Who is the username? We need one more request
+        username = self.get_username(oauth_access_token)
 
-        authentication_token = schema.AuthenticationToken(
-            primary_namespace=user_data["username"].lower(),
+        # 4. Create our own internal token
+        our_token = schema.AuthenticationToken(
+            primary_namespace=username,
             role_bindings={
                 "*/*": ["admin"],
             },
         )
-        response = redirect(url_for("ui.ui_get_user"))
-        response.set_cookie(
+
+        # 5. Store our token and username as cookies and redirect to /user
+        f_response = redirect(url_for("ui.ui_get_user"))
+        cookie_kwargs = {
+            "httponly": True,
+            "samesite": "strict",
+            # set cookie to expire at same time as jwt
+            "max_age": (our_token.exp - datetime.datetime.utcnow()).seconds,
+        }
+        f_response.set_cookie(
             self.cookie_name,
-            self.authentication.encrypt_token(authentication_token),
-            httponly=True,
-            samesite="strict",
-            # set cookie to expire at same time as jwt
-            max_age=(authentication_token.exp - datetime.datetime.utcnow()).seconds,
+            self.authentication.encrypt_token(our_token),
+            **cookie_kwargs,
         )
-        response.set_cookie(
+        f_response.set_cookie(
             self.user_cookie_name,
-            json.htmlsafe_dumps(user_data),
-            httponly=True,
-            samesite="strict",
-            # set cookie to expire at same time as jwt
-            max_age=(authentication_token.exp - datetime.datetime.utcnow()).seconds,
+            username,
+            **cookie_kwargs,
         )
-        return response
+        return f_response
 
-    @staticmethod
-    def _process_user_data(data):
-        """
-        Subclass this if needed. It should return a dict with:
-        - `username`: str
-        - `email`: str
-        """
-
-        result = {"username": data["login"]}
-        if data.get("email"):
-            result["email"] = data["email"]
-        return result
+    def get_username(self, authentication_token):
+        response = requests.get(
+            self.user_data_url,
+            headers={"Authorization": f"token {authentication_token}"},
+        )
+        response.raise_for_status()
+        return response.json()[self.user_data_key]

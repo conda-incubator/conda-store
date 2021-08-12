@@ -14,7 +14,6 @@ dependencies:
   - requests
   - flask
   - flask-cors
-  - flask-dance
   - pyyaml
   - pydantic
   - traitlets
