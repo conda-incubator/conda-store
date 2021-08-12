@@ -94,6 +94,6 @@ class CondaStoreServer(Application):
         app.conda_store.configuration.update_storage_metrics(
             app.conda_store.db, app.conda_store.store_directory
         )
-        # app.conda_store.ensure_conda_channels()
+        app.conda_store.ensure_conda_channels()
 
         app.run(debug=True, host=self.address, port=self.port)
