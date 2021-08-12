@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}User info{% endblock %}
+
+{% block content %}
+
+{% block user %}
+<div class="text-center">
+    <h1 class="h3 mb-3 fw-normal">Logged in as {{ username }}</h1>
+    {% if email is defined %}
+    <p><em>Email:</em> {{ email }}</p>
+    {% endif %}
+    <form action="/logout/" method="POST">
+        <button type="submit" class="btn btn-outline-success my-2 my-sm-0 mr-2">Logout</button>
+    </form>
+</div>
+{% endblock %}
+
+{% endblock %}

@@ -55,6 +55,12 @@ class CondaStoreServer(Application):
         config=True,
     )
 
+    secret_key = Unicode(
+        "super_secret_key",
+        config=True,
+        help="A secret key needed for some authentication methods, session storage, etc.",
+    )
+
     def initialize(self, *args, **kwargs):
         super().initialize(*args, **kwargs)
         self.load_config_file(self.config_file)
@@ -62,6 +68,7 @@ class CondaStoreServer(Application):
     def start(self):
         app = Flask(__name__)
         CORS(app, resources={r"/api/v1/*": {"origins": "*"}})
+        app.secret_key = self.secret_key
 
         if self.enable_api:
             app.register_blueprint(views.app_api)
@@ -76,9 +83,7 @@ class CondaStoreServer(Application):
             app.register_blueprint(views.app_metrics)
 
         app.conda_store = CondaStore(parent=self, log=self.log)
-        app.authentication = self.authentication_class(
-            parent=self, log=self.log, app=app
-        )
+        app.authentication = self.authentication_class(parent=self, log=self.log)
 
         # add dynamic routes
         for route, method, func in app.authentication.routes:
@@ -89,6 +94,6 @@ class CondaStoreServer(Application):
         app.conda_store.configuration.update_storage_metrics(
             app.conda_store.db, app.conda_store.store_directory
         )
-        app.conda_store.ensure_conda_channels()
+        # app.conda_store.ensure_conda_channels()
 
         app.run(debug=True, host=self.address, port=self.port)

@@ -3,7 +3,8 @@ import re
 import secrets
 import datetime
 from time import sleep
-
+import random
+from string import ascii_letters, digits
 
 import jwt
 import requests
@@ -16,11 +17,13 @@ from flask import (
     g,
     abort,
     jsonify,
-    session,
     url_for,
+    json,
+    session,
+    current_app,
 )
 from sqlalchemy import or_, and_
-from werkzeug.utils import import_string
+from werkzeug.utils import html, import_string
 
 from conda_store_server import schema, orm
 
@@ -157,6 +160,11 @@ class Authentication(LoggingConfigurable):
         help="name of cookie used for authentication",
         config=True,
     )
+    user_cookie_name = Unicode(
+        "conda-store-user",
+        help="name of cookie used for user data",
+        config=True,
+    )
 
     authentication_backend = Type(
         AuthenticationBackend,
@@ -183,18 +191,12 @@ class Authentication(LoggingConfigurable):
             <input name="password" type="password" class="form-control" id="floatingPassword" placeholder="Password">
             <label for="floatingPassword">Password</label>
         </div>
-        <button class="w-100 btn btn-lg btn-primary" type="submit">{SIGN_IN_BUTTON_TEXT}</button>
+        <button class="w-100 btn btn-lg btn-primary" type="submit">Sign In</button>
     </form>
 </div>
         """,
         help="html form to use for login",
         config=True,
-    )
-
-    sign_in_button_text = Unicode(
-        "Sign In",
-        config=True,
-        help="Text that will be displayed in the Sign In button.",
     )
 
     @property
@@ -228,12 +230,7 @@ class Authentication(LoggingConfigurable):
         )
 
     def get_login_method(self):
-        return render_template(
-            "login.html",
-            login_html=self.login_html.format(
-                SIGN_IN_BUTTON_TEXT=self.sign_in_button_text
-            ),
-        )
+        return render_template("login.html", login_html=self.login_html)
 
     def post_login_method(self):
         redirect_url = request.args.get("next", "/")
@@ -255,12 +252,21 @@ class Authentication(LoggingConfigurable):
             # set cookie to expire at same time as jwt
             max_age=(authentication_token.exp - datetime.datetime.utcnow()).seconds,
         )
+        response.set_cookie(
+            self.user_cookie_name,
+            json.htmlsafe_dumps({"username": request.form["username"]}),
+            httponly=True,
+            samesite="strict",
+            # set cookie to expire at same time as jwt
+            max_age=(authentication_token.exp - datetime.datetime.utcnow()).seconds,
+        )
         return response
 
     def post_logout_method(self):
         redirect_url = request.args.get("next", "/")
         response = redirect(redirect_url)
         response.set_cookie(self.cookie_name, "", expires=0)
+        response.set_cookie(self.user_cookie_name, "", expires=0)
         return response
 
     def authenticate_request(self, require=False):
@@ -377,15 +383,11 @@ class DummyAuthentication(Authentication):
 
     def authenticate(self, request):
         """Checks against a global password if it's been set. If not, allow any user/pass combo"""
-        if self.password:
-            if request.form["password"] == self.password:
-                namespace = request.form["username"]
-            else:
-                return None
-        namespace = request.form["username"]
+        if self.password and request.form["password"] != self.password:
+            return None
 
         return schema.AuthenticationToken(
-            primary_namespace=namespace,
+            primary_namespace=request.form["username"],
             role_bindings={
                 "*/*": ["admin"],
             },
@@ -396,150 +398,149 @@ class GenericOAuthAuthentication(Authentication):
     """ """
 
     access_token_url = Unicode(
-        "https://github.com/login/oauth/access_token", config=True, help=""
+        "https://github.com/login/oauth/access_token",
+        config=True,
+        help="URL used to request an access token once app has been authorized",
     )
     authorize_url = Unicode(
-        "https://github.com/login/oauth/authorize", config=True, help=""
+        "https://github.com/login/oauth/authorize",
+        config=True,
+        help="URL used to request authorization to OAuth provider",
     )
-    client_id = Unicode("", config=True, help="")
-    client_secret = Unicode("", config=True, help="")
-    access_scope = Unicode("user:email", config=True, help="")
+    client_id = Unicode(
+        "GENERATE_AND_REPLACE",
+        config=True,
+        help="Unique string that identifies the app against the OAuth provider",
+    )
+    client_secret = Unicode(
+        "GENERATE_AND_REPLACE",
+        config=True,
+        help="Secret string used to authenticate the app against the OAuth provider",
+    )
+    access_scope = Unicode(
+        "user:email",
+        config=True,
+        help="Permissions that will be requested to OAuth provider.",
+    )
     user_data_url = Unicode(
         "https://api.github.com/user",
         config=True,
         help="API endpoint for OAuth provider that returns a JSON dict with user data",
     )
-
+    user_cookie_name = Unicode(
+        "conda-store-user",
+        config=True,
+        help="Cookie name for conda-store user data",
+    )
     login_html = Unicode(
         """
 <div class="text-center">
-    <form class="form-signin" method="POST">
-        <h1 class="h3 mb-3 fw-normal">Please sign in via OAuth</h1>
-        <button class="w-100 btn btn-lg btn-primary" type="submit">{SIGN_IN_BUTTON_TEXT}</button>
-    </form>
+    <h1 class="h3 mb-3 fw-normal">Please sign in via OAuth</h1>
+    <a class="w-100 btn btn-lg btn-primary" href="/oauth_request/">Sign in with GitHub</a>
 </div>
         """,
         help="html form to use for login",
         config=True,
     )
 
-    sign_in_button_text = Unicode(
-        "Sign in with GitHub",
-        config=True,
-        help="Text that will be displayed in the Sign In button.",
-    )
-
     @staticmethod
-    def oauth_route(auth_url, client_id, redirect_uri, scope=None):
-        return f"{auth_url}?client_id={client_id}&redirect_uri={redirect_uri}&response_type=code&scope={scope}"
+    def oauth_route(auth_url, client_id, redirect_uri, scope=None, state=None):
+        r = f"{auth_url}?client_id={client_id}&redirect_uri={redirect_uri}&response_type=code"
+        if scope is not None:
+            r += f"&scope={scope}"
+        if state is not None:
+            r += f"&state={state}"
+        return r
 
+    @property
     def routes(self):
-        return super().routes + [
+        return [
+            ("/login/", "GET", self.get_login_method),
+            ("/logout/", "POST", self.post_logout_method),
+            ("/oauth_request/", "GET", self.redirect_oauth_provider),
             ("/oauth_callback/", "GET", self.get_oauth_callback_method),
-            ("/user/", "GET", self.get_oauth_user_method),
         ]
 
-    def authenticate(self, request):
-        self.redirect_oauth_provider()
-
-        # poll until we get a token ?? 60s total
-        waiting_times = 1, 1, 1, 1, 1, 5, 5, 5, 5, 5, 10, 10, 10
-        for wait in waiting_times:
-            access_token = session.get("access_token")
-            if access_token:
-                del session["access_token"]
-                # return access_token  # shouldn't we keep the GH token somewhere?
-                return schema.AuthenticationToken(
-                    primary_namespace="default",
-                    role_bindings={
-                        "*/*": ["admin"],
-                    },
-                )
-
-            sleep(wait)
-
     def redirect_oauth_provider(self):
+        state = "".join(random.choices(ascii_letters + digits, k=16))
+        session["oauth_state"] = state
         return redirect(
             self.oauth_route(
                 auth_url=self.authorize_url,
                 client_id=self.client_id,
-                redirect_uri=url_for("/oauth_callback", _external=True),
+                redirect_uri=url_for("get_oauth_callback_method", _external=True),
                 scope=self.access_scope,
+                state=state,
             )
         )
 
     def get_oauth_callback_method(self):
         code = request.args.get("code")
+        state = request.args.get("state")
+        if session["oauth_state"] != state:
+            response = jsonify(
+                {"status": "error", "message": "OAuth states do not match"}
+            )
+            response.status_code = 401
+            abort(response)
+        del session["oauth_state"]
+
         response = requests.post(
             self.access_token_url,
             json={
                 "code": code,
                 "client_id": self.client_id,
                 "client_secret": self.client_secret,
-                "grant_type": "authorization_code",
-                "redirect_uri": url_for("/oauth_callback", _external=True),
-                "scope": self.access_scope,
             },
+            headers={"Accept": "application/json"},
         )
         response.raise_for_status()
-        session["access_token"] = response.json()["access_token"]
+        data = response.json()
+        if "error" in data:
+            response.status_code = 401
+            abort(response)
+        oauth_access_token = data["access_token"]
 
-    def get_oauth_user_method():
-        pass
+        response = requests.get(
+            self.user_data_url, headers={"Authorization": f"token {oauth_access_token}"}
+        )
+        response.raise_for_status()
+        user_data = self._process_user_data(response.json())
 
+        authentication_token = schema.AuthenticationToken(
+            primary_namespace=user_data["username"].lower(),
+            role_bindings={
+                "*/*": ["admin"],
+            },
+        )
+        response = redirect(url_for("ui.ui_get_user"))
+        response.set_cookie(
+            self.cookie_name,
+            self.authentication.encrypt_token(authentication_token),
+            httponly=True,
+            samesite="strict",
+            # set cookie to expire at same time as jwt
+            max_age=(authentication_token.exp - datetime.datetime.utcnow()).seconds,
+        )
+        response.set_cookie(
+            self.user_cookie_name,
+            json.htmlsafe_dumps(user_data),
+            httponly=True,
+            samesite="strict",
+            # set cookie to expire at same time as jwt
+            max_age=(authentication_token.exp - datetime.datetime.utcnow()).seconds,
+        )
+        return response
 
-class DanceOAuthAuthentication(Authentication):
-    """ """
-
-    login_html = Unicode(
+    @staticmethod
+    def _process_user_data(data):
         """
-<div class="text-center">
-    <h1 class="h3 mb-3 fw-normal">Please sign in via OAuth</h1>
-    <a class="w-100 btn btn-lg btn-primary" href="/oauth_login">{SIGN_IN_BUTTON_TEXT}</a>
-</div>
-        """,
-        help="html form to use for login",
-        config=True,
-    )
+        Subclass this if needed. It should return a dict with:
+        - `username`: str
+        - `email`: str
+        """
 
-    sign_in_button_text = Unicode(
-        "Sign in with GitHub",
-        config=True,
-        help="Text that will be displayed in the Sign In button.",
-    )
-
-    flask_dance_oauth_provider = Unicode(
-        "github",
-        config=True,
-        help="OAuth provider. Any module under `flask_dance.contrib`.",
-    )
-
-    secret_key = Unicode(
-        "super_secret_key",
-        config=True,
-        help="A secret key needed for some authentication methods.",
-    )
-
-    oauth_client_id = Unicode(
-        "", config=True, help="Identifier for the OAuth client chosen"
-    )
-    oauth_client_secret = Unicode(
-        "", config=True, help="Secret token for the OAuth client chosen"
-    )
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.app.secret_key = self.secret_key
-        self.app.config["GITHUB_OAUTH_CLIENT_ID"] = self.oauth_client_id
-        self.app.config["GITHUB_OAUTH_CLIENT_SECRET"] = self.oauth_client_secret
-
-        provider_str = self.flask_dance_oauth_provider
-        self.oauth_provider = import_string(
-            f"flask_dance.contrib.{provider_str}.{provider_str}"
-        )
-        self.oauth_blueprint_factory = import_string(
-            f"flask_dance.contrib.{provider_str}.make_{provider_str}_blueprint"
-        )
-        self.app.register_blueprint(
-            self.oauth_blueprint_factory(), url_prefix="/oauth_login"
-        )
+        result = {"username": data["login"]}
+        if data.get("email"):
+            result["email"] = data["email"]
+        return result

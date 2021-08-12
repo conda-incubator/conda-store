@@ -1,7 +1,7 @@
 import logging
 
 from conda_store_server.storage import S3Storage
-from conda_store_server.server.auth import DummyAuthentication
+from conda_store_server.server.auth import GenericOAuthAuthentication
 
 # ==================================
 #      conda-store settings
@@ -32,7 +32,13 @@ c.CondaStoreServer.enable_registry = True
 c.CondaStoreServer.enable_metrics = True
 c.CondaStoreServer.address = "0.0.0.0"
 c.CondaStoreServer.port = 5000
-c.CondaStoreServer.authentication_class = DummyAuthentication
+c.CondaStoreServer.authentication_class = GenericOAuthAuthentication
+
+# ==================================
+#         auth settings
+# ==================================
+c.GenericOAuthAuthentication.client_id = "REPLACE"
+c.GenericOAuthAuthentication.client_secret = "REPLACE"
 
 # ==================================
 #         worker settings
