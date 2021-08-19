@@ -565,7 +565,7 @@ class JupyterHubOAuthAuthentication(GenericOAuthAuthentication):
 
     @default("user_data_key")
     def _user_data_key_default(self):
-        return "login"
+        return "name"
 
     @default("login_html")
     def _login_html_default(self):
