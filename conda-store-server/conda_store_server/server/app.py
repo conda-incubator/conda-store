@@ -4,6 +4,7 @@ from flask import Flask
 from flask_cors import CORS
 from traitlets import Bool, Unicode, Integer, Type
 from traitlets.config import Application
+from sqlalchemy.orm.scoping import scoped_session
 
 from conda_store_server.server import views, auth
 from conda_store_server.app import CondaStore
@@ -84,6 +85,13 @@ class CondaStoreServer(Application):
 
         app.conda_store = CondaStore(parent=self, log=self.log)
         app.authentication = self.authentication_class(parent=self, log=self.log)
+
+        @app.after_request
+        def after_request_function(response):
+            # force a new session on next request
+            # since sessions are thread local
+            app.conda_store.session_factory.remove()
+            return response
 
         # add dynamic routes
         for route, method, func in app.authentication.routes:

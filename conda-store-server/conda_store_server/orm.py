@@ -15,7 +15,7 @@ from sqlalchemy import (
     UniqueConstraint,
     ForeignKey,
 )
-from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.orm import sessionmaker, relationship, scoped_session
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine
 
@@ -296,5 +296,5 @@ def new_session_factory(url="sqlite:///:memory:", reset=False, **kwargs):
 
     Base.metadata.create_all(engine)
 
-    session_factory = sessionmaker(bind=engine)
+    session_factory = scoped_session(sessionmaker(bind=engine))
     return session_factory
