@@ -4,7 +4,6 @@ from flask import Flask
 from flask_cors import CORS
 from traitlets import Bool, Unicode, Integer, Type
 from traitlets.config import Application
-from sqlalchemy.orm.scoping import scoped_session
 
 from conda_store_server.server import views, auth
 from conda_store_server.app import CondaStore
