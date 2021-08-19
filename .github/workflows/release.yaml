@@ -43,22 +43,15 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.8
-      - uses: actions/setup-node@v2
-        with:
-          node-version: '14'
-      - name: Install yarn
-        run: |
-          npm install --global yarn
       - name: Install twine and jupyter-packaging
         run: |
-          pip install twine jupyter-packaging jupyterlab>=3.0.0
+          pip install twine
       - name: Build and Distribute
         env:
           PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
           PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         shell: bash -l {0}
         run: |
-          yarn
           python setup.py sdist
           twine upload -u $PYPI_USERNAME -p $PYPI_PASSWORD dist/*
 
