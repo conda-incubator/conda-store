@@ -484,12 +484,14 @@ class GenericOAuthAuthentication(Authentication):
             self.access_token_url,
             json={
                 "code": code,
+                "grant_type": 'authorization_code',
                 "client_id": self.client_id,
                 "client_secret": self.client_secret,
+                "redirect_uri": url_for("post_login_method", _external=True),
             },
             headers={"Accept": "application/json"},
         )
-        print(r_response.content)
+        raise ValueError(r_response.content)
         r_response.raise_for_status()
         data = r_response.json()
         if "error" in data:
