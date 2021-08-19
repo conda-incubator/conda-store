@@ -1,3 +1,5 @@
+from typing import List
+
 from sqlalchemy import func
 
 from conda_store_server import orm
@@ -102,12 +104,22 @@ def get_build_lockfile(db, build_id):
     )
 
 
-def list_build_artifacts(db, limit: int = 25, build_id: int = None, key: str = None):
+def list_build_artifacts(
+    db,
+    limit: int = 25,
+    build_id: int = None,
+    key: str = None,
+    excluded_artifact_types: List[orm.BuildArtifactType] = None,
+):
     filters = []
     if build_id:
         filters.append(orm.BuildArtifact.build_id == build_id)
     if key:
         filters.append(orm.BuildArtifact.key == key)
+    if excluded_artifact_types:
+        filters.append(
+            func.not_(orm.BuildArtifact.artifact_type.in_(excluded_artifact_types))
+        )
 
     return db.query(orm.BuildArtifact).filter(*filters).limit(limit).all()
 
