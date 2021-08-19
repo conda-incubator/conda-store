@@ -6,7 +6,7 @@ import datetime
 import jwt
 import requests
 from traitlets.config import LoggingConfigurable
-from traitlets import Dict, Unicode, Type
+from traitlets import Dict, Unicode, Type, default
 from flask import (
     request,
     render_template,
@@ -15,7 +15,6 @@ from flask import (
     abort,
     jsonify,
     url_for,
-    json,
     session,
 )
 from sqlalchemy import or_, and_
@@ -155,11 +154,6 @@ class Authentication(LoggingConfigurable):
         help="name of cookie used for authentication",
         config=True,
     )
-    user_cookie_name = Unicode(
-        "conda-store-user",
-        help="name of cookie used for user data",
-        config=True,
-    )
 
     authentication_backend = Type(
         AuthenticationBackend,
@@ -194,6 +188,9 @@ class Authentication(LoggingConfigurable):
         config=True,
     )
 
+    def get_login_html(self):
+        return self.login_html
+
     @property
     def authentication(self):
         if hasattr(self, "_authentication"):
@@ -225,10 +222,10 @@ class Authentication(LoggingConfigurable):
         )
 
     def get_login_method(self):
-        return render_template("login.html", login_html=self.login_html)
+        return render_template("login.html", login_html=self.get_login_html())
 
     def post_login_method(self):
-        redirect_url = request.args.get("next", "/")
+        redirect_url = request.args.get("next", url_for("ui.ui_get_user"))
         response = redirect(redirect_url)
         authentication_token = self.authenticate(request)
         if authentication_token is None:
@@ -247,21 +244,12 @@ class Authentication(LoggingConfigurable):
             # set cookie to expire at same time as jwt
             max_age=(authentication_token.exp - datetime.datetime.utcnow()).seconds,
         )
-        response.set_cookie(
-            self.user_cookie_name,
-            json.htmlsafe_dumps({"username": request.form["username"]}),
-            httponly=True,
-            samesite="strict",
-            # set cookie to expire at same time as jwt
-            max_age=(authentication_token.exp - datetime.datetime.utcnow()).seconds,
-        )
         return response
 
     def post_logout_method(self):
         redirect_url = request.args.get("next", "/")
         response = redirect(redirect_url)
         response.set_cookie(self.cookie_name, "", expires=0)
-        response.set_cookie(self.user_cookie_name, "", expires=0)
         return response
 
     def authenticate_request(self, require=False):
@@ -396,55 +384,55 @@ class GenericOAuthAuthentication(Authentication):
     """
 
     access_token_url = Unicode(
-        "https://github.com/login/oauth/access_token",
         config=True,
         help="URL used to request an access token once app has been authorized",
     )
     authorize_url = Unicode(
-        "https://github.com/login/oauth/authorize",
         config=True,
         help="URL used to request authorization to OAuth provider",
     )
     client_id = Unicode(
-        "GENERATE_AND_REPLACE",
         config=True,
         help="Unique string that identifies the app against the OAuth provider",
     )
     client_secret = Unicode(
-        "GENERATE_AND_REPLACE",
         config=True,
         help="Secret string used to authenticate the app against the OAuth provider",
     )
     access_scope = Unicode(
-        "user:email",
         config=True,
         help="Permissions that will be requested to OAuth provider.",
     )
     user_data_url = Unicode(
-        "https://api.github.com/user",
         config=True,
         help="API endpoint for OAuth provider that returns a JSON dict with user data",
     )
     user_data_key = Unicode(
-        "login",
         config=True,
         help="Key in the payload returned by `user_data_url` endpoint that provides the username",
-    )
-    user_cookie_name = Unicode(
-        "conda-store-user",
-        config=True,
-        help="Cookie name for conda-store user data",
     )
     login_html = Unicode(
         """
 <div class="text-center">
     <h1 class="h3 mb-3 fw-normal">Please sign in via OAuth</h1>
-    <a class="w-100 btn btn-lg btn-primary" href="/oauth_request/">Sign in with GitHub</a>
+    <a class="w-100 btn btn-lg btn-primary" href="{authorization_url}">Sign in with OAuth</a>
 </div>
         """,
         help="html form to use for login",
         config=True,
     )
+
+    def get_login_html(self):
+        state = secrets.token_urlsafe()
+        session["oauth_state"] = state
+        authorization_url = self.oauth_route(
+            auth_url=self.authorize_url,
+            client_id=self.client_id,
+            redirect_uri=url_for("authenticate", _external=True),
+            scope=self.access_scope,
+            state=state,
+        )
+        return self.login_html.format(authorization_url=authorization_url)
 
     @staticmethod
     def oauth_route(auth_url, client_id, redirect_uri, scope=None, state=None):
@@ -460,24 +448,25 @@ class GenericOAuthAuthentication(Authentication):
         return [
             ("/login/", "GET", self.get_login_method),
             ("/logout/", "POST", self.post_logout_method),
-            ("/oauth_request/", "GET", self.redirect_oauth_provider),
-            ("/oauth_callback/", "GET", self.authenticate),
+            ("/oauth_callback/", "GET", self.post_login_method),
         ]
 
-    def redirect_oauth_provider(self):
-        state = secrets.token_urlsafe()
-        session["oauth_state"] = state
-        return redirect(
-            self.oauth_route(
-                auth_url=self.authorize_url,
-                client_id=self.client_id,
-                redirect_uri=url_for("authenticate", _external=True),
-                scope=self.access_scope,
-                state=state,
-            )
+    def authenticate(self, request):
+        # 1. using the callback_url code and state in request
+        oauth_access_token = self._get_oauth_token(request)
+
+        # 2. Who is the username? We need one more request
+        username = self._get_username(oauth_access_token)
+
+        # 3. create our own internal token
+        return schema.AuthenticationToken(
+            primary_namespace=username,
+            role_bindings={
+                "*/*": ["admin"],
+            },
         )
 
-    def authenticate(self):
+    def _get_oauth_token(self, request):
         # 1. Get callback URI params, which include `code` and `state`
         #    `code` will be used to request the token; `state` must match our session's!
         code = request.args.get("code")
@@ -506,43 +495,83 @@ class GenericOAuthAuthentication(Authentication):
             f_response = jsonify(data)
             f_response.status_code = 401
             abort(f_response)
-        oauth_access_token = data["access_token"]
+        return data["access_token"]
 
-        # 3. Who is the username? We need one more request
-        username = self.get_username(oauth_access_token)
-
-        # 4. Create our own internal token
-        our_token = schema.AuthenticationToken(
-            primary_namespace=username,
-            role_bindings={
-                "*/*": ["admin"],
-            },
-        )
-
-        # 5. Store our token and username as cookies and redirect to /user
-        f_response = redirect(url_for("ui.ui_get_user"))
-        cookie_kwargs = {
-            "httponly": True,
-            "samesite": "strict",
-            # set cookie to expire at same time as jwt
-            "max_age": (our_token.exp - datetime.datetime.utcnow()).seconds,
-        }
-        f_response.set_cookie(
-            self.cookie_name,
-            self.authentication.encrypt_token(our_token),
-            **cookie_kwargs,
-        )
-        f_response.set_cookie(
-            self.user_cookie_name,
-            username,
-            **cookie_kwargs,
-        )
-        return f_response
-
-    def get_username(self, authentication_token):
+    def _get_username(self, authentication_token):
         response = requests.get(
             self.user_data_url,
             headers={"Authorization": f"token {authentication_token}"},
         )
         response.raise_for_status()
         return response.json()[self.user_data_key]
+
+
+class GithubOAuthAuthentication(GenericOAuthAuthentication):
+    github_url = Unicode("https://github.com", config=True)
+
+    github_api = Unicode("https://api.github.com", config=True)
+
+    @default("access_token_url")
+    def _access_token_url_default(self):
+        return "%s/login/oauth/access_token" % (self.github_url)
+
+    @default("authorize_url")
+    def _authorize_url_default(self):
+        return "%s/login/oauth/authorize" % (self.github_url)
+
+    @default("access_scope")
+    def _access_scope_default(self):
+        return "user:email"
+
+    @default("user_data_url")
+    def _user_data_url_default(self):
+        return "%s/user" % (self.github_api)
+
+    @default("user_data_key")
+    def _user_data_key_default(self):
+        return "login"
+
+    @default("login_html")
+    def _login_html_default(self):
+        return """
+<div class="text-center">
+    <h1 class="h3 mb-3 fw-normal">Please sign in via OAuth</h1>
+    <a class="w-100 btn btn-lg btn-primary" href="{authorization_url}">Sign in with GitHub</a>
+</div>
+        """
+
+
+class JupyterHub(GenericOAuthAuthentication):
+    jupyterhub_url = Unicode(
+        help="base url for jupyterhub not including the '/hub/'",
+        config=True,
+    )
+
+    @default("access_token_url")
+    def _access_token_url_default(self):
+        return "%s/hub/api/oauth2/token" % (self.jupyterhub_url)
+
+    @default("authorize_url")
+    def _authorize_url_default(self):
+        return "%s/hub/api/oauth2/authorize" % (self.jupyterhub_url)
+
+    @default("access_scope")
+    def _access_scope_default(self):
+        return "profile"
+
+    @default("user_data_url")
+    def _user_data_url_default(self):
+        return "%s/hub/api/user" % (self.jupyterhub_url)
+
+    @default("user_data_key")
+    def _user_data_key_default(self):
+        return "login"
+
+    @default("login_html")
+    def _login_html_default(self):
+        return """
+<div class="text-center">
+    <h1 class="h3 mb-3 fw-normal">Please sign in via OAuth</h1>
+    <a class="w-100 btn btn-lg btn-primary" href="{authorization_url}">Sign in with JupyterHub</a>
+</div>
+        """

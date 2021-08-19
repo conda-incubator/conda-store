@@ -1,7 +1,7 @@
 import logging
 
 from conda_store_server.storage import S3Storage
-from conda_store_server.server.auth import GenericOAuthAuthentication
+from conda_store_server.server.auth import JupyterHubOAuthAuthentication
 
 # ==================================
 #      conda-store settings
@@ -32,13 +32,15 @@ c.CondaStoreServer.enable_registry = True
 c.CondaStoreServer.enable_metrics = True
 c.CondaStoreServer.address = "0.0.0.0"
 c.CondaStoreServer.port = 5000
-c.CondaStoreServer.authentication_class = GenericOAuthAuthentication
+
 
 # ==================================
 #         auth settings
 # ==================================
-c.GenericOAuthAuthentication.client_id = "REPLACE"
-c.GenericOAuthAuthentication.client_secret = "REPLACE"
+c.CondaStoreServer.authentication_class = JupyterHubOAuthAuthentication
+c.JupyterHubOAuthAuthentication.jupyterhub_url = "http://jupyterhub"
+c.JupyterHubOAuthAuthentication.client_id = "this-is-a-jupyterhub-client"
+c.JupyterHubOAuthAuthentication.client_secret = "this-is-a-jupyterhub-secret"
 
 # ==================================
 #         worker settings

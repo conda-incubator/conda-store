@@ -4,8 +4,6 @@ from flask import (
     request,
     redirect,
     Response,
-    json,
-    current_app,
 )
 import pydantic
 import yaml
@@ -163,18 +161,14 @@ def ui_get_build(build_id):
 
 @app_ui.route("/user/", methods=["GET"])
 def ui_get_user():
-    conda_store = get_conda_store()
     auth = get_auth()
 
-    # TODO: how does authorization work?
-    # auth.authorize_request(
-    #     f"user",
-    #     {Permissions.ENVIRONMENT_READ},
-    #     require=True,
-    # )
+    entity = auth.authenticate_request()
+    if entity is None:
+        return redirect("/login/")
 
-    username = request.cookies[current_app.authentication.user_cookie_name]
-    return render_template("user.html", username=username)
+    context = {"username": entity.primary_namespace}
+    return render_template("user.html", **context)
 
 
 @app_ui.route("/build/<build_id>/logs/", methods=["GET"])
