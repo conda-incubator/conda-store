@@ -1,6 +1,7 @@
 import logging
 
 from conda_store_server.storage import S3Storage
+from conda_store_server.server.auth import JupyterHubOAuthAuthentication
 
 # ==================================
 #      conda-store settings
@@ -31,6 +32,21 @@ c.CondaStoreServer.enable_registry = True
 c.CondaStoreServer.enable_metrics = True
 c.CondaStoreServer.address = "0.0.0.0"
 c.CondaStoreServer.port = 5000
+
+
+# ==================================
+#         auth settings
+# ==================================
+c.CondaStoreServer.authentication_class = JupyterHubOAuthAuthentication
+c.JupyterHubOAuthAuthentication.jupyterhub_url = "http://jupyterhub:8000"
+c.JupyterHubOAuthAuthentication.client_id = "service-this-is-a-jupyterhub-client"
+c.JupyterHubOAuthAuthentication.client_secret = "this-is-a-jupyterhub-secret"
+# in the case of docker-compose the internal and external dns
+# routes do not match. Inside the docker compose deployment
+# jupyterhub is accessible via the `jupyterhub` hostname in dns
+# however outside of the docker it is accessible via localhost
+# hence this small change needed for testing
+c.JupyterHubOAuthAuthentication.authorize_url = "http://localhost:8000/hub/api/oauth2/authorize"
 
 # ==================================
 #         worker settings

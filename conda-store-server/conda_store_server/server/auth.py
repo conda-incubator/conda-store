@@ -4,9 +4,19 @@ import secrets
 import datetime
 
 import jwt
+import requests
 from traitlets.config import LoggingConfigurable
-from traitlets import Dict, Unicode, Type
-from flask import request, render_template, redirect, g, abort, jsonify
+from traitlets import Dict, Unicode, Type, default
+from flask import (
+    request,
+    render_template,
+    redirect,
+    g,
+    abort,
+    jsonify,
+    url_for,
+    session,
+)
 from sqlalchemy import or_, and_
 
 from conda_store_server import schema, orm
@@ -170,13 +180,16 @@ class Authentication(LoggingConfigurable):
             <input name="password" type="password" class="form-control" id="floatingPassword" placeholder="Password">
             <label for="floatingPassword">Password</label>
         </div>
-        <button class="w-100 btn btn-lg btn-primary" type="submit">Sign in</button>
+        <button class="w-100 btn btn-lg btn-primary" type="submit">Sign In</button>
     </form>
 </div>
         """,
         help="html form to use for login",
         config=True,
     )
+
+    def get_login_html(self):
+        return self.login_html
 
     @property
     def authentication(self):
@@ -209,10 +222,10 @@ class Authentication(LoggingConfigurable):
         )
 
     def get_login_method(self):
-        return render_template("login.html", login_html=self.login_html)
+        return render_template("login.html", login_html=self.get_login_html())
 
     def post_login_method(self):
-        redirect_url = request.args.get("next", "/")
+        redirect_url = request.args.get("next", url_for("ui.ui_get_user"))
         response = redirect(redirect_url)
         authentication_token = self.authenticate(request)
         if authentication_token is None:
@@ -331,3 +344,234 @@ class Authentication(LoggingConfigurable):
             return query.filter(False)
 
         return query.filter(or_(*cases))
+
+
+class DummyAuthentication(Authentication):
+    """Dummy Authentication for testing
+    By default, any username + password is allowed
+    If a non-empty password is set, any username will be allowed
+    if it logs in with that password.
+    """
+
+    password = Unicode(
+        "password",
+        config=True,
+        help="""
+        Set a global password for all users wanting to log in.
+        This allows users with any username to log in with the same static password.
+        """,
+    )
+
+    # login_html = Unicode()
+
+    def authenticate(self, request):
+        """Checks against a global password if it's been set. If not, allow any user/pass combo"""
+        if self.password and request.form["password"] != self.password:
+            return None
+
+        return schema.AuthenticationToken(
+            primary_namespace=request.form["username"],
+            role_bindings={
+                "*/*": ["admin"],
+            },
+        )
+
+
+class GenericOAuthAuthentication(Authentication):
+    """
+    A provider-agnostic OAuth authentication provider. Configure endpoints, secrets and other
+    parameters to enable any OAuth-compatible platform.
+    """
+
+    access_token_url = Unicode(
+        config=True,
+        help="URL used to request an access token once app has been authorized",
+    )
+    authorize_url = Unicode(
+        config=True,
+        help="URL used to request authorization to OAuth provider",
+    )
+    client_id = Unicode(
+        config=True,
+        help="Unique string that identifies the app against the OAuth provider",
+    )
+    client_secret = Unicode(
+        config=True,
+        help="Secret string used to authenticate the app against the OAuth provider",
+    )
+    access_scope = Unicode(
+        config=True,
+        help="Permissions that will be requested to OAuth provider.",
+    )
+    user_data_url = Unicode(
+        config=True,
+        help="API endpoint for OAuth provider that returns a JSON dict with user data",
+    )
+    user_data_key = Unicode(
+        config=True,
+        help="Key in the payload returned by `user_data_url` endpoint that provides the username",
+    )
+    login_html = Unicode(
+        """
+<div class="text-center">
+    <h1 class="h3 mb-3 fw-normal">Please sign in via OAuth</h1>
+    <a class="w-100 btn btn-lg btn-primary" href="{authorization_url}">Sign in with OAuth</a>
+</div>
+        """,
+        help="html form to use for login",
+        config=True,
+    )
+
+    def get_login_html(self):
+        state = secrets.token_urlsafe()
+        session["oauth_state"] = state
+        authorization_url = self.oauth_route(
+            auth_url=self.authorize_url,
+            client_id=self.client_id,
+            redirect_uri=url_for("post_login_method", _external=True),
+            scope=self.access_scope,
+            state=state,
+        )
+        return self.login_html.format(authorization_url=authorization_url)
+
+    @staticmethod
+    def oauth_route(auth_url, client_id, redirect_uri, scope=None, state=None):
+        r = f"{auth_url}?client_id={client_id}&redirect_uri={redirect_uri}&response_type=code"
+        if scope is not None:
+            r += f"&scope={scope}"
+        if state is not None:
+            r += f"&state={state}"
+        return r
+
+    @property
+    def routes(self):
+        return [
+            ("/login/", "GET", self.get_login_method),
+            ("/logout/", "POST", self.post_logout_method),
+            ("/oauth_callback/", "GET", self.post_login_method),
+        ]
+
+    def authenticate(self, request):
+        # 1. using the callback_url code and state in request
+        oauth_access_token = self._get_oauth_token(request)
+        if oauth_access_token is None:
+            return None  # authentication failed
+
+        # 2. Who is the username? We need one more request
+        username = self._get_username(oauth_access_token)
+
+        # 3. create our own internal token
+        return schema.AuthenticationToken(
+            primary_namespace=username,
+            role_bindings={
+                "*/*": ["admin"],
+            },
+        )
+
+    def _get_oauth_token(self, request):
+        # 1. Get callback URI params, which include `code` and `state`
+        #    `code` will be used to request the token; `state` must match our session's!
+        code = request.args.get("code")
+        state = request.args.get("state")
+        if session["oauth_state"] != state:
+            response = jsonify(
+                {"status": "error", "message": "OAuth states do not match"}
+            )
+            response.status_code = 401
+            abort(response)
+        del session["oauth_state"]
+
+        # 2. Request actual access token with code and secret
+        r_response = requests.post(
+            self.access_token_url,
+            data={
+                "code": code,
+                "grant_type": "authorization_code",
+                "client_id": self.client_id,
+                "client_secret": self.client_secret,
+            },
+            headers={"Accept": "application/json"},
+        )
+        if r_response.status_code != 200:
+            return None
+        data = r_response.json()
+        return data["access_token"]
+
+    def _get_username(self, authentication_token):
+        response = requests.get(
+            self.user_data_url,
+            headers={"Authorization": f"token {authentication_token}"},
+        )
+        response.raise_for_status()
+        return response.json()[self.user_data_key]
+
+
+class GithubOAuthAuthentication(GenericOAuthAuthentication):
+    github_url = Unicode("https://github.com", config=True)
+
+    github_api = Unicode("https://api.github.com", config=True)
+
+    @default("access_token_url")
+    def _access_token_url_default(self):
+        return "%s/login/oauth/access_token" % (self.github_url)
+
+    @default("authorize_url")
+    def _authorize_url_default(self):
+        return "%s/login/oauth/authorize" % (self.github_url)
+
+    @default("access_scope")
+    def _access_scope_default(self):
+        return "user:email"
+
+    @default("user_data_url")
+    def _user_data_url_default(self):
+        return "%s/user" % (self.github_api)
+
+    @default("user_data_key")
+    def _user_data_key_default(self):
+        return "login"
+
+    @default("login_html")
+    def _login_html_default(self):
+        return """
+<div class="text-center">
+    <h1 class="h3 mb-3 fw-normal">Please sign in via OAuth</h1>
+    <a class="w-100 btn btn-lg btn-primary" href="{authorization_url}">Sign in with GitHub</a>
+</div>
+        """
+
+
+class JupyterHubOAuthAuthentication(GenericOAuthAuthentication):
+    jupyterhub_url = Unicode(
+        help="base url for jupyterhub not including the '/hub/'",
+        config=True,
+    )
+
+    @default("access_token_url")
+    def _access_token_url_default(self):
+        return "%s/hub/api/oauth2/token" % (self.jupyterhub_url)
+
+    @default("authorize_url")
+    def _authorize_url_default(self):
+        return "%s/hub/api/oauth2/authorize" % (self.jupyterhub_url)
+
+    @default("access_scope")
+    def _access_scope_default(self):
+        return "profile"
+
+    @default("user_data_url")
+    def _user_data_url_default(self):
+        return "%s/hub/api/user" % (self.jupyterhub_url)
+
+    @default("user_data_key")
+    def _user_data_key_default(self):
+        return "name"
+
+    @default("login_html")
+    def _login_html_default(self):
+        return """
+<div class="text-center">
+    <h1 class="h3 mb-3 fw-normal">Please sign in via OAuth</h1>
+    <a class="w-100 btn btn-lg btn-primary" href="{authorization_url}">Sign in with JupyterHub</a>
+</div>
+        """

@@ -45,3 +45,7 @@ These commands should build the extension. Then,
 `jupyter lab`
 
 
+## Note about Response objects
+
+We use both `flask` and `requests`, which both return `response` objects. In case of ambiguity,
+we prefix them like `f_response` and `r_response`, respectively.

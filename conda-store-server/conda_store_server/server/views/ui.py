@@ -159,6 +159,18 @@ def ui_get_build(build_id):
     return render_template("build.html", **context)
 
 
+@app_ui.route("/user/", methods=["GET"])
+def ui_get_user():
+    auth = get_auth()
+
+    entity = auth.authenticate_request()
+    if entity is None:
+        return redirect("/login/")
+
+    context = {"username": entity.primary_namespace}
+    return render_template("user.html", **context)
+
+
 @app_ui.route("/build/<build_id>/logs/", methods=["GET"])
 def api_get_build_logs(build_id):
     conda_store = get_conda_store()
