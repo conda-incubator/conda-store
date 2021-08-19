@@ -489,6 +489,7 @@ class GenericOAuthAuthentication(Authentication):
             },
             headers={"Accept": "application/json"},
         )
+        print(r_response.content)
         r_response.raise_for_status()
         data = r_response.json()
         if "error" in data:

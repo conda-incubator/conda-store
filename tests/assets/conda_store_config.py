@@ -38,7 +38,7 @@ c.CondaStoreServer.port = 5000
 #         auth settings
 # ==================================
 c.CondaStoreServer.authentication_class = JupyterHubOAuthAuthentication
-c.JupyterHubOAuthAuthentication.jupyterhub_url = "http://jupyterhub"
+c.JupyterHubOAuthAuthentication.jupyterhub_url = "http://jupyterhub:8000"
 c.JupyterHubOAuthAuthentication.client_id = "service-this-is-a-jupyterhub-client"
 c.JupyterHubOAuthAuthentication.client_secret = "this-is-a-jupyterhub-secret"
 # in the case of docker-compose the internal and external dns
