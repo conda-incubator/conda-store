@@ -1,4 +1,5 @@
 import os
+import datetime
 
 from celery import Celery
 from traitlets import Type, Unicode, Integer, List, default
@@ -53,6 +54,12 @@ class CondaStore(LoggingConfigurable):
 
     celery_broker_url = Unicode(
         help="broker url to use for celery tasks",
+        config=True,
+    )
+
+    build_artifacts_kept_on_deletion = List(
+        [orm.BuildArtifactType.LOGS, orm.BuildArtifactType.YAML],
+        help="artifacts to keep on build deletion",
         config=True,
     )
 
@@ -306,6 +313,9 @@ class CondaStore(LoggingConfigurable):
         build = api.get_build(self.db, build_id)
         if build.status not in [orm.BuildStatus.FAILED, orm.BuildStatus.COMPLETED]:
             raise ValueError("cannot delete build since not finished building")
+
+        build.deleted_on = datetime.datetime.utcnow()
+        self.db.commit()
 
         self.celery_app
 

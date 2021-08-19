@@ -10,12 +10,30 @@ from conda_store_server import orm, api
 
 
 class Storage(LoggingConfigurable):
-    def fset(self, db, build_id: int, key: str, filename: str):
-        db.add(orm.BuildArtifact(build_id=build_id, key=key))
+    def fset(
+        self,
+        db,
+        build_id: int,
+        key: str,
+        filename: str,
+        artifact_type: orm.BuildArtifactType,
+    ):
+        db.add(
+            orm.BuildArtifact(build_id=build_id, key=key, artifact_type=artifact_type)
+        )
         db.commit()
 
-    def set(self, db, build_id: int, key: str, value):
-        db.add(orm.BuildArtifact(build_id=build_id, key=key))
+    def set(
+        self,
+        db,
+        build_id: int,
+        key: str,
+        value: bytes,
+        artifact_type: orm.BuildArtifactType,
+    ):
+        db.add(
+            orm.BuildArtifact(build_id=build_id, key=key, artifact_type=artifact_type)
+        )
         db.commit()
 
     def get_url(self, key: str):
@@ -105,15 +123,13 @@ class S3Storage(Storage):
         if not self._internal_client.bucket_exists(self.bucket_name):
             raise ValueError(f"S3 bucket={self.bucket_name} does not exist")
 
-    def fset(
-        self, db, build_id, key, filename, content_type="application/octet-stream"
-    ):
+    def fset(self, db, build_id, key, filename, content_type, artifact_type):
         self.internal_client.fput_object(
             self.bucket_name, key, filename, content_type=content_type
         )
-        super().fset(db, build_id, key, filename)
+        super().fset(db, build_id, key, filename, artifact_type)
 
-    def set(self, db, build_id, key, value, content_type="application/octet-stream"):
+    def set(self, db, build_id, key, value, content_type, artifact_type):
         self.internal_client.put_object(
             self.bucket_name,
             key,
@@ -121,7 +137,7 @@ class S3Storage(Storage):
             length=len(value),
             content_type=content_type,
         )
-        super().fset(db, build_id, key, value)
+        super().fset(db, build_id, key, value, artifact_type)
 
     def get_url(self, key):
         return self.external_client.presigned_get_object(self.bucket_name, key)
@@ -143,20 +159,20 @@ class LocalStorage(Storage):
         config=True,
     )
 
-    def fset(self, db, build_id, key, filename, content_type=None):
+    def fset(self, db, build_id, key, filename, content_type=None, artifact_type=None):
         filename = os.path.join(self.storage_path, key)
         os.makedirs(os.path.dirname(filename), exist_ok=True)
 
         shutil.copyfile(filename, os.path.join(self.storage_path, key))
-        super().fset(db, build_id, key, filename)
+        super().fset(db, build_id, key, filename, artifact_type)
 
-    def set(self, db, build_id, key, value, content_type=None):
+    def set(self, db, build_id, key, value, content_type=None, artifact_type=None):
         filename = os.path.join(self.storage_path, key)
         os.makedirs(os.path.dirname(filename), exist_ok=True)
 
         with open(filename, "wb") as f:
             f.write(value)
-        super().set(db, build_id, key, value)
+        super().set(db, build_id, key, value, artifact_type)
 
     def get_url(self, key):
         return os.path.join(self.storage_url, key)
