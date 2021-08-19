@@ -107,10 +107,10 @@ class CondaStore(LoggingConfigurable):
 
     @property
     def db(self):
-        if hasattr(self, "_db"):
-            return self._db
-        self._db = self.session_factory()
-        return self._db
+        # we are using a scoped_session which always returns the same
+        # session if within the same thread
+        # https://docs.sqlalchemy.org/en/14/orm/contextual.html
+        return self.session_factory()
 
     @property
     def configuration(self):

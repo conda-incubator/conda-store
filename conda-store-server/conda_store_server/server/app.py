@@ -85,6 +85,13 @@ class CondaStoreServer(Application):
         app.conda_store = CondaStore(parent=self, log=self.log)
         app.authentication = self.authentication_class(parent=self, log=self.log)
 
+        @app.after_request
+        def after_request_function(response):
+            # force a new session on next request
+            # since sessions are thread local
+            app.conda_store.session_factory.remove()
+            return response
+
         # add dynamic routes
         for route, method, func in app.authentication.routes:
             app.add_url_rule(route, func.__name__, func, methods=[method])
