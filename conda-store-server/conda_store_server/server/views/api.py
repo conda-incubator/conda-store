@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, redirect, request
 import pydantic
 
-from conda_store_server import api, schema
+from conda_store_server import api, schema, utils
 from conda_store_server.server.utils import get_conda_store, get_auth
 from conda_store_server.server.auth import Permissions
 
@@ -60,11 +60,19 @@ def api_update_environment_build(namespace, name):
     auth = get_auth()
 
     auth.authorize_request(
-        f"{namespace}/{name}", {Permissions.ENVIRONMENT_CREATE}, require=True
+        f"{namespace}/{name}", {Permissions.ENVIRONMENT_UPDATE}, require=True
     )
 
-    build_id = request.json["buildId"]
-    conda_store.update_environment_build(namespace, name, build_id)
+    data = request.json
+    if "buildId" not in data:
+        return jsonify({"status": "error", "message": "build id not specificated"}), 400
+
+    try:
+        build_id = data["buildId"]
+        conda_store.update_environment_build(namespace, name, build_id)
+    except utils.CondaStoreError as e:
+        return e.response
+
     return jsonify({"status": "ok"})
 
 

@@ -274,24 +274,32 @@ class CondaStore(LoggingConfigurable):
 
     def update_environment_build(self, namespace, name, build_id):
         build = api.get_build(self.db, build_id)
+        if build is None:
+            raise utils.CondaStoreError(f"build id={build_id} does not exist")
+
+        environment = api.get_environment(self.db, namespace=namespace, name=name)
+        if environment is None:
+            raise utils.CondaStoreError(
+                f"environment namespace={namespace} name={name} does not exist"
+            )
+
         if build.status != orm.BuildStatus.COMPLETED:
-            raise ValueError(
+            raise utils.CondaStoreError(
                 "cannot update environment to build id since not completed"
             )
 
         if build.specification.name != name:
-            raise ValueError(
+            raise utils.CondaStoreError(
                 "cannot update environment to build id since specification does not match environment name"
             )
 
-        environment = api.get_environment(self.db, namespace=namespace, name=name)
+        environment.build_id = build.id
+        self.db.commit()
 
         self.celery_app
-
         # must import tasks after a celery app has been initialized
         from conda_store_server.worker import tasks
-
-        tasks.task_update_environment_build.si(environment.id, build.id).apply_async()
+        tasks.task_update_environment_build.si(environment.id).apply_async()
 
     def delete_build(self, build_id):
         build = api.get_build(self.db, build_id)
