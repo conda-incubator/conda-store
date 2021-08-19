@@ -8,7 +8,8 @@ c.JupyterHub.spawner_class = 'jupyterhub.spawner.SimpleLocalProcessSpawner'
 
 c.JupyterHub.services = [
     {
-        'name': "this-is-a-jupyterhub-client",
+        'name': "conda-store",
+        'oauth_client_id': "service-this-is-a-jupyterhub-client",
         'admin': True,
         'api_token': "this-is-a-jupyterhub-secret",
         'oauth_redirect_uri': 'http://localhost:5000/oauth_callback/',

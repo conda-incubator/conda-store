@@ -39,7 +39,7 @@ c.CondaStoreServer.port = 5000
 # ==================================
 c.CondaStoreServer.authentication_class = JupyterHubOAuthAuthentication
 c.JupyterHubOAuthAuthentication.jupyterhub_url = "http://jupyterhub"
-c.JupyterHubOAuthAuthentication.client_id = "this-is-a-jupyterhub-client"
+c.JupyterHubOAuthAuthentication.client_id = "service-this-is-a-jupyterhub-client"
 c.JupyterHubOAuthAuthentication.client_secret = "this-is-a-jupyterhub-secret"
 # in the case of docker-compose the internal and external dns
 # routes do not match. Inside the docker compose deployment
