@@ -60,7 +60,7 @@
              'Content-Type': 'application/json',
          },
          body: JSON.stringify({"buildId": buildId})
-     })
+     }).then(response => window.location.reload(true));
  }
 
  function buildAction(method, buildId) {

@@ -73,19 +73,16 @@ def task_build_conda_docker(build_id):
 
 
 @task(name="task_update_environment_build")
-def task_update_environment_build(environment_id, build_id):
+def task_update_environment_build(environment_id):
     conda_store = create_worker().conda_store
-    build = api.get_build(conda_store.db, build_id)
+    environment = api.get_environment(conda_store.db, id=environment_id)
 
-    conda_prefix = build.build_path(conda_store.store_directory)
-    environment_prefix = build.environment_path(conda_store.environment_directory)
+    conda_prefix = environment.build.build_path(conda_store.store_directory)
+    environment_prefix = environment.build.environment_path(
+        conda_store.environment_directory
+    )
 
     utils.symlink(conda_prefix, environment_prefix)
-
-    environment = api.get_environment(conda_store.db, id=environment_id)
-    environment.build_id = build.id
-    environment.specification_id = build.specification.id
-    conda_store.db.commit()
 
 
 @task(name="task_delete_build")
