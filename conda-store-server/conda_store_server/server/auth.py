@@ -454,6 +454,8 @@ class GenericOAuthAuthentication(Authentication):
     def authenticate(self, request):
         # 1. using the callback_url code and state in request
         oauth_access_token = self._get_oauth_token(request)
+        if oauth_access_token is None:
+            return None  # authentication failed
 
         # 2. Who is the username? We need one more request
         username = self._get_username(oauth_access_token)
@@ -482,22 +484,17 @@ class GenericOAuthAuthentication(Authentication):
         # 2. Request actual access token with code and secret
         r_response = requests.post(
             self.access_token_url,
-            json={
+            data={
                 "code": code,
                 "grant_type": 'authorization_code',
                 "client_id": self.client_id,
                 "client_secret": self.client_secret,
-                "redirect_uri": url_for("post_login_method", _external=True),
             },
             headers={"Accept": "application/json"},
         )
-        raise ValueError(r_response.content)
-        r_response.raise_for_status()
+        if r_response.status_code != 200:
+            return None
         data = r_response.json()
-        if "error" in data:
-            f_response = jsonify(data)
-            f_response.status_code = 401
-            abort(f_response)
         return data["access_token"]
 
     def _get_username(self, authentication_token):
