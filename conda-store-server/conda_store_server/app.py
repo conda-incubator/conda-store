@@ -299,6 +299,7 @@ class CondaStore(LoggingConfigurable):
         self.celery_app
         # must import tasks after a celery app has been initialized
         from conda_store_server.worker import tasks
+
         tasks.task_update_environment_build.si(environment.id).apply_async()
 
     def delete_build(self, build_id):

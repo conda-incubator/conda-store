@@ -78,7 +78,9 @@ def task_update_environment_build(environment_id):
     environment = api.get_environment(conda_store.db, id=environment_id)
 
     conda_prefix = environment.build.build_path(conda_store.store_directory)
-    environment_prefix = environment.build.environment_path(conda_store.environment_directory)
+    environment_prefix = environment.build.environment_path(
+        conda_store.environment_directory
+    )
 
     utils.symlink(conda_prefix, environment_prefix)
 
