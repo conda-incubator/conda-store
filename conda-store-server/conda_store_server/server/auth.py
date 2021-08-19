@@ -541,7 +541,7 @@ class GithubOAuthAuthentication(GenericOAuthAuthentication):
         """
 
 
-class JupyterHub(GenericOAuthAuthentication):
+class JupyterHubOAuthAuthentication(GenericOAuthAuthentication):
     jupyterhub_url = Unicode(
         help="base url for jupyterhub not including the '/hub/'",
         config=True,
