@@ -42,6 +42,7 @@ class CondaStoreWorker(Application):
             "worker",
             "--loglevel=INFO",
             "--beat",
+            "--concurrency", "1",
         ]
         self.conda_store.ensure_directories()
         self.conda_store.celery_app.worker_main(argv)

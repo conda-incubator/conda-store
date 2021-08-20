@@ -194,12 +194,7 @@ class CondaChannel(Base):
     last_update = Column(DateTime)
 
     def update_packages(self, db):
-        # TODO: needs to be done within transaction
-        previous_last_update = self.last_update
-        self.last_update = datetime.datetime.utcnow()
-        db.commit()
-
-        repodata = download_repodata(self.name, previous_last_update)
+        repodata = download_repodata(self.name, self.last_update)
         if not repodata:
             # nothing to update
             return
@@ -236,6 +231,9 @@ class CondaChannel(Base):
                     )
                     existing_architecture_sha256.add(package["sha256"])
             db.commit()
+
+        self.last_update = datetime.datetime.utcnow()
+        db.commit()
 
 
 class CondaPackage(Base):
