@@ -194,22 +194,28 @@ class CondaChannel(Base):
     last_update = Column(DateTime)
 
     def update_packages(self, db):
-        repodata = download_repodata(self.name, self.last_update)
+        # TODO: needs to be done within transaction
+        previous_last_update = self.last_update
+        self.last_update = datetime.datetime.utcnow()
+        db.commit()
+
+        repodata = download_repodata(self.name, previous_last_update)
         if not repodata:
             # nothing to update
             return
 
-        existing_sha256 = {
-            _[0]
-            for _ in db.query(CondaPackage.sha256)
-            .filter(CondaPackage.channel_id == self.id)
-            .all()
-        }
-
         for architecture in repodata:
             packages = list(repodata[architecture]["packages"].values())
+
+            existing_architecture_sha256 = {
+                _[0]
+                for _ in db.query(CondaPackage.sha256)
+                .filter(CondaPackage.channel_id == self.id)
+                .filter(CondaPackage.subdir == architecture)
+                .all()
+            }
             for package in packages:
-                if package["sha256"] not in existing_sha256:
+                if package["sha256"] not in existing_architecture_sha256:
                     db.add(
                         CondaPackage(
                             build=package["build"],
@@ -228,8 +234,8 @@ class CondaChannel(Base):
                             channel_id=self.id,
                         )
                     )
-        self.last_update = datetime.datetime.utcnow()
-        db.commit()
+                    existing_architecture_sha256.add(package["sha256"])
+            db.commit()
 
 
 class CondaPackage(Base):
@@ -243,6 +249,7 @@ class CondaPackage(Base):
             "version",
             "build",
             "build_number",
+            "sha256",
             name="_conda_package_uc",
         ),
     )

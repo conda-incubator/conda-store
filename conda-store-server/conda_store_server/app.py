@@ -199,9 +199,6 @@ class CondaStore(LoggingConfigurable):
                 self.db.add(conda_channel)
                 self.db.commit()
 
-        for channel in api.list_conda_channels(self.db):
-            channel.update_packages(self.db)
-
     def register_environment(
         self, specification: dict, namespace: str = None, force_build=False
     ):
@@ -270,6 +267,7 @@ class CondaStore(LoggingConfigurable):
 
         (
             tasks.task_update_storage_metrics.si()
+            | tasks.task_update_conda_channels.si()
             | tasks.task_build_conda_environment.si(build.id)
             | tasks.task_build_conda_env_export.si(build.id)
             | tasks.task_build_conda_pack.si(build.id)

@@ -25,6 +25,8 @@ def task_watch_paths():
                 specification=yaml.safe_load(f), namespace="filesystem"
             )
 
+    worker.conda_store.session_factory.remove()
+
 
 @task(name="task_update_storage_metrics")
 def task_update_storage_metrics():
@@ -32,6 +34,8 @@ def task_update_storage_metrics():
     conda_store.configuration.update_storage_metrics(
         conda_store.db, conda_store.store_directory
     )
+
+    conda_store.session_factory.remove()
 
 
 @task(name="task_update_conda_channels")
@@ -43,12 +47,15 @@ def task_update_conda_channels():
     for channel in api.list_conda_channels(conda_store.db):
         channel.update_packages(conda_store.db)
 
+    conda_store.session_factory.remove()
+
 
 @task(name="task_build_conda_environment")
 def task_build_conda_environment(build_id):
     conda_store = create_worker().conda_store
     build = api.get_build(conda_store.db, build_id)
     build_conda_environment(conda_store, build)
+    conda_store.session_factory.remove()
 
 
 @task(name="task_build_conda_env_export")
@@ -56,6 +63,7 @@ def task_build_conda_env_export(build_id):
     conda_store = create_worker().conda_store
     build = api.get_build(conda_store.db, build_id)
     build_conda_env_export(conda_store, build)
+    conda_store.session_factory.remove()
 
 
 @task(name="task_build_conda_pack")
@@ -63,14 +71,14 @@ def task_build_conda_pack(build_id):
     conda_store = create_worker().conda_store
     build = api.get_build(conda_store.db, build_id)
     build_conda_pack(conda_store, build)
-
+    conda_store.session_factory.remove()
 
 @task(name="task_build_conda_docker")
 def task_build_conda_docker(build_id):
     conda_store = create_worker().conda_store
     build = api.get_build(conda_store.db, build_id)
     build_conda_docker(conda_store, build)
-
+    conda_store.session_factory.remove()
 
 @task(name="task_update_environment_build")
 def task_update_environment_build(environment_id):
@@ -83,6 +91,7 @@ def task_update_environment_build(environment_id):
     )
 
     utils.symlink(conda_prefix, environment_prefix)
+    conda_store.session_factory.remove()
 
 
 @task(name="task_delete_build")
@@ -109,3 +118,4 @@ def task_delete_build(build_id):
         conda_store.storage.delete(conda_store.db, build_id, build_artifact.key)
 
     conda_store.db.commit()
+    conda_store.session_factory.remove()
