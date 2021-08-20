@@ -118,10 +118,14 @@ class CondaStoreServer(Application):
         app.register_blueprint(app_auth, url_prefix=self.url_prefix)
 
         app.conda_store.ensure_namespace()
-        app.conda_store.ensure_directories()
-        app.conda_store.configuration.update_storage_metrics(
-            app.conda_store.db, app.conda_store.store_directory
-        )
         app.conda_store.ensure_conda_channels()
+
+        # schedule tasks
+        app.conda_store.celery_app
+
+        from conda_store_server.worker import tasks
+
+        (tasks.task_watch_paths.si()).apply_async()
+        (tasks.task_update_storage_metrics.si()).apply_async()
 
         app.run(debug=True, host=self.address, port=self.port)
