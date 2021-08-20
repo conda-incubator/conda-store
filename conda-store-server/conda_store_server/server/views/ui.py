@@ -4,6 +4,7 @@ from flask import (
     request,
     redirect,
     Response,
+    url_for,
 )
 import pydantic
 import yaml
@@ -39,7 +40,7 @@ def ui_create_get_environment():
             )
             namespace = api.get_namespace(conda_store.db, id=namespace_id)
             api.post_specification(conda_store, specification.dict(), namespace.name)
-            return redirect("/")
+            return redirect(url_for("ui.ui_list_environments"))
         except yaml.YAMLError:
             return render_template(
                 "create.html",
@@ -165,7 +166,7 @@ def ui_get_user():
 
     entity = auth.authenticate_request()
     if entity is None:
-        return redirect("/login/")
+        return redirect(f"{url_for('ui.ui_list_environments')}login/")
 
     context = {"username": entity.primary_namespace}
     return render_template("user.html", **context)

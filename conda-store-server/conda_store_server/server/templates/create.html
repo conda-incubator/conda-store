@@ -7,7 +7,7 @@
 <pre class="alert alert-danger" role="alert">{{ message }}</pre>
 {% endif %}
 
-<form action="/create/" method="post">
+<form action="{{ url_for('ui.ui_create_get_environment') }}" method="post">
     <div>
         <label for="namespace">Namespace</label>
         <select class="form-select" name="namespace" id="namespace" aria-label="namespace">

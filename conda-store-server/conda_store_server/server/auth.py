@@ -428,7 +428,7 @@ class GenericOAuthAuthentication(Authentication):
         authorization_url = self.oauth_route(
             auth_url=self.authorize_url,
             client_id=self.client_id,
-            redirect_uri=url_for("post_login_method", _external=True),
+            redirect_uri=url_for("auth.post_login_method", _external=True),
             scope=self.access_scope,
             state=state,
         )

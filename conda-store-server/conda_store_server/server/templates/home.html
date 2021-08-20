@@ -8,14 +8,14 @@
 <div class="card my-2">
     <div class="card-body">
         <h5 class="card-title">
-            <a href="/environment/{{environment.namespace.name }}/{{ environment.name }}/">{{ environment.namespace.name }}/{{ environment.name }}</a>
+            <a href="{{ url_for('ui.ui_get_environment', namespace=environment.namespace.name, name=environment.name) }}">{{ environment.namespace.name }}/{{ environment.name }}</a>
             <span class="badge badge-light">{{ (environment.build.size or 0) | filesizeformat(true) }}</span>
         </h5>
         {% if environment.build.status.value == 'COMPLETED' %}
-        <a class="card-link" href="/build/{{ environment.build_id }}/yaml/"><ion-icon name="code-download"></ion-icon> YAML</a>
-        <a class="card-link" href="/build/{{ environment.build_id }}/lockfile/"><ion-icon name="lock-closed-outline"></ion-icon> Lockfile</a>
-        <a class="card-link" href="/build/{{ environment.build_id }}/archive/"><ion-icon name="archive-outline"></ion-icon> Archive</a>
-        <a class="card-link" onclick="setClipboard('localhost:5000/{{ environment.namespace }}/{{ environment.name }}:{{ environment.build.specification.sha256 }}')"><ion-icon name="logo-docker"></ion-icon> Docker</a>
+        <a class="card-link" href="{{ url_for('ui.api_get_build_yaml', build_id=environment.build_id) }}"><ion-icon name="code-download"></ion-icon> YAML</a>
+        <a class="card-link" href="{{ url_for('ui.api_get_build_lockfile', build_id=environment.build_id) }}"><ion-icon name="lock-closed-outline"></ion-icon> Lockfile</a>
+        <a class="card-link" href="{{ url_for('ui.api_get_build_archive', build_id=environment.build_id) }}"><ion-icon name="archive-outline"></ion-icon> Archive</a>
+        <a class="card-link" onclick="setClipboard('{{ url_for('ui.ui_list_environments', _external=True) }}{{ environment.namespace }}/{{ environment.name }}:{{ environment.build.specification.sha256 }}')"><ion-icon name="logo-docker"></ion-icon> Docker</a>
         {% endif %}
     </div>
 </div>
