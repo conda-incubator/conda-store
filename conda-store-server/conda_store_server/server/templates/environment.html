@@ -18,7 +18,7 @@
         </li>
     </ul>
     <div class="card-body">
-        <a href="/environment/{{ environment.namespace.name }}/{{ environment.name }}/edit/" class="btn btn-primary btn-block">Edit</a>
+        <a href="{{ url_for('ui.ui_edit_environment', namespace=environment.namespace.name, name=environment.name) }}" class="btn btn-primary btn-block">Edit</a>
     </div>
 </div>
 
@@ -26,7 +26,7 @@
 <ul class="list-group">
     {% for build in environment_builds %}
     <li class="list-group-item d-flex justify-content-between align-items-center {% if build.id == environment.build_id %}list-group-item-success{% elif build.deleted_on is not none %}list-group-item-secondary{% endif %}">
-        <a href="/build/{{ build.id }}/">Build {{ build.id }}</a>
+        <a href="{{ url_for('ui.ui_get_build', build_id=build.id) }}/">Build {{ build.id }}</a>
         <span>{{ build.status.value }}</span>
         <div class="btn-group" role="group" aria-label="Build actions">
             {% if build.id != environment.build_id and build.status.value == 'COMPLETED' and build.deleted_on is none %}
@@ -56,7 +56,7 @@
  editor.setReadOnly(true);
 
  function updateEnvironmentBuild(buildId) {
-     fetch(`/api/v1/environment/{{ environment.namespace.name }}/{{ environment.name }}/`, {
+     fetch(`{{ url_for('api.api_get_environment', namespace=environment.namespace.name, name=environment.name) }}`, {
          method: 'PUT',
          headers: {
              'Content-Type': 'application/json',
@@ -66,7 +66,7 @@
  }
 
  function buildAction(method, buildId) {
-     fetch(`/api/v1/build/${buildId}/`, {
+     fetch(`{{ url_for('api.api_list_builds') }}${buildId}/`, {
          method: method,
      }).then(response => window.location.reload(true));
  }

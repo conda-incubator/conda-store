@@ -1,6 +1,7 @@
 import logging
 
 from flask import Flask
+from flask.blueprints import Blueprint
 from flask_cors import CORS
 from traitlets import Bool, Unicode, Integer, Type
 from traitlets.config import Application
@@ -44,6 +45,14 @@ class CondaStoreServer(Application):
 
     port = Integer(5000, help="port for conda-store server", config=True)
 
+    url_prefix = Unicode(
+        "/",
+        help="the prefix URL (subdirectory) for the entire application; "
+        "it MUST start with a forward slash - tip: "
+        "use this to run conda-store within an existing website.",
+        config=True,
+    )
+
     config_file = Unicode(
         "conda_store_config.py", help="config file to load for conda-store", config=True
     )
@@ -67,20 +76,24 @@ class CondaStoreServer(Application):
 
     def start(self):
         app = Flask(__name__)
-        CORS(app, resources={r"/api/v1/*": {"origins": "*"}})
+        cors_prefix = f"{self.url_prefix if self.url_prefix != '/' else ''}"
+        CORS(
+            app,
+            resources={f"{cors_prefix}/api/v1/*": {"origins": "*"}},
+        )
         app.secret_key = self.secret_key
 
         if self.enable_api:
-            app.register_blueprint(views.app_api)
+            app.register_blueprint(views.app_api, url_prefix=self.url_prefix)
 
         if self.enable_registry:
-            app.register_blueprint(views.app_registry)
+            app.register_blueprint(views.app_registry, url_prefix=self.url_prefix)
 
         if self.enable_ui:
-            app.register_blueprint(views.app_ui)
+            app.register_blueprint(views.app_ui, url_prefix=self.url_prefix)
 
         if self.enable_metrics:
-            app.register_blueprint(views.app_metrics)
+            app.register_blueprint(views.app_metrics, url_prefix=self.url_prefix)
 
         app.conda_store = CondaStore(parent=self, log=self.log)
         app.authentication = self.authentication_class(parent=self, log=self.log)
@@ -93,8 +106,16 @@ class CondaStoreServer(Application):
             return response
 
         # add dynamic routes
+        # NOTE: this will break`url_for`, since the method names behind each
+        # route are not standardized; we build them "manually" by using `url_for`
+        # pointing to the "/" (index) provider (right now is ui.ui_list_environments)
+        # If the index function changes names, this will HAVE to be updated manually
+        # on some templates too.
+
+        app_auth = Blueprint("auth", self.authentication_class.__name__)
         for route, method, func in app.authentication.routes:
-            app.add_url_rule(route, func.__name__, func, methods=[method])
+            app_auth.add_url_rule(route, func.__name__, func, methods=[method])
+        app.register_blueprint(app_auth, url_prefix=self.url_prefix)
 
         app.conda_store.ensure_namespace()
         app.conda_store.ensure_directories()
