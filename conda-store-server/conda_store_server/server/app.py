@@ -76,7 +76,11 @@ class CondaStoreServer(Application):
 
     def start(self):
         app = Flask(__name__)
-        CORS(app, resources={r"/api/v1/*": {"origins": "*"}})
+        cors_prefix = f"{self.url_prefix if self.url_prefix != '/' else ''}"
+        CORS(
+            app,
+            resources={f"{cors_prefix}/api/v1/*": {"origins": "*"}},
+        )
         app.secret_key = self.secret_key
 
         if self.enable_api:
