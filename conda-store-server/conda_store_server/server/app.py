@@ -124,7 +124,8 @@ class CondaStoreServer(Application):
         app.conda_store.celery_app
 
         from conda_store_server.worker import tasks
-        (tasks.task_watch_paths.si()).apply_async(countdown=10)
-        (tasks.task_update_storage_metrics.si()).apply_async(countdown=10)
+
+        (tasks.task_watch_paths.si()).apply_async()
+        (tasks.task_update_storage_metrics.si()).apply_async()
 
         app.run(debug=True, host=self.address, port=self.port)
