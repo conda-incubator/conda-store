@@ -170,7 +170,7 @@ class Authentication(LoggingConfigurable):
     login_html = Unicode(
         """
 <div class="text-center">
-    <form class="form-signin" method="POST">
+    <form class="form-signin" method="POST" id="login">
         <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
         <div class="form-floating">
             <input name="username" class="form-control" id="floatingInput" placeholder="Username">
@@ -413,7 +413,7 @@ class GenericOAuthAuthentication(Authentication):
     )
     login_html = Unicode(
         """
-<div class="text-center">
+<div id="login" class="text-center">
     <h1 class="h3 mb-3 fw-normal">Please sign in via OAuth</h1>
     <a class="w-100 btn btn-lg btn-primary" href="{authorization_url}">Sign in with OAuth</a>
 </div>
@@ -534,7 +534,7 @@ class GithubOAuthAuthentication(GenericOAuthAuthentication):
     @default("login_html")
     def _login_html_default(self):
         return """
-<div class="text-center">
+<div id="login" class="text-center">
     <h1 class="h3 mb-3 fw-normal">Please sign in via OAuth</h1>
     <a class="w-100 btn btn-lg btn-primary" href="{authorization_url}">Sign in with GitHub</a>
 </div>
@@ -570,7 +570,7 @@ class JupyterHubOAuthAuthentication(GenericOAuthAuthentication):
     @default("login_html")
     def _login_html_default(self):
         return """
-<div class="text-center">
+<div id="login" class="text-center">
     <h1 class="h3 mb-3 fw-normal">Please sign in via OAuth</h1>
     <a class="w-100 btn btn-lg btn-primary" href="{authorization_url}">Sign in with JupyterHub</a>
 </div>
