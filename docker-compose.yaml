@@ -28,6 +28,7 @@ services:
     build: conda-store
     user: "1000:1000"
     volumes:
+      - ./tests/assets/jupyter_notebook_config.py:/etc/jupyter/jupyter_notebook_config.py
       - ./tests/assets/jupyterhub_config.py:/opt/jupyterhub/jupyterhub_config.py:ro
     command: ['/opt/conda/envs/conda-store/bin/jupyterhub', '--config', '/opt/jupyterhub/jupyterhub_config.py']
     ports:

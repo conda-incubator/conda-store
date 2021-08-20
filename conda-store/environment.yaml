@@ -2,7 +2,9 @@ name: conda-store
 channels:
   - conda-forge
 dependencies:
+  - pip
   - jupyterhub
-  - jupyter-packaging
   - jupyterlab>=3.0.0
   - yarn
+  - pip:
+    - https://github.com/yuvipanda/jupyter-launcher-shortcuts/archive/refs/heads/master.zip

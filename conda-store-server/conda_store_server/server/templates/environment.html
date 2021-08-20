@@ -25,11 +25,11 @@
 <h3>Builds</h3>
 <ul class="list-group">
     {% for build in environment_builds %}
-    <li class="list-group-item d-flex justify-content-between align-items-center {{ 'list-group-item-secondary' if build.id == environment.build_id else ''}}">
+    <li class="list-group-item d-flex justify-content-between align-items-center {% if build.id == environment.build_id %}list-group-item-success{% elif build.deleted_on is not none %}list-group-item-secondary{% endif %}">
         <a href="{{ url_for('ui.ui_get_build', build_id=build.id) }}/">Build {{ build.id }}</a>
         <span>{{ build.status.value }}</span>
         <div class="btn-group" role="group" aria-label="Build actions">
-            {% if build.id != environment.build_id and build.status.value == 'COMPLETED' %}
+            {% if build.id != environment.build_id and build.status.value == 'COMPLETED' and build.deleted_on is none %}
             <button type="button" onclick="updateEnvironmentBuild('{{ build.id }}')" class="btn btn-primary mb-2">
                 <ion-icon name="checkmark"></ion-icon>
             </button>
@@ -37,9 +37,11 @@
             <button type="button" onclick="buildAction('PUT', '{{ build.id }}')" class="btn btn-primary mb-2">
                 <ion-icon name="refresh"></ion-icon>
             </button>
+            {% if build.status.value in ["COMPLETED", "FAILED"] and  build.deleted_on is none %}
             <button type="button" onclick="buildAction('DELETE', '{{ build.id }}')" class="btn btn-primary mb-2">
                 <ion-icon name="trash"></ion-icon>
             </button>
+            {% endif %}
         </div>
     </li>
     {% endfor %}
@@ -60,7 +62,7 @@
              'Content-Type': 'application/json',
          },
          body: JSON.stringify({"buildId": buildId})
-     })
+     }).then(response => window.location.reload(true));
  }
 
  function buildAction(method, buildId) {

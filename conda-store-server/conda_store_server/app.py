@@ -1,4 +1,5 @@
 import os
+import datetime
 
 from celery import Celery
 from traitlets import Type, Unicode, Integer, List, default
@@ -56,6 +57,12 @@ class CondaStore(LoggingConfigurable):
         config=True,
     )
 
+    build_artifacts_kept_on_deletion = List(
+        [orm.BuildArtifactType.LOGS, orm.BuildArtifactType.YAML],
+        help="artifacts to keep on build deletion",
+        config=True,
+    )
+
     @default("celery_broker_url")
     def _default_celery_broker_url(self):
         return f"sqla+{self.database_url}"
@@ -107,10 +114,10 @@ class CondaStore(LoggingConfigurable):
 
     @property
     def db(self):
-        if hasattr(self, "_db"):
-            return self._db
-        self._db = self.session_factory()
-        return self._db
+        # we are using a scoped_session which always returns the same
+        # session if within the same thread
+        # https://docs.sqlalchemy.org/en/14/orm/contextual.html
+        return self.session_factory()
 
     @property
     def configuration(self):
@@ -274,29 +281,41 @@ class CondaStore(LoggingConfigurable):
 
     def update_environment_build(self, namespace, name, build_id):
         build = api.get_build(self.db, build_id)
+        if build is None:
+            raise utils.CondaStoreError(f"build id={build_id} does not exist")
+
+        environment = api.get_environment(self.db, namespace=namespace, name=name)
+        if environment is None:
+            raise utils.CondaStoreError(
+                f"environment namespace={namespace} name={name} does not exist"
+            )
+
         if build.status != orm.BuildStatus.COMPLETED:
-            raise ValueError(
+            raise utils.CondaStoreError(
                 "cannot update environment to build id since not completed"
             )
 
         if build.specification.name != name:
-            raise ValueError(
+            raise utils.CondaStoreError(
                 "cannot update environment to build id since specification does not match environment name"
             )
 
-        environment = api.get_environment(self.db, namespace=namespace, name=name)
+        environment.build_id = build.id
+        self.db.commit()
 
         self.celery_app
-
         # must import tasks after a celery app has been initialized
         from conda_store_server.worker import tasks
 
-        tasks.task_update_environment_build.si(environment.id, build.id).apply_async()
+        tasks.task_update_environment_build.si(environment.id).apply_async()
 
     def delete_build(self, build_id):
         build = api.get_build(self.db, build_id)
         if build.status not in [orm.BuildStatus.FAILED, orm.BuildStatus.COMPLETED]:
             raise ValueError("cannot delete build since not finished building")
+
+        build.deleted_on = datetime.datetime.utcnow()
+        self.db.commit()
 
         self.celery_app
 

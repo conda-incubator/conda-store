@@ -21,7 +21,12 @@ def set_build_started(conda_store, build):
 
 def set_build_failed(conda_store, build, logs):
     conda_store.storage.set(
-        conda_store.db, build.id, build.log_key, logs, content_type="text/plain"
+        conda_store.db,
+        build.id,
+        build.log_key,
+        logs,
+        content_type="text/plain",
+        artifact_type=orm.BuildArtifactType.LOGS,
     )
     build.status = orm.BuildStatus.FAILED
     build.ended_on = datetime.datetime.utcnow()
@@ -72,7 +77,12 @@ def set_build_completed(conda_store, build, logs, packages):
             build.packages.append(_package)
 
     conda_store.storage.set(
-        conda_store.db, build.id, build.log_key, logs, content_type="text/plain"
+        conda_store.db,
+        build.id,
+        build.log_key,
+        logs,
+        content_type="text/plain",
+        artifact_type=orm.BuildArtifactType.LOGS,
     )
     build.status = orm.BuildStatus.COMPLETED
     build.ended_on = datetime.datetime.utcnow()
@@ -178,6 +188,7 @@ def build_conda_env_export(conda_store, build):
         build.conda_env_export_key,
         output,
         content_type="text/yaml",
+        artifact_type=orm.BuildArtifactType.YAML,
     )
 
 
@@ -194,6 +205,7 @@ def build_conda_pack(conda_store, build):
             build.conda_pack_key,
             output_filename,
             content_type="application/gzip",
+            artifact_type=orm.BuildArtifactType.CONDA_PACK,
         )
 
 
@@ -247,6 +259,7 @@ def build_conda_docker(conda_store, build):
             build.docker_blob_key(content_compressed_hash),
             content_compressed,
             content_type="application/gzip",
+            artifact_type=orm.BuildArtifactType.DOCKER,
         )
 
         docker_layer = schema.DockerManifestLayer(
@@ -273,6 +286,7 @@ def build_conda_docker(conda_store, build):
         build.docker_blob_key(docker_config_hash),
         docker_config_content,
         content_type="application/vnd.docker.container.image.v1+json",
+        artifact_type=orm.BuildArtifactType.DOCKER,
     )
 
     conda_store.storage.set(
@@ -281,6 +295,7 @@ def build_conda_docker(conda_store, build):
         build.docker_manifest_key,
         docker_manifest_content,
         content_type="application/vnd.docker.distribution.manifest.v2+json",
+        artifact_type=orm.BuildArtifactType.DOCKER,
     )
 
     # docker likes to have a sha256 key version of the manifest this
@@ -292,6 +307,7 @@ def build_conda_docker(conda_store, build):
         f"docker/manifest/{build.specification.name}/sha256:{docker_manifest_hash}",
         docker_manifest_content,
         content_type="application/vnd.docker.distribution.manifest.v2+json",
+        artifact_type=orm.BuildArtifactType.DOCKER,
     )
 
     conda_store.log.info(

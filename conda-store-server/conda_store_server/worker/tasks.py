@@ -73,19 +73,16 @@ def task_build_conda_docker(build_id):
 
 
 @task(name="task_update_environment_build")
-def task_update_environment_build(environment_id, build_id):
+def task_update_environment_build(environment_id):
     conda_store = create_worker().conda_store
-    build = api.get_build(conda_store.db, build_id)
+    environment = api.get_environment(conda_store.db, id=environment_id)
 
-    conda_prefix = build.build_path(conda_store.store_directory)
-    environment_prefix = build.environment_path(conda_store.environment_directory)
+    conda_prefix = environment.build.build_path(conda_store.store_directory)
+    environment_prefix = environment.build.environment_path(
+        conda_store.environment_directory
+    )
 
     utils.symlink(conda_prefix, environment_prefix)
-
-    environment = api.get_environment(conda_store.db, id=environment_id)
-    environment.build_id = build.id
-    environment.specification_id = build.specification.id
-    conda_store.db.commit()
 
 
 @task(name="task_delete_build")
@@ -101,10 +98,14 @@ def task_delete_build(build_id):
     ):
         shutil.rmtree(conda_prefix)
 
+    conda_store.log.error("deleting artifacts")
     for build_artifact in api.list_build_artifacts(
-        conda_store.db, limit=None, build_id=build_id
+        conda_store.db,
+        limit=None,
+        build_id=build_id,
+        excluded_artifact_types=conda_store.build_artifacts_kept_on_deletion,
     ):
+        conda_store.log.error(f"deleting {build_artifact.key}")
         conda_store.storage.delete(conda_store.db, build_id, build_artifact.key)
 
-    conda_store.db.delete(build)
     conda_store.db.commit()

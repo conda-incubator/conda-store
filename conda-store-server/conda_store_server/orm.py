@@ -15,7 +15,7 @@ from sqlalchemy import (
     UniqueConstraint,
     ForeignKey,
 )
-from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.orm import sessionmaker, relationship, scoped_session
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine
 
@@ -25,6 +25,13 @@ from conda_store_server.conda import download_repodata
 
 
 Base = declarative_base()
+
+
+class BuildArtifactType(enum.Enum):
+    LOGS = "LOGS"
+    YAML = "YAML"
+    CONDA_PACK = "CONDA_PACK"
+    DOCKER = "DOCKER"
 
 
 class BuildStatus(enum.Enum):
@@ -97,6 +104,7 @@ class Build(Base):
     scheduled_on = Column(DateTime, default=datetime.datetime.utcnow)
     started_on = Column(DateTime, default=None)
     ended_on = Column(DateTime, default=None)
+    deleted_on = Column(DateTime, default=None)
 
     def build_path(self, store_directory):
         store_path = os.path.abspath(store_directory)
@@ -149,6 +157,8 @@ class BuildArtifact(Base):
 
     build_id = Column(Integer, ForeignKey("build.id"))
     build = relationship(Build)
+
+    artifact_type = Column(Enum(BuildArtifactType), nullable=False)
 
     key = Column(String)
 
@@ -296,5 +306,5 @@ def new_session_factory(url="sqlite:///:memory:", reset=False, **kwargs):
 
     Base.metadata.create_all(engine)
 
-    session_factory = sessionmaker(bind=engine)
+    session_factory = scoped_session(sessionmaker(bind=engine))
     return session_factory
