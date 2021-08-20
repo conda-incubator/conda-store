@@ -73,12 +73,14 @@ def task_build_conda_pack(build_id):
     build_conda_pack(conda_store, build)
     conda_store.session_factory.remove()
 
+
 @task(name="task_build_conda_docker")
 def task_build_conda_docker(build_id):
     conda_store = create_worker().conda_store
     build = api.get_build(conda_store.db, build_id)
     build_conda_docker(conda_store, build)
     conda_store.session_factory.remove()
+
 
 @task(name="task_update_environment_build")
 def task_update_environment_build(environment_id):

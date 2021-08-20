@@ -65,7 +65,7 @@ jobs:
       - name: Cypress run
         uses: cypress-io/github-action@v2
         env:
-          CYPRESS_BASE_URL: https://localhost:5000/
+          CYPRESS_BASE_URL: http://localhost:5000/
         with:
           working-directory: tests/e2e/
       - name: Save Cypress screenshots and videos
