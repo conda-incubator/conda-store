@@ -58,7 +58,7 @@ class CondaStore(LoggingConfigurable):
     )
 
     build_artifacts_kept_on_deletion = List(
-        [orm.BuildArtifactType.LOGS, orm.BuildArtifactType.YAML],
+        [orm.BuildArtifactType.LOGS, orm.BuildArtifactType.LOCKFILE, orm.BuildArtifactType.YAML],
         help="artifacts to keep on build deletion",
         config=True,
     )

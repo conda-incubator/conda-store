@@ -4,7 +4,7 @@ import time
 from flask import Blueprint, redirect, Response
 
 from conda_store_server.server.utils import get_conda_store
-from conda_store_server import schema, api
+from conda_store_server import schema, api, orm
 
 
 app_registry = Blueprint("registry", __name__)
@@ -81,25 +81,25 @@ def get_docker_image_manifest(conda_store, image, tag, timeout=10 * 60):
 
     # check that namespace/environment_name exist
     environment = api.get_environment(
-        conda_store.db, environment_name, namespace=namespace
+        conda_store.db, namespace=namespace, name=environment_name
     )
     if environment is None:
         return docker_error_message(schema.DockerRegistryError.NAME_UNKNOWN)
 
     if tag == "latest":
-        # waiting for image to be built by conda-store
-        start_time = time.time()
-        while environment.specification is None:
-            conda_store.db.refresh(environment)
-            time.sleep(10)
-            if time.time() - start_time > timeout:
-                return docker_error_message(schema.DockerRegistryError.MANIFEST_UNKNOWN)
-
-        specification_sha256 = environment.specification.sha256
+        build_key = environment.build.build_key
     else:
-        specification_sha256 = tag
+        build_key = tag
 
-    manifests_key = f"docker/manifest/{environment_name}/{specification_sha256}"
+    # waiting for image to be built by conda-store
+    start_time = time.time()
+    while orm.BuildArtifactType.DOCKER_MANIFEST not in {_.artifact_type for _ in api.get_build_artifact_types(conda_store.db, environment.build.id).all()}:
+        conda_store.db.refresh(environment)
+        time.sleep(10)
+        if time.time() - start_time > timeout:
+            return docker_error_message(schema.DockerRegistryError.MANIFEST_UNKNOWN)
+
+    manifests_key = f"docker/manifest/{build_key}"
     return redirect(conda_store.storage.get_url(manifests_key))
 
 

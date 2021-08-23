@@ -104,6 +104,12 @@ def get_build_lockfile(db, build_id):
     )
 
 
+def get_build_artifact_types(db, build_id):
+    return db.query(orm.BuildArtifact.artifact_type).filter(
+        orm.BuildArtifact.build_id == build_id
+    ).distinct()
+
+
 def list_build_artifacts(
     db,
     limit: int = 25,

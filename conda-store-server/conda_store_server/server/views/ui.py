@@ -10,7 +10,7 @@ import pydantic
 import yaml
 
 from conda_store_server import api, schema
-from conda_store_server.server.utils import get_conda_store, get_auth
+from conda_store_server.server.utils import get_conda_store, get_auth, get_server
 from conda_store_server.server.auth import Permissions
 from conda_store_server.conda import conda_platform
 
@@ -60,12 +60,14 @@ def ui_create_get_environment():
 @app_ui.route("/", methods=["GET"])
 def ui_list_environments():
     conda_store = get_conda_store()
+    server = get_server()
     auth = get_auth()
 
     orm_environments = auth.filter_environments(api.list_environments(conda_store.db))
 
     context = {
         "environments": orm_environments.all(),
+        "registry_external_url": server.registry_external_url,
         "entity": auth.authenticate_request(),
     }
 
@@ -135,6 +137,7 @@ def ui_edit_environment(namespace, name):
 @app_ui.route("/build/<build_id>/", methods=["GET"])
 def ui_get_build(build_id):
     conda_store = get_conda_store()
+    server = get_server()
     auth = get_auth()
 
     build = api.get_build(conda_store.db, build_id)
@@ -150,8 +153,13 @@ def ui_get_build(build_id):
         require=True,
     )
 
+    build_artifact_types = api.get_build_artifact_types(
+        conda_store.db, build.id)
+
     context = {
         "build": build,
+        "build_artifact_types": [_.artifact_type.value for _ in build_artifact_types.all()],
+        "registry_external_url": server.registry_external_url,
         "entity": auth.authenticate_request(),
         "platform": conda_platform(),
         "spec": yaml.dump(build.specification.spec),
