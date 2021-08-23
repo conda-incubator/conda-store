@@ -51,7 +51,7 @@ setup(
             "flake8",
             "sphinx",
             "recommonmark",
-            "sphinx_rtd_theme",
+            "pydata-sphinx-theme",
         ],
     },
     entry_points={
