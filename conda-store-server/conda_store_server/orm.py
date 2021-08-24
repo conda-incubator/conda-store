@@ -17,6 +17,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import sessionmaker, relationship, scoped_session
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import create_engine
 
 from conda_store_server import utils
@@ -109,6 +110,8 @@ class Build(Base):
     ended_on = Column(DateTime, default=None)
     deleted_on = Column(DateTime, default=None)
 
+    build_artifacts = relationship('BuildArtifact', back_populates='build')
+
     def build_path(self, store_directory):
         store_path = os.path.abspath(store_directory)
         return os.path.join(store_path, self.build_key)
@@ -131,6 +134,13 @@ class Build(Base):
         datetime_format = "%Y%m%d-%H%M%S-%f"
         return f"{self.specification.sha256}-{self.scheduled_on.strftime(datetime_format)}-{self.id}-{self.specification.name}"
 
+    @staticmethod
+    def parse_build_key(key):
+        parts = key.split('-')
+        if len(parts) < 5:
+            return None
+        return int(parts[4])  # build_id
+
     @property
     def log_key(self):
         return f"logs/{self.build_key}.log"
@@ -150,6 +160,22 @@ class Build(Base):
     def docker_blob_key(self, blob_hash):
         return f"docker/blobs/{blob_hash}"
 
+    @hybrid_property
+    def has_lockfile(self):
+        return any(artifact.artifact_type == BuildArtifactType.LOCKFILE for artifact in self.build_artifacts)
+
+    @hybrid_property
+    def has_yaml(self):
+        return any(artifact.artifact_type == BuildArtifactType.YAML for artifact in self.build_artifacts)
+
+    @hybrid_property
+    def has_conda_pack(self):
+        return any(artifact.artifact_type == BuildArtifactType.CONDA_PACK for artifact in self.build_artifacts)
+
+    @hybrid_property
+    def has_docker_manifest(self):
+        return any(artifact.artifact_type == BuildArtifactType.DOCKER_MANIFEST for artifact in self.build_artifacts)
+
 
 class BuildArtifact(Base):
     """Artifacts of a given build"""
@@ -159,7 +185,7 @@ class BuildArtifact(Base):
     id = Column(Integer, primary_key=True)
 
     build_id = Column(Integer, ForeignKey("build.id"))
-    build = relationship(Build)
+    build = relationship(Build, back_populates='build_artifacts')
 
     artifact_type = Column(Enum(BuildArtifactType), nullable=False)
 

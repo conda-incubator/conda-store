@@ -11,10 +11,16 @@
             <a href="{{ url_for('ui.ui_get_environment', namespace=environment.namespace.name, name=environment.name) }}">{{ environment.namespace.name }}/{{ environment.name }}</a>
             <span class="badge badge-light">{{ (environment.build.size or 0) | filesizeformat(true) }}</span>
         </h5>
-        {% if environment.build.status.value == 'COMPLETED' %}
+        {% if environment.build.has_yaml %}
         <a class="card-link" href="{{ url_for('ui.api_get_build_yaml', build_id=environment.build_id) }}"><ion-icon name="code-download"></ion-icon> YAML</a>
+        {% endif %}
+        {% if environment.build.has_lockfile %}
         <a class="card-link" href="{{ url_for('ui.api_get_build_lockfile', build_id=environment.build_id) }}"><ion-icon name="lock-closed-outline"></ion-icon> Lockfile</a>
+        {% endif %}
+        {% if environment.build.has_conda_pack %}
         <a class="card-link" href="{{ url_for('ui.api_get_build_archive', build_id=environment.build_id) }}"><ion-icon name="archive-outline"></ion-icon> Archive</a>
+        {% endif %}
+        {% if environment.build.has_docker_manifest %}
         <a class="card-link" onclick="setClipboard('{{ registry_external_url }}/{{ environment.namespace.name }}/{{ environment.name }}:{{ environment.build.build_key }}')" role="button" data-toggle="popover" data-trigger="hover focus" data-content="Click to copy!"><ion-icon name="logo-docker"></ion-icon> Docker</a>
         {% endif %}
     </div>

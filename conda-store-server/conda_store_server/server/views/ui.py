@@ -153,13 +153,8 @@ def ui_get_build(build_id):
         require=True,
     )
 
-    build_artifact_types = api.get_build_artifact_types(conda_store.db, build.id)
-
     context = {
         "build": build,
-        "build_artifact_types": [
-            _.artifact_type.value for _ in build_artifact_types.all()
-        ],
         "registry_external_url": server.registry_external_url,
         "entity": auth.authenticate_request(),
         "platform": conda_platform(),

@@ -88,18 +88,25 @@ def get_docker_image_manifest(conda_store, image, tag, timeout=10 * 60):
 
     if tag == "latest":
         build_key = environment.build.build_key
+    elif tag.startswith('sha256:'):
+        # looking for sha256 of docker manifest
+        manifests_key = f"docker/manifest/{tag}"
+        return redirect(conda_store.storage.get_url(manifests_key))
     else:
         build_key = tag
 
+    build_id = orm.Build.parse_build_key(build_key)
+    if build_id is None:
+        return docker_error_message(schema.DockerRegistryError.MANIFEST_UNKNOWN)
+
+    build = api.get_build(conda_store.db, build_id)
+    if build is None:
+        return docker_error_message(schema.DockerRegistryError.MANIFEST_UNKNOWN)
+
     # waiting for image to be built by conda-store
     start_time = time.time()
-    while orm.BuildArtifactType.DOCKER_MANIFEST not in {
-        _.artifact_type
-        for _ in api.get_build_artifact_types(
-            conda_store.db, environment.build.id
-        ).all()
-    }:
-        conda_store.db.refresh(environment)
+    while not build.has_docker_manifest:
+        conda_store.db.refresh(build)
         time.sleep(10)
         if time.time() - start_time > timeout:
             return docker_error_message(schema.DockerRegistryError.MANIFEST_UNKNOWN)
