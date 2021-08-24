@@ -1,7 +1,7 @@
 import os
 import datetime
 
-from celery import Celery
+from celery import Celery, group
 from traitlets import Type, Unicode, Integer, List, default
 from traitlets.config import LoggingConfigurable
 
@@ -54,6 +54,17 @@ class CondaStore(LoggingConfigurable):
 
     celery_broker_url = Unicode(
         help="broker url to use for celery tasks",
+        config=True,
+    )
+
+    build_artifacts = List(
+        [
+            orm.BuildArtifactType.LOCKFILE,
+            orm.BuildArtifactType.YAML,
+            orm.BuildArtifactType.CONDA_PACK,
+            orm.BuildArtifactType.DOCKER_MANIFEST,
+        ],
+        help="artifacts to build in conda-store. By default all of the artifacts",
         config=True,
     )
 
@@ -269,13 +280,19 @@ class CondaStore(LoggingConfigurable):
         # must import tasks after a celery app has been initialized
         from conda_store_server.worker import tasks
 
+        artifact_tasks = []
+        if orm.BuildArtifactType.YAML in self.build_artifacts:
+            artifact_tasks.append(tasks.task_build_conda_env_export.si(build.id))
+        if orm.BuildArtifactType.CONDA_PACK in self.build_artifacts:
+            artifact_tasks.append(tasks.task_build_conda_pack.si(build.id))
+        if orm.BuildArtifactType.DOCKER_MANIFEST in self.build_artifacts:
+            artifact_tasks.append(tasks.task_build_conda_docker.si(build.id))
+
         (
             tasks.task_update_storage_metrics.si()
             | tasks.task_update_conda_channels.si()
             | tasks.task_build_conda_environment.si(build.id)
-            | tasks.task_build_conda_env_export.si(build.id)
-            | tasks.task_build_conda_pack.si(build.id)
-            | tasks.task_build_conda_docker.si(build.id)
+            | group(*artifact_tasks)
             | tasks.task_update_storage_metrics.si()
         ).apply_async()
 
