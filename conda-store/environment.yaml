@@ -5,6 +5,7 @@ dependencies:
   - pip
   - jupyterhub
   - jupyterlab>=3.0.0
+  - nb_conda_kernels
   - yarn
   - pip:
     - https://github.com/yuvipanda/jupyter-launcher-shortcuts/archive/refs/heads/master.zip

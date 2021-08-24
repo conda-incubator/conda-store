@@ -2,34 +2,36 @@ version: "2"
 
 services:
   conda-store-worker:
-    build: conda-store-server
+    build: ../../conda-store-server
     depends_on:
       - "postgres"
       - "minio"
     volumes:
-      - ./tests/assets/environments:/opt/environments:ro
-      - ./tests/assets/conda_store_config.py:/opt/conda_store/conda_store_config.py:ro
+      - ./data:/opt/conda-store/
+      - ./assets/conda_store_config.py:/etc/conda-store/conda_store_config.py:ro
     platform: linux/amd64
-    command: ["wait-for-it", "conda-store-server:5000", "-t", "60", '--', 'conda-store-worker', '--config', '/opt/conda_store/conda_store_config.py']
+    command: ["wait-for-it", "conda-store-server:5000", "-t", "60", '--', 'conda-store-worker', '--config', '/etc/conda-store/conda_store_config.py']
 
   conda-store-server:
-    build: conda-store-server
+    build: ../../conda-store-server
     depends_on:
       - "postgres"
       - "minio"
     volumes:
-      - ./tests/assets/conda_store_config.py:/opt/conda_store/conda_store_config.py:ro
+      - ./assets/conda_store_config.py:/etc/conda-store/conda_store_config.py:ro
     platform: linux/amd64
-    command: ["wait-for-it", "postgres:5432", '--', 'conda-store-server', '--config', '/opt/conda_store/conda_store_config.py']
+    command: ["wait-for-it", "postgres:5432", '--', 'conda-store-server', '--config', '/etc/conda-store/conda_store_config.py']
     ports:
       - "5000:5000"
 
   jupyterhub:
-    build: conda-store
+    build: ../../conda-store
     user: "1000:1000"
     volumes:
-      - ./tests/assets/jupyter_notebook_config.py:/etc/jupyter/jupyter_notebook_config.py
-      - ./tests/assets/jupyterhub_config.py:/opt/jupyterhub/jupyterhub_config.py:ro
+      - ./data:/opt/conda-store
+      - ./assets/condarc:/etc/conda/condarc:ro
+      - ./assets/jupyter_notebook_config.py:/etc/jupyter/jupyter_notebook_config.py:ro
+      - ./assets/jupyterhub_config.py:/opt/jupyterhub/jupyterhub_config.py:ro
     command: ['/opt/conda/envs/conda-store/bin/jupyterhub', '--config', '/opt/jupyterhub/jupyterhub_config.py']
     ports:
       - "8000:8000"
@@ -46,8 +48,6 @@ services:
 
   postgres:
     image: postgres:13
-    # TODO: need to properly fix this without this hack
-    # reuse sqlalchemy connections
     command: postgres -c 'max_connections=200'
     ports:
       - 5432:5432
