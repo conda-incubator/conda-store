@@ -22,7 +22,9 @@ from sqlalchemy import or_, and_
 from conda_store_server import schema, orm
 
 
-ARN_ALLOWED_REGEX = re.compile(r"^([A-Za-z0-9|<>=\.\_\-\*]+)/([A-Za-z0-9|<>=\.\_\-\*]+)$")
+ARN_ALLOWED_REGEX = re.compile(
+    r"^([A-Za-z0-9|<>=\.\_\-\*]+)/([A-Za-z0-9|<>=\.\_\-\*]+)$"
+)
 
 
 class Permissions(enum.Enum):
