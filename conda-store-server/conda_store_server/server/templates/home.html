@@ -15,7 +15,7 @@
         <a class="card-link" href="{{ url_for('ui.api_get_build_yaml', build_id=environment.build_id) }}"><ion-icon name="code-download"></ion-icon> YAML</a>
         <a class="card-link" href="{{ url_for('ui.api_get_build_lockfile', build_id=environment.build_id) }}"><ion-icon name="lock-closed-outline"></ion-icon> Lockfile</a>
         <a class="card-link" href="{{ url_for('ui.api_get_build_archive', build_id=environment.build_id) }}"><ion-icon name="archive-outline"></ion-icon> Archive</a>
-        <a class="card-link" onclick="setClipboard('{{ url_for('ui.ui_list_environments', _external=True) }}{{ environment.namespace.name }}/{{ environment.name }}:{{ environment.build.specification.sha256 }}')" role="button" data-toggle="popover" data-trigger="hover focus" data-content="Click to copy!"><ion-icon name="logo-docker"></ion-icon> Docker</a>
+        <a class="card-link" onclick="setClipboard('{{ registry_external_url }}/{{ environment.namespace.name }}/{{ environment.name }}:{{ environment.build.build_key }}')" role="button" data-toggle="popover" data-trigger="hover focus" data-content="Click to copy!"><ion-icon name="logo-docker"></ion-icon> Docker</a>
         {% endif %}
     </div>
 </div>

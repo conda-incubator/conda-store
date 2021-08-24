@@ -45,6 +45,12 @@ class CondaStoreServer(Application):
 
     port = Integer(5000, help="port for conda-store server", config=True)
 
+    registry_external_url = Unicode(
+        "localhost:5000",
+        help='external hostname and port to access docker registry cannot contain "http://" or "https://"',
+        config=True,
+    )
+
     url_prefix = Unicode(
         "/",
         help="the prefix URL (subdirectory) for the entire application; "
@@ -87,7 +93,8 @@ class CondaStoreServer(Application):
             app.register_blueprint(views.app_api, url_prefix=self.url_prefix)
 
         if self.enable_registry:
-            app.register_blueprint(views.app_registry, url_prefix=self.url_prefix)
+            # docker registry api specification does not support a url_prefix
+            app.register_blueprint(views.app_registry)
 
         if self.enable_ui:
             app.register_blueprint(views.app_ui, url_prefix=self.url_prefix)
@@ -96,6 +103,7 @@ class CondaStoreServer(Application):
             app.register_blueprint(views.app_metrics, url_prefix=self.url_prefix)
 
         app.conda_store = CondaStore(parent=self, log=self.log)
+        app.server = self
         app.authentication = self.authentication_class(parent=self, log=self.log)
 
         @app.after_request

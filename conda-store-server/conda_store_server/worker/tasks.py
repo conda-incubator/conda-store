@@ -5,7 +5,7 @@ from celery.decorators import task
 import yaml
 
 from conda_store_server.worker.utils import create_worker
-from conda_store_server import api, environment, utils
+from conda_store_server import api, environment, utils, orm
 from conda_store_server.build import (
     build_conda_environment,
     build_conda_env_export,
@@ -101,14 +101,6 @@ def task_delete_build(build_id):
     conda_store = create_worker().conda_store
     build = api.get_build(conda_store.db, build_id)
 
-    conda_prefix = build.build_path(conda_store.store_directory)
-
-    # be REALLY sure this is a directory within store directory
-    if conda_prefix.startswith(conda_store.store_directory) and os.path.isdir(
-        conda_prefix
-    ):
-        shutil.rmtree(conda_prefix)
-
     conda_store.log.error("deleting artifacts")
     for build_artifact in api.list_build_artifacts(
         conda_store.db,
@@ -116,8 +108,20 @@ def task_delete_build(build_id):
         build_id=build_id,
         excluded_artifact_types=conda_store.build_artifacts_kept_on_deletion,
     ):
-        conda_store.log.error(f"deleting {build_artifact.key}")
-        conda_store.storage.delete(conda_store.db, build_id, build_artifact.key)
+        if build_artifact.artifact_type == orm.BuildArtifactType.DIRECTORY:
+            # ignore key
+            conda_prefix = build.build_path(conda_store.store_directory)
+            # be REALLY sure this is a directory within store directory
+            if conda_prefix.startswith(conda_store.store_directory) and os.path.isdir(
+                conda_prefix
+            ):
+                shutil.rmtree(conda_prefix)
+                conda_store.db.delete(build_artifact)
+        elif build_artifact.artifact_type == orm.BuildArtifactType.LOCKFILE:
+            pass
+        else:
+            conda_store.log.error(f"deleting {build_artifact.key}")
+            conda_store.storage.delete(conda_store.db, build_id, build_artifact.key)
 
     conda_store.db.commit()
     conda_store.session_factory.remove()

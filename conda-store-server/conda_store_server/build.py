@@ -87,6 +87,18 @@ def set_build_completed(conda_store, build, logs, packages):
     build.status = orm.BuildStatus.COMPLETED
     build.ended_on = datetime.datetime.utcnow()
 
+    # add records for lockfile and directory build artifacts
+    lockfile_build_artifact = orm.BuildArtifact(
+        build_id=build.id, artifact_type=orm.BuildArtifactType.LOCKFILE, key=""
+    )
+    directory_build_artifact = orm.BuildArtifact(
+        build_id=build.id,
+        artifact_type=orm.BuildArtifactType.DIRECTORY,
+        key=build.build_path(conda_store.store_directory),
+    )
+    conda_store.db.add(lockfile_build_artifact)
+    conda_store.db.add(directory_build_artifact)
+
     environment = (
         conda_store.db.query(orm.Environment)
         .filter(orm.Environment.name == build.specification.name)
@@ -259,7 +271,7 @@ def build_conda_docker(conda_store, build):
             build.docker_blob_key(content_compressed_hash),
             content_compressed,
             content_type="application/gzip",
-            artifact_type=orm.BuildArtifactType.DOCKER,
+            artifact_type=orm.BuildArtifactType.DOCKER_BLOB,
         )
 
         docker_layer = schema.DockerManifestLayer(
@@ -286,16 +298,7 @@ def build_conda_docker(conda_store, build):
         build.docker_blob_key(docker_config_hash),
         docker_config_content,
         content_type="application/vnd.docker.container.image.v1+json",
-        artifact_type=orm.BuildArtifactType.DOCKER,
-    )
-
-    conda_store.storage.set(
-        conda_store.db,
-        build.id,
-        build.docker_manifest_key,
-        docker_manifest_content,
-        content_type="application/vnd.docker.distribution.manifest.v2+json",
-        artifact_type=orm.BuildArtifactType.DOCKER,
+        artifact_type=orm.BuildArtifactType.DOCKER_BLOB,
     )
 
     # docker likes to have a sha256 key version of the manifest this
@@ -304,10 +307,19 @@ def build_conda_docker(conda_store, build):
     conda_store.storage.set(
         conda_store.db,
         build.id,
-        f"docker/manifest/{build.specification.name}/sha256:{docker_manifest_hash}",
+        f"docker/manifest/sha256:{docker_manifest_hash}",
         docker_manifest_content,
         content_type="application/vnd.docker.distribution.manifest.v2+json",
-        artifact_type=orm.BuildArtifactType.DOCKER,
+        artifact_type=orm.BuildArtifactType.DOCKER_BLOB,
+    )
+
+    conda_store.storage.set(
+        conda_store.db,
+        build.id,
+        build.docker_manifest_key,
+        docker_manifest_content,
+        content_type="application/vnd.docker.distribution.manifest.v2+json",
+        artifact_type=orm.BuildArtifactType.DOCKER_MANIFEST,
     )
 
     conda_store.log.info(

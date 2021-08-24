@@ -28,10 +28,13 @@ Base = declarative_base()
 
 
 class BuildArtifactType(enum.Enum):
+    DIRECTORY = "DIRECTORY"
+    LOCKFILE = "LOCKFILE"
     LOGS = "LOGS"
     YAML = "YAML"
     CONDA_PACK = "CONDA_PACK"
-    DOCKER = "DOCKER"
+    DOCKER_BLOB = "DOCKER_BLOB"
+    DOCKER_MANIFEST = "DOCKER_MANIFEST"
 
 
 class BuildStatus(enum.Enum):
