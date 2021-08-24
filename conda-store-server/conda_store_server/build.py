@@ -89,10 +89,13 @@ def set_build_completed(conda_store, build, logs, packages):
 
     # add records for lockfile and directory build artifacts
     lockfile_build_artifact = orm.BuildArtifact(
-        build_id=build.id, artifact_type=orm.BuildArtifactType.LOCKFILE, key="")
+        build_id=build.id, artifact_type=orm.BuildArtifactType.LOCKFILE, key=""
+    )
     directory_build_artifact = orm.BuildArtifact(
-        build_id=build.id, artifact_type=orm.BuildArtifactType.DIRECTORY,
-        key=build.build_path(conda_store.store_directory))
+        build_id=build.id,
+        artifact_type=orm.BuildArtifactType.DIRECTORY,
+        key=build.build_path(conda_store.store_directory),
+    )
     conda_store.db.add(lockfile_build_artifact)
     conda_store.db.add(directory_build_artifact)
 

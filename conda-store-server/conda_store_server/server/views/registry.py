@@ -93,7 +93,12 @@ def get_docker_image_manifest(conda_store, image, tag, timeout=10 * 60):
 
     # waiting for image to be built by conda-store
     start_time = time.time()
-    while orm.BuildArtifactType.DOCKER_MANIFEST not in {_.artifact_type for _ in api.get_build_artifact_types(conda_store.db, environment.build.id).all()}:
+    while orm.BuildArtifactType.DOCKER_MANIFEST not in {
+        _.artifact_type
+        for _ in api.get_build_artifact_types(
+            conda_store.db, environment.build.id
+        ).all()
+    }:
         conda_store.db.refresh(environment)
         time.sleep(10)
         if time.time() - start_time > timeout:

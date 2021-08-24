@@ -46,7 +46,7 @@ class CondaStoreServer(Application):
     port = Integer(5000, help="port for conda-store server", config=True)
 
     registry_external_url = Unicode(
-        'localhost:5000',
+        "localhost:5000",
         help='external hostname and port to access docker registry cannot contain "http://" or "https://"',
         config=True,
     )
