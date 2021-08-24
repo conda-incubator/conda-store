@@ -22,7 +22,7 @@ from sqlalchemy import or_, and_
 from conda_store_server import schema, orm
 
 
-ARN_ALLOWED_REGEX = re.compile(r"^([A-Za-z\_\-\*]+)/([A-Za-z\_\-\*]+)$")
+ARN_ALLOWED_REGEX = re.compile(r"^([A-Za-z0-9|<>=\.\_\-\*]+)/([A-Za-z0-9|<>=\.\_\-\*]+)$")
 
 
 class Permissions(enum.Enum):
@@ -104,7 +104,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
         if not ARN_ALLOWED_REGEX.match(arn):
             raise ValueError(f"invalid arn={arn}")
 
-        regex_arn = "^" + re.sub(r"\*", r"[A-Za-z_\-]*", arn) + "$"
+        regex_arn = "^" + re.sub(r"\*", r"[A-Za-z0-9_\-\.|<>=]*", arn) + "$"
         return re.compile(regex_arn)
 
     @staticmethod
