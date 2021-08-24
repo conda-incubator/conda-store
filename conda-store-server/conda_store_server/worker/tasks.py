@@ -1,8 +1,10 @@
 import shutil
 import os
+import random
 
 from celery.decorators import task
 import yaml
+from sqlalchemy.exc import IntegrityError
 
 from conda_store_server.worker.utils import create_worker
 from conda_store_server import api, environment, utils, orm
@@ -38,16 +40,25 @@ def task_update_storage_metrics():
     conda_store.session_factory.remove()
 
 
-@task(name="task_update_conda_channels")
-def task_update_conda_channels():
+@task(bind=True, name="task_update_conda_channels")
+def task_update_conda_channels(self):
     conda_store = create_worker().conda_store
 
-    conda_store.ensure_conda_channels()
+    try:
+        conda_store.ensure_conda_channels()
 
-    for channel in api.list_conda_channels(conda_store.db):
-        channel.update_packages(conda_store.db)
-
-    conda_store.session_factory.remove()
+        for channel in api.list_conda_channels(conda_store.db):
+            channel.update_packages(conda_store.db)
+    except IntegrityError as exc:
+        # there is a persistent error on startup
+        # that when the conda channels are out of data
+        # and two tasks try to add the same packages
+        # it runs into integrity errors
+        # the solution is to let one of them finish
+        # and the other try again at a later time
+        self.retry(exc=exc, countdown=random.randrange(15, 30))
+    finally:
+        conda_store.session_factory.remove()
 
 
 @task(name="task_build_conda_environment")
