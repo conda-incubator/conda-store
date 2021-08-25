@@ -268,6 +268,10 @@ to the docker registry api specification not supporting url prefixes.
 `CondaStoreServer.authentication_class` is the authentication class
 for the web server to use. Default is `DummyAuthentication`.
 
+`CondaStoreServer.secret_key` is a secret key needed for some
+authentication methods, session storage, etc. TODO: remove at some
+point since also used in `AuthenticationBackend`.
+
 ### conda_store_server.worker.app.CondaStoreWorker
 
 `CondaStoreWorker.log_level` is the level for all server
@@ -277,3 +281,4 @@ logging. Default is `INFO`. Common options are `DEBUG`, `INFO`,
 `CondaStoreWorker.watch_paths` is a list of paths for conda store to
 watch for changes to directories of `environment.yaml` files or a
 single filename to watch.
+

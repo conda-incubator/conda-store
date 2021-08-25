@@ -70,6 +70,12 @@ class CondaStoreServer(Application):
         config=True,
     )
 
+    secret_key = Unicode(
+        "super_secret_key",
+        config=True,
+        help="A secret key needed for some authentication methods, session storage, etc.",
+    )
+
     def initialize(self, *args, **kwargs):
         super().initialize(*args, **kwargs)
         self.load_config_file(self.config_file)
@@ -81,6 +87,7 @@ class CondaStoreServer(Application):
             app,
             resources={f"{cors_prefix}/api/v1/*": {"origins": "*"}},
         )
+        app.secret_key = self.secret_key
 
         if self.enable_api:
             app.register_blueprint(views.app_api, url_prefix=self.url_prefix)
