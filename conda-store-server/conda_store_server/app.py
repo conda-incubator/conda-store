@@ -4,6 +4,7 @@ import datetime
 from celery import Celery, group
 from traitlets import Type, Unicode, Integer, List, default
 from traitlets.config import LoggingConfigurable
+from sqlalchemy.pool import NullPool
 
 from conda_store_server import orm, utils, storage, schema, api, conda
 
@@ -124,7 +125,12 @@ class CondaStore(LoggingConfigurable):
         if hasattr(self, "_session_factory"):
             return self._session_factory
 
-        self._session_factory = orm.new_session_factory(url=self.database_url)
+        # https://docs.sqlalchemy.org/en/14/core/pooling.html#using-connection-pools-with-multiprocessing-or-os-fork
+        # This is the most simplistic, one shot system that prevents
+        # the Engine from using any connection more than once
+        self._session_factory = orm.new_session_factory(
+            url=self.database_url, poolclass=NullPool
+        )
         return self._session_factory
 
     @property

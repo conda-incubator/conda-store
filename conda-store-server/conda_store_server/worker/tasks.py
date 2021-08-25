@@ -3,10 +3,11 @@ import os
 import random
 
 from celery.decorators import task
+from celery import Task
 import yaml
 from sqlalchemy.exc import IntegrityError
 
-from conda_store_server.worker.utils import create_worker
+from conda_store_server.worker.app import CondaStoreWorker
 from conda_store_server import api, environment, utils, orm
 from conda_store_server.build import (
     build_conda_environment,
@@ -16,34 +17,44 @@ from conda_store_server.build import (
 )
 
 
-@task(name="task_watch_paths")
-def task_watch_paths():
-    worker = create_worker()
+class WorkerTask(Task):
+    _worker = None
 
-    environment_paths = environment.discover_environments(worker.watch_paths)
+    def after_return(self, *args, **kwargs):
+        if self._worker is not None:
+            self._worker.conda_store.session_factory.remove()
+
+    @property
+    def worker(self):
+        if self._worker is None:
+            self._worker = CondaStoreWorker()
+            self._worker.initialize()
+        return self._worker
+
+
+@task(base=WorkerTask, name="task_watch_paths", bind=True)
+def task_watch_paths(self):
+    conda_store = self.worker.conda_store
+
+    environment_paths = environment.discover_environments(self.worker.watch_paths)
     for path in environment_paths:
         with open(path) as f:
-            worker.conda_store.register_environment(
+            conda_store.register_environment(
                 specification=yaml.safe_load(f), namespace="filesystem"
             )
 
-    worker.conda_store.session_factory.remove()
 
-
-@task(name="task_update_storage_metrics")
-def task_update_storage_metrics():
-    conda_store = create_worker().conda_store
+@task(base=WorkerTask, name="task_update_storage_metrics", bind=True)
+def task_update_storage_metrics(self):
+    conda_store = self.worker.conda_store
     conda_store.configuration.update_storage_metrics(
         conda_store.db, conda_store.store_directory
     )
 
-    conda_store.session_factory.remove()
 
-
-@task(bind=True, name="task_update_conda_channels")
+@task(base=WorkerTask, name="task_update_conda_channels", bind=True)
 def task_update_conda_channels(self):
-    conda_store = create_worker().conda_store
-
+    conda_store = self.worker.conda_store
     try:
         conda_store.ensure_conda_channels()
 
@@ -57,45 +68,39 @@ def task_update_conda_channels(self):
         # the solution is to let one of them finish
         # and the other try again at a later time
         self.retry(exc=exc, countdown=random.randrange(15, 30))
-    finally:
-        conda_store.session_factory.remove()
 
 
-@task(name="task_build_conda_environment")
-def task_build_conda_environment(build_id):
-    conda_store = create_worker().conda_store
+@task(base=WorkerTask, name="task_build_conda_environment", bind=True)
+def task_build_conda_environment(self, build_id):
+    conda_store = self.worker.conda_store
     build = api.get_build(conda_store.db, build_id)
     build_conda_environment(conda_store, build)
-    conda_store.session_factory.remove()
 
 
-@task(name="task_build_conda_env_export")
-def task_build_conda_env_export(build_id):
-    conda_store = create_worker().conda_store
+@task(base=WorkerTask, name="task_build_conda_env_export", bind=True)
+def task_build_conda_env_export(self, build_id):
+    conda_store = self.worker.conda_store
     build = api.get_build(conda_store.db, build_id)
     build_conda_env_export(conda_store, build)
-    conda_store.session_factory.remove()
 
 
-@task(name="task_build_conda_pack")
-def task_build_conda_pack(build_id):
-    conda_store = create_worker().conda_store
+@task(base=WorkerTask, name="task_build_conda_pack", bind=True)
+def task_build_conda_pack(self, build_id):
+    conda_store = self.worker.conda_store
     build = api.get_build(conda_store.db, build_id)
     build_conda_pack(conda_store, build)
-    conda_store.session_factory.remove()
 
 
-@task(name="task_build_conda_docker")
-def task_build_conda_docker(build_id):
-    conda_store = create_worker().conda_store
+@task(base=WorkerTask, name="task_build_conda_docker", bind=True)
+def task_build_conda_docker(self, build_id):
+    conda_store = self.worker.conda_store
     build = api.get_build(conda_store.db, build_id)
     build_conda_docker(conda_store, build)
-    conda_store.session_factory.remove()
 
 
-@task(name="task_update_environment_build")
-def task_update_environment_build(environment_id):
-    conda_store = create_worker().conda_store
+@task(base=WorkerTask, name="task_update_environment_build", bind=True)
+def task_update_environment_build(self, environment_id):
+    conda_store = self.worker.conda_store
     environment = api.get_environment(conda_store.db, id=environment_id)
 
     conda_prefix = environment.build.build_path(conda_store.store_directory)
@@ -104,12 +109,11 @@ def task_update_environment_build(environment_id):
     )
 
     utils.symlink(conda_prefix, environment_prefix)
-    conda_store.session_factory.remove()
 
 
-@task(name="task_delete_build")
-def task_delete_build(build_id):
-    conda_store = create_worker().conda_store
+@task(base=WorkerTask, name="task_delete_build", bind=True)
+def task_delete_build(self, build_id):
+    conda_store = self.worker.conda_store
     build = api.get_build(conda_store.db, build_id)
 
     conda_store.log.error("deleting artifacts")
@@ -135,4 +139,3 @@ def task_delete_build(build_id):
             conda_store.storage.delete(conda_store.db, build_id, build_artifact.key)
 
     conda_store.db.commit()
-    conda_store.session_factory.remove()
