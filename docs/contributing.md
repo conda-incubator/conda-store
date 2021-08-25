@@ -19,22 +19,70 @@ The following resources will be available:
   - conda-store web server running at http://localhost:5000
   - minio s3 running at http://localhost:9000 with username `admin` and password `password`
   - postgres running at localhost:5432 with username `admin` and password `password` database `conda-store`
-  - `data` directory in repository containing state:
-     - `data/minio` minio state
-     - `data/postgres` postgresql state
-     - `data/conda-store` conda-store state
+  - jupyterhub running at http://localhost:8000 with any username and password `test`
 
-### Note about Response objects
+On a fast machine this deployment should only take 10 or so seconds
+assuming the docker images have been partially built before.
 
-We use both `flask` and `requests`, which both return `response` objects. In case of ambiguity,
-we prefix them like `f_response` and `r_response`, respectively.
+### REST API
+
+#### Status
+
+ - `GET /api/v1/` :: get status of conda-store
+
+#### Namespace
+
+ - `GET /api/v1/namespace/` :: list namespaces
+
+#### Environments
+
+ - `GET /api/v1/environment/` :: list environments
+
+ - `GET /api/v1/environment/<namespace>/<name>/` :: get environment
+
+ - `PUT /api/v1/environment/<namespace>/<name>/` :: update environment to given build id
+ 
+### Specifications
+
+ - `POST /api/v1/environment/` :: create given environment
+ 
+### Builds
+
+ - `GET /api/v1/build/` :: list builds
+
+ - `GET /api/v1/build/<build_id>/` :: get build
+
+ - `PUT /api/v1/build/<build_id>/` :: trigger new build of given build specification
+
+ - `DELETE /api/v1/build/<build_id>/` :: delete given build
+
+ - `GET /api/v1/build/<build_id>/logs/` :: get build logs
+
+### Packages
+
+ - `GET /api/v1/channel/` :: list channels
+
+### Packages
+
+ - `GET /api/v1/package/` :: list packages
 
 ## Architecture
 
 Conda Store was designed with the idea of scalable enterprise
 management of reproducible conda environments.
 
-![Conda Store architecture diagram](_static/images/conda-store-architecture.png)
+![Conda Store architecture diagram](_static/images/conda-store-architecture-simple.png)
+
+### Configuration
+
+[Traitlets](https://traitlets.readthedocs.io/en/stable/) is used for
+all configuration of conda-store. In the beginning command line
+options were used but eventually we learned that there were too many
+options for the user. Traitlets provides a python configuration file
+that you can use to configure values of the applications. It is used
+for both the server and worker. See
+[tests/assets/conda_store_config.py](https://github.com/Quansight/conda-store/blob/main/tests/assets/conda_store_config.py)
+for a full example.
 
 ### Workers and Server
 
@@ -44,25 +92,38 @@ have the following responsibilities:
  - build Conda pack archives
  - build Conda docker images
  - remove Conda builds
+ - modify symlinks to point current environment to given build
 
-All of the worker logic is in `conda_store/build.py` at the moment but
-will be soon refactored into a task directory.
+All of the worker logic is in `conda_store_server/build.py` and
+`conda_store_server/worker/*.py`. Celery is used for managing tasks so
+you will see the celery tasks defined in
+`conda_store_server/worker/tasks.py` which in turn usually call built
+in `CondaStore` functions in `conda_store_server/app.py` or
+`conda_store_server/build.py`.
  
 The web server has several responsibilities:
  - serve a ui for interacting with conda environments
  - serve a rest api for managing conda environments
  - serve a programmatic docker registry for interesting docker-conda abilities
 
-The web server under `conda_store.server` is broken into several components:
- - ui :: `conda_store/server/views/ui.py`
- - api :: `conda_store/server/views/api.py`
- - registry :: `conda_store/server/views/registry.py`
+The web server is based on
+[Flask](https://flask.palletsprojects.com/en/2.0.x/). Flask was chosen
+due to it being battle tested and that conda-store is not doing any
+special things with the web server. The flask app is defined in
+`conda_store_server.server.app`. There are several components to the server:
+ - ui :: `conda_store_server/server/views/ui.py`
+ - api :: `conda_store_server/server/views/api.py`
+ - registry :: `conda_store_server/server/views/registry.py`
 
 Both the worker and server need a connection to the database and s3
 server. The s3 server is used to store all build artifacts e.g. logs,
 docker layers, and the conda pack tarball. The postgresql database is
 used for managing the tasks for the conda-store workers along with
-powering the conda-store web server ui, api, and docker registry.
+powering the conda-store web server ui, api, and docker
+registry. Optionally a broker can be used for tasks that is not a
+database e.g. a message queue similar to rabbitmq, kafka, etc. It is
+not believed that a full blown message queue will help conda-store with
+performance.
 
 ### Terminology
 
@@ -70,9 +131,13 @@ powering the conda-store web server ui, api, and docker registry.
 
 `conda_environment = f(open("environment.yaml"), datatime.utcnow())` 
 
- - environment :: a pointer to a build of a given specification
- - specification :: a Conda environment.yaml file
- - build :: a attempt of `conda env install -f environment.yaml`
+ - namespace :: a way of providing scopes between environments. This
+   prevents joe's environment named `data-science` from colliding from
+   Alice's environment name `data-science`.
+ - environment :: a pointer to a current build of a given specification
+ - specification :: a [Conda environment.yaml file](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#create-env-file-manually)
+ - build :: a attempt of `conda env install -f environment.yaml` at a
+   given point in time
 
 In order to understand why we have the complicated terminology for an
 environment it helps to understand how conda builds a given
