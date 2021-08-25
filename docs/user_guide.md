@@ -1,4 +1,4 @@
-# Usage
+# User Guide
 
 ## Conda Store UI
 

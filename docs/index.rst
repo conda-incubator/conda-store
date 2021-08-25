@@ -6,10 +6,9 @@ Conda-Store
    :caption: Contents:
 
    installation
-   usage
-   architecture
-   development
-
+   user_guide
+   administration
+   contributing
 
 Indices and tables
 ==================

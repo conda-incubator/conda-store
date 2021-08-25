@@ -1,11 +1,42 @@
-# Architecture
+# Contributing
+
+## Development
+
+The following are needed for development
+
+ - [docker](https://docs.docker.com/engine/install/)
+ - [docker-compose](https://docs.docker.com/compose/install/)
+
+### Docker Compose
+
+To deploy `conda-store` run the following command
+
+```shell
+docker-compose up --build
+```
+
+The following resources will be available:
+  - conda-store web server running at http://localhost:5000
+  - minio s3 running at http://localhost:9000 with username `admin` and password `password`
+  - postgres running at localhost:5432 with username `admin` and password `password` database `conda-store`
+  - `data` directory in repository containing state:
+     - `data/minio` minio state
+     - `data/postgres` postgresql state
+     - `data/conda-store` conda-store state
+
+### Note about Response objects
+
+We use both `flask` and `requests`, which both return `response` objects. In case of ambiguity,
+we prefix them like `f_response` and `r_response`, respectively.
+
+## Architecture
 
 Conda Store was designed with the idea of scalable enterprise
 management of reproducible conda environments.
 
 ![Conda Store architecture diagram](_static/images/conda-store-architecture.png)
 
-## Workers and Server
+### Workers and Server
 
 Conda Store can be broken into two components. The worker(s) which
 have the following responsibilities:
@@ -33,7 +64,7 @@ docker layers, and the conda pack tarball. The postgresql database is
 used for managing the tasks for the conda-store workers along with
 powering the conda-store web server ui, api, and docker registry.
 
-## Terminology
+### Terminology
 
 ![Conda Store terminology](_static/images/conda-store-terminology.png)
 
@@ -47,7 +78,7 @@ In order to understand why we have the complicated terminology for an
 environment it helps to understand how conda builds a given
 environment. 
 
-## Reproducibility of Conda 
+### Reproducibility of Conda 
 
 ```yaml
 name: example
