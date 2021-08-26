@@ -18,7 +18,7 @@ It **manages** conda environments by:
  - provides a web ui to take advantage of many of conda-stores advanced capabilities
 
 It **builds** conda specifications in a scalable manner using `N`
-workers communicating with a database to keep track of queued up
+workers communicating using Celery to keep track of queued up
 environment builds.
 
 It **serves** conda environments via a filesystem, lockfiles,
@@ -28,15 +28,16 @@ optionally with `s3` to actually serve the blobs.
 
 ## Terminology
 
- - An environment is a `name` associated with an environment `specification`.
+ - A `namespace` is a way of scoping environments
 
- - A specification is a conda `yaml` declaration with fields `name`,
+ - An `environment` is a `namespace` and `name` pointing to a particular build
+
+ - A `specification` is a conda environment `yaml` declaration with fields `name`,
    `channels`, and `dependencies` detailed
    [here](https://docs.conda.io/projects/conda-build/en/latest/resources/package-spec.html)
    
- - For each specification conda-build attempts to build the
-   specification. Upon failure conda-store reschedules the build `N`
-   times with exponential backoff.
+ - A `build` is a build (`conda env create -f <specification>`) of a
+   particular specification at a point in time for a given `namespace`
 
 ## Philosophy
 
@@ -64,35 +65,3 @@ bits of each in this work.
 The benefits of this approach is versioning of environments, heavy
 caching, and rollbacks to previous environment states. 
 
-# Development
-
-```shell
-docker-compose up --build
-```
-
-In order for logs and artifacts to be downloaded properly you will
-need to set dns host `minio` -> `localhost`. The easiest way to do
-this is via `/etc/hosts`
-
-```shell
-...
-minio localhost
-...
-```
-
-## Extension Local Testing
-
-This extension for jupyterlab providees kernel management from within
-the Jupyter intereface and ecosystem.
-
-*NOTE*: In nixOS, use `conda-shell` and this method will work.
-
-```shell
-cd conda-store
-conda env update -f environment.yaml
-conda activate conda-store
-pip install .
-jupyter labextension develop . --overwrite
-jlpm run build
-jupyter lab
-```
