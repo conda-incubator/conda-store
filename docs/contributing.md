@@ -7,8 +7,6 @@ The following are needed for development
  - [docker](https://docs.docker.com/engine/install/)
  - [docker-compose](https://docs.docker.com/compose/install/)
 
-### Docker Compose
-
 To deploy `conda-store` run the following command
 
 ```shell
@@ -22,19 +20,57 @@ The following resources will be available:
   - jupyterhub running at http://localhost:8000 with any username and password `test`
 
 On a fast machine this deployment should only take 10 or so seconds
-assuming the docker images have been partially built before.
+assuming the docker images have been partially built before. If you
+are making and changes to conda-store-server and would like to see
+those changes in the deployment. Run.
 
-### REST API
+```shell
+docker-compose down  # not always necissary
+docker-compose up --build
+```
 
-#### Status
+## Documentation
+
+The following are needed for development
+
+ - [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/)
+
+To build the documentation install the development environment via
+conda.
+
+```shell
+conda env create -f conda-store-server/environment-dev.yaml
+conda activate conda-store-server-dev
+```
+
+Then go in the documentation directory `docs` and build the
+documentation.
+
+```shell
+cd docs
+sphinx-build -b html . _build
+```
+
+Then open the documentation via your favorite web browser.
+
+```shell
+firefox _build/index.html
+```
+
+The documentation has been primarily written in markdown as to make it
+easier to contribute to the documentation.
+
+## REST API
+
+### Status
 
  - `GET /api/v1/` :: get status of conda-store
 
-#### Namespace
+### Namespace
 
  - `GET /api/v1/namespace/` :: list namespaces
 
-#### Environments
+### Environments
 
  - `GET /api/v1/environment/` :: list environments
 
