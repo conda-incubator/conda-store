@@ -28,7 +28,6 @@ spec:
       containers:
         - name: conda-store-server
           image: quansight/conda-store:v0.3.0
-          restartPolicy: Always
           args:
             - "conda-store-worker"
             - "--config"
@@ -41,6 +40,7 @@ spec:
               readOnly: true
             - name: storage
               mountPath: "/opt/conda-store/"
+      restartPolicy: Always
       volumes:
         - name: config
           configMap:
