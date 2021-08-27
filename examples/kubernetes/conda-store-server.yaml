@@ -29,7 +29,7 @@ spec:
         - name: conda-store-server
           image: quansight/conda-store:v0.3.0
           args:
-            - "conda-store-server"
+            - "/opt/conda/envs/conda-store-server/bin/conda-store-server"
             - "--config"
             - "/opt/conda-store/conda_store_config.py"
           ports:
