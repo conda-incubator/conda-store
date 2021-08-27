@@ -6,6 +6,9 @@ philosophy of conda-store is to serve identical conda environments in
 as many ways as possible to users and services. Conda-store was
 developed due to a significant need in enterprise architectures.
 
+.. image:: _static/images/conda-store-authenticated.png
+  :alt: Conda Store Homepage
+
 Use Cases
 ---------
 
@@ -87,9 +90,11 @@ tarballs, and soon a docker registry. Tarballs and docker images can
 carry a lot of bandwidth which is why conda-store integrates
 optionally with s3 to actually serve the blobs.
 
+Contents
+========
+
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
 
    installation
    user_guide
