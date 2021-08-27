@@ -1,5 +1,59 @@
 # Administration
 
+## Performance
+
+There are several parts of conda-store to consider for performance. We
+have tried to list them in order of performance impact that may be
+seen. 
+
+### Worker Storage
+
+When conda-store builds a given environment it has to locally install
+the environment in the directory specified in the traitlets
+configuration `CondaStore.store_directroy`. Conda environments consist
+of many small files that are hardlinked. This means that the
+`store_directory` is limited to the number of
+[IOPS](https://en.wikipedia.org/wiki/IOPS) the directory can
+perform. Many cloud providers have high performance storage
+options. These include:
+
+If you do not need to mount the environments via NFS into the
+containers we highly recommend not using NFS and using traditional
+block storage. Not only is it significantly cheaper but the IOPs
+performance will be better as well.
+
+If you want to mount the environments in containers or running VMs NFS
+may be a good option for you. With NFS many cloud providers provide a
+high performance filesystem option at a significant premium in
+cost. Example of these include [gcp
+filestore](https://cloud.google.com/filestore/docs/performance#expected_performance),
+[aws efs](https://aws.amazon.com/efs/features/), and [azure
+files](https://docs.microsoft.com/en-us/azure/storage/files/understanding-billing#provisioning-method). Choosing
+an nfs storage option with bad IOPs will yield long environment
+install times.
+
+### Network Speed
+
+Conda while it does it's best to cache packages will have to reach out
+to download the `repodata.json` along with the packages as well. Thus
+network speeds may be important. Typically cloud environments have
+plenty fast Internet.
+
+### S3 Storage
+
+All build artifacts from conda-store are stored in object storage that
+behaves S3 like. S3 traditionally has great performance if you use the
+cloud provider implementation.
+
+### Celery Broker
+
+Celery is used for sending out tasks for building and deleting
+environment and builds. By default a sqlalchemy database backed
+backend is used. Databases like postgres are quite performant and
+unlikely to be a bottleneck. However if issues arise celery can use
+many [message queue based databases as a
+broker](https://docs.celeryproject.org/en/stable/getting-started/backends-and-brokers/index.html).
+
 ## Configuration
 
 conda-store is configured via

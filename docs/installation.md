@@ -44,6 +44,9 @@ kubectl port-forward service/conda-store-server 5000:5000
 
 Then visit via your web browser http://localhost:5000
 
+For additional configuration options see the [administrative
+guide](./administration.md)
+
 A good test that conda-store is functioning properly is to apply the
 `jupyterlab-conda-store` pod as a quick test. It will cause
 conda-store to build an environment with jupyterlab and numpy. This
