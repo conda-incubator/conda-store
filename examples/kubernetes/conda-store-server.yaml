@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: conda-store-server
 spec:
-  type: NodePort
+  type: ClusterIP
   ports:
   - name: "5000"
     port: 5000
