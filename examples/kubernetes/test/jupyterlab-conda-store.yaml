@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: jupyterlab-conda-store
+spec:
+  template:
+    spec:
+      containers:
+      - name: jupyterlab
+        image: localhost:30500/conda-store-dynamic/jupyterlab/numpy:latest
+        command: ['jupyter', 'lab', '--allow-root']
