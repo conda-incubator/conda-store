@@ -4,5 +4,7 @@
 
 A client library for interacting with a conda-store server. See the
 [documentation](https://conda-store.readthedocs.io/en/latest/) for
-more information. The client library provides a cli and jupyterlab
-extension for interacting with conda environments.
+more information. The client library provides a cli for interacting
+with conda-store.
+
+Currently this part of conda-store is not well developed.
