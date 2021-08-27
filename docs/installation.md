@@ -38,12 +38,27 @@ deployment.
 If your installation worked you should be able to port forward the
 conda store web server.
 
-```
+```shell
 kubectl port-forward service/conda-store-server 5000:5000
 ```
 
 Then visit via your web browser http://localhost:5000
 
+A good test that conda-store is functioning properly is to apply the
+`jupyterlab-conda-store` pod as a quick test. It will cause
+conda-store to build an environment with jupyterlab and numpy. This
+pod is not needed for running conda-store.
+
+```shell
+kubectl apply -f example/kubernetes/test/jupyterlab-conda-store.yaml
+```
+
+If you instead mount a
+[ReadWriteMany](https://kubernetes.io/docs/concepts/storage/persistent-volumes/)
+volume to the container `conda-store-worker` like nfs or
+[efs](https://aws.amazon.com/efs/). You can mount the environments
+built via conda-store and use environments this way. Note that NFS is
+significantly slower when it comes to creating environments.
 
 ## Docker
 
