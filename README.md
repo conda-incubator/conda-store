@@ -6,6 +6,8 @@
 [![Conda](https://img.shields.io/conda/vn/conda-forge/conda-store-server?color=green&label=conda-forge%7Cconda-store-server)](https://anaconda.org/conda-forge/conda-store-server)
 [![Conda](https://img.shields.io/conda/vn/conda-forge/conda-store?color=green&label=conda-forge%7Cconda-store)](https://anaconda.org/conda-forge/conda-store)
 
+![conda store UI](docs/_static/images/conda-store-authenticated.png)
+
 End users think in terms of environments not packages. The core
 philosophy of conda-store is to serve identical conda environments in
 as many ways as possible. Conda Store controls the environment
@@ -26,18 +28,31 @@ tarballs, and soon a docker registry. Tarballs and docker images can
 carry a lot of bandwidth which is why conda-store integrates
 optionally with `s3` to actually serve the blobs.
 
+## Documentation
+
+All documentation can be found on readthedocs including how to develop
+and contribute to the
+project. [conda-store.readthedocs.io](https://conda-store.readthedocs.io).
+
 ## Terminology
 
  - A `namespace` is a way of scoping environments
 
- - An `environment` is a `namespace` and `name` pointing to a particular build
+ - An `environment` is a `namespace` and `name` pointing to a particular `build`
 
  - A `specification` is a conda environment `yaml` declaration with fields `name`,
    `channels`, and `dependencies` detailed
    [here](https://docs.conda.io/projects/conda-build/en/latest/resources/package-spec.html)
    
  - A `build` is a build (`conda env create -f <specification>`) of a
-   particular specification at a point in time for a given `namespace`
+   particular `specification` at a point in time for a given `namespace`
+
+This design has several advantages:
+ - `environments` can be "rolled back" to a given `build` not necessarily the latest
+ - since each `environment` update is a new separate build the
+   environment can be archived and uniquely identified
+
+![conda-store terminology](docs/_static/images/conda-store-terminology.png)
 
 ## Philosophy
 
@@ -65,3 +80,12 @@ bits of each in this work.
 The benefits of this approach is versioning of environments, heavy
 caching, and rollbacks to previous environment states. 
 
+## License
+
+Conda-Store is [BSD-3 LICENSED](./LICENSE)
+
+## Contributing
+
+Our [documentation has all the information needed for
+contributing](https://conda-store.readthedocs.io/en/latest/contributing.html). We
+welcome all contributions.
