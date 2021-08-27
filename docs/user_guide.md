@@ -52,9 +52,51 @@ issues with the format of the environment file.
 
 ![Conda Store Environment](_static/images/conda-store-environment.png)
 
+The environment page a lot of information available to the
+developer. First we see the environment name and namespace along with
+the disk space that the environment consumes. Right below this
+information is the full `environment.yaml` specification of the
+currently activated build. User's can quickly edit this existing
+environment by clicking the `edit` button.
+
+Below this is a list of the current builds of the given
+environment. The environment highlighted in `green` is the current
+build for the given environment that is activate. The environment
+highlighted in `grey` indicates that the build was deleted. Even
+though a build may be deleted the logs, lockfile, and a other build
+information is preserved for the record.
+
+For each build several options are available to the user:
+ - The `checkmark` icon allow the user to switch that given build to the
+   activate build for the environment. This may be useful if you need
+   to rollback a given environment if the new build environment caused
+   some scripts to fail.
+ - The `refresh` icon indicates that a user would like to given
+   environment to built again. Conda `environment.yaml` files are not
+   reproducible thus this will likely lead to an entirely new
+   solve. This is useful when you would like to update all the
+   packages in a given environment without having to change the
+   specification.
+ - The `trashcan icon` marks the given build for
+   deletion. `CondaStore.build_artifacts_kept_on_deletion` allows some
+   artifacts to be kept on deletion. These include logs, yaml, etc.
+
 ### `/build/<build_id>` Builds
 
 ![Conda Store Build](_static/images/conda-store-build-complete.png)
+
+The build page gives all the information about a given build in
+conda-store. At the top we see high level information about the build.
+
+Conda-store downloads conda channel data so that it fully understands
+the packages that exist within a given environment. A list is provided
+to the user of all packages within that environment. 
+
+Below this are all artifacts associated with a given build e.g
+lockfile, pinned yaml specification, conda pack, and docker image.
+
+Finally a log of the given build regardless of whether the build
+successfully built or failed.
 
 ## Docker Registry
 
