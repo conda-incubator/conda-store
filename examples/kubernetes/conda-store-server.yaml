@@ -31,12 +31,12 @@ spec:
           args:
             - "conda-store-server"
             - "--config"
-            - "/opt/conda-store/conda_store_config.py"
+            - "/etc/conda-store/conda_store_config.py"
           ports:
             - containerPort: 5000
           volumeMounts:
             - name: config
-              mountPath: "/opt/conda-store/conda_store_config.py"
+              mountPath: "/etc/conda-store/"
               readOnly: true
       restartPolicy: Always
       volumes:
