@@ -7,6 +7,6 @@ spec:
     spec:
       containers:
       - name: hello
-        image: localhost:30500/default/flask:latest
+        image: localhost:30500/default/test:latest
         command: ['flask', '--help']
       restartPolicy: OnFailure
