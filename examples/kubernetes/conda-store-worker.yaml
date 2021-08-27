@@ -47,4 +47,4 @@ spec:
             name: conda-store-config
         - name: storage
           persistentVolumeClaim:
-            name: conda-store-worker-claim
+            claimName: conda-store-worker-claim
