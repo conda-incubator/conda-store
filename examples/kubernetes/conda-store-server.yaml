@@ -1,8 +1,6 @@
 apiVersion: v1
 kind: Service
 metadata:
-  labels:
-    io.kompose.service: conda-store-server
   name: conda-store-server
 spec:
   type: NodePort
@@ -11,52 +9,37 @@ spec:
     port: 5000
     targetPort: 5000
   selector:
-    io.kompose.service: conda-store-server
+    app: conda-store-server
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  labels:
-    io.kompose.service: conda-store-server
   name: conda-store-server
 spec:
   replicas: 1
   selector:
     matchLabels:
-      io.kompose.service: conda-store-server
-  strategy: {}
+      app: conda-store-server
   template:
     metadata:
       labels:
-        io.kompose.service: conda-store-server
+        app: conda-store-server
     spec:
       containers:
-      - args:
-        - conda-store
-        - serve
-        - -s
-        - /data/store
-        - --port
-        - "5000"
-        env:
-        - name: CONDA_STORE_DB_URL
-          value: postgresql+psycopg2://admin:password@postgres/conda-store
-        - name: CONDA_STORE_S3_ACCESS_KEY
-          value: admin
-        - name: CONDA_STORE_S3_SECRET_KEY
-          value: password
-        - name: CONDA_STORE_S3_ENDPOINT
-          value: minio:9000
-        - name: PATH
-          value: /opt/conda/envs/conda-store/bin:/opt/conda/bin:/opt/conda/condabin:/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-        - name: TZ
-          value: America/New_York
-        image: quansight/conda-store:v0.1.6
-        imagePullPolicy: ""
-        name: conda-store-server
-        ports:
-        - containerPort: 5000
-        resources: {}
-      restartPolicy: Always
-      serviceAccountName: ""
-      volumes: null
+        - name: conda-store-server
+          image: quansight/conda-store:v0.3.0
+          restartPolicy: Always
+          args:
+            - "conda-store-server"
+            - "--config"
+            - "/opt/conda-store/conda_store_config.py"
+          ports:
+            - containerPort: 5000
+          volumeMounts:
+            - name: config
+              mountPath: "/opt/conda-store/conda_store_config.py"
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: conda-store-config

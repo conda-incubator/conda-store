@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    io.kompose.service: postgres
+    app: postgres
   name: postgres
 spec:
   ports:
@@ -10,17 +10,15 @@ spec:
     port: 5432
     targetPort: 5432
   selector:
-    io.kompose.service: postgres
+    app: postgres
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  labels:
-    io.kompose.service: postgres-claim0
-  name: postgres-claim0
+  name: postgres-claim
 spec:
   accessModes:
-  - ReadWriteOnce
+    - ReadWriteOnce
   resources:
     requests:
       storage: 100Mi
@@ -28,49 +26,40 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  labels:
-    io.kompose.service: postgres
   name: postgres
+  labels:
+    app: postgres
 spec:
   replicas: 1
   selector:
     matchLabels:
-      io.kompose.service: postgres
+      app: postgres
   strategy:
     type: Recreate
   template:
     metadata:
-      annotations:
-        kompose.cmd: kompose convert
-        kompose.version: 1.21.0 (HEAD)
-      creationTimestamp: null
       labels:
-        io.kompose.service: postgres
+        app: postgres
     spec:
       containers:
-      - args:
-        - postgres
-        - -c
-        - max_connections=200
-        env:
-        - name: POSTGRES_DB
-          value: conda-store
-        - name: POSTGRES_PASSWORD
-          value: password
-        - name: POSTGRES_USER
-          value: admin
-        image: postgres:13
-        imagePullPolicy: ""
-        name: postgres
-        ports:
-        - containerPort: 5432
-        resources: {}
-        volumeMounts:
-        - mountPath: /var/lib/postgresql/data
-          name: postgres-claim0
-      restartPolicy: Always
-      serviceAccountName: ""
+        - name: postgres
+          image: postgres:13
+          restartPolicy: Always
+          args:
+            - postgres
+          env:
+            - name: POSTGRES_DB
+              value: conda-store
+            - name: POSTGRES_PASSWORD
+              value: password
+            - name: POSTGRES_USER
+              value: admin
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgres-claim
       volumes:
-      - name: postgres-claim0
-        persistentVolumeClaim:
-          claimName: postgres-claim0
+        - name: postgres-claim
+          persistentVolumeClaim:
+            claimName: postgres-claim

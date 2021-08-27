@@ -23,13 +23,13 @@ postgresql deployments and use existing infrastructure. In the case of
 AWS this may mean using [rds](https://aws.amazon.com/rds/) and
 [s3](https://aws.amazon.com/s3/). Consult your cloud provider for
 compatible services. In general if it is supported by sqlalchemy and
-there is a s3 compatible object store conda-store will work.
+there is a s3 compatible object store conda-store will
+work. [kustomize](https://github.com/kubernetes-sigs/kustomize) is
+being used for the deployment which is part to the kubernetes project
+itself.
 
 ```shell
-kubectl apply -f minio.yaml
-kubectl apply -f postgres.yaml
-kubectl apply -f conda-store-worker.yaml
-kubectl apply -f conda-store-server.yaml
+kubectl apply -k example/kubernetes
 ```
 
 Make sure to change all the usernames and passwords for the
