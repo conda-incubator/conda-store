@@ -16,12 +16,12 @@ IT and Development Team Friction
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 We saw tension between the IT/sysadmins and developers who use the
-environment that they build. When IT gets a request for a new package
-in an environment they need to rebuild the environments and check that
+environments that they build. When IT gets a request for a new package
+in an environment, they need to rebuild the environments and check that
 the package satisfies their constraints. This process may take several
-days and at best will not be immediate. While the developers need
-packages in their environments as soon as possible to do interesting
-new research. This situation often led to a lot of frustration on both
+days and at best will not be immediate. While developers need packages
+in their environments as soon as possible to do interesting new
+research. This situation often led to a lot of frustration on both
 sides for good reason. Conda-store aims to address this by allowing
 users to control a set of environments in their namespace while
 allowing IT to having all environments under their control.
@@ -29,7 +29,7 @@ allowing IT to having all environments under their control.
 Reproducibly Productionizing Environments
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Another issue we saw was the need to quickly productionize workflow
+Another issue we saw was the need to quickly productionize workflows
 and ensure that they may run for many years to come. Often times
 developers will experiment with a given environment and create a
 notebook to run a given workflow. They will want to "submit" this
