@@ -60,8 +60,8 @@ If you instead mount a
 [ReadWriteMany](https://kubernetes.io/docs/concepts/storage/persistent-volumes/)
 volume to the container `conda-store-worker` like nfs or
 [efs](https://aws.amazon.com/efs/). You can mount the environments
-built via conda-store and use environments this way. Note that NFS is
-significantly slower when it comes to creating environments.
+built via conda-store and use environments this way. Note that NFS can
+be significantly slower when it comes to creating environments (see [performance docs](./administration.md#Performance)).
 
 ## Docker
 
