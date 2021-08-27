@@ -1,0 +1,12 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: example-job
+spec:
+  template:
+    spec:
+      containers:
+      - name: hello
+        image: conda-store-server:5000/default/flask:latest
+        command: ['flask', '--help']
+      restartPolicy: OnFailure
