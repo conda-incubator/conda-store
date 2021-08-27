@@ -7,9 +7,6 @@ spec:
     spec:
       containers:
       - name: hello
-        # docker daemon pulls image
-        # therefore we need conda-store-server to be
-        # a service accessible outside of cluster
-        image: localhost:5000/default/flask:latest
+        image: localhost:30500/default/flask:latest
         command: ['flask', '--help']
       restartPolicy: OnFailure
