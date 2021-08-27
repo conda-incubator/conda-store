@@ -1,89 +1,50 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  creationTimestamp: null
   labels:
-    io.kompose.service: conda-store-worker-claim1
-  name: conda-store-worker-claim1
+    app: conda-store-worker-claim
+  name: conda-store-worker-claim
 spec:
   accessModes:
-  - ReadWriteOnce
+    - ReadWriteOnce
   resources:
     requests:
       storage: 2Gi
 ---
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: conda-environments
-data:
-  "environment1.yaml": "{\"name\": \"env-name-1\", \"channels\": [\"conda-forge\"], \"dependencies\": [\"python=3.7\", \"flask\"]}"
-  "environment2.yaml": "{\"name\": \"env-name-2\", \"channels\": [\"conda-forge\"], \"dependencies\": [\"python=3.8\", \"pyyaml\"]}"
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  labels:
-    io.kompose.service: conda-store-worker
   name: conda-store-worker
 spec:
   replicas: 1
   selector:
     matchLabels:
-      io.kompose.service: conda-store-worker
-  strategy:
-    type: Recreate
+      app: conda-store-worker
   template:
     metadata:
       labels:
-        io.kompose.service: conda-store-worker
+        app: conda-store-worker
     spec:
       containers:
-      - args:
-        - conda-store
-        - build
-        - -p
-        - /opt/environments
-        - -e
-        - /data/envs
-        - -s
-        - /data/store
-        - --uid
-        - "1000"
-        - --gid
-        - "100"
-        - --permissions
-        - "775"
-        - --storage-backend
-        - s3
-        env:
-        - name: CONDA_STORE_DB_URL
-          value: postgresql+psycopg2://admin:password@postgres/conda-store
-        - name: CONDA_STORE_S3_ACCESS_KEY
-          value: admin
-        - name: CONDA_STORE_S3_ENDPOINT
-          value: minio:9000
-        - name: CONDA_STORE_S3_SECRET_KEY
-          value: password
-        - name: PATH
-          value: /opt/conda/envs/conda-store/bin:/opt/conda/bin:/opt/conda/condabin:/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-        - name: TZ
-          value: America/New_York
-        image: quansight/conda-store:v0.1.6
-        imagePullPolicy: ""
-        name: conda-store-worker
-        resources: {}
-        volumeMounts:
-        - mountPath: "/opt/environments"
-          name: conda-environments
-        - mountPath: /data
-          name: conda-store-worker-claim1
+        - name: conda-store-server
+          image: quansight/conda-store-server:v0.3.0
+          args:
+            - "conda-store-worker"
+            - "--config"
+            - "/etc/conda-store/conda_store_config.py"
+          ports:
+            - containerPort: 5000
+          volumeMounts:
+            - name: config
+              mountPath: "/etc/conda-store/"
+              readOnly: true
+            - name: storage
+              mountPath: "/var/lib/conda-store/"
       restartPolicy: Always
-      serviceAccountName: ""
       volumes:
-      - name: conda-environments
-        configMap:
-          name: conda-environments
-      - name: conda-store-worker-claim1
-        persistentVolumeClaim:
-          claimName: conda-store-worker-claim1
+        - name: config
+          configMap:
+            name: conda-store-config
+        - name: storage
+          persistentVolumeClaim:
+            claimName: conda-store-worker-claim

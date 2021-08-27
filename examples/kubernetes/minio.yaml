@@ -1,26 +1,24 @@
 apiVersion: v1
 kind: Service
 metadata:
-  labels:
-    io.kompose.service: minio
   name: minio
 spec:
+  type: NodePort
   ports:
   - name: "9000"
+    nodePort: 30900
     port: 9000
     targetPort: 9000
   selector:
-    io.kompose.service: minio
+    app: minio
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  labels:
-    io.kompose.service: minio-claim0
-  name: minio-claim0
+  name: minio-claim
 spec:
   accessModes:
-  - ReadWriteOnce
+    - ReadWriteOnce
   resources:
     requests:
       storage: 1Gi
@@ -28,48 +26,41 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  labels:
-    io.kompose.service: minio
   name: minio
+  labels:
+    app: minio
 spec:
   replicas: 1
   selector:
     matchLabels:
-      io.kompose.service: minio
+      app: minio
   strategy:
     type: Recreate
   template:
     metadata:
-      annotations:
-        kompose.cmd: kompose convert
-        kompose.version: 1.21.0 (HEAD)
-      creationTimestamp: null
       labels:
-        io.kompose.service: minio
+        app: minio
     spec:
       containers:
-      - args:
-        - -c
-        - "mkdir -p /data/conda-store && /usr/bin/minio server /data"
-        command:
-        - sh
-        env:
-        - name: MINIO_ACCESS_KEY
-          value: admin
-        - name: MINIO_SECRET_KEY
-          value: password
-        image: minio/minio:RELEASE.2020-11-10T21-02-24Z
-        imagePullPolicy: ""
-        name: minio
-        ports:
-        - containerPort: 9000
-        resources: {}
-        volumeMounts:
-        - mountPath: /data
-          name: minio-claim0
+        - name: minio
+          image: minio/minio:RELEASE.2021-08-25T00-41-18Z
+          args:
+            - "-c"
+            - "mkdir -p /data/conda-store && /usr/bin/minio server /data"
+          command:
+            - "sh"
+          env:
+            - name: MINIO_ACCESS_KEY
+              value: admin
+            - name: MINIO_SECRET_KEY
+              value: password
+          ports:
+            - containerPort: 9000
+          volumeMounts:
+            - mountPath: /data
+              name: minio-claim
       restartPolicy: Always
-      serviceAccountName: ""
       volumes:
-      - name: minio-claim0
-        persistentVolumeClaim:
-          claimName: minio-claim0
+        - name: minio-claim
+          persistentVolumeClaim:
+            claimName: minio-claim
