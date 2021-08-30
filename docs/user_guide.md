@@ -7,7 +7,7 @@ what the `yaml`, `lockfile`, `archive`, and `docker` represent.
 
 ![yaml button](_static/images/conda-store-single-environment.png)
 
-## Pinned YAML
+### Pinned YAML
 
 A pinned yaml file is generated for each environment is built. This
 includes pinning of the pip packages as well. Note that there are
@@ -23,7 +23,7 @@ environment locally run the following.
 conda env create -f <environment-filename>
 ```
 
-## Conda Lockfile
+### Conda Lockfile
 
 A conda lockfile is a representation of only the conda dependencies in
 a given environment. The lockfile feature was inspired from
@@ -43,7 +43,7 @@ Install the locked environment file from conda-store.
 conda-lock install <lockfile-filename>
 ```
 
-## Conda Pack Archive
+### Conda Pack Archive
 
 [conda-pack](https://conda.github.io/conda-pack/) is a package for
 crating tarballs of given conda environments. Creating a conda archive
@@ -71,7 +71,7 @@ source my_env/bin/activate
 conda-unpack
 ```
 
-## Docker Registry
+### Docker Registry
 
 Conda Store acts as a full programatic docker registry which allows
 for interesting ways to handle Conda environment. In addition this
@@ -89,7 +89,7 @@ docker pull <docker-url>
 docker run -it <docker-url> python
 ```
 
-### General usage
+#### General usage
 
 ```shell
 docker run -it localhost:5000/<namespace>/<environment-name>
@@ -107,7 +107,7 @@ key. An example would be
 docker run -it localhost:5000/<namespace>/<environment-name>:<build_key>
 ```
 
-### On Demand Docker Image
+#### On Demand Docker Image
 
 Conda-store has an additional feature which allow for specifying the
 packages within the docker image name itself without requiring an
