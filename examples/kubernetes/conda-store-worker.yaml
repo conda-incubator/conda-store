@@ -39,7 +39,7 @@ spec:
               mountPath: "/etc/conda-store/"
               readOnly: true
             - name: storage
-              mountPath: "/var/lib/conda-store/"
+              mountPath: "/opt/conda-store/"
       restartPolicy: Always
       volumes:
         - name: config
