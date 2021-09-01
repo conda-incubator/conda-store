@@ -73,7 +73,7 @@ docker-compose.yaml for deployment. The example files required are in
 docker-compose up
 ```
 
-Then visit via your web browser http://localhost:5000
+Then visit via your web browser http://localhost:5000. The default username is `admin` and password is `test`.
 
 ## Local Automated Systemd Install
 
