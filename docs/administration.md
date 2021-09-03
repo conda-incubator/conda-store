@@ -1,5 +1,14 @@
 # Administration
 
+## Resource Requirements
+
+ - `conda-store-server` is simply a web server and should not require
+   any specific resources. 1 GB of RAM and 1 cpu should be plenty.
+ - `conda-store-worker` does the actual builds of the conda
+   environments. Solving for conda environments can take a lot of
+   memory in some circumstances. So make sure to allocate at least 4
+   GB of RAM to the worker along with at least one cpu.
+
 ## Performance
 
 There are several parts of conda-store to consider for performance. We
@@ -336,3 +345,24 @@ logging. Default is `INFO`. Common options are `DEBUG`, `INFO`,
 watch for changes to directories of `environment.yaml` files or a
 single filename to watch.
 
+## Frequently Asked Questions
+
+### Conda-store fails to build conda environment and worker is spontaneously killed (9 SIGKILL)
+
+The following error most likely indicates that you have not allocated
+enough memory to `conda-store-workers` for solving and building the
+given environment. Solve this by increasing the memory allocated to
+the container.
+
+```shell
+Process 'ForkPoolWorker-31' pid:90 exited with 'signal 9 (SIGKILL)'
+
+Task handler raised error: WorkerLostError('Worker exited prematurely: signal 9 (SIGKILL) Job: 348.')
+
+Traceback (most recent call last):
+File "/opt/conda/envs/conda-store-server/lib/python3.9/site-packages/billiard/pool.py", line 1265, in mark_as_worker_lost
+
+    raise WorkerLostError(
+
+billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 9 (SIGKILL) Job: 348.
+```
