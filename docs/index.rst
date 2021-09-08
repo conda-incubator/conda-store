@@ -51,11 +51,11 @@ Removing the Need for Curated Docker Environments
 While this point may be slightly docker focused the point is that
 containers are used everywhere. The burden of creating images with
 given packages can be cumbersome. There are tools that make this
-easier e.g. `repo2docker `https://github.com/jupyterhub/repo2docker`_
+easier e.g. `repo2docker <https://github.com/jupyterhub/repo2docker>`_
 however these project seem focused on bundling the data/repo with the
 image. Conda-store has a feature to build on demand environments based
 on the image name. For example the image name
-`localhost:5000/conda-store-dynmaic/numpy/jupyterlab/scipy.gt.1.0`
+`localhost:5000/conda-store-dynamic/numpy/jupyterlab/scipy.gt.1.0`
 will create a docker image with `numpy`, `jupyterlab`, and `scipy >
 1.0`. This feature was inspired by `nixery
 <https://nixery.dev/>`_. The `example/kubernetes` directory has a
