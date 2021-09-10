@@ -15,18 +15,28 @@ class CondaStoreServer(Application):
         "config": "CondaStoreServer.config_file",
     }
 
-    log_level = Integer(logging.INFO, help="log level to use", config=True,)
+    log_level = Integer(
+        logging.INFO,
+        help="log level to use",
+        config=True,
+    )
 
     enable_ui = Bool(True, help="serve the web ui for conda-store", config=True)
 
-    enable_api = Bool(True, help="enable the rest api for conda-store", config=True,)
+    enable_api = Bool(
+        True,
+        help="enable the rest api for conda-store",
+        config=True,
+    )
 
     enable_registry = Bool(
         True, help="enable the docker registry for conda-store", config=True
     )
 
     enable_metrics = Bool(
-        True, help="enable the prometheus metrics for conda-store", config=True,
+        True,
+        help="enable the prometheus metrics for conda-store",
+        config=True,
     )
 
     address = Unicode(
@@ -74,7 +84,8 @@ class CondaStoreServer(Application):
         app = Flask(__name__)
         cors_prefix = f"{self.url_prefix if self.url_prefix != '/' else ''}"
         CORS(
-            app, resources={f"{cors_prefix}/api/v1/*": {"origins": "*"}},
+            app,
+            resources={f"{cors_prefix}/api/v1/*": {"origins": "*"}},
         )
         app.secret_key = self.secret_key
 

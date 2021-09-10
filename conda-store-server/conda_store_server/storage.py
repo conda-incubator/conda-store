@@ -47,23 +47,41 @@ class Storage(LoggingConfigurable):
 
 class S3Storage(Storage):
     internal_endpoint = Unicode(
-        help="internal endpoint to reach s3 bucket e.g. 'minio:9000'", config=True,
+        help="internal endpoint to reach s3 bucket e.g. 'minio:9000'",
+        config=True,
     )
 
     external_endpoint = Unicode(
-        help="internal endpoint to reach s3 bucket e.g. 'localhost:9000'", config=True,
+        help="internal endpoint to reach s3 bucket e.g. 'localhost:9000'",
+        config=True,
     )
 
-    access_key = Unicode(help="access key for S3 bucket", config=True,)
+    access_key = Unicode(
+        help="access key for S3 bucket",
+        config=True,
+    )
 
-    secret_key = Unicode(help="secret key for S3 bucket", config=True,)
+    secret_key = Unicode(
+        help="secret key for S3 bucket",
+        config=True,
+    )
 
-    region = Unicode("us-east-1", help="region for s3 bucket", config=True,)
+    region = Unicode(
+        "us-east-1",
+        help="region for s3 bucket",
+        config=True,
+    )
 
-    bucket_name = Unicode("conda-store", help="bucket name for s3 bucket", config=True,)
+    bucket_name = Unicode(
+        "conda-store",
+        help="bucket name for s3 bucket",
+        config=True,
+    )
 
     secure = Bool(
-        True, help="use secure connection to collect to s3 bucket", config=True,
+        True,
+        help="use secure connection to collect to s3 bucket",
+        config=True,
     )
 
     @property

@@ -42,7 +42,9 @@ class AuthenticationBackend(LoggingConfigurable):
     )
 
     jwt_algorithm = Unicode(
-        "HS256", help="jwt algorithm to use for encryption/decryption", config=True,
+        "HS256",
+        help="jwt algorithm to use for encryption/decryption",
+        config=True,
     )
 
     @property
@@ -83,13 +85,18 @@ class RBACAuthorizationBackend(LoggingConfigurable):
     )
 
     unauthenticated_role_bindings = Dict(
-        {"default/*": {"viewer"},},
+        {
+            "default/*": {"viewer"},
+        },
         help="default roles bindings to asign to unauthenticated users",
         config=True,
     )
 
     authenticated_role_bindings = Dict(
-        {"default/*": {"viewer"}, "filesystem/*": {"viewer"},},
+        {
+            "default/*": {"viewer"},
+            "filesystem/*": {"viewer"},
+        },
         help="default permissions to apply to specific resources",
     )
 
@@ -145,7 +152,9 @@ class RBACAuthorizationBackend(LoggingConfigurable):
 
 class Authentication(LoggingConfigurable):
     cookie_name = Unicode(
-        "conda-store-auth", help="name of cookie used for authentication", config=True,
+        "conda-store-auth",
+        help="name of cookie used for authentication",
+        config=True,
     )
 
     authentication_backend = Type(
@@ -208,7 +217,10 @@ class Authentication(LoggingConfigurable):
 
     def authenticate(self, request):
         return schema.AuthenticationToken(
-            primary_namespace="default", role_bindings={"*/*": ["admin"],},
+            primary_namespace="default",
+            role_bindings={
+                "*/*": ["admin"],
+            },
         )
 
     def get_login_method(self):
@@ -361,7 +373,9 @@ class DummyAuthentication(Authentication):
 
         return schema.AuthenticationToken(
             primary_namespace=request.form["username"],
-            role_bindings={"*/*": ["admin"],},
+            role_bindings={
+                "*/*": ["admin"],
+            },
         )
 
 
@@ -376,7 +390,8 @@ class GenericOAuthAuthentication(Authentication):
         help="URL used to request an access token once app has been authorized",
     )
     authorize_url = Unicode(
-        config=True, help="URL used to request authorization to OAuth provider",
+        config=True,
+        help="URL used to request authorization to OAuth provider",
     )
     client_id = Unicode(
         config=True,
@@ -387,7 +402,8 @@ class GenericOAuthAuthentication(Authentication):
         help="Secret string used to authenticate the app against the OAuth provider",
     )
     access_scope = Unicode(
-        config=True, help="Permissions that will be requested to OAuth provider.",
+        config=True,
+        help="Permissions that will be requested to OAuth provider.",
     )
     user_data_url = Unicode(
         config=True,
@@ -448,7 +464,10 @@ class GenericOAuthAuthentication(Authentication):
 
         # 3. create our own internal token
         return schema.AuthenticationToken(
-            primary_namespace=username, role_bindings={"*/*": ["admin"],},
+            primary_namespace=username,
+            role_bindings={
+                "*/*": ["admin"],
+            },
         )
 
     def _get_oauth_token(self, request):
@@ -526,7 +545,8 @@ class GithubOAuthAuthentication(GenericOAuthAuthentication):
 
 class JupyterHubOAuthAuthentication(GenericOAuthAuthentication):
     jupyterhub_url = Unicode(
-        help="base url for jupyterhub not including the '/hub/'", config=True,
+        help="base url for jupyterhub not including the '/hub/'",
+        config=True,
     )
 
     @default("access_token_url")
