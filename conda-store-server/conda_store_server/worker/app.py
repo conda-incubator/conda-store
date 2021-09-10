@@ -11,11 +11,7 @@ class CondaStoreWorker(Application):
         "config": "CondaStoreWorker.config_file",
     }
 
-    log_level = Integer(
-        logging.INFO,
-        help="log level to use",
-        config=True,
-    )
+    log_level = Integer(logging.INFO, help="log level to use", config=True,)
 
     watch_paths = List(
         [], help="list of paths to watch for environment changes", config=True
