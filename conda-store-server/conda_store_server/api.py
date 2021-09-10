@@ -1,7 +1,6 @@
 from typing import List
 
 from sqlalchemy import func
-from sqlalchemy.sql.elements import or_
 
 from conda_store_server import orm
 from .conda import conda_platform
