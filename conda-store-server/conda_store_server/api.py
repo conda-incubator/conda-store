@@ -1,6 +1,7 @@
 from typing import List
 
 from sqlalchemy import func
+from sqlalchemy.sql.elements import or_
 
 from conda_store_server import orm
 from .conda import conda_platform
@@ -20,10 +21,19 @@ def get_namespace(db, name: str = None, id: int = None):
     return db.query(orm.Namespace).filter(*filters).first()
 
 
-def list_environments(db, namespace: str = None, search=None):
+def list_environments(db, namespace: str = None, search: str = None):
     filters = []
     if namespace:
         filters.append(orm.Namespace.name == namespace)
+
+    if search:
+        new_filter = or_(orm.Environment.name.like(f"{search}"),
+                        orm.Environment.name.like(f"%{search}"),
+                        orm.Environment.name.like(f"{search}%"),
+                        orm.Environment.name.like(f"%{search}%")
+        )
+
+        filters.append(new_filter)
 
     return db.query(orm.Environment).join(orm.Environment.namespace).filter(*filters)
 

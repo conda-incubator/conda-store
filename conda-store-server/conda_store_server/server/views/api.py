@@ -30,7 +30,9 @@ def api_list_environments():
     conda_store = get_conda_store()
     auth = get_auth()
 
-    orm_environments = auth.filter_environments(api.list_environments(conda_store.db))
+    name_search = request.args.get('name')
+
+    orm_environments = auth.filter_environments(api.list_environments(conda_store.db, search=name_search))
     environments = [
         schema.Environment.from_orm(_).dict(exclude={"build"})
         for _ in orm_environments.all()
