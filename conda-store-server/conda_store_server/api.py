@@ -27,14 +27,7 @@ def list_environments(db, namespace: str = None, search: str = None):
         filters.append(orm.Namespace.name == namespace)
 
     if search:
-        new_filter = or_(
-            orm.Environment.name.like(f"{search}"),
-            orm.Environment.name.like(f"%{search}"),
-            orm.Environment.name.like(f"{search}%"),
-            orm.Environment.name.like(f"%{search}%"),
-        )
-
-        filters.append(new_filter)
+        filters.append(orm.Environment.name.like(f"%{search}%"))
 
     return db.query(orm.Environment).join(orm.Environment.namespace).filter(*filters)
 
