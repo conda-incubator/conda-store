@@ -12,8 +12,8 @@ app_api = Blueprint("api", __name__)
 def get_paginated_args(request):
     server = get_server()
 
-    page = request.args.get('page', 1)
-    size = min(request.args.get('size', server.max_page_size), server.max_page_size)
+    page = int(request.args.get('page', 1))
+    size = min(int(request.args.get('size', server.max_page_size)), server.max_page_size)
     offset = (page - 1) * size
     return size, offset
 
