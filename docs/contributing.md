@@ -68,7 +68,7 @@ easier to contribute to the documentation.
 
 ### Namespace
 
- - `GET /api/v1/namespace/` :: list namespaces
+ - `GET /api/v1/namespace/?page=<int>&size=<int>` :: list namespaces
 
 ### Environments
 

@@ -240,8 +240,10 @@ class CondaChannel(Base):
             # nothing to update
             return
 
-        for architecture in repodata:
-            packages = list(repodata[architecture]["packages"].values())
+        for architecture in repodata["architectures"]:
+            packages = list(
+                repodata["architectures"][architecture]["packages"].values()
+            )
 
             existing_architecture_sha256 = {
                 _[0]
@@ -268,6 +270,12 @@ class CondaChannel(Base):
                             timestamp=package.get("timestamp"),
                             version=package["version"],
                             channel_id=self.id,
+                            summary=repodata["packages"][package["name"]].get(
+                                "summary"
+                            ),
+                            description=repodata["packages"][package["name"]].get(
+                                "description"
+                            ),
                         )
                     )
                     existing_architecture_sha256.add(package["sha256"])
@@ -311,6 +319,9 @@ class CondaPackage(Base):
     subdir = Column(String, nullable=True)
     timestamp = Column(BigInteger, nullable=True)
     version = Column(String, nullable=False)
+
+    summary = Column(String, nullable=True)
+    description = Column(String, nullable=True)
 
     def __repr__(self):
         return f"<CondaPackage (channel={self.channel} name={self.name} version={self.version} sha256={self.sha256})>"

@@ -54,15 +54,17 @@ def download_repodata(
         return {}
     response.raise_for_status()
 
-    data = response.json()
-    if not (architectures <= set(data["subdirs"])):
+    repodata = response.json()
+    if not (architectures <= set(repodata["subdirs"])):
         raise ValueError("required architectures from channel not available")
 
-    repodata = {}
+    repodata["architectures"] = {}
     for architecture in architectures:
         response = requests.get(channel_url / architecture / "repodata.json.bz2")
         response.raise_for_status()
-        repodata[architecture] = json.loads(bz2.decompress(response.content))
+        repodata["architectures"][architecture] = json.loads(
+            bz2.decompress(response.content)
+        )
 
     return repodata
 
