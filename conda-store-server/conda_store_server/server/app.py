@@ -70,10 +70,10 @@ class CondaStoreServer(Application):
         config=True,
     )
 
-    secret_key = Unicode(
-        "super_secret_key",
-        config=True,
-        help="A secret key needed for some authentication methods, session storage, etc.",
+    max_page_size = Integer(
+        100,
+        help="maximum number of items to return in a single page",
+        config=True
     )
 
     def initialize(self, *args, **kwargs):
@@ -105,6 +105,7 @@ class CondaStoreServer(Application):
         app.conda_store = CondaStore(parent=self, log=self.log)
         app.server = self
         app.authentication = self.authentication_class(parent=self, log=self.log)
+        app.secret_key = app.authentication.authentication.secret
 
         @app.after_request
         def after_request_function(response):
@@ -130,6 +131,7 @@ class CondaStoreServer(Application):
 
         # schedule tasks
         app.conda_store.celery_app
+
 
         from conda_store_server.worker import tasks
 
