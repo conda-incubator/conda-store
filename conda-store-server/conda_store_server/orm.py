@@ -235,13 +235,13 @@ class CondaChannel(Base):
     last_update = Column(DateTime)
 
     def update_packages(self, db):
-        channeldata, repodata = download_repodata(self.name, self.last_update)
-        if not channeldata:
+        repodata = download_repodata(self.name, self.last_update)
+        if not repodata:
             # nothing to update
             return
 
-        for architecture in repodata:
-            packages = list(repodata[architecture]["packages"].values())
+        for architecture in repodata["architectures"]:
+            packages = list(repodata["architectures"][architecture]["packages"].values())
 
             existing_architecture_sha256 = {
                 _[0]
