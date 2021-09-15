@@ -94,11 +94,11 @@ easier to contribute to the documentation.
 
  - `GET /api/v1/build/<build_id>/logs/` :: get build logs
 
-### Packages
+### Conda Channels
 
  - `GET /api/v1/channel/?page=<int>&size=<int>` :: list channels
 
-### Packages
+### Conda Packages
 
  - `GET /api/v1/package/?search=<str>&page=<int>&size=<int>` :: list packages
 
