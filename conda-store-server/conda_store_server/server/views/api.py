@@ -14,7 +14,7 @@ def get_paginated_args(request):
 
     page = request.args.get('page', 1)
     size = min(request.args.get('size', server.max_page_size), server.max_page_size)
-    offset = (page - 1) * offset
+    offset = (page - 1) * size
     return size, offset
 
 
