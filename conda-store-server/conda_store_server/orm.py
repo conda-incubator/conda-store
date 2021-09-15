@@ -241,7 +241,9 @@ class CondaChannel(Base):
             return
 
         for architecture in repodata["architectures"]:
-            packages = list(repodata["architectures"][architecture]["packages"].values())
+            packages = list(
+                repodata["architectures"][architecture]["packages"].values()
+            )
 
             existing_architecture_sha256 = {
                 _[0]
@@ -268,8 +270,12 @@ class CondaChannel(Base):
                             timestamp=package.get("timestamp"),
                             version=package["version"],
                             channel_id=self.id,
-                            summary=channeldata["packages"][package["name"]].get("summary"),
-                            description=channeldata["packages"][package["name"]].get("description"),
+                            summary=repodata["packages"][package["name"]].get(
+                                "summary"
+                            ),
+                            description=repodata["packages"][package["name"]].get(
+                                "description"
+                            ),
                         )
                     )
                     existing_architecture_sha256.add(package["sha256"])
