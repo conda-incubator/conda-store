@@ -12,20 +12,27 @@ app_api = Blueprint("api", __name__)
 def get_paginated_args(request):
     server = get_server()
 
-    page = int(request.args.get('page', 1))
-    size = min(int(request.args.get('size', server.max_page_size)), server.max_page_size)
+    page = int(request.args.get("page", 1))
+    size = min(
+        int(request.args.get("size", server.max_page_size)), server.max_page_size
+    )
     offset = (page - 1) * size
     return size, offset
 
 
-def paginated_api_response(query, object_schema, limit : int, offset : int, exclude=None):
-    return jsonify({
-        'status': 'ok',
-        'data': [object_schema.from_orm(_).dict(exclude=exclude) for _ in query.limit(limit).offset(offset).all()],
-        'page': (offset // limit) + 1,
-        'size': limit,
-        'count': query.count(),
-    })
+def paginated_api_response(query, object_schema, limit: int, offset: int, exclude=None):
+    return jsonify(
+        {
+            "status": "ok",
+            "data": [
+                object_schema.from_orm(_).dict(exclude=exclude)
+                for _ in query.limit(limit).offset(offset).all()
+            ],
+            "page": (offset // limit) + 1,
+            "size": limit,
+            "count": query.count(),
+        }
+    )
 
 
 @app_api.route("/api/v1/")
@@ -54,7 +61,9 @@ def api_list_environments():
     orm_environments = auth.filter_environments(
         api.list_environments(conda_store.db, search=search)
     )
-    return paginated_api_response(orm_environments, schema.Environment, limit, offset, exclude={"build"})
+    return paginated_api_response(
+        orm_environments, schema.Environment, limit, offset, exclude={"build"}
+    )
 
 
 @app_api.route("/api/v1/environment/<namespace>/<name>/", methods=["GET"])
@@ -70,10 +79,12 @@ def api_get_environment(namespace, name):
     if environment is None:
         return jsonify({"status": "error", "error": "environment does not exist"}), 404
 
-    return jsonify({
-        "status": "ok",
-        "data": schema.Environment.from_orm(environment).dict(),
-    })
+    return jsonify(
+        {
+            "status": "ok",
+            "data": schema.Environment.from_orm(environment).dict(),
+        }
+    )
 
 
 @app_api.route("/api/v1/environment/<namespace>/<name>/", methods=["PUT"])
@@ -116,7 +127,9 @@ def api_list_builds():
 
     limit, offset = get_paginated_args(request)
     orm_builds = auth.filter_builds(api.list_builds(conda_store.db))
-    return paginated_api_response(orm_builds, schema.Build, limit, offset, exclude={"specification", "packages"})
+    return paginated_api_response(
+        orm_builds, schema.Build, limit, offset, exclude={"specification", "packages"}
+    )
 
 
 @app_api.route("/api/v1/build/<build_id>/", methods=["GET"])
@@ -134,10 +147,7 @@ def api_get_build(build_id):
         require=True,
     )
 
-    return jsonify({
-        "status": "ok",
-        "data": schema.Build.from_orm(build).dict()
-    })
+    return jsonify({"status": "ok", "data": schema.Build.from_orm(build).dict()})
 
 
 @app_api.route("/api/v1/build/<build_id>/", methods=["PUT"])
@@ -209,7 +219,7 @@ def api_list_channels():
 def api_list_packages():
     conda_store = get_conda_store()
 
-    search = request.args.get('search')
+    search = request.args.get("search")
 
     limit, offset = get_paginated_args(request)
     orm_packages = api.list_conda_packages(conda_store.db, search=search)

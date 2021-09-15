@@ -71,9 +71,7 @@ class CondaStoreServer(Application):
     )
 
     max_page_size = Integer(
-        100,
-        help="maximum number of items to return in a single page",
-        config=True
+        100, help="maximum number of items to return in a single page", config=True
     )
 
     def initialize(self, *args, **kwargs):
@@ -130,7 +128,6 @@ class CondaStoreServer(Application):
 
         # schedule tasks
         app.conda_store.celery_app
-
 
         from conda_store_server.worker import tasks
 
