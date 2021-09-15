@@ -51,11 +51,11 @@ def download_repodata(
 
     response = requests.get(channel_url / "channeldata.json", headers=headers)
     if response.status_code == 304:  # 304 Not Modified since last_update
-        return {}
+        return {}, {}
     response.raise_for_status()
 
-    data = response.json()
-    if not (architectures <= set(data["subdirs"])):
+    channeldata = response.json()
+    if not (architectures <= set(channeldata["subdirs"])):
         raise ValueError("required architectures from channel not available")
 
     repodata = {}
@@ -64,7 +64,7 @@ def download_repodata(
         response.raise_for_status()
         repodata[architecture] = json.loads(bz2.decompress(response.content))
 
-    return repodata
+    return channeldata, repodata
 
 
 def conda_platform():

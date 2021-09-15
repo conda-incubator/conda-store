@@ -335,6 +335,9 @@ for the web server to use. Default is `DummyAuthentication`.
 authentication methods, session storage, etc. TODO: remove at some
 point since also used in `AuthenticationBackend`.
 
+`CondaStoreServer.max_page_size` is maximum number of items to return
+in a single UI page or api response.
+
 ### conda_store_server.worker.app.CondaStoreWorker
 
 `CondaStoreWorker.log_level` is the level for all server

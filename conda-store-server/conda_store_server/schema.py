@@ -50,6 +50,7 @@ class CondaPackage(BaseModel):
     sha256: str
     name: str
     version: str
+    summary: Optional[str]
 
     class Config:
         orm_mode = True
