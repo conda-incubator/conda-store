@@ -9,6 +9,19 @@ from sqlalchemy.pool import NullPool
 from conda_store_server import orm, utils, storage, schema, api, conda
 
 
+def default_validate_environment_hook(conda_store, environment : schema.CondaSpecification):
+    return True
+
+
+def default_register_environment_hook(conda_store, environment : schema.CondaSpecification):
+    # ensure that package is in given environment
+    for required_package in set(conda_store.required_packages):
+        if required_package not in environment.dependencies:
+            environment.dependencies.append(required_package)
+
+    return environment
+
+
 class CondaStore(LoggingConfigurable):
     storage_class = Type(
         default_value=storage.S3Storage,
@@ -77,6 +90,24 @@ class CondaStore(LoggingConfigurable):
         ],
         help="artifacts to keep on build deletion",
         config=True,
+    )
+
+    required_packages = List(
+        [],
+        help="optional list of packages to ensure exist within a given environment specification",
+        config=True,
+    )
+
+    validate_environment_hook = Callable(
+        default_validate_environment_hook,
+        help='function to run to validate given environment via conda-store if environment is invalid a message regarding issue is returned',
+        config=True
+    )
+
+    register_environment_hook = Callable(
+        default_register_environment_hook,
+        help='function to run before registering a given environment via conda-store may modify environment but cannot raise an error if environment is invalid',
+        config=True
     )
 
     @default("celery_broker_url")
@@ -241,6 +272,8 @@ class CondaStore(LoggingConfigurable):
             namespace = namespace_model
 
         specification_model = schema.CondaSpecification.parse_obj(specification)
+        specification_model = self.register_environment_pre_hook(specification_model)
+
         specification_sha256 = utils.datastructure_hash(specification_model.dict())
 
         specification = api.get_specification(self.db, sha256=specification_sha256)
