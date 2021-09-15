@@ -87,7 +87,6 @@ class CondaStoreServer(Application):
             app,
             resources={f"{cors_prefix}/api/v1/*": {"origins": "*"}},
         )
-        app.secret_key = self.secret_key
 
         if self.enable_api:
             app.register_blueprint(views.app_api, url_prefix=self.url_prefix)
