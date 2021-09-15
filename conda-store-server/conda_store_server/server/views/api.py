@@ -70,7 +70,10 @@ def api_get_environment(namespace, name):
     if environment is None:
         return jsonify({"status": "error", "error": "environment does not exist"}), 404
 
-    return jsonify(schema.Environment.from_orm(environment).dict())
+    return jsonify({
+        "status": "ok",
+        "data": schema.Environment.from_orm(environment).dict(),
+    })
 
 
 @app_api.route("/api/v1/environment/<namespace>/<name>/", methods=["PUT"])
@@ -131,7 +134,10 @@ def api_get_build(build_id):
         require=True,
     )
 
-    return jsonify(schema.Build.from_orm(build).dict())
+    return jsonify({
+        "status": "ok",
+        "data": schema.Build.from_orm(build).dict()
+    })
 
 
 @app_api.route("/api/v1/build/<build_id>/", methods=["PUT"])
