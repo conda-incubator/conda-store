@@ -70,10 +70,8 @@ class CondaStoreServer(Application):
         config=True,
     )
 
-    secret_key = Unicode(
-        "super_secret_key",
-        config=True,
-        help="A secret key needed for some authentication methods, session storage, etc.",
+    max_page_size = Integer(
+        100, help="maximum number of items to return in a single page", config=True
     )
 
     def initialize(self, *args, **kwargs):
@@ -87,7 +85,6 @@ class CondaStoreServer(Application):
             app,
             resources={f"{cors_prefix}/api/v1/*": {"origins": "*"}},
         )
-        app.secret_key = self.secret_key
 
         if self.enable_api:
             app.register_blueprint(views.app_api, url_prefix=self.url_prefix)
@@ -105,6 +102,7 @@ class CondaStoreServer(Application):
         app.conda_store = CondaStore(parent=self, log=self.log)
         app.server = self
         app.authentication = self.authentication_class(parent=self, log=self.log)
+        app.secret_key = app.authentication.authentication.secret
 
         @app.after_request
         def after_request_function(response):

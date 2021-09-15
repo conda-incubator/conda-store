@@ -151,7 +151,7 @@ key.
 }
 ```
 
-Ifthe route is not paginated the `page`, `size`, and `count` keys will
+If the route is not paginated the `page`, `size`, and `count` keys will
 not be returned.
 
 ```json

@@ -62,7 +62,8 @@ def get_environment_builds(db, namespace, name):
 
 
 def list_specifications(db, search=None):
-    return db.query(orm.Specification).all()
+    filters = []
+    return db.query(orm.Specification).filter(*filters)
 
 
 def get_specification(db, sha256):
@@ -83,17 +84,11 @@ def list_builds(db, status: orm.BuildStatus = None):
     return db.query(orm.Build).filter(*filters)
 
 
-def get_build(db, build_id):
+def get_build(db, build_id: int):
     return db.query(orm.Build).filter(orm.Build.id == build_id).first()
 
 
-def get_num_queued_builds(db, status):
-    return (
-        db.query(orm.Build).filter(orm.Build.status == orm.BuildStatus.QUEUED).count()
-    )
-
-
-def get_build_lockfile(db, build_id):
+def get_build_lockfile(db, build_id: int):
     build = db.query(orm.Build).filter(orm.Build.id == build_id).first()
     packages = [
         f"{row.channel.name}/{row.subdir}/{row.name}-{row.version}-{row.build}.tar.bz2#{row.md5}"
@@ -107,7 +102,7 @@ def get_build_lockfile(db, build_id):
     )
 
 
-def get_build_artifact_types(db, build_id):
+def get_build_artifact_types(db, build_id: int):
     return (
         db.query(orm.BuildArtifact.artifact_type)
         .filter(orm.BuildArtifact.build_id == build_id)
@@ -135,7 +130,7 @@ def list_build_artifacts(
     return db.query(orm.BuildArtifact).filter(*filters).limit(limit).all()
 
 
-def get_build_artifact(db, build_id, key):
+def get_build_artifact(db, build_id: int, key: str):
     return (
         db.query(orm.BuildArtifact)
         .filter(orm.BuildArtifact.build_id == build_id, orm.BuildArtifact.key == key)
@@ -143,18 +138,22 @@ def get_build_artifact(db, build_id, key):
     )
 
 
-def list_conda_channels(db, limit=25):
-    return db.query(orm.CondaChannel).limit(limit).all()
+def list_conda_channels(db):
+    filters = []
+    return db.query(orm.CondaChannel).filter(*filters)
 
 
-def get_conda_channel(db, channel_name):
+def get_conda_channel(db, channel_name: str):
     return (
         db.query(orm.CondaChannel).filter(orm.CondaChannel.name == channel_name).first()
     )
 
 
-def list_conda_packages(db, limit=25):
-    return db.query(orm.CondaPackage).limit(limit).all()
+def list_conda_packages(db, search: str = None):
+    filters = []
+    if search:
+        filters.append(orm.CondaPackage.name.contains(search, autoescape=True))
+    return db.query(orm.CondaPackage).filter(*filters)
 
 
 def get_metrics(db):
