@@ -21,7 +21,7 @@ def get_paginated_args(request):
 def paginated_api_response(query, object_schema, limit : int, offset : int, exclude=None):
     return jsonify({
         'status': 'ok',
-        'data': [object_Schema.from_orm(_).dict(exclude=exclude) for _ in query.limit(limit).offset(offset).all()],
+        'data': [object_schema.from_orm(_).dict(exclude=exclude) for _ in query.limit(limit).offset(offset).all()],
         'page': (offset // limit) + 1,
         'size': limit,
         'count': query.count(),
