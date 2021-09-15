@@ -72,7 +72,7 @@ easier to contribute to the documentation.
 
 ### Environments
 
- - `GET /api/v1/environment/` :: list environments
+ - `GET /api/v1/environment/?search=<str>&page=<int>&size=<int>` :: list environments
 
  - `GET /api/v1/environment/<namespace>/<name>/` :: get environment
 
@@ -84,7 +84,7 @@ easier to contribute to the documentation.
  
 ### Builds
 
- - `GET /api/v1/build/` :: list builds
+ - `GET /api/v1/build/?page=<int>&size=<int>` :: list builds
 
  - `GET /api/v1/build/<build_id>/` :: get build
 
@@ -96,11 +96,71 @@ easier to contribute to the documentation.
 
 ### Packages
 
- - `GET /api/v1/channel/` :: list channels
+ - `GET /api/v1/channel/?page=<int>&size=<int>` :: list channels
 
 ### Packages
 
- - `GET /api/v1/package/` :: list packages
+ - `GET /api/v1/package/?search=<str>&page=<int>&size=<int>` :: list packages
+
+### REST API Query Format
+
+For several paginated results the following query parameters are accepted.
+
+ - `page` page numbers indexing start at 1
+ - `size` the number of results to return in each page. The max size
+   is determined by the traitlets parameter
+   `c.CondaStoreServer.max_page_size` with default of 100.
+
+If a query requests a page that does not exist a data response of an
+empty list is returned.
+
+### REST API Response Format
+
+Several Standard Error Codes are returned
+ - 200 :: response was processed normally
+ - 400 :: indicates a bad request that is invalid
+ - 401 :: indicates that request was unauthenticated indicates that authentication is required
+ - 403 :: indicates that request was not authorized to access resource
+ - 404 :: indicates that request for resource was not found
+ - 500 :: hopefully you don't see this error. If you do this is a bug
+
+Response Format for Errors.
+
+```json
+{
+   "status": "error",
+   "message": "<reason for error>"
+}
+```
+
+Response Format for Success. Several of these response parts are
+optional. A route may optionally return a `message` that may be
+displayed to the user.
+
+If the route is paginated it will return a `page`, `size`, and `count`
+key.
+
+```json
+{
+   "status": "ok",
+   "message": "<message>",
+   "data": [...],
+   "page": <int>,
+   "size": <int>,
+   "count": <int>,
+}
+```
+
+Ifthe route is not paginated the `page`, `size`, and `count` keys will
+not be returned.
+
+```json
+{
+   "status": "ok",
+   "message": "<message>",
+   "data": {...},
+}
+```
 
 ## Architecture
 
@@ -400,3 +460,4 @@ permissions and we get the following `{build::create, build::read,
 build::update, build::delete}`. The delete environment action requires
 `build::delete` permissions which the user has thus the action is
 permitted.
+
