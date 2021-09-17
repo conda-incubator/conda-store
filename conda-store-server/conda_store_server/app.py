@@ -280,7 +280,9 @@ class CondaStore(LoggingConfigurable):
 
     def create_build(self, environment_id: int, specification_sha256: str):
         specification = api.get_specification(self.db, specification_sha256)
-        build = orm.Build(environment_id=environment_id, specification_id=specification.id)
+        build = orm.Build(
+            environment_id=environment_id, specification_id=specification.id
+        )
         self.db.add(build)
         self.db.commit()
 

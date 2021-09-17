@@ -82,7 +82,9 @@ def api_get_environment(namespace, name):
     return jsonify(
         {
             "status": "ok",
-            "data": schema.Environment.from_orm(environment).dict(exclude={"current_build"}),
+            "data": schema.Environment.from_orm(environment).dict(
+                exclude={"current_build"}
+            ),
         }
     )
 
