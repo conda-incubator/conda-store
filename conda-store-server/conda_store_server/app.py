@@ -339,10 +339,27 @@ class CondaStore(LoggingConfigurable):
 
         tasks.task_update_environment_build.si(environment.id).apply_async()
 
+    def delete_environment(self, namespace, name):
+        environment = api.get_environment(self.db, namespace=namespace, name=name)
+        if environment is None:
+            raise utils.CondaStoreError(
+                f"environment namespace={namespace} name={name} does not exist"
+            )
+
+        environment.deleted_on = datetime.datetime.utcnow()
+        self.db.commit()
+
+        self.celery_app
+
+        # must import tasks after a celery app has been initialized
+        from conda_store_server.worker import tasks
+
+        tasks.task_delete_environment.si(environment.id).apply_async()
+
     def delete_build(self, build_id):
         build = api.get_build(self.db, build_id)
         if build.status not in [orm.BuildStatus.FAILED, orm.BuildStatus.COMPLETED]:
-            raise ValueError("cannot delete build since not finished building")
+            raise utils.CondaStoreError("cannot delete build since not finished building")
 
         build.deleted_on = datetime.datetime.utcnow()
         self.db.commit()

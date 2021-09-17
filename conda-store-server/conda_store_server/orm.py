@@ -228,6 +228,8 @@ class Environment(Base):
     current_build_id = Column(Integer, ForeignKey("build.id"))
     current_build = relationship(Build, foreign_keys=[current_build_id])
 
+    deleted_on = Column(DateTime, default=None)
+
 
 class CondaChannel(Base):
     __tablename__ = "conda_channel"

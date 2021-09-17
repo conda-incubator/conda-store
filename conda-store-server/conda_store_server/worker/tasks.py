@@ -111,31 +111,51 @@ def task_update_environment_build(self, environment_id):
     utils.symlink(conda_prefix, environment_prefix)
 
 
+def delete_build_artifact(conda_store, build_artifact):
+    if build_artifact.artifact_type == orm.BuildArtifactType.DIRECTORY:
+        # ignore key
+        conda_prefix = build_artifact.build.build_path(conda_store.store_directory)
+        # be REALLY sure this is a directory within store directory
+        if conda_prefix.startswith(conda_store.store_directory) and os.path.isdir(
+            conda_prefix
+        ):
+            shutil.rmtree(conda_prefix)
+            conda_store.db.delete(build_artifact)
+    elif build_artifact.artifact_type == orm.BuildArtifactType.LOCKFILE:
+        pass
+    else:
+        conda_store.log.error(f"deleting {build_artifact.key}")
+        conda_store.storage.delete(conda_store.db, build_id, build_artifact.key)
+
+
 @task(base=WorkerTask, name="task_delete_build", bind=True)
 def task_delete_build(self, build_id):
     conda_store = self.worker.conda_store
     build = api.get_build(conda_store.db, build_id)
 
-    conda_store.log.error("deleting artifacts")
+    conda_store.log.error(f"deleting artifacts for build={build.id}")
     for build_artifact in api.list_build_artifacts(
         conda_store.db,
-        limit=None,
         build_id=build_id,
         excluded_artifact_types=conda_store.build_artifacts_kept_on_deletion,
-    ):
-        if build_artifact.artifact_type == orm.BuildArtifactType.DIRECTORY:
-            # ignore key
-            conda_prefix = build.build_path(conda_store.store_directory)
-            # be REALLY sure this is a directory within store directory
-            if conda_prefix.startswith(conda_store.store_directory) and os.path.isdir(
-                conda_prefix
-            ):
-                shutil.rmtree(conda_prefix)
-                conda_store.db.delete(build_artifact)
-        elif build_artifact.artifact_type == orm.BuildArtifactType.LOCKFILE:
-            pass
-        else:
-            conda_store.log.error(f"deleting {build_artifact.key}")
-            conda_store.storage.delete(conda_store.db, build_id, build_artifact.key)
+    ).all():
+        delete_build_artifact(conda_store, build_artifact)
+    conda_store.db.commit()
 
+
+@task(base=WorkerTask, name="task_delete_environment", bind=True)
+def task_delete_environment(self, environment_id):
+    conda_store = self.worker.conda_store
+    environment = api.get_environment(conda_store.db, id=environment_id)
+
+    for build in environment.builds:
+        conda_store.log.error(f"deleting artifacts for build={build.id}")
+        for build_artifact in api.list_build_artifacts(
+            conda_store.db,
+            limit=None,
+            build_id=build.id,
+        ).all():
+            delete_build_artifact(conda_store, build_artifact)
+        conda_store.db.delete(build)
+    conda_store.delete(environment)
     conda_store.db.commit()

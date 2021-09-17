@@ -111,6 +111,19 @@ def api_update_environment_build(namespace, name):
     return jsonify({"status": "ok"})
 
 
+@app_api.route("/api/v1/environment/<namespace>/<name>/", methods=["DELETE"])
+def api_delete_environment(namespace, name):
+    conda_store = get_conda_store()
+    auth = get_auth()
+
+    auth.authorize_request(
+        f"{namespace}/{name}", {Permissions.ENVIRONMENT_DELETE}, require=True
+    )
+
+    conda_store.delete_environment(namespace, name)
+    return jsonify({"status": "ok"})
+
+
 @app_api.route("/api/v1/specification/", methods=["POST"])
 def api_post_specification():
     conda_store = get_conda_store()
@@ -182,7 +195,7 @@ def api_delete_build(build_id):
 
     auth.authorize_request(
         f"{build.environment.namespace.name}/{build.environment.name}",
-        {Permissions.ENVIRONMENT_DELETE},
+        {Permissions.BUILD_DELETE},
         require=True,
     )
 

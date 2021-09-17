@@ -28,10 +28,11 @@ ARN_ALLOWED_REGEX = re.compile(
 
 
 class Permissions(enum.Enum):
-    ENVIRONMENT_CREATE = "build::create"
-    ENVIRONMENT_READ = "build::read"
-    ENVIRONMENT_UPDATE = "build::update"
-    ENVIRONMENT_DELETE = "build::delete"
+    ENVIRONMENT_CREATE = "environment:create"
+    ENVIRONMENT_READ = "environment::read"
+    ENVIRONMENT_UPDATE = "environment::update"
+    ENVIRONMENT_DELETE = "environment::delete"
+    BUILD_DELETE = "build::delete"
 
 
 class AuthenticationBackend(LoggingConfigurable):
@@ -78,6 +79,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
                 Permissions.ENVIRONMENT_READ,
                 Permissions.ENVIRONMENT_UPDATE,
                 Permissions.ENVIRONMENT_DELETE,
+                Permissions.BUILD_DELETE,
             },
         },
         help="default role to permissions mapping to use",
