@@ -62,7 +62,7 @@ def api_list_environments():
         api.list_environments(conda_store.db, search=search)
     )
     return paginated_api_response(
-        orm_environments, schema.Environment, limit, offset, exclude={"build"}
+        orm_environments, schema.Environment, limit, offset, exclude={"current_build"}
     )
 
 
@@ -82,7 +82,7 @@ def api_get_environment(namespace, name):
     return jsonify(
         {
             "status": "ok",
-            "data": schema.Environment.from_orm(environment).dict(),
+            "data": schema.Environment.from_orm(environment).dict(exclude={"current_build"}),
         }
     )
 
