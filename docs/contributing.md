@@ -25,7 +25,7 @@ are making and changes to conda-store-server and would like to see
 those changes in the deployment. Run.
 
 ```shell
-docker-compose down  # not always necissary
+docker-compose down  # not always necessary
 docker-compose up --build
 ```
 
