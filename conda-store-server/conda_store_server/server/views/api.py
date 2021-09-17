@@ -20,6 +20,18 @@ def get_paginated_args(request):
     return size, offset
 
 
+def get_sorted_args(request, allowed_sorts=[]):
+    sort_by = request.args.get("sort_by", None)
+    if sort_by not in allowed_sorts:
+        sort_by = None
+
+    order = request.args.get("order", "asc")
+    if order not in ['asc', 'desc']:
+        order = 'asc'
+
+    return sort_by, order
+
+
 def paginated_api_response(query, object_schema, limit: int, offset: int, exclude=None):
     return jsonify(
         {
@@ -58,8 +70,11 @@ def api_list_environments():
     search = request.args.get("search")
 
     limit, offset = get_paginated_args(request)
+
+    sort_by, order = get_sorted_args(request, allowed_sorts=['namespace', 'name'])
+    
     orm_environments = auth.filter_environments(
-        api.list_environments(conda_store.db, search=search)
+        api.list_environments(conda_store.db, search=search, sort_by=sort_by, order=order)
     )
     return paginated_api_response(
         orm_environments, schema.Environment, limit, offset, exclude={"current_build"}
