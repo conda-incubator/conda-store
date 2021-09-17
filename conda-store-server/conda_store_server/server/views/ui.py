@@ -96,10 +96,7 @@ def ui_get_environment(namespace, name):
     context = {
         "environment": environment,
         "entity": auth.authenticate_request(),
-        "environment_builds": api.get_environment_builds(
-            conda_store.db, namespace, name
-        ),
-        "spec": yaml.dump(environment.build.specification.spec),
+        "spec": yaml.dump(environment.current_build.specification.spec),
     }
 
     return render_template("environment.html", **context)
@@ -127,7 +124,7 @@ def ui_edit_environment(namespace, name):
     context = {
         "environment": environment,
         "entity": auth.authenticate_request(),
-        "specification": yaml.dump(environment.build.specification.spec),
+        "specification": yaml.dump(environment.current_build.specification.spec),
         "namespaces": [environment.namespace],
     }
 

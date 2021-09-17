@@ -104,7 +104,7 @@ def set_build_completed(conda_store, build, logs, packages):
         .filter(orm.Environment.name == build.specification.name)
         .first()
     )
-    environment.build = build
+    environment.current_build = build
     environment.specification = build.specification
     conda_store.db.commit()
 

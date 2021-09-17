@@ -87,7 +87,7 @@ def get_docker_image_manifest(conda_store, image, tag, timeout=10 * 60):
         return docker_error_message(schema.DockerRegistryError.NAME_UNKNOWN)
 
     if tag == "latest":
-        build_key = environment.build.build_key
+        build_key = environment.current_build.build_key
     elif tag.startswith("sha256:"):
         # looking for sha256 of docker manifest
         manifests_key = f"docker/manifest/{tag}"

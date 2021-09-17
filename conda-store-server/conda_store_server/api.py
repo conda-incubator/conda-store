@@ -51,16 +51,6 @@ def get_environment(
     return db.query(orm.Environment).join(orm.Namespace).filter(*filters).first()
 
 
-def get_environment_builds(db, namespace, name):
-    return (
-        db.query(orm.Build)
-        .join(orm.Specification, orm.Build.specification_id == orm.Specification.id)
-        .join(orm.Namespace, orm.Build.namespace_id == orm.Namespace.id)
-        .filter(orm.Namespace.name == namespace, orm.Specification.name == name)
-        .all()
-    )
-
-
 def list_specifications(db, search=None):
     filters = []
     return db.query(orm.Specification).filter(*filters)
