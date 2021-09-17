@@ -99,7 +99,7 @@ class Build(Base):
     specification = relationship(Specification, back_populates="builds")
 
     environment_id = Column(Integer, ForeignKey("environment.id"), nullable=False)
-    environment = relationship(Environment, foreign_keys="Build.environment_id")
+    environment = relationship("Environment", foreign_keys="Build.environment_id")
 
     packages = relationship("CondaPackage", secondary=build_conda_package)
 
