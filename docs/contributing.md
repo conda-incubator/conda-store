@@ -72,7 +72,12 @@ easier to contribute to the documentation.
 
 ### Environments
 
- - `GET /api/v1/environment/?search=<str>&page=<int>&size=<int>` :: list environments
+ - `GET /api/v1/environment/?search=<str>&page=<int>&size=<int>&sort_by=<str>&order=<str>` :: list environments
+   - allowed `sort_by` values : 
+     - `name` : sort by environment name
+     - `namespace` : sort by namespace's name
+   - `order` : `asc` or `desc`
+   
 
  - `GET /api/v1/environment/<namespace>/<name>/` :: get environment
 
