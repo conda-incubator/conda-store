@@ -276,7 +276,7 @@ class CondaStore(LoggingConfigurable):
 
         if environment_was_empty:
             environment.build = build
-
+            self.db.commit()
 
     def create_build(self, environment_id: int, specification_sha256: str):
         specification = api.get_specification(self.db, specification_sha256)
