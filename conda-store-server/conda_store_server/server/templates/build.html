@@ -76,7 +76,7 @@
         <li class="list-group-item">Archive: <a href="{{ url_for('ui.api_get_build_archive', build_id=build.id) }}">environment.tar.gz</a></li>
         {% endif %}
         {% if build.has_docker_manifest %}
-        <li class="list-group-item">Docker: {{ registry_external_url }}/{{ build.namespace.name }}/{{ build.specification.name }}:{{ build.build_key }}</a></li>
+        <li class="list-group-item">Docker: {{ registry_external_url }}/{{ build.environment.namespace.name }}/{{ build.environment.name }}:{{ build.build_key }}</a></li>
         {% endif %}
     </ul>
 </div>

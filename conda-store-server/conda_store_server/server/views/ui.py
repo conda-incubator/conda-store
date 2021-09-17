@@ -96,10 +96,7 @@ def ui_get_environment(namespace, name):
     context = {
         "environment": environment,
         "entity": auth.authenticate_request(),
-        "environment_builds": api.get_environment_builds(
-            conda_store.db, namespace, name
-        ),
-        "spec": yaml.dump(environment.build.specification.spec),
+        "spec": yaml.dump(environment.current_build.specification.spec),
     }
 
     return render_template("environment.html", **context)
@@ -127,7 +124,7 @@ def ui_edit_environment(namespace, name):
     context = {
         "environment": environment,
         "entity": auth.authenticate_request(),
-        "specification": yaml.dump(environment.build.specification.spec),
+        "specification": yaml.dump(environment.current_build.specification.spec),
         "namespaces": [environment.namespace],
     }
 
@@ -148,7 +145,7 @@ def ui_get_build(build_id):
         )
 
     auth.authorize_request(
-        f"{build.namespace.name}/{build.specification.name}",
+        f"{build.environment.namespace.name}/{build.environment.name}",
         {Permissions.ENVIRONMENT_READ},
         require=True,
     )
@@ -183,7 +180,7 @@ def api_get_build_logs(build_id):
 
     build = api.get_build(conda_store.db, build_id)
     auth.authorize_request(
-        f"{build.namespace.name}/{build.specification.name}",
+        f"{build.environment.namespace.name}/{build.environment.name}",
         {Permissions.ENVIRONMENT_READ},
         require=True,
     )
@@ -198,7 +195,7 @@ def api_get_build_lockfile(build_id):
 
     build = api.get_build(conda_store.db, build_id)
     auth.authorize_request(
-        f"{build.namespace.name}/{build.specification.name}",
+        f"{build.environment.namespace.name}/{build.environment.name}",
         {Permissions.ENVIRONMENT_READ},
         require=True,
     )
@@ -214,7 +211,7 @@ def api_get_build_yaml(build_id):
 
     build = api.get_build(conda_store.db, build_id)
     auth.authorize_request(
-        f"{build.namespace.name}/{build.specification.name}",
+        f"{build.environment.namespace.name}/{build.environment.name}",
         {Permissions.ENVIRONMENT_READ},
         require=True,
     )
@@ -229,7 +226,7 @@ def api_get_build_archive(build_id):
 
     build = api.get_build(conda_store.db, build_id)
     auth.authorize_request(
-        f"{build.namespace.name}/{build.specification.name}",
+        f"{build.environment.namespace.name}/{build.environment.name}",
         {Permissions.ENVIRONMENT_READ},
         require=True,
     )

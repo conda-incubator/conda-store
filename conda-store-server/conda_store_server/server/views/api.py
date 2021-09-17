@@ -62,7 +62,7 @@ def api_list_environments():
         api.list_environments(conda_store.db, search=search)
     )
     return paginated_api_response(
-        orm_environments, schema.Environment, limit, offset, exclude={"build"}
+        orm_environments, schema.Environment, limit, offset, exclude={"current_build"}
     )
 
 
@@ -82,7 +82,9 @@ def api_get_environment(namespace, name):
     return jsonify(
         {
             "status": "ok",
-            "data": schema.Environment.from_orm(environment).dict(),
+            "data": schema.Environment.from_orm(environment).dict(
+                exclude={"current_build"}
+            ),
         }
     )
 
@@ -142,7 +144,7 @@ def api_get_build(build_id):
         return jsonify({"status": "error", "error": "build id does not exist"}), 404
 
     auth.authorize_request(
-        f"{build.namespace.name}/{build.specification.name}",
+        f"{build.environment.namespace.name}/{build.environment.name}",
         {Permissions.ENVIRONMENT_READ},
         require=True,
     )
@@ -160,12 +162,12 @@ def api_put_build(build_id):
         return jsonify({"status": "error", "error": "build id does not exist"}), 404
 
     auth.authorize_request(
-        f"{build.namespace.name}/{build.specification.name}",
+        f"{build.environment.namespace.name}/{build.environment.name}",
         {Permissions.ENVIRONMENT_READ},
         require=True,
     )
 
-    conda_store.create_build(build.namespace_id, build.specification.sha256)
+    conda_store.create_build(build.environment_id, build.specification.sha256)
     return jsonify({"status": "ok", "message": "rebuild triggered"})
 
 
@@ -179,7 +181,7 @@ def api_delete_build(build_id):
         return jsonify({"status": "error", "error": "build id does not exist"}), 404
 
     auth.authorize_request(
-        f"{build.namespace.name}/{build.specification.name}",
+        f"{build.environment.namespace.name}/{build.environment.name}",
         {Permissions.ENVIRONMENT_DELETE},
         require=True,
     )
@@ -198,7 +200,7 @@ def api_get_build_logs(build_id):
         return jsonify({"status": "error", "error": "build id does not exist"}), 404
 
     auth.authorize_request(
-        f"{build.namespace.name}/{build.specification.name}",
+        f"{build.environment.namespace.name}/{build.environment.name}",
         {Permissions.ENVIRONMENT_DELETE},
         require=True,
     )

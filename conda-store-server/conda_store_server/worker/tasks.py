@@ -103,8 +103,8 @@ def task_update_environment_build(self, environment_id):
     conda_store = self.worker.conda_store
     environment = api.get_environment(conda_store.db, id=environment_id)
 
-    conda_prefix = environment.build.build_path(conda_store.store_directory)
-    environment_prefix = environment.build.environment_path(
+    conda_prefix = environment.current_build.build_path(conda_store.store_directory)
+    environment_prefix = environment.current_build.environment_path(
         conda_store.environment_directory
     )
 

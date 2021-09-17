@@ -7,7 +7,7 @@
 <div class="card my-2">
     <div class="card-body">
         <h5 class="card-title">{{ environment.namespace.name }}/{{ environment.name }}
-            <span class="badge badge-light">{{ (environment.build.size or 0) | filesizeformat(true) }}</span>
+            <span class="badge badge-light">{{ (environment.current_build.size or 0) | filesizeformat(true) }}</span>
         </h5>
     </div>
     <ul class="list-group list-group-flush">
@@ -24,12 +24,12 @@
 
 <h3>Builds</h3>
 <ul class="list-group">
-    {% for build in environment_builds %}
-    <li class="list-group-item d-flex justify-content-between align-items-center {% if build.id == environment.build_id %}list-group-item-success{% elif build.deleted_on is not none %}list-group-item-secondary{% endif %}">
+    {% for build in environment.builds %}
+    <li class="list-group-item d-flex justify-content-between align-items-center {% if build.id == environment.current_build_id %}list-group-item-success{% elif build.deleted_on is not none %}list-group-item-secondary{% endif %}">
         <a href="{{ url_for('ui.ui_get_build', build_id=build.id) }}/">Build {{ build.id }}</a>
         <span>{{ build.status.value }}</span>
         <div class="btn-group" role="group" aria-label="Build actions">
-            {% if build.id != environment.build_id and build.status.value == 'COMPLETED' and build.deleted_on is none %}
+            {% if build.id != environment.current_build_id and build.status.value == 'COMPLETED' and build.deleted_on is none %}
             <button type="button" onclick="updateEnvironmentBuild('{{ build.id }}')" class="btn btn-primary mb-2">
                 <ion-icon name="checkmark"></ion-icon>
             </button>

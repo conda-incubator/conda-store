@@ -308,7 +308,7 @@ class Authentication(LoggingConfigurable):
             cases.append(
                 and_(
                     orm.Namespace.name.like(namespace),
-                    orm.Specification.name.like(name),
+                    orm.Environment.name.like(name),
                 )
             )
 
@@ -316,8 +316,8 @@ class Authentication(LoggingConfigurable):
             return query.filter(False)
 
         return (
-            query.join(orm.Build.namespace)
-            .join(orm.Build.specification)
+            query.join(orm.Build.environment)
+            .join(orm.Build.namespace)
             .filter(or_(*cases))
         )
 
