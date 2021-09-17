@@ -40,7 +40,7 @@ describe('First Test', () => {
     cy.get('a.navbar-brand').click()
 
     // visit environment
-    cy.get('h5.card-title > a').contains('filesystem/python-numpy-env').click()
+    cy.get('h5.card-title > a').contains('filesystem/python-flask-env').click()
 
     // visit build
     cy.get('li.list-group-item > a').contains('Build').click()
