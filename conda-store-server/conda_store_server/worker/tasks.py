@@ -125,7 +125,7 @@ def delete_build_artifact(conda_store, build_artifact):
         pass
     else:
         conda_store.log.error(f"deleting {build_artifact.key}")
-        conda_store.storage.delete(conda_store.db, build_id, build_artifact.key)
+        conda_store.storage.delete(conda_store.db, build_artifact.build.id, build_artifact.key)
 
 
 @task(base=WorkerTask, name="task_delete_build", bind=True)
