@@ -99,7 +99,7 @@ class Build(Base):
     specification = relationship(Specification, back_populates="builds")
 
     environment_id = Column(Integer, ForeignKey("environment.id"), nullable=False)
-    environment = relationship("Environment", back_populates="builds", foreign_keys=[environment_id])
+    environment = relationship("Environment", backref="builds", foreign_keys=[environment_id])
 
     packages = relationship("CondaPackage", secondary=build_conda_package)
 
@@ -225,8 +225,6 @@ class Environment(Base):
 
     current_build_id = Column(Integer, ForeignKey("build.id"))
     current_build = relationship(Build, foreign_keys=[current_build_id])
-
-    builds = relationship(Build, back_populates="environment")
 
 
 class CondaChannel(Base):
