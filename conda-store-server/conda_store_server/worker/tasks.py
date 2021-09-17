@@ -152,7 +152,6 @@ def task_delete_environment(self, environment_id):
         conda_store.log.error(f"deleting artifacts for build={build.id}")
         for build_artifact in api.list_build_artifacts(
             conda_store.db,
-            limit=None,
             build_id=build.id,
         ).all():
             delete_build_artifact(conda_store, build_artifact)
