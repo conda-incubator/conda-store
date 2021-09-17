@@ -156,5 +156,5 @@ def task_delete_environment(self, environment_id):
         ).all():
             delete_build_artifact(conda_store, build_artifact)
         conda_store.db.delete(build)
-    conda_store.delete(environment)
+    conda_store.db.delete(environment)
     conda_store.db.commit()
