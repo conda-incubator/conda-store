@@ -71,7 +71,7 @@
  function deleteEnvironment() {
      fetch(`{{ url_for('api.api_get_environment', namespace=environment.namespace.name, name=environment.name) }}`, {
          method: 'DELETE',
-     }).then(response => window.location.reload(true));
+     }).then(response => window.location = '/');
  }
 
  function buildAction(method, buildId) {
