@@ -15,7 +15,7 @@ from sqlalchemy import (
     UniqueConstraint,
     ForeignKey,
 )
-from sqlalchemy.orm import sessionmaker, relationship, scoped_session
+from sqlalchemy.orm import sessionmaker, relationship, scoped_session, backref
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import create_engine
@@ -100,7 +100,9 @@ class Build(Base):
 
     environment_id = Column(Integer, ForeignKey("environment.id"), nullable=False)
     environment = relationship(
-        "Environment", backref="builds", foreign_keys=[environment_id]
+        "Environment",
+        backref=backref("builds", cascade="all, delete-orphan"),
+        foreign_keys=[environment_id],
     )
 
     packages = relationship("CondaPackage", secondary=build_conda_package)
@@ -112,7 +114,9 @@ class Build(Base):
     ended_on = Column(DateTime, default=None)
     deleted_on = Column(DateTime, default=None)
 
-    build_artifacts = relationship("BuildArtifact", back_populates="build")
+    build_artifacts = relationship(
+        "BuildArtifact", back_populates="build", cascade="all, delete-orphan"
+    )
 
     def build_path(self, store_directory):
         store_path = os.path.abspath(store_directory)
@@ -226,7 +230,11 @@ class Environment(Base):
     name = Column(String, nullable=False)
 
     current_build_id = Column(Integer, ForeignKey("build.id"))
-    current_build = relationship(Build, foreign_keys=[current_build_id])
+    current_build = relationship(
+        Build, foreign_keys=[current_build_id], post_update=True
+    )
+
+    deleted_on = Column(DateTime, default=None)
 
 
 class CondaChannel(Base):

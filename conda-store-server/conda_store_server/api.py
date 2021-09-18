@@ -102,7 +102,6 @@ def get_build_artifact_types(db, build_id: int):
 
 def list_build_artifacts(
     db,
-    limit: int = 25,
     build_id: int = None,
     key: str = None,
     excluded_artifact_types: List[orm.BuildArtifactType] = None,
@@ -117,7 +116,7 @@ def list_build_artifacts(
             func.not_(orm.BuildArtifact.artifact_type.in_(excluded_artifact_types))
         )
 
-    return db.query(orm.BuildArtifact).filter(*filters).limit(limit).all()
+    return db.query(orm.BuildArtifact).filter(*filters)
 
 
 def get_build_artifact(db, build_id: int, key: str):
