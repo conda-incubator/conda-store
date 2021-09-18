@@ -346,7 +346,10 @@ class CondaStore(LoggingConfigurable):
                 f"environment namespace={namespace} name={name} does not exist"
             )
 
-        environment.deleted_on = datetime.datetime.utcnow()
+        utcnow = datetime.datetime.utcnow()
+        environment.deleted_on = utcnow
+        for build in environment.builds:
+            build.deleted_on = utcnow
         self.db.commit()
 
         self.celery_app
