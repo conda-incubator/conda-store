@@ -124,7 +124,7 @@ def delete_build_artifact(conda_store, build_artifact):
     elif build_artifact.artifact_type == orm.BuildArtifactType.LOCKFILE:
         pass
     else:
-        conda_store.log.error(f"deleting {build_artifact.key}")
+        conda_store.log.info(f"deleting {build_artifact.key}")
         conda_store.storage.delete(conda_store.db, build_artifact.build.id, build_artifact.key)
 
 
@@ -133,7 +133,7 @@ def task_delete_build(self, build_id):
     conda_store = self.worker.conda_store
     build = api.get_build(conda_store.db, build_id)
 
-    conda_store.log.error(f"deleting artifacts for build={build.id}")
+    conda_store.log.info(f"deleting artifacts for build={build.id}")
     for build_artifact in api.list_build_artifacts(
         conda_store.db,
         build_id=build_id,
@@ -149,7 +149,7 @@ def task_delete_environment(self, environment_id):
     environment = api.get_environment(conda_store.db, id=environment_id)
 
     for build in environment.builds:
-        conda_store.log.error(f"deleting artifacts for build={build.id}")
+        conda_store.log.info(f"deleting artifacts for build={build.id}")
         for build_artifact in api.list_build_artifacts(
             conda_store.db,
             build_id=build.id,
@@ -157,6 +157,8 @@ def task_delete_environment(self, environment_id):
             delete_build_artifact(conda_store, build_artifact)
 
     for build in environment.builds:
+        conda_store.log.info(f"deleting build={build.id}")
         conda_store.db.delete(build)
+    conda_store.log.info(f"deleting environment={environment.namespace.name}/{environment.name}")
     conda_store.db.delete(environment)
     conda_store.db.commit()
