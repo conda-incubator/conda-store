@@ -156,9 +156,5 @@ def task_delete_environment(self, environment_id):
         ).all():
             delete_build_artifact(conda_store, build_artifact)
 
-    for build in environment.builds:
-        conda_store.log.info(f"deleting build={build.id}")
-        conda_store.db.delete(build)
-    conda_store.log.info(f"deleting environment={environment.namespace.name}/{environment.name}")
     conda_store.db.delete(environment)
     conda_store.db.commit()
