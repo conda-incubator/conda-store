@@ -319,7 +319,7 @@ class Authentication(LoggingConfigurable):
 
         return (
             query.join(orm.Build.environment)
-            .join(orm.Build.namespace)
+            .join(orm.Environment.namespace)
             .filter(or_(*cases))
         )
 
