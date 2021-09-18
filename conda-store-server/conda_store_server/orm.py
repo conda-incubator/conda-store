@@ -226,7 +226,7 @@ class Environment(Base):
     name = Column(String, nullable=False)
 
     current_build_id = Column(Integer, ForeignKey("build.id"))
-    current_build = relationship(Build, foreign_keys=[current_build_id], post_update=True)
+    current_build = relationship(Build, foreign_keys=[current_build_id])
 
     deleted_on = Column(DateTime, default=None)
 
