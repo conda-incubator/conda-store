@@ -88,9 +88,12 @@ def api_list_environments():
 
     limit, offset = get_paginated_args(request)
 
-    sorts = {"namespace": orm.Environment.namespace, "name": orm.Environment.name}
+    allowed_sorts = {
+        "namespace": orm.Environment.namespace,
+        "name": orm.Environment.name,
+    }
 
-    sorts = get_sorts(request, allowed_sorts=sorts)
+    sorts = get_sorts(request, allowed_sorts)
 
     orm_environments = auth.filter_environments(
         api.list_environments(conda_store.db, search=search)
