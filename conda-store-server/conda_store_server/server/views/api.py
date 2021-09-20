@@ -1,7 +1,10 @@
 from flask import Blueprint, jsonify, redirect, request
 import pydantic
+from typing import List, Dict
 
-from conda_store_server import api, schema, utils
+from sqlalchemy import desc, asc
+
+from conda_store_server import api, orm, schema, utils
 from conda_store_server.server.utils import get_conda_store, get_auth, get_server
 from conda_store_server.server.auth import Permissions
 
@@ -20,25 +23,44 @@ def get_paginated_args(request):
     return size, offset
 
 
-def get_sorted_args(request, allowed_sorts=[]):
-    sort_by = request.args.get("sort_by", None)
-    if sort_by not in allowed_sorts:
-        sort_by = None
+def get_sorts(request, allowed_sorts: Dict = {}):
+    sort_by = request.args.getlist("sort_by")
+
+    sort_by = [s for s in sort_by if s in allowed_sorts]
+
+    if len(sort_by) == 0:
+        return []
 
     order = request.args.get("order", "asc")
     if order not in ["asc", "desc"]:
         order = "asc"
 
-    return sort_by, order
+    result = [
+        desc(allowed_sorts[k]) if order == "desc" else asc(allowed_sorts[k])
+        for k in sort_by
+    ]
+    return result
 
 
-def paginated_api_response(query, object_schema, limit: int, offset: int, exclude=None):
+# Todo :
+# - jsonify / paginate / sort+order
+#
+
+
+def paginated_api_response(
+    query, object_schema, limit: int, offset: int, sorts: List = [], exclude=None
+):
+
+    for s in sorts:
+        query = query.order_by(s)
+
+    query = query.limit(limit).offset(offset)
+
     return jsonify(
         {
             "status": "ok",
             "data": [
-                object_schema.from_orm(_).dict(exclude=exclude)
-                for _ in query.limit(limit).offset(offset).all()
+                object_schema.from_orm(_).dict(exclude=exclude) for _ in query.all()
             ],
             "page": (offset // limit) + 1,
             "size": limit,
@@ -71,15 +93,20 @@ def api_list_environments():
 
     limit, offset = get_paginated_args(request)
 
-    sort_by, order = get_sorted_args(request, allowed_sorts=["namespace", "name"])
+    sorts = {"namespace": orm.Environment.namespace, "name": orm.Environment.name}
+
+    sorts = get_sorts(request, allowed_sorts=sorts)
 
     orm_environments = auth.filter_environments(
-        api.list_environments(
-            conda_store.db, search=search, sort_by=sort_by, order=order
-        )
+        api.list_environments(conda_store.db, search=search)
     )
     return paginated_api_response(
-        orm_environments, schema.Environment, limit, offset, exclude={"current_build"}
+        orm_environments,
+        schema.Environment,
+        limit,
+        offset,
+        sorts=sorts,
+        exclude={"current_build"},
     )
 
 
