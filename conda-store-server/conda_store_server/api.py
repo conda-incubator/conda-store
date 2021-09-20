@@ -138,7 +138,7 @@ def get_conda_channel(db, channel_name: str):
     )
 
 
-def list_conda_packages(db, search: str = None, build : str = None):
+def list_conda_packages(db, search: str = None, build: str = None):
     filters = []
     if search:
         filters.append(orm.CondaPackage.name.contains(search, autoescape=True))
