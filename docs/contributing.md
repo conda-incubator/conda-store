@@ -112,7 +112,7 @@ easier to contribute to the documentation.
 
 ### Conda Packages
 
- - `GET /api/v1/package/?search=<str>&page=<int>&size=<int>` :: list packages
+ - `GET /api/v1/package/?search=<str>&build=<str>&page=<int>&size=<int>` :: list packages
    - allowed `sort_by` values : `channel` to sort by channel name, `name` to sort by package name
    - allowed `order` values : `asc` or `desc`
    - multiple `sort_by` parameters can be combined to sort by multiple fields.  
@@ -124,8 +124,9 @@ easier to contribute to the documentation.
 ```
    - Even if multiple `sort_by` parameters are given, only one `order` parameter is accepted. It will apply to each `sort_by`
 
-
-
+ - `build` string to search within `build` for example strings include
+   `py27_0` etc which can be useful for filtering specific versions of
+   packages.
 
 ### REST API Query Format
 
