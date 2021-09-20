@@ -24,8 +24,6 @@ def list_environments(
     db,
     namespace: str = None,
     search: str = None,
-    sort_by: str = None,
-    order: str = "asc",
 ):
     filters = []
     if namespace:
@@ -34,19 +32,7 @@ def list_environments(
     if search:
         filters.append(orm.Environment.name.contains(search, autoescape=True))
 
-    result = db.query(orm.Environment).join(orm.Environment.namespace).filter(*filters)
-
-    if sort_by == "name":
-        field = orm.Environment.name
-        order = field.desc() if order == "desc" else field.asc()
-        result = result.order_by(order)
-
-    elif sort_by == "namespace":
-        field = orm.Environment.namespace
-        order = field.desc() if order == "desc" else field.asc()
-        result = result.order_by(order)
-
-    return result
+    return db.query(orm.Environment).join(orm.Environment.namespace).filter(*filters)
 
 
 def get_environment(

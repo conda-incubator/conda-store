@@ -73,10 +73,17 @@ easier to contribute to the documentation.
 ### Environments
 
  - `GET /api/v1/environment/?search=<str>&page=<int>&size=<int>&sort_by=<str>&order=<str>` :: list environments
-   - allowed `sort_by` values : 
-     - `name` : sort by environment name
-     - `namespace` : sort by namespace's name
-   - `order` : `asc` or `desc`
+   - allowed `sort_by` values : `namespace`, `name`
+   - allowed `order` values : `asc` or `desc`
+   - multiple `sort_by` parameters can be combined to sort by multiple fields.  
+```
+?sort_by=namespace                 -> sort by namespace
+?sort_by=name                      -> sort by name
+?sort_by=namespace&sort_by=name    -> sort by namespace and name
+?sort_by=name&sort_by=namespace    -> sort by name and namespace
+```
+   - Even if multiple `sort_by` parameters are given, only one `order` parameter is accepted. It will apply to each `sort_by`
+
    
 
  - `GET /api/v1/environment/<namespace>/<name>/` :: get environment
