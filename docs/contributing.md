@@ -100,7 +100,11 @@ easier to contribute to the documentation.
 
 ### Conda Packages
 
- - `GET /api/v1/package/?search=<str>&page=<int>&size=<int>` :: list packages
+ - `GET /api/v1/package/?search=<str>&build=<str>&page=<int>&size=<int>` :: list packages
+
+ - `build` string to search within `build` for example strings include
+   `py27_0` etc which can be useful for filtering specific versions of
+   packages.
 
 ### REST API Query Format
 

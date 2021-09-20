@@ -280,12 +280,12 @@ class CondaChannel(Base):
                             timestamp=package.get("timestamp"),
                             version=package["version"],
                             channel_id=self.id,
-                            summary=repodata["packages"][package["name"]].get(
-                                "summary"
-                            ),
-                            description=repodata["packages"][package["name"]].get(
-                                "description"
-                            ),
+                            summary=repodata.get("packages", {})
+                            .get(package["name"], {})
+                            .get("summary"),
+                            description=repodata.get("packages", {})
+                            .get(package["name"], {})
+                            .get("description"),
                         )
                     )
                     existing_architecture_sha256.add(package["sha256"])
