@@ -107,7 +107,7 @@ def api_list_environments():
         schema.Environment,
         exclude={"current_build"},
         allowed_sort_bys={
-            "namespace": orm.Environment.namespace,
+            "namespace": orm.Namespace.name,
             "name": orm.Environment.name,
         },
         default_sort_by=["namespace", "name"],
