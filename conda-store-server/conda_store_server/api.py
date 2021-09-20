@@ -20,7 +20,11 @@ def get_namespace(db, name: str = None, id: int = None):
     return db.query(orm.Namespace).filter(*filters).first()
 
 
-def list_environments(db, namespace: str = None, search: str = None):
+def list_environments(
+    db,
+    namespace: str = None,
+    search: str = None,
+):
     filters = []
     if namespace:
         filters.append(orm.Namespace.name == namespace)
@@ -145,7 +149,7 @@ def list_conda_packages(db, search: str = None, build: str = None):
     if build:
         filters.append(orm.CondaPackage.build.contains(build, autoescape=True))
 
-    return db.query(orm.CondaPackage).filter(*filters)
+    return db.query(orm.CondaPackage).join(orm.CondaChannel).filter(*filters)
 
 
 def get_metrics(db):

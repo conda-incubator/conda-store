@@ -25,7 +25,7 @@ are making and changes to conda-store-server and would like to see
 those changes in the deployment. Run.
 
 ```shell
-docker-compose down  # not always necissary
+docker-compose down  # not always necessary
 docker-compose up --build
 ```
 
@@ -68,12 +68,14 @@ easier to contribute to the documentation.
 
 ### Namespace
 
- - `GET /api/v1/namespace/?page=<int>&size=<int>` :: list namespaces
+ - `GET /api/v1/namespace/?page=<int>&size=<int>&sort_by=<str>&order=<str>` :: list namespaces
+   - allowed `sort_by` values: `name` for the name of the namespace
 
 ### Environments
 
- - `GET /api/v1/environment/?search=<str>&page=<int>&size=<int>` :: list environments
-
+ - `GET /api/v1/environment/?search=<str>&page=<int>&size=<int>&sort_by=<str>&order=<str>` :: list environments
+   - allowed `sort_by` values : `namespace` for namespace name, `name` for environment name
+   
  - `GET /api/v1/environment/<namespace>/<name>/` :: get environment
 
  - `PUT /api/v1/environment/<namespace>/<name>/` :: update environment to given build id
@@ -84,7 +86,8 @@ easier to contribute to the documentation.
  
 ### Builds
 
- - `GET /api/v1/build/?page=<int>&size=<int>` :: list builds
+ - `GET /api/v1/build/?page=<int>&size=<int>&sort_by=<str>&order=<str>` :: list builds
+   - allowed `sort_by` values : `id` to sort by build id
 
  - `GET /api/v1/build/<build_id>/` :: get build
 
@@ -100,11 +103,11 @@ easier to contribute to the documentation.
 
 ### Conda Packages
 
- - `GET /api/v1/package/?search=<str>&build=<str>&page=<int>&size=<int>` :: list packages
-
- - `build` string to search within `build` for example strings include
-   `py27_0` etc which can be useful for filtering specific versions of
-   packages.
+ - `GET /api/v1/package/?search=<str>&build=<str>&page=<int>&size=<int>?sort_by=<str>?order=<str>` :: list packages
+   - allowed `sort_by` values : `channel` to sort by channel name, `name` to sort by package name
+   - `build` string to search within `build` for example strings include
+     `py27_0` etc which can be useful for filtering specific versions of
+     packages.
 
 ### REST API Query Format
 
@@ -114,6 +117,12 @@ For several paginated results the following query parameters are accepted.
  - `size` the number of results to return in each page. The max size
    is determined by the traitlets parameter
    `c.CondaStoreServer.max_page_size` with default of 100.
+ - `sort_by` (can be multiple order_by(s)) indicating a multi-column
+   ordering. Each route has a list of allowed sorting keys:
+   e.g. `namespace`, `name`, `channel`. All paginated routes support
+   this and have a default specific to the given resource.
+ - `order` is either `desc` descending or `asc` ascending with a
+   default of `asc`. Only one order parameter is accepted.
 
 If a query requests a page that does not exist a data response of an
 empty list is returned.
