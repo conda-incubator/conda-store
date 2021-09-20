@@ -146,7 +146,7 @@ def list_conda_packages(db, search: str = None):
     filters = []
     if search:
         filters.append(orm.CondaPackage.name.contains(search, autoescape=True))
-    return db.query(orm.CondaPackage).filter(*filters)
+    return db.query(orm.CondaPackage).join(orm.CondaChannel).filter(*filters)
 
 
 def get_metrics(db):

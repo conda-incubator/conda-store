@@ -279,5 +279,15 @@ def api_list_packages():
     search = request.args.get("search")
 
     limit, offset = get_paginated_args(request)
+
+    allowed_sorts = {
+        "channel": orm.CondaChannel.name,
+        "name": orm.CondaPackage.name,
+    }
+
+    sorts = get_sorts(request, allowed_sorts)
+
     orm_packages = api.list_conda_packages(conda_store.db, search=search)
-    return paginated_api_response(orm_packages, schema.CondaPackage, limit, offset)
+    return paginated_api_response(
+        orm_packages, schema.CondaPackage, limit, offset, sorts
+    )

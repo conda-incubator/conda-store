@@ -113,6 +113,19 @@ easier to contribute to the documentation.
 ### Conda Packages
 
  - `GET /api/v1/package/?search=<str>&page=<int>&size=<int>` :: list packages
+   - allowed `sort_by` values : `channel` to sort by channel name, `name` to sort by package name
+   - allowed `order` values : `asc` or `desc`
+   - multiple `sort_by` parameters can be combined to sort by multiple fields.  
+```
+?sort_by=channel                 -> sort by channel name
+?sort_by=name                    -> sort by package name
+?sort_by=channel&sort_by=name    -> sort by channel name and package name
+?sort_by=name&sort_by=channel    -> sort by package name and channel name
+```
+   - Even if multiple `sort_by` parameters are given, only one `order` parameter is accepted. It will apply to each `sort_by`
+
+
+
 
 ### REST API Query Format
 
