@@ -35,7 +35,7 @@ def get_sorts(
         order = default_order
 
     order_mapping = {"asc": lambda c: c.asc(), "desc": lambda c: c.desc()}
-    return [order_mapping[order]() for k in sort_by]
+    return [order_mapping[order](k) for k in sort_by]
 
 
 def paginated_api_response(
