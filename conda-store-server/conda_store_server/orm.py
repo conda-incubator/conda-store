@@ -280,10 +280,10 @@ class CondaChannel(Base):
                             timestamp=package.get("timestamp"),
                             version=package["version"],
                             channel_id=self.id,
-                            summary=repodata["packages"][package["name"]].get(
+                            summary=repodata.get("packages", {}).get(package["name"], {}).get(
                                 "summary"
                             ),
-                            description=repodata["packages"][package["name"]].get(
+                            description=repodata.get("packages", {}).get(package["name"], {}).get(
                                 "description"
                             ),
                         )

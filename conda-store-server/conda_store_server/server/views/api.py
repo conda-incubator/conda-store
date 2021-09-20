@@ -235,7 +235,8 @@ def api_list_packages():
     conda_store = get_conda_store()
 
     search = request.args.get("search")
+    build = request.args.get("build")
 
     limit, offset = get_paginated_args(request)
-    orm_packages = api.list_conda_packages(conda_store.db, search=search)
+    orm_packages = api.list_conda_packages(conda_store.db, search=search, build=build)
     return paginated_api_response(orm_packages, schema.CondaPackage, limit, offset)
