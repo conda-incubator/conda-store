@@ -182,7 +182,8 @@ developer. First we see the environment name and namespace along with
 the disk space that the environment consumes. Right below this
 information is the full `environment.yaml` specification of the
 currently activated build. User's can quickly edit this existing
-environment by clicking the `edit` button.
+environment by clicking the `edit` button. Additionally the entire
+environment can be deleted via the `delete` button.
 
 Below this is a list of the current builds of the given
 environment. The environment highlighted in `green` is the current

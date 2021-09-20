@@ -79,6 +79,8 @@ easier to contribute to the documentation.
  - `GET /api/v1/environment/<namespace>/<name>/` :: get environment
 
  - `PUT /api/v1/environment/<namespace>/<name>/` :: update environment to given build id
+
+ - `DELETE /api/v1/environment/<namespace>/<name>/` :: delete the environment along with all artifacts and builds
  
 ### Specifications
 
@@ -93,7 +95,7 @@ easier to contribute to the documentation.
 
  - `PUT /api/v1/build/<build_id>/` :: trigger new build of given build specification
 
- - `DELETE /api/v1/build/<build_id>/` :: delete given build
+ - `DELETE /api/v1/build/<build_id>/` :: delete given build along with all artifacts that are not in `c.CondaStore.build_artifacts_kept_on_deletion`
 
  - `GET /api/v1/build/<build_id>/logs/` :: get build logs
 
