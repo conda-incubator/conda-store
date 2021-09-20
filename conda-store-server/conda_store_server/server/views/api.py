@@ -42,11 +42,6 @@ def get_sorts(request, allowed_sorts: Dict = {}):
     return result
 
 
-# Todo :
-# - jsonify / paginate / sort+order
-#
-
-
 def paginated_api_response(
     query, object_schema, limit: int, offset: int, sorts: List = [], exclude=None
 ):
