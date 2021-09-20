@@ -21,7 +21,12 @@ def get_limit_offset_args(request):
     return size, offset
 
 
-def get_sorts(request, allowed_sort_bys: Dict = {}, default_sort_by: List = [], default_order: str = "asc"):
+def get_sorts(
+    request,
+    allowed_sort_bys: Dict = {},
+    default_sort_by: List = [],
+    default_order: str = "asc",
+):
     sort_by = request.args.getlist("sort_by") or default_sort_by
     sort_by = [allowed_sort_bys[s] for s in sort_by if s in allowed_sort_bys]
 
@@ -29,19 +34,27 @@ def get_sorts(request, allowed_sort_bys: Dict = {}, default_sort_by: List = [], 
     if order not in {"asc", "desc"}:
         order = default_order
 
-    order_mapping = {
-        "asc": lambda c: c.asc(),
-        "desc": lambda c: c.desc()
-    }
+    order_mapping = {"asc": lambda c: c.asc(), "desc": lambda c: c.desc()}
     return [order_mapping[order]() for k in sort_by]
 
 
 def paginated_api_response(
-        query, object_schema, sorts: List = [], exclude=None, allowed_sort_bys: Dict = {}, default_sort_by: List = [], default_order: str = "asc"
+    query,
+    object_schema,
+    sorts: List = [],
+    exclude=None,
+    allowed_sort_bys: Dict = {},
+    default_sort_by: List = [],
+    default_order: str = "asc",
 ):
 
     limit, offset = get_limit_offset_args(request)
-    sorts = get_sorts(request, allowed_sort_bys, default_sort=default_sort, default_order=default_order)
+    sorts = get_sorts(
+        request,
+        allowed_sort_bys,
+        default_sort_by=default_sort_by,
+        default_order=default_order,
+    )
 
     query = query.order_by(*sorts).limit(limit).offset(offset)
 
@@ -269,10 +282,8 @@ def api_list_channels():
     return paginated_api_response(
         orm_channels,
         schema.CondaChannel,
-        allowed_sort_bys={
-            "name": orm.CondaChannel.name
-        },
-        default_sort_by=["name"]
+        allowed_sort_bys={"name": orm.CondaChannel.name},
+        default_sort_by=["name"],
     )
 
 
