@@ -276,8 +276,9 @@ def api_get_build_packages(build_id):
         require=True,
     )
 
+    orm_packages = api.get_build_packages(conda_store.db, build.id)
     return paginated_api_response(
-        build.packages,
+        orm_packages,
         schema.CondaPackage,
         allowed_sort_bys={
             "channel": orm.CondaChannel.name,
