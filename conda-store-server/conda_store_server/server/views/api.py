@@ -215,7 +215,12 @@ def api_get_build(build_id):
         require=True,
     )
 
-    return jsonify({"status": "ok", "data": schema.Build.from_orm(build).dict()})
+    return jsonify(
+        {
+            "status": "ok",
+            "data": schema.Build.from_orm(build).dict(exclude={"packages"}),
+        }
+    )
 
 
 @app_api.route("/api/v1/build/<build_id>/", methods=["PUT"])
@@ -256,6 +261,32 @@ def api_delete_build(build_id):
     return jsonify({"status": "ok"})
 
 
+@app_api.route("/api/v1/build/<build_id>/packages/", methods=["GET"])
+def api_get_build_packages(build_id):
+    conda_store = get_conda_store()
+    auth = get_auth()
+
+    build = api.get_build(conda_store.db, build_id)
+    if build is None:
+        return jsonify({"status": "error", "error": "build id does not exist"}), 404
+
+    auth.authorize_request(
+        f"{build.environment.namespace.name}/{build.environment.name}",
+        {Permissions.ENVIRONMENT_READ},
+        require=True,
+    )
+
+    return paginated_api_response(
+        build.packages,
+        schema.CondaPackage,
+        allowed_sort_bys={
+            "channel": orm.CondaChannel.name,
+            "name": orm.CondaPackage.name,
+        },
+        default_sort_by=["channel", "name"],
+    )
+
+
 @app_api.route("/api/v1/build/<build_id>/logs/", methods=["GET"])
 def api_get_build_logs(build_id):
     conda_store = get_conda_store()
@@ -267,7 +298,7 @@ def api_get_build_logs(build_id):
 
     auth.authorize_request(
         f"{build.environment.namespace.name}/{build.environment.name}",
-        {Permissions.ENVIRONMENT_DELETE},
+        {Permissions.ENVIRONMENT_READ},
         require=True,
     )
 

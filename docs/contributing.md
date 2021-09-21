@@ -99,6 +99,9 @@ easier to contribute to the documentation.
 
  - `GET /api/v1/build/<build_id>/logs/` :: get build logs
 
+ - `GET /api/v1/build/<build_id>/packages/?page=<int>&size=<int>&sort_by=<str>&order=<str>` :: list packages within build
+   - allowed `sort_by` values : `channel` to sort by channel name, `name` to sort by package name
+
 ### Conda Channels
 
  - `GET /api/v1/channel/?page=<int>&size=<int>` :: list channels
