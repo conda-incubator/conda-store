@@ -82,6 +82,15 @@ def get_build(db, build_id: int):
     return db.query(orm.Build).filter(orm.Build.id == build_id).first()
 
 
+def get_build_packages(db, build_id: int):
+    return (
+        db.query(orm.CondaPackage)
+        .join(orm.build_conda_package)
+        .join(orm.CondaChannel)
+        .filter(orm.build_conda_package.c.build_id == build_id)
+    )
+
+
 def get_build_lockfile(db, build_id: int):
     build = db.query(orm.Build).filter(orm.Build.id == build_id).first()
     packages = [
