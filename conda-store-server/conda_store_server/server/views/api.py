@@ -334,6 +334,8 @@ def api_list_packages():
         allowed_sort_bys={
             "channel": orm.CondaChannel.name,
             "name": orm.CondaPackage.name,
+            "version": orm.CondaPackage.version,
+            "build": orm.CondaPackage.build,
         },
-        default_sort_by=["channel", "name"],
+        default_sort_by=["channel", "name", "version", "build"],
     )
