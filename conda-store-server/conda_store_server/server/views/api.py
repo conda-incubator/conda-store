@@ -57,7 +57,7 @@ def paginated_api_response(
     )
 
     count = query.count()
-    query = query.order_by(*sorts).limit(limit).offset(offset)
+    query = query.order_by(*sorts).offset(offset).limit(limit)
 
     return jsonify(
         {
