@@ -10,6 +10,19 @@ from conda_store_server.server.auth import Permissions
 app_api = Blueprint("api", __name__)
 
 
+def filter_distinct_on(
+    query, allowed_distinct_ons: Dict = {}, default_distinct_on: List = []
+):
+    distinct_on = request.args.getlist("distinct_on") or default_distinct_on
+    distinct_on = [
+        allowed_distinct_ons[d] for d in distinct_on if d in allowed_distinct_ons
+    ]
+
+    if distinct_on:
+        return distinct_on, query.distinct(*distinct_on)
+    return distinct_on, query
+
+
 def get_limit_offset_args(request):
     server = get_server()
 
@@ -24,11 +37,18 @@ def get_limit_offset_args(request):
 def get_sorts(
     request,
     allowed_sort_bys: Dict = {},
+    required_sort_bys: List = [],
     default_sort_by: List = [],
     default_order: str = "asc",
 ):
     sort_by = request.args.getlist("sort_by") or default_sort_by
     sort_by = [allowed_sort_bys[s] for s in sort_by if s in allowed_sort_bys]
+
+    # required_sort_bys is needed when sorting is used with distinct
+    # query see "SELECT DISTINCT ON expressions must match initial
+    # ORDER BY expressions"
+    if required_sort_bys != sort_by[: len(required_sort_bys)]:
+        sort_by = required_sort_bys + sort_by
 
     order = request.args.get("order", default_order)
     if order not in {"asc", "desc"}:
@@ -44,6 +64,7 @@ def paginated_api_response(
     sorts: List = [],
     exclude=None,
     allowed_sort_bys: Dict = {},
+    required_sort_bys: List = [],
     default_sort_by: List = [],
     default_order: str = "asc",
 ):
@@ -52,6 +73,7 @@ def paginated_api_response(
     sorts = get_sorts(
         request,
         allowed_sort_bys,
+        required_sort_bys=required_sort_bys,
         default_sort_by=default_sort_by,
         default_order=default_order,
     )
@@ -328,8 +350,16 @@ def api_list_packages():
     build = request.args.get("build")
 
     orm_packages = api.list_conda_packages(conda_store.db, search=search, build=build)
-    return paginated_api_response(
+    required_sort_bys, distinct_orm_packages = filter_distinct_on(
         orm_packages,
+        allowed_distinct_ons={
+            "channel": orm.CondaChannel.name,
+            "name": orm.CondaPackage.name,
+            "version": orm.CondaPackage.version,
+        },
+    )
+    return paginated_api_response(
+        distinct_orm_packages,
         schema.CondaPackage,
         allowed_sort_bys={
             "channel": orm.CondaChannel.name,
@@ -338,4 +368,5 @@ def api_list_packages():
             "build": orm.CondaPackage.build,
         },
         default_sort_by=["channel", "name", "version", "build"],
+        required_sort_bys=required_sort_bys,
     )
