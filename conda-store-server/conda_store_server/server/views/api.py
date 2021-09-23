@@ -353,7 +353,6 @@ def api_list_packages():
             "name": orm.CondaPackage.name,
             "version": orm.CondaPackage.version,
         },
-        default_distinct_on=["channel", "name", "version"],
     )
     return paginated_api_response(
         distinct_orm_packages,
