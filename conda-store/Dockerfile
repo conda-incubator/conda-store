@@ -19,7 +19,7 @@ RUN cd /opt/conda-store && \
 
 RUN git clone ${GATOR_GIT_URL} && \
     cd gator && \
-    git checkout -b ${GATOR_GIT_BRANCH} origin/${GATOR_GIT_BRANCH} && \
+    git checkout origin/${GATOR_GIT_BRANCH} && \
     pip install . && \
     yarn install
 
