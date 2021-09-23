@@ -337,7 +337,7 @@ def api_list_packages():
         },
         default_sort_by=["channel", "name", "version", "build"],
     )
-    response['unique_count'] = orm_packages.group_by(
+    response['unique_count'] = orm_packages.distinct(
         orm.CondaChannel.name,
         orm.CondaPackage.name
     ).count()
