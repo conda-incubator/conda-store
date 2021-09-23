@@ -10,9 +10,13 @@ from conda_store_server.server.auth import Permissions
 app_api = Blueprint("api", __name__)
 
 
-def filter_distinct_on(query, allowed_distinct_ons: Dict = {}, default_distinct_on: List = []):
+def filter_distinct_on(
+    query, allowed_distinct_ons: Dict = {}, default_distinct_on: List = []
+):
     distinct_on = request.args.getlist("distinct_on") or default_distinct_on
-    distinct_on = [allowed_distinct_ons[d] for d in distinct_on if d in allowed_distinct_ons]
+    distinct_on = [
+        allowed_distinct_ons[d] for d in distinct_on if d in allowed_distinct_ons
+    ]
     return query.distinct(*distinct_on)
 
 
@@ -349,5 +353,4 @@ def api_list_packages():
             "build": orm.CondaPackage.build,
         },
         default_sort_by=["channel", "name", "version", "build"],
-
     )
