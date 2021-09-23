@@ -19,7 +19,7 @@ def filter_distinct_on(
     ]
 
     if distinct_on:
-        return distinct_on_strings, query.distinct(*distinct_on)
+        return distinct_on, query.distinct(*distinct_on)
     return distinct_on, query
 
 
