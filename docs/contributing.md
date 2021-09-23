@@ -108,8 +108,9 @@ easier to contribute to the documentation.
 
 ### Conda Packages
 
- - `GET /api/v1/package/?search=<str>&build=<str>&page=<int>&size=<int>?sort_by=<str>?order=<str>` :: list packages
+ - `GET /api/v1/package/?search=<str>&build=<str>&page=<int>&size=<int>?sort_by=<str>?order=<str>&distinct_on=<str>` :: list packages
    - allowed `sort_by` values : `channel` to sort by channel name, `name` to sort by package name
+   - allowed `distinct_on` values : `channel` to be distinct on channel name, `name` to be distinct on package name, `version` to be distinct on version.
    - `build` string to search within `build` for example strings include
      `py27_0` etc which can be useful for filtering specific versions of
      packages.
@@ -126,6 +127,9 @@ For several paginated results the following query parameters are accepted.
    ordering. Each route has a list of allowed sorting keys:
    e.g. `namespace`, `name`, `channel`. All paginated routes support
    this and have a default specific to the given resource.
+ - `distinct_on` (can be multiple distinct ons) indicating a
+   multi-column distinct on. Each route has a list of allowed distinct
+   keys.
  - `order` is either `desc` descending or `asc` ascending with a
    default of `asc`. Only one order parameter is accepted.
 
