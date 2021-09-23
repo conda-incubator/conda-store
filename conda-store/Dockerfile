@@ -2,8 +2,8 @@ FROM condaforge/miniforge3
 
 USER root
 
-ARG GATOR_GIT_URL
-ARG GATOR_GIT_BRANCH
+ARG GATOR_GIT_URL=https://github.com/quansight/gator.git
+ARG GATOR_GIT_BRANCH=list-installed-conda-store-packages
 
 COPY environment.yaml /opt/conda-store/environment.yaml
 
