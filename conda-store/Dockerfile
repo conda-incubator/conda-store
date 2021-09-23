@@ -3,7 +3,7 @@ FROM condaforge/miniforge3
 USER root
 
 ARG GATOR_GIT_URL=https://github.com/mamba-org/gator.git
-ARG GATOR_BIT_BRANCH=master
+ARG GATOR_GIT_BRANCH=master
 
 COPY environment.yaml /opt/conda-store/environment.yaml
 
