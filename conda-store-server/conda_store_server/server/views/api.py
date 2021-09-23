@@ -17,7 +17,10 @@ def filter_distinct_on(
     distinct_on = [
         allowed_distinct_ons[d] for d in distinct_on if d in allowed_distinct_ons
     ]
-    return query.distinct(*distinct_on)
+
+    if distinct_on:
+        return distinct_on_strings, query.distinct(*distinct_on)
+    return distinct_on, query
 
 
 def get_limit_offset_args(request):
@@ -34,11 +37,18 @@ def get_limit_offset_args(request):
 def get_sorts(
     request,
     allowed_sort_bys: Dict = {},
+    required_sort_bys: List = [],
     default_sort_by: List = [],
     default_order: str = "asc",
 ):
     sort_by = request.args.getlist("sort_by") or default_sort_by
     sort_by = [allowed_sort_bys[s] for s in sort_by if s in allowed_sort_bys]
+
+    # required_sort_bys is needed when sorting is used with distinct
+    # query see "SELECT DISTINCT ON expressions must match initial
+    # ORDER BY expressions"
+    if required_sort_bys != sort_by[:len(required_sort_bys)]:
+        sort_by = required_sort_bys + sort_by
 
     order = request.args.get("order", default_order)
     if order not in {"asc", "desc"}:
@@ -334,7 +344,7 @@ def api_list_packages():
     build = request.args.get("build")
 
     orm_packages = api.list_conda_packages(conda_store.db, search=search, build=build)
-    distinct_orm_packages = filter_distinct_on(
+    required_sort_bys, distinct_orm_packages = filter_distinct_on(
         orm_packages,
         allowed_distinct_ons={
             "channel": orm.CondaChannel.name,
@@ -353,4 +363,5 @@ def api_list_packages():
             "build": orm.CondaPackage.build,
         },
         default_sort_by=["channel", "name", "version", "build"],
+        required_sort_bys=required_sort_bys,
     )
