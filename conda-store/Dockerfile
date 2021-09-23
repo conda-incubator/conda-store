@@ -14,6 +14,11 @@ RUN cd /opt/conda-store && \
     pip install . && \
     jupyter labextension install jupyterlab-launcher-shortcuts
 
+RUN git clone https://github.com/Quansight/gator.git && \
+    cd gator && \
+    pip install . && \
+    yarn install
+
 RUN mkdir -p /opt/jupyterhub && \
     chown -R 1000:1000 /opt/jupyterhub
 

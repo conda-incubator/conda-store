@@ -9,4 +9,3 @@ dependencies:
   - yarn
   - pip:
     - https://github.com/yuvipanda/jupyter-launcher-shortcuts/archive/refs/heads/master.zip
-    - https://github.com/Quansight/gator/archive/refs/heads/master.zip
