@@ -12,7 +12,6 @@ ENV PATH=/opt/conda/condabin:/opt/conda/envs/conda-store/bin:/opt/conda/bin:/usr
 
 RUN cd /opt/conda-store && \
     pip install . && \
-    pip install https://github.com/Quansight/gator/archive/refs/heads/master.zip && \
     jupyter labextension install jupyterlab-launcher-shortcuts
 
 RUN mkdir -p /opt/jupyterhub && \
