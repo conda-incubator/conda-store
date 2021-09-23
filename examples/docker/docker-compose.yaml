@@ -25,8 +25,7 @@ services:
       - "5000:5000"
 
   jupyterhub:
-    build:
-      context: ../../conda-store
+    build: ../../conda-store
     user: "1000:1000"
     volumes:
       - ./data:/opt/conda-store
