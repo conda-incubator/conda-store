@@ -47,7 +47,7 @@ def get_sorts(
     # required_sort_bys is needed when sorting is used with distinct
     # query see "SELECT DISTINCT ON expressions must match initial
     # ORDER BY expressions"
-    if required_sort_bys != sort_by[:len(required_sort_bys)]:
+    if required_sort_bys != sort_by[: len(required_sort_bys)]:
         sort_by = required_sort_bys + sort_by
 
     order = request.args.get("order", default_order)
