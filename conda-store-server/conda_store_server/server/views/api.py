@@ -59,17 +59,15 @@ def paginated_api_response(
     count = query.count()
     query = query.order_by(*sorts).limit(limit).offset(offset)
 
-    return jsonify(
-        {
-            "status": "ok",
-            "data": [
-                object_schema.from_orm(_).dict(exclude=exclude) for _ in query.all()
-            ],
-            "page": (offset // limit) + 1,
-            "size": limit,
-            "count": count,
-        }
-    )
+    return {
+        "status": "ok",
+        "data": [
+            object_schema.from_orm(_).dict(exclude=exclude) for _ in query.all()
+        ],
+        "page": (offset // limit) + 1,
+        "size": limit,
+        "count": count,
+    }
 
 
 @app_api.route("/api/v1/")
@@ -83,14 +81,14 @@ def api_list_namespaces():
     auth = get_auth()
 
     orm_namespaces = auth.filter_namespaces(api.list_namespaces(conda_store.db))
-    return paginated_api_response(
+    return jsonify(paginated_api_response(
         orm_namespaces,
         schema.Namespace,
         allowed_sort_bys={
             "name": orm.Namespace.name,
         },
         default_sort_by=["name"],
-    )
+    ))
 
 
 @app_api.route("/api/v1/environment/")
@@ -103,7 +101,7 @@ def api_list_environments():
     orm_environments = auth.filter_environments(
         api.list_environments(conda_store.db, search=search)
     )
-    return paginated_api_response(
+    return jsonify(paginated_api_response(
         orm_environments,
         schema.Environment,
         exclude={"current_build"},
@@ -112,7 +110,7 @@ def api_list_environments():
             "name": orm.Environment.name,
         },
         default_sort_by=["namespace", "name"],
-    )
+    ))
 
 
 @app_api.route("/api/v1/environment/<namespace>/<name>/", methods=["GET"])
@@ -190,7 +188,7 @@ def api_list_builds():
     auth = get_auth()
 
     orm_builds = auth.filter_builds(api.list_builds(conda_store.db))
-    return paginated_api_response(
+    return jsonify(paginated_api_response(
         orm_builds,
         schema.Build,
         exclude={"specification", "packages"},
@@ -198,7 +196,7 @@ def api_list_builds():
             "id": orm.Build.id,
         },
         default_sort_by=["id"],
-    )
+    ))
 
 
 @app_api.route("/api/v1/build/<build_id>/", methods=["GET"])
@@ -278,7 +276,7 @@ def api_get_build_packages(build_id):
     )
 
     orm_packages = api.get_build_packages(conda_store.db, build.id)
-    return paginated_api_response(
+    return jsonify(paginated_api_response(
         orm_packages,
         schema.CondaPackage,
         allowed_sort_bys={
@@ -286,7 +284,7 @@ def api_get_build_packages(build_id):
             "name": orm.CondaPackage.name,
         },
         default_sort_by=["channel", "name"],
-    )
+    ))
 
 
 @app_api.route("/api/v1/build/<build_id>/logs/", methods=["GET"])
@@ -312,12 +310,12 @@ def api_list_channels():
     conda_store = get_conda_store()
 
     orm_channels = api.list_conda_channels(conda_store.db)
-    return paginated_api_response(
+    return jsonify(paginated_api_response(
         orm_channels,
         schema.CondaChannel,
         allowed_sort_bys={"name": orm.CondaChannel.name},
         default_sort_by=["name"],
-    )
+    ))
 
 
 @app_api.route("/api/v1/package/", methods=["GET"])
@@ -328,7 +326,7 @@ def api_list_packages():
     build = request.args.get("build")
 
     orm_packages = api.list_conda_packages(conda_store.db, search=search, build=build)
-    return paginated_api_response(
+    response = paginated_api_response(
         orm_packages,
         schema.CondaPackage,
         allowed_sort_bys={
@@ -339,3 +337,8 @@ def api_list_packages():
         },
         default_sort_by=["channel", "name", "version", "build"],
     )
+    response['unique_count'] = orm_packages.group_by(
+        orm.CondaChannel.name,
+        orm.CondaPackage.name
+    ).count()
+    return jsonify(response)
