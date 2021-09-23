@@ -330,7 +330,7 @@ def api_list_packages():
     build = request.args.get("build")
 
     orm_packages = api.list_conda_packages(conda_store.db, search=search, build=build)
-    distinct_orm_package = filter_distinct_on(
+    distinct_orm_packages = filter_distinct_on(
         orm_packages,
         allowed_distinct_ons={
             "channel": orm.CondaChannel.name,
