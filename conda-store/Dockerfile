@@ -2,6 +2,9 @@ FROM condaforge/miniforge3
 
 USER root
 
+ARG GATOR_GIT_URL=https://github.com/mamba-org/gator.git
+ARG GATOR_BIT_BRANCH=master
+
 COPY environment.yaml /opt/conda-store/environment.yaml
 
 RUN conda env create -f /opt/conda-store/environment.yaml
@@ -14,8 +17,9 @@ RUN cd /opt/conda-store && \
     pip install . && \
     jupyter labextension install jupyterlab-launcher-shortcuts
 
-RUN git clone https://github.com/Quansight/gator.git && \
+RUN git clone ${GATOR_GIT_URL} && \
     cd gator && \
+    git checkout -b ${GATOR_GIT_BRANCH} origin/${GATOR_GIT_BRANCH} && \
     pip install . && \
     yarn install
 

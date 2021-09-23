@@ -25,7 +25,11 @@ services:
       - "5000:5000"
 
   jupyterhub:
-    build: ../../conda-store
+    build:
+      context: ../../conda-store
+      args:
+        GATOR_GIT_URL: https://github.com/quansight/gator.git
+        GATOR_BIT_BRANCH: list-installed-conda-store-packages
     user: "1000:1000"
     volumes:
       - ./data:/opt/conda-store
