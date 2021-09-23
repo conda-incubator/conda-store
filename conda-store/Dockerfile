@@ -2,8 +2,8 @@ FROM condaforge/miniforge3
 
 USER root
 
-ARG GATOR_GIT_URL=https://github.com/mamba-org/gator.git
-ARG GATOR_GIT_BRANCH=master
+ARG GATOR_GIT_URL
+ARG GATOR_GIT_BRANCH
 
 COPY environment.yaml /opt/conda-store/environment.yaml
 
