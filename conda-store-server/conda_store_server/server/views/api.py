@@ -81,13 +81,13 @@ def paginated_api_response(
     count = query.count()
     query = query.order_by(*sorts).limit(limit).offset(offset)
 
-    return {
+    return jsonify({
         "status": "ok",
         "data": [object_schema.from_orm(_).dict(exclude=exclude) for _ in query.all()],
         "page": (offset // limit) + 1,
         "size": limit,
         "count": count,
-    }
+    })
 
 
 @app_api.route("/api/v1/")
