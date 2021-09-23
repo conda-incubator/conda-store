@@ -10,6 +10,12 @@ from conda_store_server.server.auth import Permissions
 app_api = Blueprint("api", __name__)
 
 
+def filter_distinct_on(query, allowed_distinct_ons: Dict = {}, default_distinct_on: List = []):
+    distinct_on = request.args.getlist("distinct_on") or default_distinct_on
+    distinct_on = [allowed_distinct_ons[d] for d in distinct_on if d in allowed_distinct_ons]
+    return query.distinct(*distinct_on)
+
+
 def get_limit_offset_args(request):
     server = get_server()
 
@@ -79,15 +85,13 @@ def api_list_namespaces():
     auth = get_auth()
 
     orm_namespaces = auth.filter_namespaces(api.list_namespaces(conda_store.db))
-    return jsonify(
-        paginated_api_response(
-            orm_namespaces,
-            schema.Namespace,
-            allowed_sort_bys={
-                "name": orm.Namespace.name,
-            },
-            default_sort_by=["name"],
-        )
+    return paginated_api_response(
+        orm_namespaces,
+        schema.Namespace,
+        allowed_sort_bys={
+            "name": orm.Namespace.name,
+        },
+        default_sort_by=["name"],
     )
 
 
@@ -101,17 +105,15 @@ def api_list_environments():
     orm_environments = auth.filter_environments(
         api.list_environments(conda_store.db, search=search)
     )
-    return jsonify(
-        paginated_api_response(
-            orm_environments,
-            schema.Environment,
-            exclude={"current_build"},
-            allowed_sort_bys={
-                "namespace": orm.Namespace.name,
-                "name": orm.Environment.name,
-            },
-            default_sort_by=["namespace", "name"],
-        )
+    return paginated_api_response(
+        orm_environments,
+        schema.Environment,
+        exclude={"current_build"},
+        allowed_sort_bys={
+            "namespace": orm.Namespace.name,
+            "name": orm.Environment.name,
+        },
+        default_sort_by=["namespace", "name"],
     )
 
 
@@ -190,16 +192,14 @@ def api_list_builds():
     auth = get_auth()
 
     orm_builds = auth.filter_builds(api.list_builds(conda_store.db))
-    return jsonify(
-        paginated_api_response(
-            orm_builds,
-            schema.Build,
-            exclude={"specification", "packages"},
-            allowed_sort_bys={
-                "id": orm.Build.id,
-            },
-            default_sort_by=["id"],
-        )
+    return paginated_api_response(
+        orm_builds,
+        schema.Build,
+        exclude={"specification", "packages"},
+        allowed_sort_bys={
+            "id": orm.Build.id,
+        },
+        default_sort_by=["id"],
     )
 
 
@@ -280,16 +280,14 @@ def api_get_build_packages(build_id):
     )
 
     orm_packages = api.get_build_packages(conda_store.db, build.id)
-    return jsonify(
-        paginated_api_response(
-            orm_packages,
-            schema.CondaPackage,
-            allowed_sort_bys={
-                "channel": orm.CondaChannel.name,
-                "name": orm.CondaPackage.name,
-            },
-            default_sort_by=["channel", "name"],
-        )
+    return paginated_api_response(
+        orm_packages,
+        schema.CondaPackage,
+        allowed_sort_bys={
+            "channel": orm.CondaChannel.name,
+            "name": orm.CondaPackage.name,
+        },
+        default_sort_by=["channel", "name"],
     )
 
 
@@ -316,13 +314,11 @@ def api_list_channels():
     conda_store = get_conda_store()
 
     orm_channels = api.list_conda_channels(conda_store.db)
-    return jsonify(
-        paginated_api_response(
-            orm_channels,
-            schema.CondaChannel,
-            allowed_sort_bys={"name": orm.CondaChannel.name},
-            default_sort_by=["name"],
-        )
+    return paginated_api_response(
+        orm_channels,
+        schema.CondaChannel,
+        allowed_sort_bys={"name": orm.CondaChannel.name},
+        default_sort_by=["name"],
     )
 
 
@@ -334,8 +330,17 @@ def api_list_packages():
     build = request.args.get("build")
 
     orm_packages = api.list_conda_packages(conda_store.db, search=search, build=build)
-    response = paginated_api_response(
+    distinct_orm_package = filter_distinct_on(
         orm_packages,
+        allowed_distinct_ons={
+            "channel": orm.CondaChannel.name,
+            "name": orm.CondaPackage.name,
+            "version": orm.CondaPackage.version,
+        },
+        default_distinct_on=["channel", "name", "version"],
+    )
+    return paginated_api_response(
+        distinct_orm_packages,
         schema.CondaPackage,
         allowed_sort_bys={
             "channel": orm.CondaChannel.name,
@@ -344,8 +349,5 @@ def api_list_packages():
             "build": orm.CondaPackage.build,
         },
         default_sort_by=["channel", "name", "version", "build"],
+
     )
-    response["unique_count"] = orm_packages.distinct(
-        orm.CondaChannel.name, orm.CondaPackage.name
-    ).count()
-    return jsonify(response)
