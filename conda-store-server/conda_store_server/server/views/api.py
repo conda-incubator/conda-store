@@ -64,6 +64,7 @@ def paginated_api_response(
     sorts: List = [],
     exclude=None,
     allowed_sort_bys: Dict = {},
+    required_sort_bys: List = [],
     default_sort_by: List = [],
     default_order: str = "asc",
 ):
@@ -72,6 +73,7 @@ def paginated_api_response(
     sorts = get_sorts(
         request,
         allowed_sort_bys,
+        required_sort_bys=required_sort_bys,
         default_sort_by=default_sort_by,
         default_order=default_order,
     )
