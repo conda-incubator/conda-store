@@ -113,7 +113,8 @@ which channels to prefetch the channel repodata from. The default is
 database. Behind the scenes [sqlalchemy](https://www.sqlalchemy.org/)
 is used for the connection so [consult their
 docs](https://docs.sqlalchemy.org/en/14/core/engines.html) for
-connecting to your specific database.
+connecting to your specific database. Conda-Store will automatically
+create the tables if they do not already exist.
 
 `CondaStore.celery_broker_url` is the broker use to use for
 celery. Celery supports a [wide range of
@@ -174,10 +175,12 @@ the default docker image `frolvlad/alpine-glibc:latest`.
 ### conda_store_server.storage.S3Storage
 
 `S3Storage.internal_endpoint` is the internal endpoint for conda-store
-reaching out to s3 bucket.
+reaching out to s3 bucket. This is the url that conda-store use for
+get/set s3 blobs.
 
 `S3Storage.external_endpoint` is the external endpoint for users to
-reach out to s3 bucket to fetch presigned urls.
+reach out to s3 bucket to fetch presigned urls. This is the url that
+users use for fetching s3 blobs.
 
 `S3Storage.access_key` is the access key for S3 bucket.
 

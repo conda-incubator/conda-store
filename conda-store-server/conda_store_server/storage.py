@@ -47,12 +47,12 @@ class Storage(LoggingConfigurable):
 
 class S3Storage(Storage):
     internal_endpoint = Unicode(
-        help="internal endpoint to reach s3 bucket e.g. 'minio:9000'",
+        help="internal endpoint to reach s3 bucket e.g. 'minio:9000' this is the url that conda-store use for get/set s3 blobs",
         config=True,
     )
 
     external_endpoint = Unicode(
-        help="internal endpoint to reach s3 bucket e.g. 'localhost:9000'",
+        help="external endpoint to reach s3 bucket e.g. 'localhost:9000' this is the url that users use for fetching s3 blobs",
         config=True,
     )
 
