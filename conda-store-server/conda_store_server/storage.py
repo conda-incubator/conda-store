@@ -87,7 +87,7 @@ class S3Storage(Storage):
     )
 
     credentials = Instance(
-        None,
+        default_value=None,
         help="provider to use to get credentials for s3 access. see examples https://github.com/minio/minio-py/tree/master/examples and documentation https://github.com/minio/minio-py/blob/master/docs/API.md#1-constructor",
         allow_none=True,
         config=True,
