@@ -174,13 +174,17 @@ the default docker image `frolvlad/alpine-glibc:latest`.
 
 ### conda_store_server.storage.S3Storage
 
+Conda-Store uses [minio-py](https://github.com/minio/minio-py) as a
+client to connect to S3 "like" object stores.
+
 `S3Storage.internal_endpoint` is the internal endpoint for conda-store
 reaching out to s3 bucket. This is the url that conda-store use for
-get/set s3 blobs.
+get/set s3 blobs. For AWS S3 use the endpoint `s3.amazonaws.com`.
 
 `S3Storage.external_endpoint` is the external endpoint for users to
 reach out to s3 bucket to fetch presigned urls. This is the url that
-users use for fetching s3 blobs.
+users use for fetching s3 blobs. For AWS S3 use the endpoint
+`s3.amazonaws.com`.
 
 `S3Storage.access_key` is the access key for S3 bucket.
 
@@ -194,6 +198,14 @@ the S3 bucket.
 
 `S3Storage.secure` boolean to indicate if connecting via `http`
 (False) or `https` (True).
+
+`S3Storage.credentials` provider to use to get credentials for s3
+access. see examples
+https://github.com/minio/minio-py/tree/master/examples and
+documentation
+https://github.com/minio/minio-py/blob/master/docs/API.md#1-constructor. An
+example of this could be to use `minio.credentials.IamAwsProvider` to
+get S3 credentials via IAM.
 
 ### conda_store_server.storage.LocalStorage
 

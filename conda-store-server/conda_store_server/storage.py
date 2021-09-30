@@ -4,7 +4,7 @@ import shutil
 
 import minio
 from traitlets.config import LoggingConfigurable
-from traitlets import Unicode, Bool
+from traitlets import Unicode, Bool, Any
 
 from conda_store_server import orm, api
 
@@ -58,11 +58,13 @@ class S3Storage(Storage):
 
     access_key = Unicode(
         help="access key for S3 bucket",
+        allow_none=True,
         config=True,
     )
 
     secret_key = Unicode(
         help="secret key for S3 bucket",
+        allow_none=True,
         config=True,
     )
 
@@ -84,6 +86,13 @@ class S3Storage(Storage):
         config=True,
     )
 
+    credentials = Any(
+        None,
+        help="provider to use to get credentials for s3 access. see examples https://github.com/minio/minio-py/tree/master/examples and documentation https://github.com/minio/minio-py/blob/master/docs/API.md#1-constructor",
+        allow_none=True,
+        config=True,
+    )
+
     @property
     def internal_client(self):
         if hasattr(self, "_internal_client"):
@@ -98,6 +107,7 @@ class S3Storage(Storage):
             self.secret_key,
             region=self.region,
             secure=self.secure,
+            credentials=self.credentials,
         )
         self._check_bucket_exists()
         return self._internal_client
@@ -116,6 +126,7 @@ class S3Storage(Storage):
             self.secret_key,
             region=self.region,
             secure=self.secure,
+            credentials=self.credentials,
         )
         return self._external_client
 
