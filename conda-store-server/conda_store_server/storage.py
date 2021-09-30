@@ -3,7 +3,7 @@ import os
 import shutil
 
 import minio
-from minio.credentials.provider import Provider
+from minio.credentials.providers import Provider
 
 from traitlets.config import LoggingConfigurable
 from traitlets import Unicode, Bool, Instance
