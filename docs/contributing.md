@@ -85,6 +85,7 @@ easier to contribute to the documentation.
 ### Specifications
 
  - `POST /api/v1/environment/` :: create given environment
+    - JSON message with optional namespace (will use `CondaStore.default_namespace` if not specified) and a specification string that is a valid environment.yaml for conda.
  
 ### Builds
 
