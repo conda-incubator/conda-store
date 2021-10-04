@@ -2,6 +2,8 @@ from flask import Blueprint, jsonify, redirect, request
 import pydantic
 from typing import List, Dict
 
+import yaml
+
 from conda_store_server import api, orm, schema, utils
 from conda_store_server.server.utils import get_conda_store, get_auth, get_server
 from conda_store_server.server.auth import Permissions
@@ -202,7 +204,10 @@ def api_post_specification():
 
     try:
         specification = request.json.get("specification")
+        specification = yaml.safe_load(specification)
         specification = schema.CondaSpecification.parse_obj(specification)
+    except yaml.error.YAMLError as e:
+        return jsonify({"status": "error", "error": str(e)}), 400
     except pydantic.ValidationError as e:
         return jsonify({"status": "error", "error": e.errors()}), 400
 
