@@ -2,6 +2,8 @@ from flask import Blueprint, jsonify, redirect, request
 import pydantic
 from typing import List, Dict
 
+import yaml
+
 from conda_store_server import api, orm, schema, utils
 from conda_store_server.server.utils import get_conda_store, get_auth, get_server
 from conda_store_server.server.auth import Permissions
@@ -198,12 +200,26 @@ def api_delete_environment(namespace, name):
 @app_api.route("/api/v1/specification/", methods=["POST"])
 def api_post_specification():
     conda_store = get_conda_store()
+    auth = get_auth()
+
     try:
-        specification = schema.CondaSpecification.parse_obj(request.json)
-        api.post_specification(conda_store, specification)
-        return jsonify({"status": "ok"})
+        specification = request.json.get("specification")
+        specification = yaml.safe_load(specification)
+        specification = schema.CondaSpecification.parse_obj(specification)
+    except yaml.error.YAMLError as e:
+        return jsonify({"status": "error", "error": str(e)}), 400
     except pydantic.ValidationError as e:
         return jsonify({"status": "error", "error": e.errors()}), 400
+
+    namespace = request.json.get("namespace", conda_store.default_namespace)
+    auth.authorize_request(
+        f"{namespace}/{specification.name}",
+        {Permissions.ENVIRONMENT_CREATE},
+        require=True,
+    )
+
+    api.post_specification(conda_store, specification, namespace)
+    return jsonify({"status": "ok"})
 
 
 @app_api.route("/api/v1/build/", methods=["GET"])
