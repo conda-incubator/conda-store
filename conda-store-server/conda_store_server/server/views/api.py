@@ -148,6 +148,7 @@ def api_create_namespace(namespace):
     )
 
     api.create_namespace(conda_store.db, namespace)
+    conda_store.db.commit()
 
     return jsonify({"status": "ok"})
 
@@ -164,6 +165,7 @@ def api_delete_namespace(namespace):
     # delete all environments within the namespace
 
     api.delete_namespace(conda_store.db, namespace)
+    conda_store.db.commit()
 
     return jsonify({"status": "ok"})
 
