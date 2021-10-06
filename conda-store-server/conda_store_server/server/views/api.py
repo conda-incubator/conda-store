@@ -148,7 +148,7 @@ def api_create_namespace(namespace):
     )
 
     namespace_orm = api.get_namespace(conda_store.db, namespace)
-    if namespace_orm is None:
+    if namespace_orm:
         return jsonify({"status": "error", "error": "namespace already exists"}), 409
 
     api.create_namespace(conda_store.db, namespace)
