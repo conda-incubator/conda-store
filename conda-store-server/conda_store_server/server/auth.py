@@ -33,6 +33,9 @@ class Permissions(enum.Enum):
     ENVIRONMENT_UPDATE = "environment::update"
     ENVIRONMENT_DELETE = "environment::delete"
     BUILD_DELETE = "build::delete"
+    NAMESPACE_CREATE = "namespace::create"
+    NAMESPACE_READ = "namespace::read"
+    NAMESPACE_DELETE = "namespace::delete"
 
 
 class AuthenticationBackend(LoggingConfigurable):
@@ -68,18 +71,25 @@ class AuthenticationBackend(LoggingConfigurable):
 class RBACAuthorizationBackend(LoggingConfigurable):
     role_mappings = Dict(
         {
-            "viewer": {Permissions.ENVIRONMENT_READ},
+            "viewer": {
+                Permissions.ENVIRONMENT_READ,
+                Permissions.NAMESPACE_READ,
+            },
             "developer": {
                 Permissions.ENVIRONMENT_CREATE,
                 Permissions.ENVIRONMENT_READ,
                 Permissions.ENVIRONMENT_UPDATE,
+                Permissions.NAMESPACE_READ,
             },
             "admin": {
+                Permissions.BUILD_DELETE,
                 Permissions.ENVIRONMENT_CREATE,
+                Permissions.ENVIRONMENT_DELETE,
                 Permissions.ENVIRONMENT_READ,
                 Permissions.ENVIRONMENT_UPDATE,
-                Permissions.ENVIRONMENT_DELETE,
-                Permissions.BUILD_DELETE,
+                Permissions.NAMESPACE_CREATE,
+                Permissions.NAMESPACE_DELETE,
+                Permissions.NAMESPACE_READ,
             },
         },
         help="default role to permissions mapping to use",
@@ -104,11 +114,20 @@ class RBACAuthorizationBackend(LoggingConfigurable):
 
     @staticmethod
     def compile_arn_regex(arn):
-        """Take an arn of form "example-*/example-*" and compile to regular expression"""
+        """Take an arn of form "example-*/example-*" and compile to regular expression
+
+        The expression "example-*/example-*" will match:
+          - "example-asdf"
+          - "example-asdf/example-qwer"
+        """
         if not ARN_ALLOWED_REGEX.match(arn):
             raise ValueError(f"invalid arn={arn}")
 
-        regex_arn = "^" + re.sub(r"\*", r"[A-Za-z0-9_\-\.|<>=]*", arn) + "$"
+        # replace "*" with "[A-Za-z0-9_\-\.|<>=]*"
+        arn = re.sub(r"\*", r"[A-Za-z0-9_\-\.|<>=]*", arn)
+
+        namespace_regex, name_regex = arn.split('/')
+        regex_arg = "^" + namespace_regex + "(?:/" + name_regex + ")?$"
         return re.compile(regex_arn)
 
     @staticmethod
