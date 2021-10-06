@@ -147,6 +147,10 @@ def api_create_namespace(namespace):
         namespace, {Permissions.NAMESPACE_CREATE}, require=True
     )
 
+    namespace_orm = api.get_namespace(conda_store.db, namespace)
+    if namespace_orm is None:
+        return jsonify({"status": "error", "error": "namespace already exists"}), 409
+
     api.create_namespace(conda_store.db, namespace)
     conda_store.db.commit()
 
@@ -161,6 +165,10 @@ def api_delete_namespace(namespace):
     auth.authorize_request(
         namespace, {Permissions.NAMESPACE_DELETE}, require=True
     )
+
+    namespace_orm = api.get_namespace(conda_store.db, namespace)
+    if namespace_orm is None:
+        return jsonify({"status": "error", "error": "namespace does not exist"}), 404
 
     # delete all environments within the namespace
 
