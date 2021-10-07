@@ -71,6 +71,12 @@ easier to contribute to the documentation.
  - `GET /api/v1/namespace/?page=<int>&size=<int>&sort_by=<str>&order=<str>` :: list namespaces
    - allowed `sort_by` values: `name` for the name of the namespace
 
+ - `GET /api/v1/namespace/<namespace>/` :: get namespace
+
+ - `POST /api/v1/namespace/<namespace>/` :: create namespace
+
+ - `DELETE /api/v1/namespace/<namespace>/` :: delete namespace
+
 ### Environments
 
  - `GET /api/v1/environment/?search=<str>&page=<int>&size=<int>&sort_by=<str>&order=<str>` :: list environments
