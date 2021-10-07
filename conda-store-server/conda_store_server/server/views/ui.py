@@ -83,7 +83,7 @@ def ui_list_namespaces():
     orm_namespaces = auth.filter_namespaces(api.list_namespaces(conda_store.db))
 
     context = {
-        "environments": orm_namespaces.all(),
+        "namespaces": orm_namespaces.all(),
         "entity": auth.authenticate_request(),
     }
 
