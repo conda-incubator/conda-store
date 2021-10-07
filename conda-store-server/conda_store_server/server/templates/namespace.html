@@ -37,10 +37,11 @@
  }
 
  function createNamespace() {
-     name = document.getElementById("namespaceInput").value
+     name = document.getElementById("namespaceInput").value;
      fetch(`{{ url_for('api.api_list_namespaces') }}${name}/`, {
          method: 'POST',
      }).then(response => window.location.reload(true));
+     return false;
  }
 </script>
 {% endblock %}
