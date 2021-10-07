@@ -170,11 +170,7 @@ def api_delete_namespace(namespace):
     if namespace_orm is None:
         return jsonify({"status": "error", "error": "namespace does not exist"}), 404
 
-    # delete all environments within the namespace
-
-    api.delete_namespace(conda_store.db, namespace)
-    conda_store.db.commit()
-
+    conda_store.delete_namespace(namespace)
     return jsonify({"status": "ok"})
 
 

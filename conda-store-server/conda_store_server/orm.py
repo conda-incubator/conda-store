@@ -53,6 +53,10 @@ class Namespace(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
 
+    environments = relationship("Environment", back_populates="namespace")
+
+    deleted_on = Column(DateTime, default=None)
+
 
 class Specification(Base):
     """The specifiction for a given conda environment"""
