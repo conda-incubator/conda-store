@@ -342,9 +342,7 @@ class CondaStore(LoggingConfigurable):
     def delete_namespace(self, namespace):
         namespace = api.get_namespace(self.db, name=namespace)
         if namespace is None:
-            raise utils.CondaStoreError(
-                f"namespace={namespace} does not exist"
-            )
+            raise utils.CondaStoreError(f"namespace={namespace} does not exist")
 
         utcnow = datetime.datetime.utcnow()
         namespace.deleted_on = utcnow

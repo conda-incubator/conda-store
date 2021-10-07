@@ -126,7 +126,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
         # replace "*" with "[A-Za-z0-9_\-\.|<>=]*"
         arn = re.sub(r"\*", r"[A-Za-z0-9_\-\.|<>=]*", arn)
 
-        namespace_regex, name_regex = arn.split('/')
+        namespace_regex, name_regex = arn.split("/")
         regex_arn = "^" + namespace_regex + "(?:/" + name_regex + ")?$"
         return re.compile(regex_arn)
 

@@ -167,14 +167,14 @@ def task_delete_namespace(self, namespace_id):
     conda_store = self.worker.conda_store
     namespace = api.get_namespace(conda_store.db, id=namespace_id)
 
-    for environment in namespace.environments:
-        for build in environment.builds:
+    for environment_orm in namespace.environments:
+        for build in environment_orm.builds:
             conda_store.log.info(f"deleting artifacts for build={build.id}")
             for build_artifact in api.list_build_artifacts(
                 conda_store.db,
                 build_id=build.id,
             ).all():
                 delete_build_artifact(conda_store, build_artifact)
-        conda_store.db.delete(environment)
+        conda_store.db.delete(environment_orm)
     conda_store.db.delete(namespace)
     conda_store.db.commit()

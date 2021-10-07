@@ -122,9 +122,7 @@ def api_get_namespace(namespace):
     conda_store = get_conda_store()
     auth = get_auth()
 
-    auth.authorize_request(
-        namespace, {Permissions.NAMESPACE_READ}, require=True
-    )
+    auth.authorize_request(namespace, {Permissions.NAMESPACE_READ}, require=True)
 
     namespace = api.get_namespace(conda_store.db, namespace)
     if namespace is None:
@@ -143,9 +141,7 @@ def api_create_namespace(namespace):
     conda_store = get_conda_store()
     auth = get_auth()
 
-    auth.authorize_request(
-        namespace, {Permissions.NAMESPACE_CREATE}, require=True
-    )
+    auth.authorize_request(namespace, {Permissions.NAMESPACE_CREATE}, require=True)
 
     namespace_orm = api.get_namespace(conda_store.db, namespace)
     if namespace_orm:
@@ -162,9 +158,7 @@ def api_delete_namespace(namespace):
     conda_store = get_conda_store()
     auth = get_auth()
 
-    auth.authorize_request(
-        namespace, {Permissions.NAMESPACE_DELETE}, require=True
-    )
+    auth.authorize_request(namespace, {Permissions.NAMESPACE_DELETE}, require=True)
 
     namespace_orm = api.get_namespace(conda_store.db, namespace)
     if namespace_orm is None:
