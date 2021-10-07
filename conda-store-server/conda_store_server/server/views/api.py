@@ -117,6 +117,57 @@ def api_list_namespaces():
     )
 
 
+@app_api.route("/api/v1/namespace/<namespace>/")
+def api_get_namespace(namespace):
+    conda_store = get_conda_store()
+    auth = get_auth()
+
+    auth.authorize_request(namespace, {Permissions.NAMESPACE_READ}, require=True)
+
+    namespace = api.get_namespace(conda_store.db, namespace)
+    if namespace is None:
+        return jsonify({"status": "error", "error": "namespace does not exist"}), 404
+
+    return jsonify(
+        {
+            "status": "ok",
+            "data": schema.Namespace.from_orm(namespace).dict(),
+        }
+    )
+
+
+@app_api.route("/api/v1/namespace/<namespace>/", methods=["POST"])
+def api_create_namespace(namespace):
+    conda_store = get_conda_store()
+    auth = get_auth()
+
+    auth.authorize_request(namespace, {Permissions.NAMESPACE_CREATE}, require=True)
+
+    namespace_orm = api.get_namespace(conda_store.db, namespace)
+    if namespace_orm:
+        return jsonify({"status": "error", "error": "namespace already exists"}), 409
+
+    api.create_namespace(conda_store.db, namespace)
+    conda_store.db.commit()
+
+    return jsonify({"status": "ok"})
+
+
+@app_api.route("/api/v1/namespace/<namespace>/", methods=["DELETE"])
+def api_delete_namespace(namespace):
+    conda_store = get_conda_store()
+    auth = get_auth()
+
+    auth.authorize_request(namespace, {Permissions.NAMESPACE_DELETE}, require=True)
+
+    namespace_orm = api.get_namespace(conda_store.db, namespace)
+    if namespace_orm is None:
+        return jsonify({"status": "error", "error": "namespace does not exist"}), 404
+
+    conda_store.delete_namespace(namespace)
+    return jsonify({"status": "ok"})
+
+
 @app_api.route("/api/v1/environment/")
 def api_list_environments():
     conda_store = get_conda_store()
@@ -202,6 +253,13 @@ def api_post_specification():
     conda_store = get_conda_store()
     auth = get_auth()
 
+    permissions = {Permissions.ENVIRONMENT_CREATE}
+
+    namespace_name = request.json.get("namespace", conda_store.default_namespace)
+    namespace = api.get_namespace(conda_store.db, namespace_name)
+    if namespace is None:
+        permissions.add(Permissions.NAMESPACE_CREATE)
+
     try:
         specification = request.json.get("specification")
         specification = yaml.safe_load(specification)
@@ -211,14 +269,13 @@ def api_post_specification():
     except pydantic.ValidationError as e:
         return jsonify({"status": "error", "error": e.errors()}), 400
 
-    namespace = request.json.get("namespace", conda_store.default_namespace)
     auth.authorize_request(
         f"{namespace}/{specification.name}",
-        {Permissions.ENVIRONMENT_CREATE},
+        permissions,
         require=True,
     )
 
-    api.post_specification(conda_store, specification, namespace)
+    api.post_specification(conda_store, specification, namespace_name)
     return jsonify({"status": "ok"})
 
 

@@ -20,6 +20,17 @@ def get_namespace(db, name: str = None, id: int = None):
     return db.query(orm.Namespace).filter(*filters).first()
 
 
+def create_namespace(db, name: str):
+    namespace = orm.Namespace(name=name)
+    db.add(namespace)
+
+
+def delete_namespace(db, name: str = None, id: int = None):
+    namespace = get_namespace(db, name=name, id=id)
+    if namespace:
+        db.delete(namespace)
+
+
 def list_environments(
     db,
     namespace: str = None,
