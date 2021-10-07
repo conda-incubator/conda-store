@@ -20,7 +20,7 @@
 
 <div class="card my-2">
     <div class="card-body">
-        <form class="form-namespace" onsubmit="createNamespace()">
+        <form class="form-namespace" id="namespaceForm">
             <div class="form-floating">
                 <input name="namespace" class="form-control" id="namespaceInput" placeholder="Namespace">
             </div>
@@ -36,12 +36,17 @@
      }).then(response => window.location.reload(true));
  }
 
- function createNamespace() {
+ form = document.getElementById("namespaceForm");
+ form.onsubmit = function(event) {
+     event.preventDefault();
+
      name = document.getElementById("namespaceInput").value;
      fetch(`{{ url_for('api.api_list_namespaces') }}${name}/`, {
          method: 'POST',
      }).then(response => window.location.reload(true));
+
      return false;
  }
+
 </script>
 {% endblock %}
