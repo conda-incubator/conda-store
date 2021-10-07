@@ -77,7 +77,6 @@ def ui_list_environments():
 @app_ui.route("/namespace/", methods=["GET"])
 def ui_list_namespaces():
     conda_store = get_conda_store()
-    server = get_server()
     auth = get_auth()
 
     orm_namespaces = auth.filter_namespaces(api.list_namespaces(conda_store.db))
