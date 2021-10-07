@@ -74,6 +74,21 @@ def ui_list_environments():
     return render_template("home.html", **context)
 
 
+@app_ui.route("/namespace/", methods=["GET"])
+def ui_list_namespaces():
+    conda_store = get_conda_store()
+    auth = get_auth()
+
+    orm_namespaces = auth.filter_namespaces(api.list_namespaces(conda_store.db))
+
+    context = {
+        "namespaces": orm_namespaces.all(),
+        "entity": auth.authenticate_request(),
+    }
+
+    return render_template("namespace.html", **context)
+
+
 @app_ui.route("/environment/<namespace>/<name>/", methods=["GET"])
 def ui_get_environment(namespace, name):
     conda_store = get_conda_store()

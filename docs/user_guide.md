@@ -224,4 +224,11 @@ lockfile, pinned yaml specification, conda pack, and docker image.
 Finally a log of the given build regardless of whether the build
 successfully built or failed.
 
+### `/namespace/` Manage Namespaces
 
+![Conda Store Namespace](_static/images/conda-store-namespace.png)
+
+This namespace page allows a user with correct permissions to list,
+create, and delete namespaces. Note that the deletion of a namespace
+is destructive and deletes all environments and builds within that
+namespace.
