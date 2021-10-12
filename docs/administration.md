@@ -207,6 +207,12 @@ https://github.com/minio/minio-py/blob/master/docs/API.md#1-constructor. An
 example of this could be to use `minio.credentials.IamAwsProvider` to
 get S3 credentials via IAM.
 
+`S3Storage.credentials_args` arguments to pass for creation of
+credentials class.
+
+`S3Storage.credentials_kwargs` keyword arguments to pass for creation
+of credentials class.
+
 ### conda_store_server.storage.LocalStorage
 
 `LocalStorage.storage_path` is the base directory to use for storing

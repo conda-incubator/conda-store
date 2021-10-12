@@ -6,7 +6,7 @@ import minio
 from minio.credentials.providers import Provider
 
 from traitlets.config import LoggingConfigurable
-from traitlets import Unicode, Bool, Instance
+from traitlets import Unicode, Bool, Type, Dict, List
 
 from conda_store_server import orm, api
 
@@ -88,13 +88,32 @@ class S3Storage(Storage):
         config=True,
     )
 
-    credentials = Instance(
+    credentials = Type(
         klass=Provider,
         default_value=None,
         help="provider to use to get credentials for s3 access. see examples https://github.com/minio/minio-py/tree/master/examples and documentation https://github.com/minio/minio-py/blob/master/docs/API.md#1-constructor",
         allow_none=True,
         config=True,
     )
+
+    credentials_args = List(
+        [],
+        help="arguments to pass to Provider",
+        config=True,
+    )
+
+    credentials_kwargs = Dict(
+        {},
+        help="keyword arguments to pass to Provider",
+        config=True,
+    )
+
+    @property
+    def _credentials(self):
+        if self.credentials is None:
+            return None
+
+        return self.credentials(*self.credentials_args, **self.credentials_kwargs)
 
     @property
     def internal_client(self):
@@ -110,7 +129,7 @@ class S3Storage(Storage):
             self.secret_key,
             region=self.region,
             secure=self.secure,
-            credentials=self.credentials,
+            credentials=self._credentials,
         )
         self._check_bucket_exists()
         return self._internal_client
@@ -129,7 +148,7 @@ class S3Storage(Storage):
             self.secret_key,
             region=self.region,
             secure=self.secure,
-            credentials=self.credentials,
+            credentials=self._credentials,
         )
         return self._external_client
 
