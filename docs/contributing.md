@@ -524,7 +524,7 @@ permitted.
 At a high level the database model can be described in the image
 bellow.
 
-![high level diagram](_static/imges/conda-store-database-architecture.png)
+![high level diagram](_static/images/conda-store-database-architecture.png)
 
 Important things to note about the relationship:
  - An `environment` exists within a given `namespace` and always has a current `build`
