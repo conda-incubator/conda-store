@@ -519,3 +519,30 @@ build::update, build::delete}`. The delete environment action requires
 `build::delete` permissions which the user has thus the action is
 permitted.
 
+### Database Model
+
+At a high level the database model can be described in the image
+bellow.
+
+![high level diagram](_static/imges/conda-store-database-architecture.png)
+
+Important things to note about the relationship:
+ - An `environment` exists within a given `namespace` and always has a current `build`
+ - A `build` belongs to a particular `environment` and has associated `condapackage` and `buildartfacts`
+ - A `buildartifact` is a way in the database to keep track of external resources e.g. s3artifacts, filesystem directories, etc
+ - A `condapackage` is a representation of a given conda package which belongs to a given `condachannel`
+ - A `specification` is the environment.yaml using in `conda env create -f <environment.yaml>`
+ 
+The following will generate the database model shown bellow. It was
+generated from the `examples/docker` example. You'll see in the
+command that we are excluding several tables. These tables are managed
+by [celery](https://docs.celeryproject.org/en/stable/).
+
+```shell
+pip install eralchemy  # not available on conda-forge
+eralchemy -i "postgresql+psycopg2://admin:password@localhost:5432/conda-store" -o output.png \
+    --exclude-tables celery_tasksetmeta celery_taskmeta kombu_queue kombu_message
+```
+
+![entity relationship diagram](_static/images/conda-store-entity-relationship-diagram.png)
+
