@@ -18,6 +18,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [0.3.1] - 2021-10-12
+
+### Added
+
+ - support for credentials supplied for object storage including IAM credentials #176
+ - namespace UI to conda-store server #183
+ - create/read/delete methods for namespaces `/api/v1/namespace/` #181
+ - distinct_on query parameter to list REST api methods #164
+ - adding sorting query parameter to list REST api methods #162
+ - ability to filter conda packages by build parameter #156
+ - delete environments and all related builds from rest api #154
+ - initial support for pagination for all list REST api methods #126
+ - support for filtering environments by name #125
+ - working kubernetes deployment example #116
+ - significant documentation effort via multiple PRs
+
+### Changed
+
+ - namespace parameter in json POST request to `/api/v1/specification/` #178
+ - api route for listing packages within build instead of including within build api response #157
+ - database relationship between build, environments, and namespaces improved #153
+
+### Fixed
+
+ - adding conda-store gator extension to `example/docker` #165
+ - get query count before applying limits to query #159
+
 ## [0.3.0] - 2021-08-27
 
 This is the beginning of the changelog. Here I will list the most

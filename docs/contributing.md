@@ -60,6 +60,35 @@ firefox _build/index.html
 The documentation has been primarily written in markdown as to make it
 easier to contribute to the documentation.
 
+## Release Process
+
+Choose the `<version>` number is should follow semver and the established
+pattern of `v<x>.<y>.<z>`.
+
+Ensure that `CHANGELOG.md` is up to date with all the changes since
+the last release following the template provided within the markdown
+file. 
+
+All docker images within `docker/kubernetes` should be updated to the
+release version. `spec.template.spec.containers[0].image` is the path
+within the yaml files.
+
+Update the version number in `conda-store-server/setup.py` and
+`conda-store/setup.py` to reflect the release version.
+
+Once those changes have been made make a commit titled `bump to
+version <version>`.
+
+Finally create a [new release within the github
+interface](https://github.com/Quansight/conda-store/releases/new). Do
+this instead of a git TAG since you can include release notes on the
+repository. The Release should be titled `Release <version> -
+<month>/<day>/<year>` with the description being the changelog
+markdown for the particular release.
+
+Once you have create a release the github actions with the build the
+release and make it available on pypi, conda, and docker hub.
+
 ## REST API
 
 ### Status
