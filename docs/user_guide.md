@@ -46,9 +46,9 @@ conda-lock install <lockfile-filename>
 ### Conda Pack Archive
 
 [conda-pack](https://conda.github.io/conda-pack/) is a package for
-crating tarballs of given conda environments. Creating a conda archive
+creating tarballs of given conda environments. Creating a conda archive
 is not as simple as packing and unpacking a given directory. This is
-do to the base path for the environment that may
+due to the base path for the environment that may
 change. [conda-pack](https://conda.github.io/conda-pack/) handles all
 of these issues. Click the `archive` button and download the given
 environment. The size of the archive will be less than the size seen
@@ -78,7 +78,7 @@ for interesting ways to handle Conda environment. In addition this
 registry leverages
 [conda-docker](https://github.com/conda-incubator/conda-docker) which
 builds docker images without docker allowing for advanced caching,
-reduced image sizes, and not require elevated privileges. Click on the
+reduced image sizes, and does not require elevated privileges. Click on the
 `docker` link this will copy a url to your clipboard. Note the
 beginning of the url e.g. `localhost:5000/`. This is required to tell
 docker where the docker registry is located. Otherwise by default it
@@ -134,17 +134,17 @@ download upon the docker image being built.
 The home page shows all of the available environments in the form
 `<namespace>/<environment-name>`. If you are authenticated there with
 be a `User` button in the top right hand corner to view information
-about the currently logged in user. Otherwise there this a `login`
-button and significantly less environments will be visible if
-any. Additionally there is a convenient `Create Environment` button to
-easily create a given environment. There is a `Docs` button that will
-take you to the documentation you are currently reading at any time.
+about the currently logged in user. Otherwise there is a `login`
+button and few if any environments will be visible. Additionally there
+is a convenient `Create Environment` button to easily create a given 
+environment. There is a `Docs` button that will take you to this
+documentation at any time.
 
-Below each of the available environments are shortcuts that allow you
-to download of view the [conda
+Shortcuts are available below each of the available environments that allow you
+to download or view the [conda
 lockfile](https://github.com/conda-incubator/conda-lock),
-[yaml](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-from-an-environment-yml-file),
-[conda pack](https://github.com/conda/conda-pack).
+[yaml](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-from-an-environment-yml-file), or
+[conda pack](https://github.com/conda/conda-pack) files.
 
 ### `/login/` Login
 
@@ -177,28 +177,28 @@ issues with the format of the environment file.
 
 ![Conda Store Environment](_static/images/conda-store-environment.png)
 
-The environment page a lot of information available to the
+The environment page contains a lot of information for the
 developer. First we see the environment name and namespace along with
 the disk space that the environment consumes. Right below this
 information is the full `environment.yaml` specification of the
-currently activated build. User's can quickly edit this existing
+currently active build. Users can quickly edit this existing
 environment by clicking the `edit` button. Additionally the entire
 environment can be deleted via the `delete` button.
 
 Below this is a list of the current builds of the given
 environment. The environment highlighted in `green` is the current
-build for the given environment that is activate. The environment
+build for the given environment that is active. The environment
 highlighted in `grey` indicates that the build was deleted. Even
 though a build may be deleted the logs, lockfile, and a other build
 information is preserved for the record.
 
 For each build several options are available to the user:
  - The `checkmark` icon allow the user to switch that given build to the
-   activate build for the environment. This may be useful if you need
+   active build for the environment. This may be useful if you need
    to rollback a given environment if the new build environment caused
    some scripts to fail.
- - The `refresh` icon indicates that a user would like to given
-   environment to built again. Conda `environment.yaml` files are not
+ - The `refresh` icon indicates that a user would like the given
+   environment to build again. Conda `environment.yaml` files are not
    reproducible thus this will likely lead to an entirely new
    solve. This is useful when you would like to update all the
    packages in a given environment without having to change the
@@ -212,7 +212,7 @@ For each build several options are available to the user:
 ![Conda Store Build](_static/images/conda-store-build-complete.png)
 
 The build page gives all the information about a given build in
-conda-store. At the top we see high level information about the build.
+conda-store. At the top we see high level build metadata.
 
 Conda-store downloads conda channel data so that it fully understands
 the packages that exist within a given environment. A list is provided
@@ -221,8 +221,8 @@ to the user of all packages within that environment.
 Below this are all artifacts associated with a given build e.g
 lockfile, pinned yaml specification, conda pack, and docker image.
 
-Finally a log of the given build regardless of whether the build
-successfully built or failed.
+Finally a log of the given build regardless of whether the build 
+succeeded or failed.
 
 ### `/namespace/` Manage Namespaces
 

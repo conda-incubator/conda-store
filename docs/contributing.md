@@ -286,7 +286,7 @@ performance.
 `conda_environment = f(open("environment.yaml"), datatime.utcnow())` 
 
  - namespace :: a way of providing scopes between environments. This
-   prevents joe's environment named `data-science` from colliding from
+   prevents Joe's environment named `data-science` from colliding from
    Alice's environment name `data-science`.
  - environment :: a pointer to a current build of a given specification
  - specification :: a [Conda environment.yaml file](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#create-env-file-manually)
