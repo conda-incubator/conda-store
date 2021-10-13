@@ -5,7 +5,7 @@
 ![Conda Store Kubernetes architecture diagram](_static/images/conda-store-installation-kubernetes.png)
 
 The following will describe a local kubernetes installation via
-minikube. The example files required are in `examples/kubernetes`
+minikube. The files required are in `examples/kubernetes`
 
 ```shell
 minikube start --cpus 2 --memory 4096 --driver=docker
@@ -29,7 +29,7 @@ being used for the deployment which is part to the kubernetes project
 itself.
 
 ```shell
-kubectl apply -k example/kubernetes
+kubectl apply -k examples/kubernetes
 ```
 
 Make sure to change all the usernames and passwords for the
@@ -53,7 +53,7 @@ conda-store to build an environment with jupyterlab and numpy. This
 pod is not needed for running conda-store.
 
 ```shell
-kubectl apply -f example/kubernetes/test/jupyterlab-conda-store.yaml
+kubectl apply -f examples/kubernetes/test/jupyterlab-conda-store.yaml
 ```
 
 If you instead mount a
