@@ -38,12 +38,12 @@ cost. Example of these include [gcp
 filestore](https://cloud.google.com/filestore/docs/performance#expected_performance),
 [aws efs](https://aws.amazon.com/efs/features/), and [azure
 files](https://docs.microsoft.com/en-us/azure/storage/files/understanding-billing#provisioning-method). Choosing
-an nfs storage option with bad IOPs will yield long environment
+an nfs storage option with low IOPS will result in long environment
 install times.
 
 ### Network Speed
 
-Conda while it does it's best to cache packages will have to reach out
+While conda does its best to cache packages, it will have to reach out
 to download the `repodata.json` along with the packages as well. Thus
 network speeds may be important. Typically cloud environments have
 plenty fast Internet.
@@ -68,7 +68,7 @@ broker](https://docs.celeryproject.org/en/stable/getting-started/backends-and-br
 conda-store is configured via
 [traitlets](https://traitlets.readthedocs.io/en/stable/). Originally
 this configuration was done via command line options but as the
-options grew this seems untenable. conda-store server and worker can
+options grew this seems untenable. Conda-store server and worker can
 be launched via configuration easily.
 
 ```shell
@@ -120,7 +120,7 @@ create the tables if they do not already exist.
 celery. Celery supports a [wide range of
 brokers](https://docs.celeryproject.org/en/stable/getting-started/backends-and-brokers/index.html)
 each with different guarantees. By default the sqlalchemy based broker
-is used. While this is production ready it is not the ideal broker it
+is used. It is not the ideal broker, but it is production ready and
 has worked well in practice. The url must be provided in a format that
 celery understands.
 
