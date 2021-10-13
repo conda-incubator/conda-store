@@ -53,7 +53,7 @@ conda-store to build an environment with jupyterlab and numpy. This
 pod is not needed for running conda-store.
 
 ```shell
-kubectl apply -f example/kubernetes/test/jupyterlab-conda-store.yaml
+kubectl apply -f examples/kubernetes/test/jupyterlab-conda-store.yaml
 ```
 
 If you instead mount a
