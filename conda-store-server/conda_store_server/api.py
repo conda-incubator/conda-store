@@ -93,12 +93,20 @@ def get_build(db, build_id: int):
     return db.query(orm.Build).filter(orm.Build.id == build_id).first()
 
 
-def get_build_packages(db, build_id: int):
+def get_build_packages(db, build_id: int, search: str = None, build: str = None):
+    filters = [
+        (orm.build_conda_package.c.build_id == build_id)
+    ]
+    if search:
+        filters.append(orm.CondaPackage.name.contains(search, autoescape=True))
+    if build:
+        filters.append(orm.CondaPackage.build.contains(build, autoescape=True))
+
     return (
         db.query(orm.CondaPackage)
         .join(orm.build_conda_package)
         .join(orm.CondaChannel)
-        .filter(orm.build_conda_package.c.build_id == build_id)
+        .filter(*filters)
     )
 
 

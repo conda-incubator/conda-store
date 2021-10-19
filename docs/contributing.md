@@ -147,8 +147,12 @@ release and make it available on [PyPi](https://pypi.org/),
 
  - `GET /api/v1/build/<build_id>/logs/` :: get build logs
 
- - `GET /api/v1/build/<build_id>/packages/?page=<int>&size=<int>&sort_by=<str>&order=<str>` :: list packages within build
+ - `GET /api/v1/build/<build_id>/packages/?search=<str>&build=<str>&page=<int>&size=<int>&sort_by=<str>&order=<str>` :: list packages within build
    - allowed `sort_by` values : `channel` to sort by channel name, `name` to sort by package name
+   - `build` string to search within `build` for example strings include
+     `py27_0` etc which can be useful for filtering specific versions of
+     packages.
+   - `search` will search within the package names for a match
 
 ### Conda Channels
 
@@ -162,6 +166,7 @@ release and make it available on [PyPi](https://pypi.org/),
    - `build` string to search within `build` for example strings include
      `py27_0` etc which can be useful for filtering specific versions of
      packages.
+   - `search` will search within the package names for a match
 
 ### REST API query format
 
