@@ -248,13 +248,13 @@ options were used but eventually we learned that there were too many
 options for the user. Traitlets provides a python configuration file
 that you can use to configure values of the applications. It is used
 for both the server and worker. See
-[tests/assets/conda_store_config.py](https://github.com/Quansight/conda-store/blob/main/tests/assets/conda_store_config.py)
+[`tests/assets/conda_store_config.py`](https://github.com/Quansight/conda-store/blob/main/tests/assets/conda_store_config.py)
 for a full example.
 
 ### Workers and Server
 
-Conda Store can be broken into two components. The worker(s) which
-have the following responsibilities:
+Conda-Store can be broken into two components. The workers which have
+the following responsibilities:
  - build Conda environments from Conda `environment.yaml` specifications
  - build Conda pack archives
  - build Conda docker images
@@ -269,8 +269,8 @@ in `CondaStore` functions in `conda_store_server/app.py` or
 `conda_store_server/build.py`.
  
 The web server has several responsibilities:
- - serve a ui for interacting with Conda environments
- - serve a rest api for managing Conda environments
+ - serve a UI for interacting with Conda environments
+ - serve a REST API for managing Conda environments
  - serve a programmatic Docker registry for interesting docker-conda abilities
 
 The web server is based on
@@ -278,8 +278,8 @@ The web server is based on
 due to it being battle tested and that conda-store is not doing any
 special things with the web server. The flask app is defined in
 `conda_store_server.server.app`. There are several components to the server:
- - ui :: `conda_store_server/server/views/ui.py`
- - api :: `conda_store_server/server/views/api.py`
+ - UI :: `conda_store_server/server/views/ui.py`
+ - REST API :: `conda_store_server/server/views/api.py`
  - registry :: `conda_store_server/server/views/registry.py`
 
 Both the worker and server need a connection to the database and s3
@@ -287,8 +287,8 @@ server. The s3 server is used to store all build artifacts for example
 logs, docker layers, and the
 [Conda-Pack](https://conda.github.io/conda-pack/) tarball. The
 PostgreSQL database is used for managing the tasks for the Conda-Store
-workers along with powering the Conda-Store web server ui, api, and
-docker registry. Optionally a broker can be used for tasks that is not
+workers along with powering the Conda-Store web server UI, REST API, and
+Docker registry. Optionally a broker can be used for tasks that is not
 a database for example a message queue similar to
 [RabbitMQ](https://www.rabbitmq.com/),
 [Kafka](https://kafka.apache.org/), etc. It is not believed that a
@@ -334,12 +334,12 @@ perform a build?
    with noarch). The `repodata.json` has fields like package name,
    version, and dependencies.
 
-You may notice that the channels listed above do not have urls. This
+You may notice that the channels listed above do not have a url. This
 is because in general you can add
-`https://conda.anaconda.org/<channel-name>` to a non-url channel. 
+`https://conda.anaconda.org/<channel-name>` to a non-url channel.
 
-3. Conda then performs a solve to determine the exact version/sha of each
-   package that it will download
+3. Conda then performs a solve to determine the exact version and
+   sha256 of each package that it will download
 
 4. The specific packages are downloaded
 
