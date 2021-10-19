@@ -118,26 +118,3 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
         run: |
           docker build -t $IMAGE_NAME:$IMAGE_TAG ${{ matrix.docker-image }}
-
-  build-docs:
-    name: 'Build Documentation'
-    runs-on: ubuntu-latest
-    steps:
-      - name: 'Checkout Infrastructure'
-        uses: actions/checkout@v2
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: "3.9"
-      - name: Install Dependencies
-        working-directory: conda-store-server
-        run: |
-          pip install .[dev]
-      - name: Build Documentation
-        working-directory: docs
-        run: |
-          sphinx-build -b html . _build
-      - uses: actions/upload-artifact@v2
-        with:
-          name: documentation
-          path: docs/_build

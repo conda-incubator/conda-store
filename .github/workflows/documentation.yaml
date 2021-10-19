@@ -1,0 +1,52 @@
+name: Documentation
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '**.md'
+  push:
+    branches:
+      - main
+    paths:
+      - '**.md'
+
+jobs:
+  build-docs:
+    name: 'Build and Test Documentation'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout Infrastructure'
+        uses: actions/checkout@v2
+      - name: Documentation Quality Check
+        uses: errata-ai/vale-action@v1.4.0
+        with:
+          files: '["docs", "README.md", "CHANGELOG.md"]'
+          onlyAnnotateModifiedLines: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Broken link checker
+        uses: gaurav-nelson/github-action-markdown-link-check@v1
+        with:
+          config-file: 'tests/links-check/markdown.links.config.json'
+          folder-path: 'docs/'
+          check-modified-files-only: 'yes'
+          file-extension: '.md'
+          base-branch: 'main'
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.9"
+      - name: Install Dependencies
+        working-directory: conda-store-server
+        run: |
+          pip install .[dev]
+      - name: Build Documentation
+        working-directory: docs
+        run: |
+          sphinx-build -b html . _build
+      - uses: actions/upload-artifact@v2
+        with:
+          name: documentation
+          path: docs/_build
