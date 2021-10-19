@@ -22,8 +22,7 @@ jobs:
       - name: Documentation Quality Check
         uses: errata-ai/vale-action@v1.4.0
         with:
-          files: '["docs", "CONTRIBUTING.md", "README.md", "RELEASE.md"]'
-          # onlyAnnotateModifiedLines: true
+          files: '["docs", "README.md", "CHANGELOG.md"]'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Broken link checker
