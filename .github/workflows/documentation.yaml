@@ -23,6 +23,7 @@ jobs:
         uses: errata-ai/vale-action@v1.4.0
         with:
           files: '["docs", "README.md", "CHANGELOG.md"]'
+          onlyAnnotateModifiedLines: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Broken link checker
