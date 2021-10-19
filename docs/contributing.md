@@ -13,6 +13,14 @@ To deploy `conda-store` run the following command
 docker-compose up --build
 ```
 
+```eval_rst
+.. important :: 
+    Many of the conda-store docker images are built/tested for amd64(x86-64) 
+    there will be a performance impact when building and running on 
+    arm architectures. Otherwise this workflow has been shown to run and build on OSX.
+    Notice the `architecture: amd64` whithin the docker-compose.yaml files.
+```
+
 The following resources will be available:
   - conda-store web server running at http://localhost:5000
   - minio s3 running at http://localhost:9000 with username `admin` and password `password`
@@ -198,7 +206,7 @@ displayed to the user.
 If the route is paginated it will return a `page`, `size`, and `count`
 key.
 
-```json
+```
 {
    "status": "ok",
    "message": "<message>",
@@ -212,11 +220,11 @@ key.
 If the route is not paginated the `page`, `size`, and `count` keys will
 not be returned.
 
-```json
+```
 {
    "status": "ok",
    "message": "<message>",
-   "data": {...},
+   "data": {},
 }
 ```
 
@@ -443,7 +451,7 @@ the default configuration of conda-store.
 First since the user is unauthenticated they inherit the default role
 mappings.
 
-```
+```python
 {
     "default/*": {"viewer"},
 }
