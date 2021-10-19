@@ -1,3 +1,7 @@
 {
-  "ignorePatterns": []
+  "ignorePatterns": [
+    {
+      "pattern": "localhost:\d+",
+    }
+  ]
 }
