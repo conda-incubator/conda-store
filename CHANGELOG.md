@@ -23,21 +23,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
  - support for credentials supplied for object storage including IAM credentials #176
- - namespace UI to conda-store server #183
+ - namespace UI to Conda-Store server #183
  - create/read/delete methods for namespaces `/api/v1/namespace/` #181
- - distinct_on query parameter to list REST api methods #164
- - adding sorting query parameter to list REST api methods #162
- - ability to filter conda packages by build parameter #156
- - delete environments and all related builds from rest api #154
- - initial support for pagination for all list REST api methods #126
+ - distinct_on query parameter to list REST API methods #164
+ - adding sorting query parameter to list REST API methods #162
+ - ability to filter Conda packages by build parameter #156
+ - delete environments and all related builds from REST API #154
+ - initial support for pagination for all list REST API methods #126
  - support for filtering environments by name #125
- - working kubernetes deployment example #116
+ - working Kubernetes deployment example #116
  - significant documentation effort via multiple PRs
 
 ### Changed
 
- - namespace parameter in json POST request to `/api/v1/specification/` #178
- - api route for listing packages within build instead of including within build api response #157
+ - namespace parameter in JSON POST request to `/api/v1/specification/` #178
+ - API route for listing packages within build instead of including within build API response #157
  - database relationship between build, environments, and namespaces improved #153
 
 ### Fixed
@@ -52,29 +52,29 @@ notable things done in the past 3-6 months.
 
 ### Added
 
- - complete authentication and rbac based authorization modeled after jupyterhub authentication model [#97](https://github.com/Quansight/conda-store/pull/97)
- - support for namespaced environments and builds [#96](https://github.com/Quansight/conda-store/pull/96)
+ - complete authentication and RBAC based authorization modeled after JupyterHub authentication model [#97](https://github.com/Quansight/conda-store/pull/97)
+ - support for a namespace associated with environments and builds [#96](https://github.com/Quansight/conda-store/pull/96)
  - testing of conda-store UI via [cypress](https://www.cypress.io/) [#111](https://github.com/Quansight/conda-store/pull/111)
  - delete and update buttons immediately update status [#107](https://github.com/Quansight/conda-store/pull/107)
- - support for dummy authentication and oauth (github + jupyterhub) authentication [#103](https://github.com/Quansight/conda-store/pull/103)
+ - support for dummy authentication and OAuth2 (GitHub + JupyterHub) authentication [#103](https://github.com/Quansight/conda-store/pull/103)
  - delete method for conda-store builds [#94](https://github.com/Quansight/conda-store/pull/94)
  - support for url prefix [#109](https://github.com/Quansight/conda-store/pull/109)
  - docker button says click to copy to clipboard [#110](https://github.com/Quansight/conda-store/pull/110)
  - enabling rollbacks of environment builds [#93](https://github.com/Quansight/conda-store/pull/93)
- - adding conda env export for pinned yaml file [#92](https://github.com/Quansight/conda-store/pull/92)
+ - adding `conda env export` for pinned YAML file [#92](https://github.com/Quansight/conda-store/pull/92)
  - celery integration for true task based builds [#90](https://github.com/Quansight/conda-store/pull/90)
- - conda store configuration is configured via traitlets [#87](https://github.com/Quansight/conda-store/pull/87)
- - prometheus metrics endpoint [#84](https://github.com/Quansight/conda-store/pull/84)
+ - Conda-Store configuration is configured via Traitlets [#87](https://github.com/Quansight/conda-store/pull/87)
+ - Prometheus metrics endpoint [#84](https://github.com/Quansight/conda-store/pull/84)
  - help button in top right hand corner [#83](https://github.com/Quansight/conda-store/pull/83)
  - support for internal and external url for s3 bucket [#81](https://github.com/Quansight/conda-store/pull/81)
 
 ### Changed
 
- - use micromamba for environment builds by default [#66](https://github.com/Quansight/conda-store/pull/66)
+ - use Micromamba for environment builds by default [#66](https://github.com/Quansight/conda-store/pull/66)
  - download repodata compressed [#76](https://github.com/Quansight/conda-store/pull/76)
  - only show artifacts once it has been built [#113](https://github.com/Quansight/conda-store/pull/113)
- - true parallel builds and retry if conda channel update fails [#114](https://github.com/Quansight/conda-store/pull/114)
+ - true parallel builds and retry if Conda channel update fails [#114](https://github.com/Quansight/conda-store/pull/114)
 
 ### Fixed
  
- - sqlalchemy connection leak to database [#105](https://github.com/Quansight/conda-store/pull/105)
+ - SQLAlchemy connection leak to database [#105](https://github.com/Quansight/conda-store/pull/105)

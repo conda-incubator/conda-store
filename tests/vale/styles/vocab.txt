@@ -39,3 +39,9 @@ gid
 glibc
 presigned
 OAuthenticator
+RBAC
+Prometheus
+Micromamba
+pytest
+lorri
+nixery

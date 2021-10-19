@@ -6,27 +6,27 @@
 [![Conda](https://img.shields.io/conda/vn/conda-forge/conda-store-server?color=green&label=conda-forge%7Cconda-store-server)](https://anaconda.org/conda-forge/conda-store-server)
 [![Conda](https://img.shields.io/conda/vn/conda-forge/conda-store?color=green&label=conda-forge%7Cconda-store)](https://anaconda.org/conda-forge/conda-store)
 
-![conda store UI](docs/_static/images/conda-store-authenticated.png)
+![Conda-Store UI](docs/_static/images/conda-store-authenticated.png)
 
 End users think in terms of environments not packages. The core
-philosophy of conda-store is to serve identical conda environments in
-as many ways as possible. Conda Store controls the environment
+philosophy of Conda-Store is to serve identical Conda environments in
+as many ways as possible. Conda-Store controls the environment
 lifecycle: management, builds, and serving of environments.
 
-It **manages** conda environments by:
+It **manages** Conda environments by:
  - watching specific files or directories for changes in environment filename specifications 
- - provides a REST api for managing environments (which a jupyterlab plugin is being actively developed for)
+ - provides a REST API for managing environments (which a JupyterLab plugin is being actively developed for)
  - provides a command line utility for interacting with conda-store `conda-store env [create, list]`
- - provides a web ui to take advantage of many of conda-store's advanced capabilities
+ - provides a web UI to take advantage of many of conda-store's advanced capabilities
 
 It **builds** conda specifications in a scalable manner using `N`
 workers communicating via Celery to keep track of queued
 environment builds.
 
-It **serves** conda environments via a filesystem, lockfiles,
-tarballs, and soon a docker registry. Tarballs and docker images can
-carry a lot of bandwidth which is why conda-store integrates
-optionally with `s3` to actually serve the blobs.
+It **serves** conda environments via a filesystem, lockfile, tarball,
+and a docker registry. Tarballs and Docker images can carry a lot of
+bandwidth which is why Conda-Store integrates optionally with `s3` to
+actually serve the blobs.
 
 ## Documentation
 
@@ -52,12 +52,12 @@ This design has several advantages:
  - because each `environment` update is a new separate build the
    environment can be archived and uniquely identified
 
-![conda-store terminology](docs/_static/images/conda-store-terminology.png)
+![Conda-Store terminology](docs/_static/images/conda-store-terminology.png)
 
 ## Philosophy
 
-We mentioned above that `conda-store` was influenced by
-[nix](https://nixos.org/). While conda is not as pure as nix (when it
+We mentioned above that `Conda-Store` was influenced by
+[nix](https://nixos.org/). While Conda is not as pure as nix (when it
 comes to reproducible builds) we can achieve close to the same results
 with many of the great benefits. Motivation
 from this work came from the following projects in no particular
@@ -72,7 +72,7 @@ images](https://grahamc.com/blog/nix-and-layered-docker-images),
 2. specifications are named
    `<sha256-hash-of-spec>-<environment-name>`, ensuring every conda
    environment is unique.
-3. a conda environment e.g. `<environment-name>` is symlinked to a
+3. a conda environment for example `<environment-name>` is symlinked to a
    specific conda specification
    `<sha256-hash-of-spec>-<environment-name>`.
 
