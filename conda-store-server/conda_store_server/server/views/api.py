@@ -374,7 +374,9 @@ def api_get_build_packages(build_id):
 
     search = request.args.get("search")
     build_str = request.args.get("build")
-    orm_packages = api.get_build_packages(conda_store.db, build.id, search=search, build=build_str)
+    orm_packages = api.get_build_packages(
+        conda_store.db, build.id, search=search, build=build_str
+    )
     return paginated_api_response(
         orm_packages,
         schema.CondaPackage,

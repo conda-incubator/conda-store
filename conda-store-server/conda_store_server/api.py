@@ -94,9 +94,7 @@ def get_build(db, build_id: int):
 
 
 def get_build_packages(db, build_id: int, search: str = None, build: str = None):
-    filters = [
-        (orm.build_conda_package.c.build_id == build_id)
-    ]
+    filters = [(orm.build_conda_package.c.build_id == build_id)]
     if search:
         filters.append(orm.CondaPackage.name.contains(search, autoescape=True))
     if build:
