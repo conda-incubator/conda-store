@@ -2,7 +2,7 @@
 
 ## Development
 
-The following are needed for development
+Install the following dependencies before developing on Conda-Store.
 
  - [docker](https://docs.docker.com/engine/install/)
  - [docker-compose](https://docs.docker.com/compose/install/)
@@ -22,10 +22,10 @@ docker-compose up --build
 ```
 
 The following resources will be available:
-  - conda-store web server running at http://localhost:5000
-  - minio s3 running at http://localhost:9000 with username `admin` and password `password`
-  - postgres running at localhost:5432 with username `admin` and password `password` database `conda-store`
-  - jupyterhub running at http://localhost:8000 with any username and password `test`
+  - conda-store web server running at [http://localhost:5000](http://localhost:5000)
+  - [MinIO](https://min.io/) s3 running at [http://localhost:9000](http://localhost:9000) with username `admin` and password `password`
+  - [PostgreSQL](https://www.postgresql.org/) running at [localhost:5432](localhost:5432) with username `admin` and password `password` database `conda-store`
+  - [JupyterHub](https://jupyter.org/hub) running at [http://localhost:8000](http://localhost:8000) with any username and password `test`
 
 On a fast machine this deployment should only take 10 or so seconds
 assuming the docker images have been partially built before. If you
@@ -39,12 +39,13 @@ docker-compose up --build
 
 ## Documentation
 
-The following are needed for development
+Install the following dependencies before contributing to the
+documentation.
 
- - [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/)
+ - [Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/)
 
 To build the documentation install the development environment via
-conda.
+Conda.
 
 ```shell
 conda env create -f conda-store-server/environment-dev.yaml
@@ -68,10 +69,11 @@ firefox _build/index.html
 The documentation has been primarily written in markdown as to make it
 easier to contribute to the documentation.
 
-## Release Process
+## Release process
 
-Choose the `<version>` number is should follow semver and the established
-pattern of `v<x>.<y>.<z>`.
+Choose the `<version>` number. It should follow [Semantic
+Versioning](https://semver.org/) and the established pattern of
+`v<x>.<y>.<z>`.
 
 Ensure that `CHANGELOG.md` is up to date with all the changes since
 the last release following the template provided within the markdown
@@ -79,7 +81,7 @@ file.
 
 All docker images within `docker/kubernetes` should be updated to the
 release version. `spec.template.spec.containers[0].image` is the path
-within the yaml files.
+within the YAML files.
 
 Update the version number in `conda-store-server/setup.py` and
 `conda-store/setup.py` to reflect the release version.
@@ -87,15 +89,17 @@ Update the version number in `conda-store-server/setup.py` and
 Once those changes have been made make a commit titled `bump to
 version <version>`.
 
-Finally create a [new release within the github
+Finally create a [new release within the GitHub
 interface](https://github.com/Quansight/conda-store/releases/new). Do
 this instead of a git TAG since you can include release notes on the
 repository. The Release should be titled `Release <version> -
 <month>/<day>/<year>` with the description being the changelog
 markdown for the particular release.
 
-Once you have create a release the github actions with the build the
-release and make it available on pypi, conda, and docker hub.
+Once you have create a release the GitHub actions with the build the
+release and make it available on [PyPi](https://pypi.org/),
+[Conda](https://anaconda.org/), and
+[DockerHub](https://hub.docker.com/).
 
 ## REST API
 
@@ -128,7 +132,7 @@ release and make it available on pypi, conda, and docker hub.
 ### Specifications
 
  - `POST /api/v1/environment/` :: create given environment
-    - JSON message with optional namespace (will use `CondaStore.default_namespace` if not specified) and a specification string that is a valid environment.yaml for conda.
+    - JSON message with optional namespace (will use `CondaStore.default_namespace` if not specified) and a specification string that's a valid environment.yaml for Conda.
  
 ### Builds
 
@@ -159,19 +163,20 @@ release and make it available on pypi, conda, and docker hub.
      `py27_0` etc which can be useful for filtering specific versions of
      packages.
 
-### REST API Query Format
+### REST API query format
 
 For several paginated results the following query parameters are accepted.
 
  - `page` page numbers indexing start at 1
  - `size` the number of results to return in each page. The max size
-   is determined by the traitlets parameter
+   is determined by the
+   [Traitlets](https://traitlets.readthedocs.io/en/stable/) parameter
    `c.CondaStoreServer.max_page_size` with default of 100.
- - `sort_by` (can be multiple order_by(s)) indicating a multi-column
+ - `sort_by` (can be multiple order_by parameters) indicating a multi-column
    ordering. Each route has a list of allowed sorting keys:
-   e.g. `namespace`, `name`, `channel`. All paginated routes support
+   for example `namespace`, `name`, `channel`. All paginated routes support
    this and have a default specific to the given resource.
- - `distinct_on` (can be multiple distinct ons) indicating a
+ - `distinct_on` (can be multiple distinct_on parameters) indicating a
    multi-column distinct on. Each route has a list of allowed distinct
    keys.
  - `order` is either `desc` descending or `asc` ascending with a
@@ -231,14 +236,14 @@ not be returned.
 ## Architecture
 
 Conda Store was designed with the idea of scalable enterprise
-management of reproducible conda environments.
+management of reproducible Conda environments.
 
 ![Conda Store architecture diagram](_static/images/conda-store-architecture-simple.png)
 
 ### Configuration
 
 [Traitlets](https://traitlets.readthedocs.io/en/stable/) is used for
-all configuration of conda-store. In the beginning command line
+all configuration of Conda-Store. In the beginning command line
 options were used but eventually we learned that there were too many
 options for the user. Traitlets provides a python configuration file
 that you can use to configure values of the applications. It is used
@@ -264,9 +269,9 @@ in `CondaStore` functions in `conda_store_server/app.py` or
 `conda_store_server/build.py`.
  
 The web server has several responsibilities:
- - serve a ui for interacting with conda environments
- - serve a rest api for managing conda environments
- - serve a programmatic docker registry for interesting docker-conda abilities
+ - serve a ui for interacting with Conda environments
+ - serve a rest api for managing Conda environments
+ - serve a programmatic Docker registry for interesting docker-conda abilities
 
 The web server is based on
 [Flask](https://flask.palletsprojects.com/en/2.0.x/). Flask was chosen
@@ -278,14 +283,16 @@ special things with the web server. The flask app is defined in
  - registry :: `conda_store_server/server/views/registry.py`
 
 Both the worker and server need a connection to the database and s3
-server. The s3 server is used to store all build artifacts e.g. logs,
-docker layers, and the conda pack tarball. The postgresql database is
-used for managing the tasks for the conda-store workers along with
-powering the conda-store web server ui, api, and docker
-registry. Optionally a broker can be used for tasks that is not a
-database e.g. a message queue similar to rabbitmq, kafka, etc. It is
-not believed that a full blown message queue will help conda-store with
-performance.
+server. The s3 server is used to store all build artifacts for example
+logs, docker layers, and the
+[Conda-Pack](https://conda.github.io/conda-pack/) tarball. The
+PostgreSQL database is used for managing the tasks for the Conda-Store
+workers along with powering the Conda-Store web server ui, api, and
+docker registry. Optionally a broker can be used for tasks that is not
+a database for example a message queue similar to
+[RabbitMQ](https://www.rabbitmq.com/),
+[Kafka](https://kafka.apache.org/), etc. It is not believed that a
+full blown message queue will help Conda-Store with performance.
 
 ### Terminology
 
@@ -302,7 +309,7 @@ performance.
    given point in time
 
 In order to understand why we have the complicated terminology for an
-environment it helps to understand how conda builds a given
+environment it helps to understand how Conda builds a given
 environment. 
 
 ### Reproducibility of Conda 
@@ -316,7 +323,7 @@ dependencies:
   - python >=3.7
 ```
 
-Suppose we have the given `environment.yaml` file. How does conda
+Suppose we have the given `environment.yaml` file. How does Conda
 perform a build?
 
 1. Conda downloads `channeldata.json` from each of the channels which
@@ -341,10 +348,10 @@ is because in general you can add
 There are two spots that introduce issues to reproducibility. The
 first issue is tracking when an `environment.yaml` file has
 changes. This can be easily tracked by taking a sha256 of the file
-. This is what conda-store does but sorts the dependencies to make
+. This is what Conda-Store does but sorts the dependencies to make
 sure it has a way of not triggering a rebuild if the order of two
 packages changes in the dependencies list. In step (2) `repodata.json`
-is updated regularly. When conda solves for a user's environment it
+is updated regularly. When Conda solves for a user's environment it
 tries to use the latest version of each package. Since `repodata.json`
 could be updated the next minute the same solve for the same
 `environment.yaml` file can result in different solves.
@@ -357,7 +364,7 @@ you are extending and using a form of OAuth2 use the
 `conda_store_server.server.auth.GenericOAuthAuthentication`. Similar
 to JupyterHub all configuration is modified via
 [Traitlets](https://traitlets.readthedocs.io/en/stable/). Below shows
-an example of setting us OAuth2 via jupyterhub for conda-store.
+an example of setting us OAuth2 via JupyterHub for Conda-Store.
 
 ```python
 c.CondaStoreServer.authentication_class = JupyterHubOAuthAuthentication
@@ -366,15 +373,15 @@ c.JupyterHubOAuthAuthentication.client_id = "service-this-is-a-jupyterhub-client
 c.JupyterHubOAuthAuthentication.client_secret = "this-is-a-jupyterhub-secret"
 ```
 
-Once a user is authenticated a cookie or token [jwt](https://jwt.io/)
-is created to store the user credentials to ensure that conda-store is
-as stateless as possible. At this current point in time conda-store
-does not differentiate between a service and user. Similar to
-jupyterhub `conda_store_server.server.auth.Authentication` has an
-`authenticate` method. This method is the primary way to customize
-authentication. It is responsible for checking that the user
-credentials to login are correct as well as returning a dictionary
-following the schema
+Once a user is authenticated a cookie or [JSON Web
+Token](https://jwt.io/) is created to store the user credentials to
+ensure that conda-store is as stateless as possible. At this current
+point in time conda-store does not differentiate between a service and
+user. Similar to JupyterHub
+`conda_store_server.server.auth.Authentication` has an `authenticate`
+method. This method is the primary way to customize authentication. It
+is responsible for checking that the user credentials to login are
+correct as well as returning a dictionary following the schema
 `conda_store_server.schema.AuthenticationToken`. This stores a
 `primary_namespace` for a given authenticated service or user. In
 addition a dictionary of `<namespace>/<name>` map to a set of
@@ -394,7 +401,7 @@ the `<namespace>` from the `<name>` and `*` signifies match any (zero
 or more) characters. This was chosen to support rich authorization
 models while also being easy and efficient to implement in a
 database. `*` are supported anywhere in the `key` such as
-`*n*viron*/n*me`. Configure the following traitlets to modify the
+`*n*viron*/n*me`. Configure the following Traitlets to modify the
 inherited permissions for authenticated and unauthenticated users.
 
 ```python
@@ -420,8 +427,8 @@ class Permissions(enum.Enum):
     ENVIRONMENT_DELETE = "build::delete"
 ```
 
-The role name to permission is configured via a single traitlet shown
-below.
+The role name to permission is configured via a single trait shown
+below `c.RBACAuthorizationBackend.role_mappings`.
 
 ```python
 c.RBACAuthorizationBackend.role_mappings = {
@@ -482,7 +489,7 @@ mappings.
 We go through each role mapping and try to match the expression
 `default/*` to `default/web-dev`. In this case this does match and
 thus for the given environment `default/web-dev` the unauthenticated
-user has role(s) `{viewer}`. For each role we map the role to
+user has a set of roles `{viewer}`. For each role we map the role to
 permissions. We get `{build::read}`. The delete environment action
 requires `build::delete` permissions and thus the user is not
 authenticated to perform the action.
@@ -520,7 +527,7 @@ In total the user has the following bindings.
 ```
 
 Following the same process as before we iterate through each binding
-if it matches we add the given role(s). For this example we get
+if it matches we add the given roles. For this example we get
 `{viewer, admin}`. Next we iterate through each role and map it to
 permissions and we get the following `{build::create, build::read,
 build::update, build::delete}`. The delete environment action requires
@@ -537,8 +544,10 @@ bellow.
 Important things to note about the relationship:
  - An `environment` exists within a given `namespace` and always has a current `build`
  - A `build` belongs to a particular `environment` and has associated `condapackage` and `buildartfacts`
- - A `buildartifact` is a way in the database to keep track of external resources e.g. s3artifacts, filesystem directories, etc
- - A `condapackage` is a representation of a given conda package which belongs to a given `condachannel`
+ - A `buildartifact` is a way for the database to keep track of
+   external resources for example s3 artifacts, filesystem directories,
+   etc
+ - A `condapackage` is a representation of a given Conda package which belongs to a given `condachannel`
  - A `specification` is the environment.yaml using in `conda env create -f <environment.yaml>`
  
 The following will generate the database model shown bellow. It was

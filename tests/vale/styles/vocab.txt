@@ -1,4 +1,4 @@
-Taitlets
+Traitlets
 Conda
 JupyterHub
 PostgreSQL
@@ -7,8 +7,15 @@ cpu
 GCP
 AWS
 nfs
-urlyaml
+url
 SQLAlchemy
 namespace
 lockfile
 filestore
+MinIO
+Conda-Store
+YAML
+GitHub
+DockerHub
+namespaces
+Conda-Pack
