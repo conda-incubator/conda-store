@@ -1,5 +1,8 @@
 version: "2"
 
+volumes:
+  conda_store_data:
+
 services:
   conda-store-worker:
     build: ../../conda-store-server
@@ -7,7 +10,7 @@ services:
       - "postgres"
       - "minio"
     volumes:
-      - ./data:/opt/conda-store/
+      - conda_store_data:/opt/conda-store/
       - ./assets/conda_store_config.py:/etc/conda-store/conda_store_config.py:ro
     platform: linux/amd64
     command: ["wait-for-it", "conda-store-server:5000", "-t", "60", '--', 'conda-store-worker', '--config', '/etc/conda-store/conda_store_config.py']
@@ -28,7 +31,7 @@ services:
     build: ../../conda-store
     user: "1000:1000"
     volumes:
-      - ./data:/opt/conda-store
+      - conda_store_data:/opt/conda-store
       - ./assets/condarc:/etc/conda/condarc:ro
       - ./assets/jupyter_notebook_config.py:/etc/jupyter/jupyter_notebook_config.py:ro
       - ./assets/jupyterhub_config.py:/opt/jupyterhub/jupyterhub_config.py:ro
