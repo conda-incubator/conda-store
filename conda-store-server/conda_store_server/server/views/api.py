@@ -106,7 +106,9 @@ def api_list_namespaces():
     conda_store = get_conda_store()
     auth = get_auth()
 
-    orm_namespaces = auth.filter_namespaces(api.list_namespaces(conda_store.db))
+    orm_namespaces = auth.filter_namespaces(
+        api.list_namespaces(conda_store.db, show_soft_deleted=False)
+    )
     return paginated_api_response(
         orm_namespaces,
         schema.Namespace,
@@ -176,7 +178,7 @@ def api_list_environments():
     search = request.args.get("search")
 
     orm_environments = auth.filter_environments(
-        api.list_environments(conda_store.db, search=search)
+        api.list_environments(conda_store.db, search=search, show_soft_deleted=False)
     )
     return paginated_api_response(
         orm_environments,
@@ -284,7 +286,9 @@ def api_list_builds():
     conda_store = get_conda_store()
     auth = get_auth()
 
-    orm_builds = auth.filter_builds(api.list_builds(conda_store.db))
+    orm_builds = auth.filter_builds(
+        api.list_builds(conda_store.db, show_soft_deleted=True)
+    )
     return paginated_api_response(
         orm_builds,
         schema.Build,

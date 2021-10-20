@@ -1,13 +1,16 @@
 from typing import List
 
-from sqlalchemy import func
+from sqlalchemy import func, null
 
 from conda_store_server import orm
 from .conda import conda_platform
 
 
-def list_namespaces(db):
+def list_namespaces(db, show_soft_deleted: bool = False):
     filters = []
+    if not show_soft_deleted:
+        filters.append(orm.Namespace.deleted_on == null())
+
     return db.query(orm.Namespace).filter(*filters)
 
 
@@ -35,6 +38,7 @@ def list_environments(
     db,
     namespace: str = None,
     search: str = None,
+    show_soft_deleted: bool = False,
 ):
     filters = []
     if namespace:
@@ -42,6 +46,9 @@ def list_environments(
 
     if search:
         filters.append(orm.Environment.name.contains(search, autoescape=True))
+
+    if not show_soft_deleted:
+        filters.append(orm.Environment.deleted_on == null())
 
     return db.query(orm.Environment).join(orm.Environment.namespace).filter(*filters)
 
@@ -81,10 +88,13 @@ def post_specification(conda_store, specification, namespace=None):
     conda_store.register_environment(specification, namespace)
 
 
-def list_builds(db, status: orm.BuildStatus = None):
+def list_builds(db, status: orm.BuildStatus = None, show_soft_deleted: bool = False):
     filters = []
     if status:
         filters.append(orm.Build.status == status)
+
+    if not show_soft_deleted:
+        filters.append(orm.Build.deleted_on == null())
 
     return db.query(orm.Build).filter(*filters)
 
