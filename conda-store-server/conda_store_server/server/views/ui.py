@@ -22,7 +22,7 @@ def ui_create_get_environment():
     conda_store = get_conda_store()
     auth = get_auth()
 
-    orm_namespaces = auth.filter_namespaces(api.list_namespaces(conda_store.db))
+    orm_namespaces = auth.filter_namespaces(api.list_namespaces(conda_store.db, show_soft_deleted=False))
 
     context = {
         "namespaces": orm_namespaces.all(),
@@ -63,7 +63,7 @@ def ui_list_environments():
     server = get_server()
     auth = get_auth()
 
-    orm_environments = auth.filter_environments(api.list_environments(conda_store.db))
+    orm_environments = auth.filter_environments(api.list_environments(conda_store.db, show_soft_deleted=False))
 
     context = {
         "environments": orm_environments.all(),
@@ -79,7 +79,7 @@ def ui_list_namespaces():
     conda_store = get_conda_store()
     auth = get_auth()
 
-    orm_namespaces = auth.filter_namespaces(api.list_namespaces(conda_store.db))
+    orm_namespaces = auth.filter_namespaces(api.list_namespaces(conda_store.db, show_soft_deleted=False))
 
     context = {
         "namespaces": orm_namespaces.all(),
