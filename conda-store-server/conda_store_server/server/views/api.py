@@ -107,7 +107,8 @@ def api_list_namespaces():
     auth = get_auth()
 
     orm_namespaces = auth.filter_namespaces(
-        api.list_namespaces(conda_store.db, show_soft_deleted=False))
+        api.list_namespaces(conda_store.db, show_soft_deleted=False)
+    )
     return paginated_api_response(
         orm_namespaces,
         schema.Namespace,
@@ -285,7 +286,9 @@ def api_list_builds():
     conda_store = get_conda_store()
     auth = get_auth()
 
-    orm_builds = auth.filter_builds(api.list_builds(conda_store.db, show_soft_deleted=True))
+    orm_builds = auth.filter_builds(
+        api.list_builds(conda_store.db, show_soft_deleted=True)
+    )
     return paginated_api_response(
         orm_builds,
         schema.Build,
