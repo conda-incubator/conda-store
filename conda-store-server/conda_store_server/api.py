@@ -9,7 +9,7 @@ from .conda import conda_platform
 def list_namespaces(db, show_soft_deleted : bool = False):
     filters = []
     if not show_soft_deleted:
-        filters.append(orm.Namespace.deleted_on is None)
+        filters.append(orm.Namespace.deleted_on == None)
 
     return db.query(orm.Namespace).filter(*filters)
 
@@ -48,7 +48,7 @@ def list_environments(
         filters.append(orm.Environment.name.contains(search, autoescape=True))
 
     if not show_soft_deleted:
-        filters.append(orm.Environment.deleted_on is None)
+        filters.append(orm.Environment.deleted_on == None)
 
     return db.query(orm.Environment).join(orm.Environment.namespace).filter(*filters)
 
@@ -94,7 +94,7 @@ def list_builds(db, status: orm.BuildStatus = None, show_soft_deleted: bool= Fal
         filters.append(orm.Build.status == status)
 
     if not show_soft_deleted:
-        filters.append(orm.Build.deleted_on is None)
+        filters.append(orm.Build.deleted_on == None)
 
     return db.query(orm.Build).filter(*filters)
 
