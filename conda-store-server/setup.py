@@ -66,5 +66,5 @@ setup(
         "Source": "https://github.com/quansight/conda-store",
     },
     include_package_data=True,
-    zip_safe=False
+    zip_safe=False,
 )
