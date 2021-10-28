@@ -18,3 +18,6 @@ postgres:
     - username: admin
       password: password
       postgresql_role: SUPERUSER
+
+conda_store:
+  version: "0.3.3"

@@ -16,7 +16,7 @@
  - name: Install conda-store-server
    become: true
    pip:
-     name: conda-store-server==0.3.2
+     name: "conda-store-server=={{ conda_store.version }}"
    when: not _conda_store_stat.stat.exists
 
  - name: Create hub config directory

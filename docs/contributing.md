@@ -101,6 +101,25 @@ release and make it available on [PyPi](https://pypi.org/),
 [Conda](https://anaconda.org/), and
 [DockerHub](https://hub.docker.com/).
 
+After the PyPi release a release on
+[Conda-Forge](https://conda-forge.org/) and it located at
+[conda-forge/conda-store-feedstock](https://github.com/conda-forge/conda-store-feedstock). A
+PR must be created that updates to the released version
+`<version>`. 
+
+Conda-Store has two PyPi packages `conda-store-server` and `conda-store`.
+
+ - update `recipies/meta.yaml` with the new version `{% set version = "<version>" %}`
+ - update `recipies/meta.yaml` with the appropriate sha256 for each
+   package. The sha256 can be found at
+   `https://pypi.org/project/conda-store/#files` by clicking the
+   `view` button.
+
+Once the PR has been created ensure that you request a `rerender` of
+the feedstock with the following comment `@conda-forge-admin please
+rerender`. An example of this can be found in [PR
+#2](https://github.com/conda-forge/conda-store-feedstock/pull/2)
+
 ## REST API
 
 ### Status
