@@ -21,5 +21,3 @@ dependencies:
   - pyjwt
   # artifact storage
   - minio
-  # CLI
-  - typer
