@@ -28,7 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
  - `docker-compose.yaml` in `examples/docker` now compatible with 2.0 #195
- - flask templates now included in the pypi packages #196
+ - flask templates now included in the PyPi packages #196
 
 ## [0.3.1] - 2021-10-12
 

@@ -45,3 +45,4 @@ Micromamba
 pytest
 lorri
 nixery
+PyPi
