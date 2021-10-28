@@ -1,23 +1,8 @@
 ---
  - name: Check that the conda-store-server exists
    stat:
-     path: "/usr/local/bin/conda-store-server"
+     path: "/opt/conda/envs/conda-store/bin/conda-store-server"
    register: _conda_store_stat
-
- - name: Add python and pip package
-   become: true
-   apt:
-     name:
-       - python3
-       - pip
-     state: latest
-     cache_valid_time: 3600
-
- - name: Install conda-store-server
-   become: true
-   pip:
-     name: "conda-store-server=={{ conda_store.version }}"
-   when: not _conda_store_stat.stat.exists
 
  - name: Create hub config directory
    become: true
@@ -54,7 +39,7 @@
        WorkingDirectory=/opt/conda-store/
        User=root
        Group=root
-       ExecStart=/usr/local/bin/conda-store-server --config /etc/conda-store/conda_store_config.py
+       ExecStart=/opt/conda/envs/conda-store/bin/conda-store-server --config /etc/conda-store/conda_store_config.py
        Restart=always
 
        [Install]
@@ -79,7 +64,7 @@
        WorkingDirectory=/opt/conda-store/
        User=root
        Group=root
-       ExecStart=/usr/local/bin/conda-store-worker --config /etc/conda-store/conda_store_config.py
+       ExecStart=/opt/conda/envs/conda-store/bin/conda-store-worker --config /etc/conda-store/conda_store_config.py
        Restart=always
 
        [Install]

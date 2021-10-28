@@ -2,7 +2,8 @@ miniforge:
   version: "4.9.2-3"
   sha256: de5b309312e9b2e3ad777262324865cbc40a61bfd1f497d7eb9925bf593b9d94
   home: /opt/conda
-  environments: []
+  environments:
+    - conda-store
 
 minio:
   version: "RELEASE.2021-02-11T08-23-43Z"
