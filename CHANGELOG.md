@@ -18,6 +18,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [0.3.3] - 2021-10-28
+
+### Fixed
+
+ - missing dependency in `conda-store-server/setup.py` `yarl`
+
 ## [0.3.2] - 2021-10-28
 
 ### Added
