@@ -9,10 +9,12 @@ minio:
   sha256: b965214b7e61ef04087addf0c5da62e4ceff88adb2a0af7e38566c40be306e28
   username: admin
   password: password
+  buckets:
+    - conda-store
 
 postgres:
   database: conda-store
   users:
-    - username: conda-store
+    - username: admin
       password: password
       postgresql_role: SUPERUSER

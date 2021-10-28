@@ -10,3 +10,6 @@
 
      - name: Install postgres
        include_tasks: tasks/postgres.yaml
+
+     - name: Install conda-store
+       include_tasks: tasks/conda-store.yaml

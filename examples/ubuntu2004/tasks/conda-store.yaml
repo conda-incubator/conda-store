@@ -1,0 +1,109 @@
+---
+ - name: Check that the conda-store-server exists
+   stat:
+     path: "/usr/local/bin/conda-store-server"
+   register: _conda_store_stat
+
+ - name: Add python and pip package
+   become: true
+   apt:
+     name:
+       - python3
+       - pip
+     state: latest
+     cache_valid_time: 3600
+
+ - name: Install conda-store-server
+   become: true
+   pip:
+     name: conda-store-server==0.3.2
+   when: not _conda_store_stat.stat.exists
+
+ - name: Create hub config directory
+   become: true
+   file:
+     path: /etc/conda-store
+     state: directory
+     mode: '0755'
+
+ - name: Create conda-store state directory
+   become: true
+   file:
+     path: /opt/conda-store
+     state: directory
+     mode: '0755'
+
+ - name: Copy conda_store_config.py file
+   become: true
+   template:
+     src: templates/conda_store_config.py.j2
+     dest: /etc/conda-store/conda_store_config.py
+   register: _conda_store_config
+
+ - name: Copy the conda-store server systemd service file
+   become: true
+   copy:
+     content: |
+       [Unit]
+       Description=Conda-Store Server
+       Wants=network-online.target
+       After=network-online.target
+       AssertFileIsExecutable=/usr/local/bin/conda-store-server
+
+       [Service]
+       WorkingDirectory=/opt/conda-store/
+       User=root
+       Group=root
+       ExecStart=/usr/local/bin/conda-store-server --config /etc/conda-store/conda_store_config.py
+       Restart=always
+
+       [Install]
+       WantedBy=multi-user.target
+     dest: /etc/systemd/system/conda-store-server.service
+     owner: root
+     group: root
+     mode: 0644
+   register: _conda_store_server_service
+
+ - name: Copy the conda-store worker systemd service file
+   become: true
+   copy:
+     content: |
+       [Unit]
+       Description=Conda-Store Worker
+       Wants=network-online.target
+       After=network-online.target
+       AssertFileIsExecutable=/usr/local/bin/conda-store-worker
+
+       [Service]
+       WorkingDirectory=/opt/conda-store/
+       User=root
+       Group=root
+       ExecStart=/usr/local/bin/conda-store-worker --config /etc/conda-store/conda_store_config.py
+       Restart=always
+
+       [Install]
+       WantedBy=multi-user.target
+     dest: /etc/systemd/system/conda-store-worker.service
+     owner: root
+     group: root
+     mode: 0644
+   register: _conda_store_worker_service
+
+ - name: Ensure Conda-Store Server is enabled on boot
+   become: true
+   systemd:
+     daemon_reload: true
+     name: conda-store-server
+     enabled: true
+     state: restarted
+   when: _conda_store_server_service.changed or _conda_store_config.changed
+
+ - name: Ensure Conda-Store Worker is enabled on boot
+   become: true
+   systemd:
+     daemon_reload: true
+     name: conda-store-worker
+     enabled: true
+     state: restarted
+   when: _conda_store_worker_service.changed or _conda_store_config.changed

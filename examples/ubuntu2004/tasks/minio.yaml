@@ -41,6 +41,16 @@
      owner: minio
      group: minio
 
+ - name: Ensure that minio buckets exist
+   become: true
+   file:
+     path: "/var/lib/minio/{{ item }}"
+     state: directory
+     mode: '0700'
+     owner: minio
+     group: minio
+   with_items: "{{ minio.buckets }}"
+
  - name: Ensure that minio configuration directory exists
    become: true
    file:

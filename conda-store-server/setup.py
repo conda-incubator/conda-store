@@ -42,6 +42,8 @@ setup(
         "minio",
         "traitlets",
         "pyjwt",
+        "yarl",
+        # conda (which should not be included here)
     ],
     extras_require={
         "dev": [
