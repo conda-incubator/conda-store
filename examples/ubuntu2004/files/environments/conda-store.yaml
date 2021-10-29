@@ -2,4 +2,4 @@ name: conda-store
 channels:
  - conda-forge
 dependencies:
- - conda-store-server =={{ conda_store.version }}
+ - conda-store-server=={{ conda_store.version }}

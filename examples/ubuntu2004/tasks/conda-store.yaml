@@ -33,7 +33,7 @@
        Description=Conda-Store Server
        Wants=network-online.target
        After=network-online.target
-       AssertFileIsExecutable=/usr/local/bin/conda-store-server
+       AssertFileIsExecutable=/opt/conda/envs/conda-store/bin/conda-store-server
 
        [Service]
        WorkingDirectory=/opt/conda-store/
@@ -58,12 +58,13 @@
        Description=Conda-Store Worker
        Wants=network-online.target
        After=network-online.target
-       AssertFileIsExecutable=/usr/local/bin/conda-store-worker
+       AssertFileIsExecutable=/opt/conda/envs/conda-store/bin/conda-store-worker
 
        [Service]
        WorkingDirectory=/opt/conda-store/
        User=root
        Group=root
+       Environment=PATH=/opt/conda/bin:/opt/conda/envs/conda-store/bin:PATH:/bin:/usr/bin:/usr/local/bin
        ExecStart=/opt/conda/envs/conda-store/bin/conda-store-worker --config /etc/conda-store/conda_store_config.py
        Restart=always
 

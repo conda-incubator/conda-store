@@ -169,7 +169,7 @@ def build_conda_environment(conda_store, build):
             with utils.timer(conda_store.log, f"chown of {conda_prefix}"):
                 utils.chown(conda_prefix, uid, gid)
 
-        packages = conda.conda_list(conda_prefix)
+        packages = conda.conda_list(conda_prefix, executable=conda_store.conda_command)
         build.size = utils.disk_usage(conda_prefix)
 
         set_build_completed(conda_store, build, output.encode("utf-8"), packages)

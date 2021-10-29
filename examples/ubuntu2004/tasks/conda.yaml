@@ -4,6 +4,23 @@
      path: "{{ miniforge.home }}/bin/conda"
    register: stat_conda
 
+ # https://docs.anaconda.com/anaconda/install/linux/
+ - name: Conda Dependencies
+   become: true
+   apt:
+     state: present
+     name:
+       - libgl1-mesa-glx
+       - libegl1-mesa
+       - libxrandr2
+       - libxrandr2
+       - libxss1
+       - libxcursor1
+       - libxcomposite1
+       - libasound2
+       - libxi6
+       - libxtst6
+
  - name: download miniconda installer
    get_url:
      url: "https://github.com/conda-forge/miniforge/releases/download/{{ miniforge.version }}/Miniforge3-{{ miniforge.version }}-Linux-x86_64.sh"
