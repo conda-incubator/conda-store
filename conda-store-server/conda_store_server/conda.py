@@ -15,7 +15,7 @@ def normalize_channel_name(channel_alias, channel):
     return str(channel_alias / channel)
 
 
-def conda_list(prefix, executable : str = "conda"):
+def conda_list(prefix, executable: str = "conda"):
     args = [executable, "list", "-p", prefix, "--json"]
     return json.loads(subprocess.check_output(args))
 
