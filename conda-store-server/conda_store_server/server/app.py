@@ -80,11 +80,8 @@ class CondaStoreServer(Application):
 
     def start(self):
         app = Flask(__name__)
-        cors_prefix = f"{self.url_prefix if self.url_prefix != '/' else ''}"
-        CORS(
-            app,
-            resources={f"{cors_prefix}/api/v1/*": {"origins": "*"}},
-        )
+        # enable cors on all domains and all routes
+        CORS(app)
 
         if self.enable_api:
             app.register_blueprint(views.app_api, url_prefix=self.url_prefix)
