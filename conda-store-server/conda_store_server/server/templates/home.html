@@ -12,7 +12,7 @@
             <span class="badge badge-light">{{ (environment.current_build.size or 0) | filesizeformat(true) }}</span>
         </h5>
         {% if environment.current_build.has_yaml %}
-        <a class="card-link" href="{{ url_for('ui.api_get_build_yaml', build_id=environment.current_build_id) }}"><ion-icon name="code-download"></ion-icon> YAML</a>
+        <a class="card-link" href="{{ url_for('api.api_get_build_yaml', build_id=environment.current_build_id) }}"><ion-icon name="code-download"></ion-icon> YAML</a>
         {% endif %}
         {% if environment.current_build.has_lockfile %}
         <a class="card-link" href="{{ url_for('ui.api_get_build_lockfile', build_id=environment.current_build_id) }}"><ion-icon name="lock-closed-outline"></ion-icon> Lockfile</a>
