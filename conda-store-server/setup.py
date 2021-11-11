@@ -33,7 +33,7 @@ setup(
         "conda-pack",
         "celery",
         "sqlalchemy",
-        "psycopg2",
+        "psycopg2-binary",
         "requests",
         "flask",
         "flask-cors",
