@@ -272,7 +272,7 @@ def api_post_specification():
         return jsonify({"status": "error", "error": e.errors()}), 400
 
     auth.authorize_request(
-        f"{namespace}/{specification.name}",
+        f"{namespace.name}/{specification.name}",
         permissions,
         require=True,
     )
