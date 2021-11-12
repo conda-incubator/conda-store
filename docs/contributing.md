@@ -14,9 +14,9 @@ docker-compose up --build
 ```
 
 ```eval_rst
-.. important :: 
-    Many of the conda-store docker images are built/tested for amd64(x86-64) 
-    there will be a performance impact when building and running on 
+.. important ::
+    Many of the conda-store docker images are built/tested for amd64(x86-64)
+    there will be a performance impact when building and running on
     arm architectures. Otherwise this workflow has been shown to run and build on OSX.
     Notice the `architecture: amd64` whithin the docker-compose.yaml files.
 ```
@@ -77,7 +77,7 @@ Versioning](https://semver.org/) and the established pattern of
 
 Ensure that `CHANGELOG.md` is up to date with all the changes since
 the last release following the template provided within the markdown
-file. 
+file.
 
 All docker images within `docker/kubernetes` should be updated to the
 release version. `spec.template.spec.containers[0].image` is the path
@@ -105,7 +105,7 @@ After the PyPi release a release on
 [Conda-Forge](https://conda-forge.org/) and it located at
 [conda-forge/conda-store-feedstock](https://github.com/conda-forge/conda-store-feedstock). A
 PR must be created that updates to the released version
-`<version>`. 
+`<version>`.
 
 Conda-Store has two PyPi packages `conda-store-server` and `conda-store`.
 
@@ -141,18 +141,18 @@ rerender`. An example of this can be found in [PR
 
  - `GET /api/v1/environment/?search=<str>&page=<int>&size=<int>&sort_by=<str>&order=<str>` :: list environments
    - allowed `sort_by` values : `namespace` for namespace name, `name` for environment name
-   
+
  - `GET /api/v1/environment/<namespace>/<name>/` :: get environment
 
  - `PUT /api/v1/environment/<namespace>/<name>/` :: update environment to given build id
 
  - `DELETE /api/v1/environment/<namespace>/<name>/` :: delete the environment along with all artifacts and builds
- 
+
 ### Specifications
 
  - `POST /api/v1/environment/` :: create given environment
     - JSON message with optional namespace (will use `CondaStore.default_namespace` if not specified) and a specification string that's a valid environment.yaml for Conda.
- 
+
 ### Builds
 
  - `GET /api/v1/build/?page=<int>&size=<int>&sort_by=<str>&order=<str>` :: list builds
@@ -165,6 +165,8 @@ rerender`. An example of this can be found in [PR
  - `DELETE /api/v1/build/<build_id>/` :: delete given build along with all artifacts that are not in `c.CondaStore.build_artifacts_kept_on_deletion`
 
  - `GET /api/v1/build/<build_id>/logs/` :: get build logs
+
+ - `GET /api/v1/build/<build_id>/yaml/` :: export environment.yml specification for the given build
 
  - `GET /api/v1/build/<build_id>/packages/?search=<str>&build=<str>&page=<int>&size=<int>&sort_by=<str>&order=<str>` :: list packages within build
    - allowed `sort_by` values : `channel` to sort by channel name, `name` to sort by package name
@@ -291,7 +293,7 @@ you will see the celery tasks defined in
 `conda_store_server/worker/tasks.py` which in turn usually call built
 in `CondaStore` functions in `conda_store_server/app.py` or
 `conda_store_server/build.py`.
- 
+
 The web server has several responsibilities:
  - serve a UI for interacting with Conda environments
  - serve a REST API for managing Conda environments
@@ -322,7 +324,7 @@ full blown message queue will help Conda-Store with performance.
 
 ![Conda Store terminology](_static/images/conda-store-terminology.png)
 
-`conda_environment = f(open("environment.yaml"), datatime.utcnow())` 
+`conda_environment = f(open("environment.yaml"), datatime.utcnow())`
 
  - namespace :: a way of providing scopes between environments. This
    prevents Joe's environment named `data-science` from colliding from
@@ -334,9 +336,9 @@ full blown message queue will help Conda-Store with performance.
 
 In order to understand why we have the complicated terminology for an
 environment it helps to understand how Conda builds a given
-environment. 
+environment.
 
-### Reproducibility of Conda 
+### Reproducibility of Conda
 
 ```yaml
 name: example
@@ -352,7 +354,7 @@ perform a build?
 
 1. Conda downloads `channeldata.json` from each of the channels which
    list the available architectures.
-   
+
 2. Conda then downloads `repodata.json` for each of the architectures
    it is interested in (specifically your compute architecture along
    with noarch). The `repodata.json` has fields like package name,
@@ -573,7 +575,7 @@ Important things to note about the relationship:
    etc
  - A `condapackage` is a representation of a given Conda package which belongs to a given `condachannel`
  - A `specification` is the environment.yaml using in `conda env create -f <environment.yaml>`
- 
+
 The following will generate the database model shown bellow. It was
 generated from the `examples/docker` example. You'll see in the
 command that we are excluding several tables. These tables are managed
@@ -586,4 +588,3 @@ eralchemy -i "postgresql+psycopg2://admin:password@localhost:5432/conda-store" -
 ```
 
 ![entity relationship diagram](_static/images/conda-store-entity-relationship-diagram.png)
-

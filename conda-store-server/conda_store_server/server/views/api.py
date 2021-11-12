@@ -451,3 +451,20 @@ def api_list_packages():
         default_sort_by=["channel", "name", "version", "build"],
         required_sort_bys=required_sort_bys,
     )
+
+
+@app_api.route("/api/v1/build/<build_id>/yaml/", methods=["GET"])
+def api_get_build_yaml(build_id):
+    conda_store = get_conda_store()
+    auth = get_auth()
+
+    build = api.get_build(conda_store.db, build_id)
+    if build is None:
+        return jsonify({"status": "error", "error": "build id does not exist"}), 404
+
+    auth.authorize_request(
+        f"{build.environment.namespace.name}/{build.environment.name}",
+        {Permissions.ENVIRONMENT_READ},
+        require=True,
+    )
+    return redirect(conda_store.storage.get_url(build.conda_env_export_key))

@@ -225,21 +225,6 @@ def api_get_build_lockfile(build_id):
     return Response(lockfile, mimetype="text/plain")
 
 
-@app_ui.route("/build/<build_id>/yaml/", methods=["GET"])
-def api_get_build_yaml(build_id):
-    conda_store = get_conda_store()
-    auth = get_auth()
-
-    build = api.get_build(conda_store.db, build_id)
-    auth.authorize_request(
-        f"{build.environment.namespace.name}/{build.environment.name}",
-        {Permissions.ENVIRONMENT_READ},
-        require=True,
-    )
-
-    return redirect(conda_store.storage.get_url(build.conda_env_export_key))
-
-
 @app_ui.route("/build/<build_id>/archive/", methods=["GET"])
 def api_get_build_archive(build_id):
     conda_store = get_conda_store()

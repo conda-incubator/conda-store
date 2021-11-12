@@ -67,7 +67,7 @@
     </div>
     <ul class="list-group list-group-flush">
         {% if build.has_yaml %}
-        <li class="list-group-item">YAML: <a href="{{ url_for('ui.api_get_build_yaml', build_id=build.id) }}">environment.yaml</a></li>
+        <li class="list-group-item">YAML: <a href="{{ url_for('api.api_get_build_yaml', build_id=build.id) }}">environment.yaml</a></li>
         {% endif %}
         {% if build.has_lockfile %}
         <li class="list-group-item">Lockfile: <a href="{{ url_for('ui.api_get_build_lockfile', build_id=build.id) }}">conda-{{ platform }}.lock</a></li>
