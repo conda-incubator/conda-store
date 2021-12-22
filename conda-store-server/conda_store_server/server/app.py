@@ -1,9 +1,11 @@
 import logging
+import os
+import sys
 
 from flask import Flask
 from flask.blueprints import Blueprint
 from flask_cors import CORS
-from traitlets import Bool, Unicode, Integer, Type
+from traitlets import Bool, Unicode, Integer, Type, validate
 from traitlets.config import Application
 
 from conda_store_server.server import views, auth
@@ -60,8 +62,21 @@ class CondaStoreServer(Application):
     )
 
     config_file = Unicode(
-        "conda_store_config.py", help="config file to load for conda-store", config=True
+        help="config file to load for conda-store",
+        config=True,
     )
+
+    @validate("config_file")
+    def _validate_config_file(self, proposal):
+        if not os.path.isfile(proposal.value):
+            print(
+                "ERROR: Failed to find specified config file: {}".format(
+                    proposal.value
+                ),
+                file=sys.stderr,
+            )
+            sys.exit(1)
+        return proposal.value
 
     authentication_class = Type(
         default_value=auth.DummyAuthentication,

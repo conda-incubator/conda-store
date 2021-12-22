@@ -1,13 +1,13 @@
-FROM condaforge/miniforge3
+FROM --platform=linux/amd64 condaforge/mambaforge
 
 USER root
 
-ARG GATOR_GIT_URL=https://github.com/quansight/gator.git
-ARG GATOR_GIT_BRANCH=list-installed-conda-store-packages
+ARG GATOR_GIT_URL=https://github.com/mamba-org/gator.git
+ARG GATOR_GIT_BRANCH=conda-store-integration
 
 COPY environment.yaml /opt/conda-store/environment.yaml
 
-RUN conda env create -f /opt/conda-store/environment.yaml
+RUN mamba env create -f /opt/conda-store/environment.yaml
 
 COPY ./ /opt/conda-store/
 

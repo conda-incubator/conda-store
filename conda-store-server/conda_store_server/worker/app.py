@@ -1,6 +1,8 @@
 import logging
+import os
+import sys
 
-from traitlets import Unicode, Integer, List
+from traitlets import Unicode, Integer, List, validate
 from traitlets.config import Application
 
 from conda_store_server.app import CondaStore
@@ -22,8 +24,21 @@ class CondaStoreWorker(Application):
     )
 
     config_file = Unicode(
-        "conda_store_config.py", help="config file to load for conda-store", config=True
+        help="config file to load for conda-store",
+        config=True,
     )
+
+    @validate("config_file")
+    def _validate_config_file(self, proposal):
+        if not os.path.isfile(proposal.value):
+            print(
+                "ERROR: Failed to find specified config file: {}".format(
+                    proposal.value
+                ),
+                file=sys.stderr,
+            )
+            sys.exit(1)
+        return proposal.value
 
     def initialize(self, *args, **kwargs):
         super().initialize(*args, **kwargs)
