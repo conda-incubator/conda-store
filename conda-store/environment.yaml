@@ -3,7 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - pip
-  - jupyterhub
+  - jupyterhub<2.0.0
   - jupyterlab>=3.0.0
   - nb_conda_kernels
   - nodejs=16
