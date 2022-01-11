@@ -8,7 +8,7 @@ from sqlalchemy import (
     Column,
     BigInteger,
     Integer,
-    String,
+    Unicode,
     JSON,
     Enum,
     DateTime,
@@ -51,7 +51,7 @@ class Namespace(Base):
     __tablename__ = "namespace"
 
     id = Column(Integer, primary_key=True)
-    name = Column(String, unique=True)
+    name = Column(Unicode, unique=True)
 
     environments = relationship("Environment", back_populates="namespace")
 
@@ -73,9 +73,9 @@ class Specification(Base):
         self.sha256 = utils.datastructure_hash(self.spec)
 
     id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False)
+    name = Column(Unicode, nullable=False)
     spec = Column(JSON, nullable=False)
-    sha256 = Column(String, unique=True, nullable=False)
+    sha256 = Column(Unicode, unique=True, nullable=False)
     created_on = Column(DateTime, default=datetime.datetime.utcnow)
 
     builds = relationship("Build", back_populates="specification")
@@ -211,7 +211,7 @@ class BuildArtifact(Base):
 
     artifact_type = Column(Enum(BuildArtifactType), nullable=False)
 
-    key = Column(String)
+    key = Column(Unicode)
 
 
 class Environment(Base):
@@ -231,7 +231,7 @@ class Environment(Base):
     namespace_id = Column(Integer, ForeignKey("namespace.id"), nullable=False)
     namespace = relationship(Namespace)
 
-    name = Column(String, nullable=False)
+    name = Column(Unicode, nullable=False)
 
     current_build_id = Column(Integer, ForeignKey("build.id"))
     current_build = relationship(
@@ -245,7 +245,7 @@ class CondaChannel(Base):
     __tablename__ = "conda_channel"
 
     id = Column(Integer, primary_key=True)
-    name = Column(String, unique=True, nullable=False)
+    name = Column(Unicode, unique=True, nullable=False)
     last_update = Column(DateTime)
 
     def update_packages(self, db):
@@ -320,22 +320,22 @@ class CondaPackage(Base):
     channel_id = Column(Integer, ForeignKey("conda_channel.id"))
     channel = relationship(CondaChannel)
 
-    build = Column(String, nullable=False)
+    build = Column(Unicode, nullable=False)
     build_number = Column(Integer, nullable=False)
     constrains = Column(JSON, nullable=True)
     depends = Column(JSON, nullable=False)
-    license = Column(String, nullable=True)
-    license_family = Column(String, nullable=True)
-    md5 = Column(String, nullable=False)
-    name = Column(String, nullable=False)
-    sha256 = Column(String, nullable=False)
+    license = Column(Unicode, nullable=True)
+    license_family = Column(Unicode, nullable=True)
+    md5 = Column(Unicode, nullable=False)
+    name = Column(Unicode, nullable=False)
+    sha256 = Column(Unicode, nullable=False)
     size = Column(BigInteger, nullable=False)
-    subdir = Column(String, nullable=True)
+    subdir = Column(Unicode, nullable=True)
     timestamp = Column(BigInteger, nullable=True)
-    version = Column(String, nullable=False)
+    version = Column(Unicode, nullable=False)
 
-    summary = Column(String, nullable=True)
-    description = Column(String, nullable=True)
+    summary = Column(Unicode, nullable=True)
+    description = Column(Unicode, nullable=True)
 
     def __repr__(self):
         return f"<CondaPackage (channel={self.channel} name={self.name} version={self.version} sha256={self.sha256})>"
