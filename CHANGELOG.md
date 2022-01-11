@@ -18,6 +18,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [0.3.4] - 2022-01-11
+
+### Added
+
+ - api endpoint for exporting yaml environment files #204
+
+### Fixed
+
+ - using Unicode sqlalchemy column instead of String
+ - removed typer as a dependency
+ - removed hardcoded path for conda executable
+ - environment creation endpoint with namespaces
+ - removed psycopg2 as a dependency #206
+ - validate that config_file exists #223
+
 ## [0.3.3] - 2021-10-28
 
 ### Fixed
