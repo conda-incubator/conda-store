@@ -18,6 +18,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [0.3.5] - 2022-01-11
+
+### Fixed
+
+ - setting fixed sizes to Unicode columns
+
 ## [0.3.4] - 2022-01-11
 
 ### Added
