@@ -18,6 +18,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [0.3.6] - 2022-01-12
+
+### Added
+
+ - Testing to support mysql database
+
 ## [0.3.5] - 2022-01-11
 
 ### Fixed
