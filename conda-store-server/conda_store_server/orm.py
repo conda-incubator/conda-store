@@ -9,6 +9,7 @@ from sqlalchemy import (
     BigInteger,
     Integer,
     Unicode,
+    Text,
     JSON,
     Enum,
     DateTime,
@@ -320,22 +321,22 @@ class CondaPackage(Base):
     channel_id = Column(Integer, ForeignKey("conda_channel.id"))
     channel = relationship(CondaChannel)
 
-    build = Column(Unicode(255), nullable=False)
+    build = Column(Unicode(64), nullable=False)
     build_number = Column(Integer, nullable=False)
     constrains = Column(JSON, nullable=True)
     depends = Column(JSON, nullable=False)
-    license = Column(Unicode(255), nullable=True)
-    license_family = Column(Unicode(255), nullable=True)
+    license = Column(Text, nullable=True)
+    license_family = Column(Unicode(64), nullable=True)
     md5 = Column(Unicode(255), nullable=False)
-    name = Column(Unicode(1023), nullable=False)
-    sha256 = Column(Unicode(255), nullable=False)
+    name = Column(Unicode(255), nullable=False)
+    sha256 = Column(Unicode(64), nullable=False)
     size = Column(BigInteger, nullable=False)
-    subdir = Column(Unicode(255), nullable=True)
+    subdir = Column(Unicode(64), nullable=True)
     timestamp = Column(BigInteger, nullable=True)
-    version = Column(Unicode(255), nullable=False)
+    version = Column(Unicode(64), nullable=False)
 
-    summary = Column(Unicode(1023), nullable=True)
-    description = Column(Unicode(1023), nullable=True)
+    summary = Column(Text, nullable=True)
+    description = Column(Text, nullable=True)
 
     def __repr__(self):
         return f"<CondaPackage (channel={self.channel} name={self.name} version={self.version} sha256={self.sha256})>"

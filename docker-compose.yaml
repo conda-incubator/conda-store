@@ -21,6 +21,7 @@ services:
       - ./tests/assets/conda_store_config.py:/opt/conda_store/conda_store_config.py:ro
     platform: linux/amd64
     command: ["wait-for-it", "postgres:5432", '--', 'conda-store-server', '--config', '/opt/conda_store/conda_store_config.py']
+    # command: ["wait-for-it", "mysql:3306", '--', 'conda-store-server', '--config', '/opt/conda_store/conda_store_config.py']
     ports:
       - "5000:5000"
 
@@ -53,3 +54,15 @@ services:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: password
       POSTGRES_DB: conda-store
+
+  mysql:
+    image: mysql:8.0
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: hbgY8bkoWPMM7EjtcD6wrlVX
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: password
+      MYSQL_DATABASE: conda-store
+    cap_add:
+      - SYS_NICE  # CAP_SYS_NICE

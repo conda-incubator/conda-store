@@ -2,8 +2,7 @@ import shutil
 import os
 import random
 
-from celery.decorators import task
-from celery import Task
+from celery import Task, current_app
 import yaml
 from sqlalchemy.exc import IntegrityError
 
@@ -32,7 +31,7 @@ class WorkerTask(Task):
         return self._worker
 
 
-@task(base=WorkerTask, name="task_watch_paths", bind=True)
+@current_app.task(base=WorkerTask, name="task_watch_paths", bind=True)
 def task_watch_paths(self):
     conda_store = self.worker.conda_store
 
@@ -44,7 +43,7 @@ def task_watch_paths(self):
             )
 
 
-@task(base=WorkerTask, name="task_update_storage_metrics", bind=True)
+@current_app.task(base=WorkerTask, name="task_update_storage_metrics", bind=True)
 def task_update_storage_metrics(self):
     conda_store = self.worker.conda_store
     conda_store.configuration.update_storage_metrics(
@@ -52,7 +51,7 @@ def task_update_storage_metrics(self):
     )
 
 
-@task(base=WorkerTask, name="task_update_conda_channels", bind=True)
+@current_app.task(base=WorkerTask, name="task_update_conda_channels", bind=True)
 def task_update_conda_channels(self):
     conda_store = self.worker.conda_store
     try:
@@ -70,35 +69,35 @@ def task_update_conda_channels(self):
         self.retry(exc=exc, countdown=random.randrange(15, 30))
 
 
-@task(base=WorkerTask, name="task_build_conda_environment", bind=True)
+@current_app.task(base=WorkerTask, name="task_build_conda_environment", bind=True)
 def task_build_conda_environment(self, build_id):
     conda_store = self.worker.conda_store
     build = api.get_build(conda_store.db, build_id)
     build_conda_environment(conda_store, build)
 
 
-@task(base=WorkerTask, name="task_build_conda_env_export", bind=True)
+@current_app.task(base=WorkerTask, name="task_build_conda_env_export", bind=True)
 def task_build_conda_env_export(self, build_id):
     conda_store = self.worker.conda_store
     build = api.get_build(conda_store.db, build_id)
     build_conda_env_export(conda_store, build)
 
 
-@task(base=WorkerTask, name="task_build_conda_pack", bind=True)
+@current_app.task(base=WorkerTask, name="task_build_conda_pack", bind=True)
 def task_build_conda_pack(self, build_id):
     conda_store = self.worker.conda_store
     build = api.get_build(conda_store.db, build_id)
     build_conda_pack(conda_store, build)
 
 
-@task(base=WorkerTask, name="task_build_conda_docker", bind=True)
+@current_app.task(base=WorkerTask, name="task_build_conda_docker", bind=True)
 def task_build_conda_docker(self, build_id):
     conda_store = self.worker.conda_store
     build = api.get_build(conda_store.db, build_id)
     build_conda_docker(conda_store, build)
 
 
-@task(base=WorkerTask, name="task_update_environment_build", bind=True)
+@current_app.task(base=WorkerTask, name="task_update_environment_build", bind=True)
 def task_update_environment_build(self, environment_id):
     conda_store = self.worker.conda_store
     environment = api.get_environment(conda_store.db, id=environment_id)
@@ -130,7 +129,7 @@ def delete_build_artifact(conda_store, build_artifact):
         )
 
 
-@task(base=WorkerTask, name="task_delete_build", bind=True)
+@current_app.task(base=WorkerTask, name="task_delete_build", bind=True)
 def task_delete_build(self, build_id):
     conda_store = self.worker.conda_store
     build = api.get_build(conda_store.db, build_id)
@@ -145,7 +144,7 @@ def task_delete_build(self, build_id):
     conda_store.db.commit()
 
 
-@task(base=WorkerTask, name="task_delete_environment", bind=True)
+@current_app.task(base=WorkerTask, name="task_delete_environment", bind=True)
 def task_delete_environment(self, environment_id):
     conda_store = self.worker.conda_store
     environment = api.get_environment(conda_store.db, id=environment_id)
@@ -162,7 +161,7 @@ def task_delete_environment(self, environment_id):
     conda_store.db.commit()
 
 
-@task(base=WorkerTask, name="task_delete_namespace", bind=True)
+@current_app.task(base=WorkerTask, name="task_delete_namespace", bind=True)
 def task_delete_namespace(self, namespace_id):
     conda_store = self.worker.conda_store
     namespace = api.get_namespace(conda_store.db, id=namespace_id)
