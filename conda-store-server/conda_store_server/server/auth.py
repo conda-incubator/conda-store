@@ -6,7 +6,7 @@ import datetime
 import jwt
 import requests
 from traitlets.config import LoggingConfigurable
-from traitlets import Dict, Unicode, Type, default
+from traitlets import Dict, Unicode, Type, default, Bool
 from flask import (
     request,
     render_template,
@@ -434,6 +434,22 @@ class GenericOAuthAuthentication(Authentication):
         config=True,
         help="Key in the payload returned by `user_data_url` endpoint that provides the username",
     )
+
+    tls_verify = Bool(
+        True,
+        config=True,
+        help="Disable TLS verification on http request.",
+    )
+
+    oauth_callback_url = Unicode(
+        config=True,
+        help="Callback URL to use. Typically `{protocol}://{host}/{prefix}/oauth_callback`"
+    )
+
+    @default("oauth_callback_url")
+    def _oauth_callback_url(self):
+        return url_for("auth.post_login_method", _external=True)
+
     login_html = Unicode(
         """
 <div id="login" class="text-center">
@@ -451,7 +467,7 @@ class GenericOAuthAuthentication(Authentication):
         authorization_url = self.oauth_route(
             auth_url=self.authorize_url,
             client_id=self.client_id,
-            redirect_uri=url_for("auth.post_login_method", _external=True),
+            redirect_uri=self.oauth_callback_url,
             scope=self.access_scope,
             state=state,
         )
@@ -514,6 +530,7 @@ class GenericOAuthAuthentication(Authentication):
                 "client_secret": self.client_secret,
             },
             headers={"Accept": "application/json"},
+            verify=self.tls_verify,
         )
         if r_response.status_code != 200:
             return None
@@ -524,6 +541,7 @@ class GenericOAuthAuthentication(Authentication):
         response = requests.get(
             self.user_data_url,
             headers={"Authorization": f"token {authentication_token}"},
+            verify=self.tls_verify,
         )
         response.raise_for_status()
         return response.json()[self.user_data_key]
