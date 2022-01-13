@@ -528,6 +528,7 @@ class GenericOAuthAuthentication(Authentication):
                 "grant_type": "authorization_code",
                 "client_id": self.client_id,
                 "client_secret": self.client_secret,
+                "redirect_uri": self.oauth_callback_url,
             },
             headers={"Accept": "application/json"},
             verify=self.tls_verify,
@@ -540,7 +541,7 @@ class GenericOAuthAuthentication(Authentication):
     def _get_username(self, authentication_token):
         response = requests.get(
             self.user_data_url,
-            headers={"Authorization": f"token {authentication_token}"},
+            headers={"Authorization": f"Bearer {authentication_token}"},
             verify=self.tls_verify,
         )
         response.raise_for_status()
