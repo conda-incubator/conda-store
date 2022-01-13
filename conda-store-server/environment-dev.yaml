@@ -11,6 +11,7 @@ dependencies:
   - redis-py
   - sqlalchemy
   - psycopg2
+  - pymysql
   - requests
   - flask
   - flask-cors

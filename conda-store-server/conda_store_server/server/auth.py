@@ -443,7 +443,7 @@ class GenericOAuthAuthentication(Authentication):
 
     oauth_callback_url = Unicode(
         config=True,
-        help="Callback URL to use. Typically `{protocol}://{host}/{prefix}/oauth_callback`"
+        help="Callback URL to use. Typically `{protocol}://{host}/{prefix}/oauth_callback`",
     )
 
     @default("oauth_callback_url")
