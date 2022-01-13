@@ -18,6 +18,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [0.3.7] - 2022-01-13
+
+### Added
+
+ - Support for custom `GenericOAuthAuthentication.oauth_callback_url`
+ - Support for optional tls_verification on oauth2 flow `GenericOAuthAuthentication.tls_verify`
+
 ## [0.3.6] - 2022-01-12
 
 ### Added

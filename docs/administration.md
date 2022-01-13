@@ -299,6 +299,12 @@ has successfully authenticated.
 `GenericOauthAuthentication.user_data_key` is the key in the payload
 returned by `user_data_url` endpoint that provides the `username`.
 
+`GenericOAuthAuthentication.oauth_callback_url` custom callback url
+especially useful when web service is behind a proxy.
+
+`GenericOAuthAuthentication.tls_verify` to optionally turn of tls
+verification useful for custom signed certificates.
+
 ### `conda_store_server.server.auth.GithubOAuthAuthentication`
 
 Inherits from `Authentication` and `GenericOAuthAuthentication` so
