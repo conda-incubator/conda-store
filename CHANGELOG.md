@@ -18,6 +18,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [0.3.8] - 2022-01-13
+
+### Fixed
+
+ - Ensure compatibility with keycloak authentication flow
+
 ## [0.3.7] - 2022-01-13
 
 ### Added
