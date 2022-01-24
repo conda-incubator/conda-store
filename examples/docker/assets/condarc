@@ -1,2 +1,2 @@
 envs_dirs:
- - /opt/conda-store/envs
+ - /opt/conda-store/conda-store/default/envs
