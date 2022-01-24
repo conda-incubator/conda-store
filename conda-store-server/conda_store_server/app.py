@@ -26,7 +26,7 @@ class CondaStore(LoggingConfigurable):
     build_directory = Unicode(
         "{store_directory}/{namespace}",
         help="Template used to form the directory for storing conda environment builds. Available keys: store_directory, namespace, name. The default will put all built environments in the same namespace within the same directory.",
-        config=True
+        config=True,
     )
 
     environment_directory = Unicode(

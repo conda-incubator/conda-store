@@ -131,11 +131,12 @@ class Build(Base):
         store_directory = os.path.abspath(conda_store.store_directory)
         namespace = self.environment.namespace.name
         name = self.specification.name
-        return os.path.join(conda_store.build_directory.format(
-            store_directory=store_directory,
-            namespace=namespace,
-            name=name
-        ), self.build_key)
+        return os.path.join(
+            conda_store.build_directory.format(
+                store_directory=store_directory, namespace=namespace, name=name
+            ),
+            self.build_key,
+        )
 
     def environment_path(self, conda_store):
         """Environment path is the path for the symlink to the build
@@ -145,11 +146,12 @@ class Build(Base):
         store_directory = os.path.abspath(conda_store.store_directory)
         namespace = self.environment.namespace.name
         name = self.specification.name
-        return os.path.join(conda_store.environment_directory.format(
-            store_directory=store_directory,
-            namespace=namespace,
-            name=name
-        ), self.specification.name)
+        return os.path.join(
+            conda_store.environment_directory.format(
+                store_directory=store_directory, namespace=namespace, name=name
+            ),
+            self.specification.name,
+        )
 
     @property
     def build_key(self):
