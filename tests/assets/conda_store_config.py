@@ -21,7 +21,8 @@ c.S3Storage.access_key = "admin"
 c.S3Storage.secret_key = "password"
 c.S3Storage.region = "us-east-1"  # minio region default
 c.S3Storage.bucket_name = "conda-store"
-c.S3Storage.secure = False
+c.S3Storage.internal_secure = False
+c.S3Storage.external_secure = False
 
 # ==================================
 #        server settings

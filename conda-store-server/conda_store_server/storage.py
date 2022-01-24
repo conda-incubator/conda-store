@@ -82,9 +82,15 @@ class S3Storage(Storage):
         config=True,
     )
 
-    secure = Bool(
+    internal_secure = Bool(
         True,
-        help="use secure connection to collect to s3 bucket",
+        help="use secure connection to connect to s3 bucket internally",
+        config=True,
+    )
+
+    external_secure = Bool(
+        True,
+        help="use secure connection to collect to s3 bucket externally",
         config=True,
     )
 
@@ -121,14 +127,14 @@ class S3Storage(Storage):
             return self._internal_client
 
         self.log.debug(
-            f"setting up internal client endpoint={self.internal_endpoint} region={self.region} secure={self.secure}"
+            f"setting up internal client endpoint={self.internal_endpoint} region={self.region} secure={self.internal_secure}"
         )
         self._internal_client = minio.Minio(
             self.internal_endpoint,
             self.access_key,
             self.secret_key,
             region=self.region,
-            secure=self.secure,
+            secure=self.internal_secure,
             credentials=self._credentials,
         )
         self._check_bucket_exists()
@@ -140,14 +146,14 @@ class S3Storage(Storage):
             return self._external_client
 
         self.log.debug(
-            f"setting up external client endpoint={self.external_endpoint} region={self.region} secure={self.secure}"
+            f"setting up external client endpoint={self.external_endpoint} region={self.region} secure={self.external_secure}"
         )
         self._external_client = minio.Minio(
             self.external_endpoint,
             self.access_key,
             self.secret_key,
             region=self.region,
-            secure=self.secure,
+            secure=self.external_secure,
             credentials=self._credentials,
         )
         return self._external_client

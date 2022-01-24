@@ -93,9 +93,15 @@ well tested.
 `CondaStore.store_directory` is the directory used for Conda-Store to
 build the environments. 
 
-`CondaStore.environment_directory` is the directory that Conda-Store
-will created symlinks for the environments that are built in the
-`store_directory`.
+`CondaStore.build_directory` template used to form the directory for
+storing conda environment builds. Available keys: store_directory,
+namespace, name. The default will put all built environments in the
+same namespace within the same directory.
+
+`CondaStore.environment_directory` template used to form the directory
+for symlinking conda environment builds. Available keys:
+store_directory, namespace, name. The default will put all
+environments in the same namespace within the same directory.
 
 `CondaStore.conda_command` is the `command` to use for creation of
 Conda environments. Currently `mamba` is the default which will
@@ -196,8 +202,14 @@ bucket. The default is `us-east-1`.
 `S3Storage.bucket_name` is the bucket name to use for connecting to
 the S3 bucket.
 
-`S3Storage.secure` Boolean to indicate if connecting via `http`
-(False) or `https` (True).
+`S3Storage.internal_secure` Boolean to indicate if connecting via
+`http` (False) or `https` (True) internally. The internal connection
+is the url that will be exclusively used by Conda-Store and not shared
+with users.
+
+`S3Storage.external_secure` Boolean to indicate if connecting via
+`http` (False) or `https` (True) internally. The external connection
+is the url that will be served to users of Conda-Store.
 
 `S3Storage.credentials` provider to use to get credentials for s3
 access. see examples

@@ -94,7 +94,7 @@ def set_build_completed(conda_store, build, logs, packages):
     directory_build_artifact = orm.BuildArtifact(
         build_id=build.id,
         artifact_type=orm.BuildArtifactType.DIRECTORY,
-        key=build.build_path(conda_store.store_directory),
+        key=build.build_path(conda_store),
     )
     conda_store.db.add(lockfile_build_artifact)
     conda_store.db.add(directory_build_artifact)
@@ -116,8 +116,11 @@ def build_conda_environment(conda_store, build):
     """
     set_build_started(conda_store, build)
 
-    conda_prefix = build.build_path(conda_store.store_directory)
-    environment_prefix = build.environment_path(conda_store.environment_directory)
+    conda_prefix = build.build_path(conda_store)
+    os.makedirs(os.path.dirname(conda_prefix), exist_ok=True)
+
+    environment_prefix = build.environment_path(conda_store)
+    os.makedirs(os.path.dirname(environment_prefix), exist_ok=True)
 
     conda_store.log.info(f"building conda environment={conda_prefix}")
 
@@ -184,7 +187,7 @@ def build_conda_environment(conda_store, build):
 
 
 def build_conda_env_export(conda_store, build):
-    conda_prefix = build.build_path(conda_store.store_directory)
+    conda_prefix = build.build_path(conda_store)
 
     output = subprocess.check_output(
         [conda_store.conda_command, "env", "export", "-p", conda_prefix]
@@ -205,7 +208,7 @@ def build_conda_env_export(conda_store, build):
 
 
 def build_conda_pack(conda_store, build):
-    conda_prefix = build.build_path(conda_store.store_directory)
+    conda_prefix = build.build_path(conda_store)
 
     conda_store.log.info(f"packaging archive of conda environment={conda_prefix}")
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -230,7 +233,7 @@ def build_conda_docker(conda_store, build):
         fetch_precs,
     )
 
-    conda_prefix = build.build_path(conda_store.store_directory)
+    conda_prefix = build.build_path(conda_store)
 
     conda_store.log.info(f"creating docker archive of conda environment={conda_prefix}")
 

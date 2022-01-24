@@ -23,9 +23,15 @@ class CondaStore(LoggingConfigurable):
         config=True,
     )
 
+    build_directory = Unicode(
+        "{store_directory}/{namespace}",
+        help="Template used to form the directory for storing conda environment builds. Available keys: store_directory, namespace, name. The default will put all built environments in the same namespace within the same directory.",
+        config=True
+    )
+
     environment_directory = Unicode(
-        "conda-store-state/envs",
-        help="directory for symlinking conda environment builds",
+        "{store_directory}/{namespace}/envs",
+        help="Template used to form the directory for symlinking conda environment builds. Available keys: store_directory, namespace, name. The default will put all environments in the same namespace within the same directory.",
         config=True,
     )
 
@@ -201,7 +207,6 @@ class CondaStore(LoggingConfigurable):
     def ensure_directories(self):
         """Ensure that conda-store filesystem directories exist"""
         os.makedirs(self.store_directory, exist_ok=True)
-        os.makedirs(self.environment_directory, exist_ok=True)
 
     def ensure_conda_channels(self):
         """Ensure that conda-store allowed channels and packages are in database"""

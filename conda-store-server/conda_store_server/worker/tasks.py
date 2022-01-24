@@ -102,9 +102,9 @@ def task_update_environment_build(self, environment_id):
     conda_store = self.worker.conda_store
     environment = api.get_environment(conda_store.db, id=environment_id)
 
-    conda_prefix = environment.current_build.build_path(conda_store.store_directory)
+    conda_prefix = environment.current_build.build_path(conda_store)
     environment_prefix = environment.current_build.environment_path(
-        conda_store.environment_directory
+        conda_store
     )
 
     utils.symlink(conda_prefix, environment_prefix)
@@ -113,7 +113,7 @@ def task_update_environment_build(self, environment_id):
 def delete_build_artifact(conda_store, build_artifact):
     if build_artifact.artifact_type == orm.BuildArtifactType.DIRECTORY:
         # ignore key
-        conda_prefix = build_artifact.build.build_path(conda_store.store_directory)
+        conda_prefix = build_artifact.build.build_path(conda_store)
         # be REALLY sure this is a directory within store directory
         if conda_prefix.startswith(conda_store.store_directory) and os.path.isdir(
             conda_prefix
