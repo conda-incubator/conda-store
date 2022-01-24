@@ -18,6 +18,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [0.3.9] - 2022-01-23
+
+### Added
+ 
+ - Adding support for templates for build and environment symlink directories
+ - Adding support for internal and external secure settings
+
+### Fixed
+
+ - Error in build url with extra `/` in environment page
+
 ## [0.3.8] - 2022-01-13
 
 ### Fixed
