@@ -1,6 +1,6 @@
 from typing import List
 
-from sqlalchemy import func, null
+from sqlalchemy import func, null, distinct
 
 from conda_store_server import orm
 from .conda import conda_platform
@@ -186,6 +186,20 @@ def list_conda_packages(db, search: str = None, build: str = None):
         filters.append(orm.CondaPackage.build.contains(build, autoescape=True))
 
     return db.query(orm.CondaPackage).join(orm.CondaChannel).filter(*filters)
+
+
+def list_conda_package_versions(db, search: str = None, build: str = None):
+    filters = []
+    if search:
+        filters.append(orm.CondaPackage.name.contains(search, autoescape=True))
+    if build:
+        filters.append(orm.CondaPackage.build.contains(build, autoescape=True))
+
+    return (
+        db
+        .query(orm.CondaPackage.name, func.string_agg(distinct(orm.CondaPackage.version), ','))
+        .group_by(orm.CondaPackage.name)
+    )
 
 
 def get_metrics(db):

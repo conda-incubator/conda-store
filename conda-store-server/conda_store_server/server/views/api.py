@@ -452,6 +452,23 @@ def api_list_packages():
         required_sort_bys=required_sort_bys,
     )
 
+@app_api.route("/api/v1/packageversions/", methods=["GET"])
+def api_list_package_versions():
+    conda_store = get_conda_store()
+
+    search = request.args.get("search")
+    build = request.args.get("build")
+
+    orm_packages = api.list_conda_package_versions(conda_store.db, search=search, build=build)
+    packages = []
+    for name, versions in orm_packages.all():
+        packages.append(
+            {
+                "name": name,
+                "versions": versions.split(',')
+            }
+        )
+    return {"packages": packages}
 
 @app_api.route("/api/v1/build/<build_id>/yaml/", methods=["GET"])
 def api_get_build_yaml(build_id):
