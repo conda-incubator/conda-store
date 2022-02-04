@@ -151,7 +151,13 @@ rerender`. An example of this can be found in [PR
 ### Specifications
 
  - `POST /api/v1/environment/` :: create given environment
-    - JSON message with optional namespace (will use `CondaStore.default_namespace` if not specified) and a specification string that's a valid environment.yaml for Conda.
+    - JSON message with optional namespace (will use `CondaStore.default_namespace` if not specified) and a specification string that's a valid environment.yaml for Conda, like so:
+    ```
+    {
+      "namespace": "some_namespace",
+      "specification": "name: some_environment_name\ndependencies:\n  - python=3.10.2=h543edf9_0_cpython\n"
+    }
+    ```
 
 ### Builds
 
