@@ -389,6 +389,7 @@ def api_get_build_packages(build_id):
             "name": orm.CondaPackage.name,
         },
         default_sort_by=["channel", "name"],
+        exclude={"channel": {"last_update"}},
     )
 
 
@@ -450,6 +451,7 @@ def api_list_packages():
         },
         default_sort_by=["channel", "name", "version", "build"],
         required_sort_bys=required_sort_bys,
+        exclude={"channel": {"last_update"}},
     )
 
 

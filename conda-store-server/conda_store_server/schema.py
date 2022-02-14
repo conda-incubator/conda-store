@@ -45,7 +45,7 @@ class CondaChannel(BaseModel):
 
 class CondaPackage(BaseModel):
     id: int
-    channel_id: int
+    channel: CondaChannel
     build: str
     license: Optional[str]
     sha256: str
