@@ -95,6 +95,10 @@ class CondaStoreServer(Application):
 
     def start(self):
         app = Flask(__name__)
+
+        # ensure that urls are valid with and without a trailing slash
+        app.url_map.strict_slashes = False
+
         cors_prefix = f"{self.url_prefix if self.url_prefix != '/' else ''}"
         CORS(
             app,
