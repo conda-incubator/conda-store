@@ -112,6 +112,9 @@ jobs:
     steps:
       - name: 'Checkout Infrastructure'
         uses: actions/checkout@v2
+      - name: Cache Docker layers
+        uses: satackey/action-docker-layer-caching@v0.0.11
+        continue-on-error: true
       - name: Docker Build, Tag, Push Image
         env:
           IMAGE_NAME: quansight/${{ matrix.docker-image }}
