@@ -112,12 +112,24 @@ jobs:
     steps:
       - name: 'Checkout Infrastructure'
         uses: actions/checkout@v2
-      - name: Cache Docker layers
-        uses: satackey/action-docker-layer-caching@v0.0.11
-        continue-on-error: true
-      - name: Docker Build, Tag, Push Image
-        env:
-          IMAGE_NAME: quansight/${{ matrix.docker-image }}
-          IMAGE_TAG: ${{ github.sha }}
-        run: |
-          docker build -t $IMAGE_NAME:$IMAGE_TAG ${{ matrix.docker-image }}
+
+      - name: Docker Meta
+        id: meta
+        uses: crazy-max/ghaction-docker-meta@v2
+        with:
+          images: |
+            quansight/${{ matrix.docker-image }}
+          tags: |
+            type=sha
+
+      - name: Build docker
+        uses: docker/build-push-action@v2
+        with:
+          context: "${{ matrix.docker-image }}"
+          file: "${{ matrix.docker-image }}/Dockerfile"
+          tags: |
+            ${{ steps.meta.outputs.tags }}
+          push: false
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
