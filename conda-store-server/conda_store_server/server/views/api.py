@@ -149,9 +149,11 @@ def api_create_namespace(namespace):
     if namespace_orm:
         return jsonify({"status": "error", "error": "namespace already exists"}), 409
 
-    api.create_namespace(conda_store.db, namespace)
+    try:
+        api.create_namespace(conda_store.db, namespace)
+    except ValueError as e:
+        return jsonify({"status": "error", "message": str(e.args[0])}), 400
     conda_store.db.commit()
-
     return jsonify({"status": "ok"})
 
 
@@ -277,7 +279,11 @@ def api_post_specification():
         require=True,
     )
 
-    api.post_specification(conda_store, specification, namespace_name)
+    try:
+        api.post_specification(conda_store, specification, namespace_name)
+    except ValueError as e:
+        return jsonify({"status": "error", "error": str(e.args[0])}), 400
+
     return jsonify({"status": "ok"})
 
 

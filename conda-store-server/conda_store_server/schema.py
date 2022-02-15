@@ -3,7 +3,7 @@ import enum
 from typing import List, Optional, Union, Dict
 import functools
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, constr
 
 
 def _datetime_factory(offset: datetime.timedelta):
@@ -57,9 +57,14 @@ class CondaPackage(BaseModel):
         orm_mode = True
 
 
+# namespace and name cannot contain "*" ":" "#" " " "/"
+# this is a more restrictive list
+ALLOWED_CHARACTERS = "A-Za-z0-9-+_=@$&?^|~."
+
+
 class Namespace(BaseModel):
     id: int
-    name: str
+    name: constr(regex=f"^[{ALLOWED_CHARACTERS}]+$")  # noqa: F722
 
     class Config:
         orm_mode = True
@@ -109,8 +114,7 @@ class CondaSpecificationPip(BaseModel):
 
 
 class CondaSpecification(BaseModel):
-    # not allowed charaters in conda environment name '/', ' ', ':'
-    name: str
+    name: constr(regex=f"^[{ALLOWED_CHARACTERS}]+$")  # noqa: F722
     channels: Optional[List[str]]
     dependencies: List[Union[str, CondaSpecificationPip]]
     prefix: Optional[str]
