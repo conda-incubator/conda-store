@@ -72,6 +72,12 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: |
           docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+      - name: Lint Dockerfiles
+        uses: jbergstroem/hadolint-gh-action@v1
+        with:
+          dockerfile: ${{ matrix.docker-image }}/Dockerfile
+          output_format: tty
+          error_level: 0
       - name: Docker Build, Tag, Push Image
         env:
           IMAGE_NAME: quansight/${{ matrix.docker-image }}
