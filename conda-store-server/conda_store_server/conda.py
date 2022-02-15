@@ -2,8 +2,8 @@ import json
 import subprocess
 import bz2
 import datetime
-import yarl
 
+import yarl
 import requests
 
 

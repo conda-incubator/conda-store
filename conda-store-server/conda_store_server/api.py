@@ -1,9 +1,10 @@
 from typing import List
+import re
 
 from sqlalchemy import func, null
 
-from conda_store_server import orm
-from .conda import conda_platform
+from conda_store_server import orm, schema
+from conda_store_server.conda import conda_platform
 
 
 def list_namespaces(db, show_soft_deleted: bool = False):
@@ -24,8 +25,14 @@ def get_namespace(db, name: str = None, id: int = None):
 
 
 def create_namespace(db, name: str):
+    if re.fullmatch(f"[{schema.ALLOWED_CHARACTERS}]+", name) is None:
+        raise ValueError(
+            f"Namespace='{name}' is not valid does not match regex {schema.NAMESPACE_REGEX}"
+        )
+
     namespace = orm.Namespace(name=name)
     db.add(namespace)
+    return namespace
 
 
 def delete_namespace(db, name: str = None, id: int = None):

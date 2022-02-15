@@ -23,7 +23,7 @@ from conda_store_server import schema, orm
 
 
 ARN_ALLOWED_REGEX = re.compile(
-    r"^([A-Za-z0-9|<>=\.\_\-\*]+)/([A-Za-z0-9|<>=\.\_\-\*]+)$"
+    f"^([{schema.ALLOWED_CHARACTERS}*]+)/([{schema.ALLOWED_CHARACTERS}*]+)$"
 )
 
 
@@ -123,9 +123,8 @@ class RBACAuthorizationBackend(LoggingConfigurable):
         if not ARN_ALLOWED_REGEX.match(arn):
             raise ValueError(f"invalid arn={arn}")
 
-        # replace "*" with "[A-Za-z0-9_\-\.|<>=]*"
-        arn = re.sub(r"\*", r"[A-Za-z0-9_\-\.|<>=]*", arn)
-
+        # replace "*" with schema.ALLOWED_CHARACTERS
+        arn = re.sub(r"\*", f"[{schema.ALLOWED_CHARACTERS}]*", arn)
         namespace_regex, name_regex = arn.split("/")
         regex_arn = "^" + namespace_regex + "(?:/" + name_regex + ")?$"
         return re.compile(regex_arn)

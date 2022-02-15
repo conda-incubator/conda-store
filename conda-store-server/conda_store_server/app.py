@@ -202,7 +202,7 @@ class CondaStore(LoggingConfigurable):
         """Ensure that conda-store default namespaces exists"""
         namespace = api.get_namespace(self.db, name=self.default_namespace)
         if namespace is None:
-            self.db.add(orm.Namespace(name=self.default_namespace))
+            api.create_namespace(self.db, name=self.default_namespace)
 
     def ensure_directories(self):
         """Ensure that conda-store filesystem directories exist"""
@@ -239,8 +239,7 @@ class CondaStore(LoggingConfigurable):
         # Create Namespace if namespace if it does not exist
         namespace_model = api.get_namespace(self.db, name=namespace)
         if namespace_model is None:
-            namespace = orm.Namespace(name=namespace)
-            self.db.add(namespace)
+            namespace = api.create_namespace(self.db, name=namespace)
             self.db.commit()
         else:
             namespace = namespace_model
