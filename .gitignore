@@ -20,3 +20,6 @@ docs/_build
 
 # nix
 .direnv
+
+
+.DS_Store
