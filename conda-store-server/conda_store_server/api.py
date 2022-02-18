@@ -92,7 +92,7 @@ def get_specification(db, sha256):
 
 
 def post_specification(conda_store, specification, namespace=None):
-    conda_store.register_environment(specification, namespace)
+    return conda_store.register_environment(specification, namespace, force_build=True)
 
 
 def list_builds(db, status: orm.BuildStatus = None, show_soft_deleted: bool = False):
