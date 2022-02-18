@@ -280,11 +280,11 @@ def api_post_specification():
     )
 
     try:
-        api.post_specification(conda_store, specification, namespace_name)
+        build_id = api.post_specification(conda_store, specification, namespace_name)
     except ValueError as e:
         return jsonify({"status": "error", "error": str(e.args[0])}), 400
 
-    return jsonify({"status": "ok"})
+    return jsonify({"status": "ok", "data": build_id})
 
 
 @app_api.route("/api/v1/build/", methods=["GET"])
