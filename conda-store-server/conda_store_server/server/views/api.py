@@ -284,7 +284,7 @@ def api_post_specification():
     except ValueError as e:
         return jsonify({"status": "error", "error": str(e.args[0])}), 400
 
-    return jsonify({"status": "ok", "data": build_id})
+    return jsonify({"status": "ok", "data": {"build_id": build_id}})
 
 
 @app_api.route("/api/v1/build/", methods=["GET"])
