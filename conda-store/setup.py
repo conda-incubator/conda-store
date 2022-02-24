@@ -7,7 +7,7 @@ long_description = (here / "README.md").read_text(encoding="utf-8")
 
 setup(
     name="conda-store",
-    version='0.3.9',
+    version='0.3.10',
     url="https://github.com/Quansight/conda-store",
     author="Chris Ostrouchov",
     description="A client to interface with conda-store",

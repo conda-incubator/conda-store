@@ -18,6 +18,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [0.3.10] - 2022-02-24
+
+### Added
+
+ - `build_id` response to `POST /api/v1/specification` route #244
+ - Added a validation for namespaces that is more flexible # 233
+ - Added ability to use via `nix run github:quansight/conda-store ...` #232
+ - API endpoints now return channel name instead of id #231
+
+### Fixed
+
+ - Flask paths now support routes with and without a trailing slash #230
+
 ## [0.3.9] - 2022-01-23
 
 ### Added
