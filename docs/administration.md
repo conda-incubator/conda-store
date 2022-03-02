@@ -377,6 +377,11 @@ point since also used in `AuthenticationBackend`.
 `CondaStoreServer.max_page_size` is maximum number of items to return
 in a single UI page or API response.
 
+`CondaStoreServer.behind_proxy` indicates if server is behind web
+reverse proxy such as Nginx, Traefik, Apache. Will use
+`X-Forward-...` headers to determine scheme. Do not set to true if not
+behind proxy since Flask will trust any `X-Forward-...` header.
+
 ### `conda_store_server.worker.app.CondaStoreWorker`
 
 `CondaStoreWorker.log_level` is the level for all server

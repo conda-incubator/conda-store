@@ -5,6 +5,7 @@ import sys
 from flask import Flask
 from flask.blueprints import Blueprint
 from flask_cors import CORS
+from werkzeug.middleware.proxy_fix import ProxyFix
 from traitlets import Bool, Unicode, Integer, Type, validate
 from traitlets.config import Application
 
@@ -66,6 +67,12 @@ class CondaStoreServer(Application):
         config=True,
     )
 
+    behind_proxy = Bool(
+        False,
+        help="Indicates if server is behind web reverse proxy such as Nginx, Traefik, Apache. Will use X-Forward-.. headers to detemine scheme. Do not set to true if not behind proxy since Flask will trust any X-Forward-... header",
+        config=True,
+    )
+
     @validate("config_file")
     def _validate_config_file(self, proposal):
         if not os.path.isfile(proposal.value):
@@ -95,6 +102,9 @@ class CondaStoreServer(Application):
 
     def start(self):
         app = Flask(__name__)
+
+        if self.behind_proxy:
+            app.wsgi_app = ProxyFix(app.wsgi_app)
 
         # ensure that urls are valid with and without a trailing slash
         app.url_map.strict_slashes = False
