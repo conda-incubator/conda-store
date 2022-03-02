@@ -66,18 +66,40 @@ jobs:
     steps:
       - name: 'Checkout Infrastructure'
         uses: actions/checkout@master
-      - name: Docker Login
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-        run: |
-          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-      - name: Docker Build, Tag, Push Image
-        env:
-          IMAGE_NAME: quansight/${{ matrix.docker-image }}
-        run: |
-          docker build -t $IMAGE_NAME:${GITHUB_REF#refs/*/} ${{ matrix.docker-image }}
-          docker push $IMAGE_NAME:${GITHUB_REF#refs/*/}
-      - name: Docker Logout
-        run: |
-          docker logout
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Lint Dockerfiles
+        uses: jbergstroem/hadolint-gh-action@v1
+        with:
+          dockerfile: ${{ matrix.docker-image }}/Dockerfile
+          output_format: tty
+          error_level: 0
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Docker Meta
+        id: meta
+        uses: crazy-max/ghaction-docker-meta@v2
+        with:
+          images: |
+            quansight/${{ matrix.docker-image }}
+          tags: |
+            type=ref,event=tag
+
+      - name: Build docker
+        uses: docker/build-push-action@v2
+        with:
+          context: "${{ matrix.docker-image }}"
+          file: "${{ matrix.docker-image }}/Dockerfile"
+          tags: |
+            ${{ steps.meta.outputs.tags }}
+          push: ${{ github.event_name != 'pull_request' }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
