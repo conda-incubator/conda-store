@@ -378,8 +378,8 @@ point since also used in `AuthenticationBackend`.
 in a single UI page or API response.
 
 `CondaStoreServer.behind_proxy` indicates if server is behind web
-reverse proxy such as nginx, traefik, apache. Will use
-X-Forward-.. headers to determine scheme. Do not set to true if not
+reverse proxy such as Nginx, Traefik, Apache. Will use
+`X-Forward-...` headers to determine scheme. Do not set to true if not
 behind proxy since Flask will trust any `X-Forward-...` header.
 
 ### `conda_store_server.worker.app.CondaStoreWorker`

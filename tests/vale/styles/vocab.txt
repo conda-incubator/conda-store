@@ -46,3 +46,5 @@ pytest
 lorri
 nixery
 PyPi
+Traefik
+Nginx
