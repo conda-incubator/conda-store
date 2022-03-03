@@ -23,6 +23,12 @@ class CondaStoreWorker(Application):
         [], help="list of paths to watch for environment changes", config=True
     )
 
+    concurrency = Integer(
+        None,
+        help="Number of worker threads to spawn. Limit the concurrency of conda-builds",
+        config=True,
+    )
+
     config_file = Unicode(
         help="config file to load for conda-store",
         config=True,
@@ -58,5 +64,9 @@ class CondaStoreWorker(Application):
             "--loglevel=INFO",
             "--beat",
         ]
+
+        if self.concurrency:
+            argv.append(f"--concurrency={self.concurrency}")
+
         self.conda_store.ensure_directories()
         self.conda_store.celery_app.worker_main(argv)

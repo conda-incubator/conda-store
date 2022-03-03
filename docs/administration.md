@@ -392,6 +392,10 @@ logging. Default is `INFO`. Common options are `DEBUG`, `INFO`,
 watch for changes to directories of `environment.yaml` files or a
 single filename to watch.
 
+`CondaStoreWorker.concurrency` by default is not set and defaults to
+the number of threads on your given machine. If set will limit the
+number of concurrent celery tasks to the integer.
+
 ## Frequently Asked Questions
 
 ### Conda-Store fails to build Conda environment and worker is spontaneously killed (9 SIGKILL)
