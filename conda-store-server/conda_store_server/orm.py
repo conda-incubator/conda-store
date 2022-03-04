@@ -2,6 +2,8 @@ import os
 import enum
 import datetime
 import shutil
+from traceback import StackSummary
+from unicodedata import name
 
 from sqlalchemy import (
     Table,
@@ -25,6 +27,8 @@ from conda_store_server import utils
 from conda_store_server.environment import validate_environment
 from conda_store_server.conda import download_repodata
 
+#from pdb import set_trace as bp
+from celery.contrib.rdb import set_trace as bp
 
 Base = declarative_base()
 
@@ -83,12 +87,12 @@ class Specification(Base):
 
 
 build_conda_package = Table(
-    "build_conda_package",
+    "build_conda_package_build",
     Base.metadata,
     Column("build_id", ForeignKey("build.id", ondelete="CASCADE"), primary_key=True),
     Column(
-        "conda_package_id",
-        ForeignKey("conda_package.id", ondelete="CASCADE"),
+        "conda_package_build_id",
+        ForeignKey("conda_package_build.id", ondelete="CASCADE"),
         primary_key=True,
     ),
 )
@@ -110,7 +114,7 @@ class Build(Base):
         foreign_keys=[environment_id],
     )
 
-    packages = relationship("CondaPackage", secondary=build_conda_package)
+    packages = relationship("CondaPackageBuild", secondary=build_conda_package)
 
     status = Column(Enum(BuildStatus), default=BuildStatus.QUEUED)
     size = Column(BigInteger, default=0)
@@ -272,54 +276,90 @@ class CondaChannel(Base):
     last_update = Column(DateTime)
 
     def update_packages(self, db):
+        #bp()
         repodata = download_repodata(self.name, self.last_update)
         if not repodata:
             # nothing to update
             return
 
         for architecture in repodata["architectures"]:
-            packages = list(
+            packages_builds = list(
                 repodata["architectures"][architecture]["packages"].values()
             )
 
             existing_architecture_sha256 = {
                 _[0]
-                for _ in db.query(CondaPackage.sha256)
+                for _ in db.query(CondaPackageBuild.sha256)
                 .filter(CondaPackage.channel_id == self.id)
-                .filter(CondaPackage.subdir == architecture)
+                .filter(CondaPackageBuild.subdir == architecture)
                 .all()
             }
-            for package in packages:
-                if package["sha256"] not in existing_architecture_sha256:
-                    db.add(
-                        CondaPackage(
-                            build=package["build"],
-                            build_number=package["build_number"],
-                            constrains=package.get("constrains"),
-                            depends=package["depends"],
-                            license=package.get("license"),
-                            license_family=package.get("liciense_family"),
-                            md5=package["md5"],
-                            sha256=package["sha256"],
-                            name=package["name"],
-                            size=package["size"],
-                            subdir=package.get("subdir"),
-                            timestamp=package.get("timestamp"),
-                            version=package["version"],
-                            channel_id=self.id,
-                            summary=repodata.get("packages", {})
-                            .get(package["name"], {})
-                            .get("summary"),
-                            description=repodata.get("packages", {})
-                            .get(package["name"], {})
-                            .get("description"),
-                        )
+            for p_build in packages_builds:
+                
+                # If the given package build doesn't exist in the DB yet
+                if p_build["sha256"] not in existing_architecture_sha256:
+
+                    
+                    new_build = CondaPackageBuild(
+                                    build=p_build["build"],
+                                    build_number=p_build["build_number"],
+                                    constrains=p_build.get("constrains"),
+                                    depends=p_build["depends"],
+                                    md5=p_build["md5"],
+                                    sha256=p_build["sha256"],
+                                    size=p_build["size"],
+                                    subdir=p_build.get("subdir"),
+                                    timestamp=p_build.get("timestamp"),
                     )
-                    existing_architecture_sha256.add(package["sha256"])
+                    
+
+
+                    existing_package = db.query(CondaPackage)\
+                                        .filter(CondaPackage.name == p_build["name"])\
+                                        .filter(CondaPackage.version == p_build["version"])\
+                                        .filter(CondaPackage.channel_id == self.id ).all()
+
+                    if len(existing_package) == 0:
+                        # the package doesn't exist in DB
+                        package = CondaPackage(channel_id=self.id,
+                                                license=p_build.get("license"),
+                                                license_family=p_build.get("license_family"),
+                                                name=p_build["name"],
+                                                version=p_build["version"],
+                                                summary=repodata.get("packages", {})
+                                                        .get(p_build["name"], {})
+                                                        .get("summary"),
+                                                description=repodata.get("packages", {})
+                                                        .get(p_build["name"], {})
+                                                        .get("description"),
+                        )
+                        
+                        db.add(package)
+
+                    elif len(existing_package) == 1:
+                        # the package exists in DB
+                        package = existing_package[0]
+                    else:
+                        # shouldn't happen, as there's a unique contraint on :
+                        # CondaPackage(name, version, channel_id)
+                        exception_msg = f"""Multiple packages for the same name, version and channel_id have been found.
+                        Name : {p_build["name"]}
+                        Version : {p_build["version"]}
+                        channel_id : {self.id}
+                        """
+                        raise Exception(exception_msg)
+
+                    package.builds.append(new_build)
+                    db.add(new_build)
+
+                    existing_architecture_sha256.add(p_build["sha256"])
+                    db.commit()
+
             db.commit()
 
         self.last_update = datetime.datetime.utcnow()
         db.commit()
+
 
 
 class CondaPackage(Base):
@@ -328,12 +368,8 @@ class CondaPackage(Base):
     __table_args__ = (
         UniqueConstraint(
             "channel_id",
-            "subdir",
             "name",
             "version",
-            "build",
-            "build_number",
-            "sha256",
             name="_conda_package_uc",
         ),
     )
@@ -342,26 +378,56 @@ class CondaPackage(Base):
 
     channel_id = Column(Integer, ForeignKey("conda_channel.id"))
     channel = relationship(CondaChannel)
+    
+    builds = relationship(
+        "CondaPackageBuild", back_populates="package", cascade="all, delete-orphan"
+    )
+
+    license = Column(Text, nullable=True)
+    license_family = Column(Unicode(64), nullable=True)
+    name = Column(Unicode(255), nullable=False)
+    version = Column(Unicode(64), nullable=False)
+    summary = Column(Text, nullable=True)
+    description = Column(Text, nullable=True)
+
+    def __repr__(self):
+       return f"<CondaPackage (channel={self.channel} name={self.name} version={self.version})>"
+
+
+class CondaPackageBuild(Base):
+    __tablename__ = "conda_package_build"
+
+    __table_args__ = (
+        UniqueConstraint(
+            "subdir",
+            "build",
+            "build_number",
+            "sha256",
+            name="_conda_package_build_uc",
+        ),
+    )
+
+    id = Column(Integer, primary_key=True)
+
+    package_id = Column(Integer, ForeignKey("conda_package.id"))
+    package = relationship(CondaPackage, back_populates="builds")
+
+    #channel_id = Column(Integer, ForeignKey("conda_channel.id"))
+    #channel = relationship(CondaChannel)
 
     build = Column(Unicode(64), nullable=False)
     build_number = Column(Integer, nullable=False)
     constrains = Column(JSON, nullable=True)
     depends = Column(JSON, nullable=False)
-    license = Column(Text, nullable=True)
-    license_family = Column(Unicode(64), nullable=True)
     md5 = Column(Unicode(255), nullable=False)
-    name = Column(Unicode(255), nullable=False)
     sha256 = Column(Unicode(64), nullable=False)
     size = Column(BigInteger, nullable=False)
     subdir = Column(Unicode(64), nullable=True)
     timestamp = Column(BigInteger, nullable=True)
-    version = Column(Unicode(64), nullable=False)
-
-    summary = Column(Text, nullable=True)
-    description = Column(Text, nullable=True)
-
+    
     def __repr__(self):
-        return f"<CondaPackage (channel={self.channel} name={self.name} version={self.version} sha256={self.sha256})>"
+       return f"<CondaPackageBuild (id={self.id} build={self.build} size={self.size} sha256={self.sha256})>"
+
 
 
 class CondaStoreConfiguration(Base):
