@@ -227,11 +227,11 @@ def api_update_environment_build(namespace, name):
     )
 
     data = request.json
-    if "buildId" not in data:
+    if "build_id" not in data:
         return jsonify({"status": "error", "message": "build id not specificated"}), 400
 
     try:
-        build_id = data["buildId"]
+        build_id = data["build_id"]
         conda_store.update_environment_build(namespace, name, build_id)
     except utils.CondaStoreError as e:
         return e.response
