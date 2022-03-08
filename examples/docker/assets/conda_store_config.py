@@ -56,3 +56,8 @@ c.JupyterHubOAuthAuthentication.authorize_url = "http://localhost:8000/hub/api/o
 c.CondaStoreWorker.log_level = logging.INFO
 c.CondaStoreWorker.watch_paths = ["/opt/conda-store/environments/"]
 c.CondaStoreWorker.concurrency = 4
+
+# For local dev, make it so that anybody can access any endpoint
+c.RBACAuthorizationBackend.unauthenticated_role_bindings = {
+    "*/*": {"admin"},
+}
