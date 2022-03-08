@@ -2,11 +2,15 @@ import os
 import datetime
 
 from celery import Celery, group
-from traitlets import Type, Unicode, Integer, List, default
+from traitlets import Type, Unicode, Integer, List, default, Callable
 from traitlets.config import LoggingConfigurable
 from sqlalchemy.pool import NullPool
 
 from conda_store_server import orm, utils, storage, schema, api, conda
+
+
+def conda_store_validate_specification(conda_store: 'CondaStore', specification: schema.CondaSpecification) -> schema.CondaSpecification:
+    return specification
 
 
 class CondaStore(LoggingConfigurable):
@@ -124,6 +128,12 @@ class CondaStore(LoggingConfigurable):
         "frolvlad/alpine-glibc:latest",
         help="default base image used for the Dockerized environments",
         config=True,
+    )
+
+    validate_specification = Callable(
+        conda_store_validate_specification,
+        help="callable function taking conda_store and specification as input arguments to apply for validating and modifying a given environment. If there are validation issues with the environment ValueError should be raised",
+        config=True
     )
 
     @property
@@ -244,7 +254,9 @@ class CondaStore(LoggingConfigurable):
         else:
             namespace = namespace_model
 
-        specification_model = schema.CondaSpecification.parse_obj(specification)
+        specification_model = self.validate_specification(
+            self,
+            schema.CondaSpecification.parse_obj(specification))
         specification_sha256 = utils.datastructure_hash(specification_model.dict())
 
         specification = api.get_specification(self.db, sha256=specification_sha256)
