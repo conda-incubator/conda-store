@@ -15,6 +15,16 @@ c.CondaStore.default_uid = 1000
 c.CondaStore.default_gid = 100
 c.CondaStore.default_permissions = "775"
 
+
+def validate_specification(conda_store, specification):
+    has_ipykernel = any(('ipykernel' in _) for _ in specification.dependencies)
+    if not has_ipykernel:
+        specification.dependencies.append('ipykernel')
+    return specification
+
+c.CondaStore.validate_specification = validate_specification
+
+
 c.S3Storage.internal_endpoint = "minio:9000"
 c.S3Storage.external_endpoint = "localhost:9000"
 c.S3Storage.access_key = "admin"
