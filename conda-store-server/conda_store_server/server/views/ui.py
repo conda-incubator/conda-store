@@ -58,7 +58,7 @@ def ui_create_post_environment():
         specification_text = request.form.get("specification")
         specification = yaml.safe_load(specification_text)
         specification = schema.CondaSpecification.parse_obj(specification)
-    except yaml.error.YAMLError as e:
+    except yaml.error.YAMLError:
         return render_template(
             "create.html",
             specification=specification_text,
