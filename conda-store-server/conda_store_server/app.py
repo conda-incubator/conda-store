@@ -134,7 +134,7 @@ class CondaStore(LoggingConfigurable):
 
     validate_specification = Callable(
         conda_store_validate_specification,
-        help="callable function taking conda_store and specification as input arguments to apply for validating and modifying a given environment. If there are validation issues with the environment ValueError should be raised",
+        help="callable function taking conda_store and specification as input arguments to apply for validating and modifying a given specification. If there are validation issues with the environment ValueError with message should be raised",
         config=True,
     )
 

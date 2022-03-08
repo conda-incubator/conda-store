@@ -103,6 +103,12 @@ for symlinking conda environment builds. Available keys:
 store_directory, namespace, name. The default will put all
 environments in the same namespace within the same directory.
 
+`CondaStore.validate_specification` callable function taking
+conda_store and specification as input arguments to apply for
+validating and modifying a given specification. If there are
+validation issues with the environment ValueError with message should
+be raised.
+
 `CondaStore.conda_command` is the `command` to use for creation of
 Conda environments. Currently `mamba` is the default which will
 usually result in lower peak memory usage and faster builds.
