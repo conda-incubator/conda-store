@@ -17,7 +17,7 @@ from conda_store_server.conda import conda_platform
 app_ui = Blueprint("ui", __name__, template_folder="templates")
 
 
-@app_ui.route("/create/", methods=["GET", "POST"])
+@app_ui.route("/create/", methods=["GET"])
 def ui_create_get_environment():
     conda_store = get_conda_store()
     auth = get_auth()
@@ -31,32 +31,64 @@ def ui_create_get_environment():
         "entity": auth.authenticate_request(),
     }
 
-    if request.method == "GET":
-        return render_template("create.html", **context)
-    elif request.method == "POST":
-        try:
-            namespace_id = int(request.form.get("namespace"))
-            specification_text = request.form.get("specification")
-            specification = schema.CondaSpecification.parse_obj(
-                yaml.safe_load(specification_text)
-            )
-            namespace = api.get_namespace(conda_store.db, id=namespace_id)
-            api.post_specification(conda_store, specification.dict(), namespace.name)
-            return redirect(url_for("ui.ui_list_environments"))
-        except yaml.YAMLError:
-            return render_template(
-                "create.html",
-                specification=specification_text,
-                message="Unable to parse. Invalid YAML",
-                **context,
-            )
-        except pydantic.ValidationError as e:
-            return render_template(
-                "create.html",
-                specification=specification_text,
-                message=str(e),
-                **context,
-            )
+    return render_template("create.html", **context)
+
+
+@app_ui.route("/create/", methods=["POST"])
+def ui_create_post_environment():
+    conda_store = get_conda_store()
+    auth = get_auth()
+
+    orm_namespaces = auth.filter_namespaces(
+        api.list_namespaces(conda_store.db, show_soft_deleted=False)
+    )
+
+    context = {
+        "namespaces": orm_namespaces.all(),
+        "entity": auth.authenticate_request(),
+    }
+
+    permissions = {Permissions.ENVIRONMENT_CREATE}
+    namespace_id = int(request.form.get("namespace", conda_store.default_namespace))
+    namespace = api.get_namespace(conda_store.db, id=namespace_id)
+    if namespace is None:
+        permissions.add(Permissions.NAMESPACE_CREATE)
+
+    try:
+        specification_text = request.form.get("specification")
+        specification = yaml.safe_load(specification_text)
+        specification = schema.CondaSpecification.parse_obj(specification)
+    except yaml.error.YAMLError:
+        return render_template(
+            "create.html",
+            specification=specification_text,
+            message="Unable to parse. Invalid YAML",
+            **context,
+        )
+    except pydantic.ValidationError as e:
+        return render_template(
+            "create.html",
+            specification=specification_text,
+            message=str(e),
+            **context,
+        )
+
+    auth.authorize_request(
+        f"{namespace.name}/{specification.name}",
+        permissions,
+        require=True,
+    )
+
+    try:
+        api.post_specification(conda_store, specification.dict(), namespace.name)
+        return redirect(url_for("ui.ui_list_environments"))
+    except ValueError as e:
+        return render_template(
+            "create.html",
+            specification=specification_text,
+            message=str(e),
+            **context,
+        )
 
 
 @app_ui.route("/", methods=["GET"])

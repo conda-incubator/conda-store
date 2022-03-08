@@ -2,8 +2,10 @@ import datetime
 import enum
 from typing import List, Optional, Union, Dict
 import functools
+from pkg_resources import Requirement
 
-from pydantic import BaseModel, Field, constr
+from conda.models.match_spec import MatchSpec
+from pydantic import BaseModel, Field, constr, validator
 
 
 def _datetime_factory(offset: datetime.timedelta):
@@ -112,12 +114,34 @@ class Environment(BaseModel):
 class CondaSpecificationPip(BaseModel):
     pip: List[str]
 
+    @validator("pip", each_item=True)
+    def check_pip(cls, v):
+        try:
+            Requirement.parse(v)
+        except Exception:
+            raise ValueError(f"Invalid pypi package dependency {v}")
+
+        return v
+
 
 class CondaSpecification(BaseModel):
     name: constr(regex=f"^[{ALLOWED_CHARACTERS}]+$")  # noqa: F722
-    channels: Optional[List[str]]
+    channels: Optional[List[str]] = []
     dependencies: List[Union[str, CondaSpecificationPip]]
     prefix: Optional[str]
+
+    @validator("dependencies", each_item=True)
+    def check_dependencies(cls, v):
+        if not isinstance(v, str):
+            return v  # ignore pip field
+
+        try:
+            MatchSpec(v)
+        except Exception as e:
+            print(e)
+            raise ValueError(f"Invalid conda package dependency specification {v}")
+
+        return v
 
 
 ###############################
