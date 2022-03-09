@@ -58,14 +58,13 @@ def task_update_conda_channels(self):
         conda_store.ensure_conda_channels()
 
         for channel in api.list_conda_channels(conda_store.db):
-            channel.update_packages(conda_store.db)
+            channel.update_packages(conda_store.db, subdirs=conda_store.conda_platforms)
     except IntegrityError as exc:
-        # there is a persistent error on startup
-        # that when the conda channels are out of data
-        # and two tasks try to add the same packages
-        # it runs into integrity errors
-        # the solution is to let one of them finish
-        # and the other try again at a later time
+        # there is a persistent error on startup that when the conda
+        # channels are out of data and two tasks try to add the same
+        # packages it runs into integrity errors the solution is to
+        # let one of them finish and the other try again at a later
+        # time
         self.retry(exc=exc, countdown=random.randrange(15, 30))
 
 

@@ -271,11 +271,8 @@ class CondaChannel(Base):
     name = Column(Unicode(255), unique=True, nullable=False)
     last_update = Column(DateTime)
 
-    def update_packages(self, db):
-        repodata = download_repodata(self.name, self.last_update)
-        if not repodata:
-            # nothing to update
-            return
+    def update_packages(self, db, subdirs=None):
+        repodata = download_repodata(self.name, self.last_update, subdirs=subdirs)
 
         for architecture in repodata["architectures"]:
             packages = list(

@@ -117,10 +117,30 @@ usually result in lower peak memory usage and faster builds.
 shorthand Conda channels that do not specify a url. The default is
 `https://conda.anaconda.org`.
 
+`CondaStore.conda_platforms` are the platforms to download package
+repodata.json from. By default includes current architecture and
+`noarch`.
+
+`CondaStore.conda_default_channels` is a list of Conda channels that
+are by default added if channels within the specification is empty.
+
 `CondaStore.conda_allowed_channels` is a list of Conda channels that
-are allowed (currently not enforced). This also tells Conda-Store
-which channels to prefetch the channel repodata from. The default is
-`https://repo.anaconda.com/pkgs/main` and `conda-forge`.
+are allowed. This also tells Conda-Store which channels to prefetch
+the channel `repodata` and `channeldata` from. The default is `main` and
+`conda-forge`.
+
+`CondaStore.conda_default_packages` is a list of Conda packages that
+are included by default if none are specified within the specification
+dependencies.
+
+`CondaStore.conda_required_packages` is a list of Conda packages that
+are required upon validation of the specification dependencies. This
+will not auto add the packages but instead throw an error that they
+are missing.
+
+`CondaStore.conda_included_packages` is a list of Conda packages that
+if not specified within the specification dependencies will be auto
+added.
 
 `CondaStore.database_url` is the url string for connecting to the
 database. Behind the scenes [SQLAlchemy](https://www.sqlalchemy.org/)
