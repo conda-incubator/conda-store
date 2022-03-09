@@ -1,10 +1,40 @@
+import json
+import os
+
+from jupyterhub.spawner import SimpleLocalProcessSpawner
+from jupyterhub.auth import DummyAuthenticator
+
+
 c.JupyterHub.ip = "0.0.0.0"
 
-c.JupyterHub.authenticator_class = 'jupyterhub.auth.DummyAuthenticator'
+c.JupyterHub.authenticator_class = DummyAuthenticator
 c.DummyAuthenticator.password = 'test'
 
-c.Spawner.cmd=["jupyter-labhub"]
-c.JupyterHub.spawner_class = 'jupyterhub.spawner.SimpleLocalProcessSpawner'
+c.Spawner.cmd = ["jupyter-labhub"]
+
+class CondaStoreSpawner(SimpleLocalProcessSpawner):
+    # must override spawner to setup the conda-store environment paths
+    # properly
+    def make_preexec_fn(self, name):
+        home = self.home_dir
+
+        func = super().make_preexec_fn(name)
+
+        def preexec():
+            func()
+            with open(os.path.join(home, '.condarc'), 'w') as f:
+                f.write(json.dumps({
+                    'envs_dirs': [
+                        '/opt/conda-store/conda-store/default/envs',
+                        '/opt/conda-store/conda-store/filesystem/envs',
+                        f'/opt/conda-store/conda-store/{self.user.name}/envs',
+                    ]
+                }))
+
+        return preexec
+
+
+c.JupyterHub.spawner_class = CondaStoreSpawner
 
 c.JupyterHub.services = [
     {

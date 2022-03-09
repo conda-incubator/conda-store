@@ -12,6 +12,9 @@ c.CondaStore.database_url = "postgresql+psycopg2://admin:password@postgres/conda
 c.CondaStore.default_uid = 1000
 c.CondaStore.default_gid = 100
 c.CondaStore.default_permissions = "775"
+c.CondaStore.conda_included_packages = [
+    "ipykernel"
+]
 
 c.S3Storage.internal_endpoint = "minio:9000"
 c.S3Storage.external_endpoint = "localhost:9000"
@@ -56,3 +59,8 @@ c.JupyterHubOAuthAuthentication.authorize_url = "http://localhost:8000/hub/api/o
 c.CondaStoreWorker.log_level = logging.INFO
 c.CondaStoreWorker.watch_paths = ["/opt/conda-store/environments/"]
 c.CondaStoreWorker.concurrency = 4
+
+# For local dev, make it so that anybody can access any endpoint
+c.RBACAuthorizationBackend.unauthenticated_role_bindings = {
+    "*/*": {"admin"},
+}
