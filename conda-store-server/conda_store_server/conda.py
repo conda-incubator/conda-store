@@ -27,7 +27,9 @@ def conda_pack(prefix, output):
 
 
 def download_repodata(
-    channel: str, last_update: datetime.datetime = None, architectures=None
+    channel: str,
+    last_update: datetime.datetime = None,
+    subdirs=None,
 ):
     """Download repodata for channel only if changed since last update
 
@@ -37,8 +39,15 @@ def download_repodata(
 
     Check ``conda.base.constants.KNOWN_SUBDIRS`` for the full list.
     """
-    architectures = set(architectures or [conda_platform(), "noarch"])
-    channel_url = yarl.URL(channel)
+    subdirs = set(subdirs or [conda_platform(), "noarch"])
+
+    # the conda main channel does not have a channeldata.json within
+    # the https://conda.anaconda.org/<channel>/channeldata.json
+    # so we replace the given url with it's equivalent alias
+    channel_replacements = {
+        yarl.URL('https://conda.anaconda.org/main/'): yarl.URL('https://repo.anaconda.com/pkgs/main'),
+    }
+    channel_url = channel_replacements.get(yarl.URL(channel), yarl.URL(channel))
 
     headers = {}
     if last_update:
@@ -55,17 +64,15 @@ def download_repodata(
     response.raise_for_status()
 
     repodata = response.json()
-    if not (architectures <= set(repodata["subdirs"])):
-        raise ValueError("required architectures from channel not available")
-
     repodata["architectures"] = {}
-    for architecture in architectures:
-        response = requests.get(channel_url / architecture / "repodata.json.bz2")
-        response.raise_for_status()
-        repodata["architectures"][architecture] = json.loads(
-            bz2.decompress(response.content)
+    for subdir in subdirs:
+        response = requests.get(
+            channel_url / subdir / "repodata.json.bz2", headers=headers
         )
-
+        if response.status_code == 304: # 304 Not Modified since last_update
+            continue
+        response.raise_for_status()
+        repodata["architectures"][subdir] = json.loads(bz2.decompress(response.content))
     return repodata
 
 

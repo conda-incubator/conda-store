@@ -7,6 +7,10 @@ RUN apt-get update \
     && apt-get install -y wait-for-it \
     && rm -rf /var/lib/apt/lists/*
 
+# ensure that conda channels is empty by default
+# we do not want to tamper with the solve
+RUN printf 'channels: []\n' > /opt/conda/.condarc
+
 COPY environment.yaml /opt/conda-store-server/environment.yaml
 
 RUN mamba env create -f /opt/conda-store-server/environment.yaml
