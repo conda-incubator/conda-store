@@ -124,7 +124,7 @@ class Environment(BaseModel):
 
 # Conda Environment
 class CondaSpecificationPip(BaseModel):
-    pip: List[str]
+    pip: List[str] = []
 
     @validator("pip", each_item=True)
     def check_pip(cls, v):
@@ -138,8 +138,8 @@ class CondaSpecificationPip(BaseModel):
 
 class CondaSpecification(BaseModel):
     name: constr(regex=f"^[{ALLOWED_CHARACTERS}]+$")  # noqa: F722
-    channels: Optional[List[str]] = []
-    dependencies: List[Union[str, CondaSpecificationPip]]
+    channels: List[str] = []
+    dependencies: List[Union[str, CondaSpecificationPip]] = []
     prefix: Optional[str]
 
     @validator("dependencies", each_item=True)

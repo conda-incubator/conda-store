@@ -5,13 +5,52 @@ from celery import Celery, group
 from traitlets import Type, Unicode, Integer, List, default, Callable
 from traitlets.config import LoggingConfigurable
 from sqlalchemy.pool import NullPool
+from conda.models.match_spec import MatchSpec
 
 from conda_store_server import orm, utils, storage, schema, api, conda
 
 
 def conda_store_validate_specification(
-    conda_store: "CondaStore", specification: schema.CondaSpecification
+    conda_store: "CondaStore", namespace: str, specification: schema.CondaSpecification
 ) -> schema.CondaSpecification:
+
+    # ============== MODIFICATION =================
+    # CondaStore.conda_default_channels
+    if len(specification.channels) == 0:
+        specification.channels = conda_store.conda_default_channels.copy()
+
+    # CondaStore.conda_default_packages
+    if len(specification.dependencies) == 0:
+        specification.dependencies = conda_store.conda_default_packages.copy()
+
+    # CondaStore.conda_included_packages
+    dependency_names = set(MatchSpec(_).name for _ in specification.dependencies)
+    for package in set(conda_store.conda_included_packages) - dependency_names:
+        specification.dependencies.append(package)
+
+    # ================ VALIDATION ===============
+    normalized_conda_channels = set(
+        conda.normalize_channel_name(conda_store.conda_channel_alias, _)
+        for _ in specification.channels
+    )
+
+    # validate that all listed channels in specification are allowed
+    normalized_conda_allowed_channels = set(
+        conda.normalize_channel_name(conda_store.conda_channel_alias, _)
+        for _ in conda_store.conda_allowed_channels
+    )
+    if not (normalized_conda_channels <= normalized_conda_allowed_channels):
+        raise ValueError(
+            f"Conda channels {normalized_conda_channels - normalized_conda_allowed_channels} not allowed in specification"
+        )
+
+    # validate that required conda package are in specification
+    dependency_names = set(MatchSpec(_).name for _ in specification.dependencies)
+    if not (set(conda_store.conda_required_packages) <= dependency_names):
+        raise ValueError(
+            f"Conda packages {conda_store.conda_required_packages - dependency_names} required and missing from specification"
+        )
+
     return specification
 
 
@@ -53,9 +92,42 @@ class CondaStore(LoggingConfigurable):
         config=True,
     )
 
+    conda_platforms = List(
+        [conda.conda_platform(), "noarch"],
+        help="Conda platforms to download package repodata.json from. By default includes current architecture and noarch",
+        config=True,
+    )
+
+    conda_default_channels = List(
+        ["conda-forge"],
+        help="Conda channels that by default are included if channels are empty",
+        config=True,
+    )
+
     conda_allowed_channels = List(
-        ["https://repo.anaconda.com/pkgs/main", "conda-forge"],
-        help="Allowed conda channels to be used in conda environments. Currently not enforced",
+        [
+            "main",
+            "conda-forge",
+        ],
+        help="Allowed conda channels to be used in conda environments",
+        config=True,
+    )
+
+    conda_default_packages = List(
+        [],
+        help="Conda packages that included by default if none are included",
+        config=True,
+    )
+
+    conda_required_packages = List(
+        [],
+        help="Conda packages that are required to be within environment specification. Will raise a validation error is package not in specification",
+        config=True,
+    )
+
+    conda_included_packages = List(
+        [],
+        help="Conda packages that auto included within environment specification. Will not raise a validation error if package not in specification and will be auto added",
         config=True,
     )
 
@@ -134,7 +206,7 @@ class CondaStore(LoggingConfigurable):
 
     validate_specification = Callable(
         conda_store_validate_specification,
-        help="callable function taking conda_store and specification as input arguments to apply for validating and modifying a given specification. If there are validation issues with the environment ValueError with message should be raised",
+        help="callable function taking conda_store and specification as input arguments to apply for validating and modifying a given specification. If there are validation issues with the environment ValueError with message should be raised. If changed you may need to call the default function to preseve many of the trait effects e.g. `c.CondaStore.default_channels` etc",
         config=True,
     )
 
@@ -257,7 +329,9 @@ class CondaStore(LoggingConfigurable):
             namespace = namespace_model
 
         specification_model = self.validate_specification(
-            self, schema.CondaSpecification.parse_obj(specification)
+            conda_store=self,
+            namespace=namespace.name,
+            specification=schema.CondaSpecification.parse_obj(specification),
         )
         specification_sha256 = utils.datastructure_hash(specification_model.dict())
 
