@@ -55,3 +55,4 @@ c.JupyterHubOAuthAuthentication.authorize_url = "http://localhost:8000/hub/api/o
 # ==================================
 c.CondaStoreWorker.log_level = logging.INFO
 c.CondaStoreWorker.watch_paths = ["/opt/conda-store/environments/"]
+c.CondaStoreWorker.concurrency = 4
