@@ -18,6 +18,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [0.3.11] - 2022-03-08
+
+### Added
+
+ - `CondaStore.conda_...` options for managing channels and packages in specification #256
+ - Ability to modify/validate specifications server side #252
+ - Concurrency option for Conda-Store celery worker #250
+ - Flask webserver has a `CondaStore.behind_proxy` option to properly handle X-Forward- headers #249
+ - Docker layer chaching to CI for docker image builds #234
+
+### Changed
+
+ - `buildId` parameter in `/api/v1/environment/<namespace>/<name>/` changed to `build_id` #251
+
 ## [0.3.10] - 2022-02-24
 
 ### Added
