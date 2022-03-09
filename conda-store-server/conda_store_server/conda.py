@@ -45,7 +45,9 @@ def download_repodata(
     # the https://conda.anaconda.org/<channel>/channeldata.json
     # so we replace the given url with it's equivalent alias
     channel_replacements = {
-        yarl.URL('https://conda.anaconda.org/main/'): yarl.URL('https://repo.anaconda.com/pkgs/main'),
+        yarl.URL("https://conda.anaconda.org/main/"): yarl.URL(
+            "https://repo.anaconda.com/pkgs/main"
+        ),
     }
     channel_url = channel_replacements.get(yarl.URL(channel), yarl.URL(channel))
 
@@ -69,7 +71,7 @@ def download_repodata(
         response = requests.get(
             channel_url / subdir / "repodata.json.bz2", headers=headers
         )
-        if response.status_code == 304: # 304 Not Modified since last_update
+        if response.status_code == 304:  # 304 Not Modified since last_update
             continue
         response.raise_for_status()
         repodata["architectures"][subdir] = json.loads(bz2.decompress(response.content))
