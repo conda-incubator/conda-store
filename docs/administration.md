@@ -94,12 +94,12 @@ well tested.
 build the environments. 
 
 `CondaStore.build_directory` template used to form the directory for
-storing conda environment builds. Available keys: store_directory,
-namespace, name. The default will put all built environments in the
+storing Conda environment builds. Available keys: `store_directory`,
+`namespace`, `name`. The default will put all built environments in the
 same namespace within the same directory.
 
 `CondaStore.environment_directory` template used to form the directory
-for symlinking conda environment builds. Available keys:
+for symlinking Conda environment builds. Available keys:
 store_directory, namespace, name. The default will put all
 environments in the same namespace within the same directory.
 
@@ -340,7 +340,7 @@ returned by `user_data_url` endpoint that provides the `username`.
 `GenericOAuthAuthentication.oauth_callback_url` custom callback url
 especially useful when web service is behind a proxy.
 
-`GenericOAuthAuthentication.tls_verify` to optionally turn of tls
+`GenericOAuthAuthentication.tls_verify` to optionally turn of TLS
 verification useful for custom signed certificates.
 
 ### `conda_store_server.server.auth.GithubOAuthAuthentication`

@@ -13,6 +13,8 @@
         pythonPackages = pkgs.python3Packages;
       in pkgs.mkShell {
         buildInputs = [
+          pkgs.vale
+
           pkgs.docker-compose
 
           pythonPackages.yarl
