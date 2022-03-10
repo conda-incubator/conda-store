@@ -1,10 +1,21 @@
+"""Interface between Conda-Store and conda
+
+This module provides all the functionality that is required for
+executing conda commands
+"""
+
+import os
 import json
 import subprocess
 import bz2
 import datetime
+import hashlib
 
 import yarl
 import requests
+from conda_pack import pack
+from conda.base.context import context
+from conda.core.prefix_data import PrefixData
 
 
 def normalize_channel_name(channel_alias, channel):
@@ -21,9 +32,7 @@ def conda_list(prefix, executable: str = "conda"):
 
 
 def conda_pack(prefix, output):
-    import conda_pack
-
-    conda_pack.pack(prefix=str(prefix), output=str(output))
+    pack(prefix=str(prefix), output=str(output))
 
 
 def download_repodata(
@@ -87,6 +96,49 @@ def conda_platform():
 
     It will be one of the values in ``conda.base.constants.KNOWN_SUBDIRS``.
     """
-    from conda.base.context import context
 
     return context.subdir
+
+
+def conda_prefix_packages(prefix):
+    """
+    Returns a list of the packages that exist for a given prefix
+
+    """
+    packages = []
+
+    prefix_data = PrefixData(prefix)
+    prefix_data.load()
+
+    for record in prefix_data.iter_records():
+        package = {
+            "build": record.build,
+            "build_number": record.build_number,
+            "constrains": list(record.constrains),
+            "depends": list(record.depends),
+            "license": record.license,
+            "license_family": record.license_family,
+            "md5": hashlib.md5(
+                open(record.package_tarball_full_path, "rb").read()
+            ).hexdigest(),
+            "sha256": hashlib.sha256(
+                open(record.package_tarball_full_path, "rb").read()
+            ).hexdigest(),
+            "name": record.name,
+            "size": record.size,
+            "subdir": record.subdir,
+            "timestamp": record.timestamp,
+            "version": record.version,
+            "channel_id": record.channel.base_url,
+            "summary": None,
+            "description": None,
+        }
+
+        info_json = os.path.join(record.extracted_package_dir, "info/about.json")
+        if os.path.exists(info_json):
+            info = json.load(open(info_json))
+            package["summary"] = info.get("summary")
+            package["description"] = info.get("description")
+
+        packages.append(package)
+    return packages

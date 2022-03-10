@@ -3,6 +3,7 @@ import os
 import random
 
 from celery import Task, current_app
+from celery.signals import worker_ready
 import yaml
 from sqlalchemy.exc import IntegrityError
 
@@ -14,6 +15,13 @@ from conda_store_server.build import (
     build_conda_pack,
     build_conda_docker,
 )
+
+
+@worker_ready.connect
+def at_start(sender, **k):
+    with sender.app.connection():
+        sender.app.send_task("task_update_conda_channels")
+        sender.app.send_task("task_watch_paths")
 
 
 class WorkerTask(Task):

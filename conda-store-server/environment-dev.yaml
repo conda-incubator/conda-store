@@ -3,6 +3,7 @@ channels:
   - conda-forge
 dependencies:
   # conda builds
+  - conda
   - conda-docker
   - conda-pack
   # web server

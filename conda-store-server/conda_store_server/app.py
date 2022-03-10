@@ -24,7 +24,9 @@ def conda_store_validate_specification(
         specification.dependencies = conda_store.conda_default_packages.copy()
 
     # CondaStore.conda_included_packages
-    dependency_names = set(MatchSpec(_).name for _ in specification.dependencies)
+    dependency_names = set(
+        MatchSpec(_).name for _ in specification.dependencies if isinstance(_, str)
+    )
     for package in set(conda_store.conda_included_packages) - dependency_names:
         specification.dependencies.append(package)
 
@@ -45,7 +47,9 @@ def conda_store_validate_specification(
         )
 
     # validate that required conda package are in specification
-    dependency_names = set(MatchSpec(_).name for _ in specification.dependencies)
+    dependency_names = set(
+        MatchSpec(_).name for _ in specification.dependencies if isinstance(_, str)
+    )
     if not (set(conda_store.conda_required_packages) <= dependency_names):
         raise ValueError(
             f"Conda packages {conda_store.conda_required_packages - dependency_names} required and missing from specification"
@@ -395,7 +399,6 @@ class CondaStore(LoggingConfigurable):
 
         (
             tasks.task_update_storage_metrics.si()
-            | tasks.task_update_conda_channels.si()
             | tasks.task_build_conda_environment.si(build.id)
             | group(*artifact_tasks)
             | tasks.task_update_storage_metrics.si()
