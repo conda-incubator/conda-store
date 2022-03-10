@@ -2,6 +2,8 @@ import os
 import enum
 import datetime
 import shutil
+import itertools
+import math
 
 from sqlalchemy import (
     Table,
@@ -271,49 +273,60 @@ class CondaChannel(Base):
     name = Column(Unicode(255), unique=True, nullable=False)
     last_update = Column(DateTime)
 
-    def update_packages(self, db, subdirs=None):
+    def update_packages(self, db, subdirs=None, batch_size=5000):
         repodata = download_repodata(self.name, self.last_update, subdirs=subdirs)
 
         for architecture in repodata["architectures"]:
-            packages = list(
-                repodata["architectures"][architecture]["packages"].values()
-            )
+            # key_depth is the number of characters to use for splitting
+            # up the packages for inserting based on the sha256
+            # the batch size is roughly equal to total_size / 16^key_depth
+            # this formula ensures that we use roughly the batch size
+            total_size = len(repodata["architectures"][architecture]["packages"])
+            key_depth = round(math.log(total_size / batch_size) / math.log(16))
 
-            existing_architecture_sha256 = {
-                _[0]
-                for _ in db.query(CondaPackage.sha256)
-                .filter(CondaPackage.channel_id == self.id)
-                .filter(CondaPackage.subdir == architecture)
-                .all()
-            }
-            for package in packages:
-                if package["sha256"] not in existing_architecture_sha256:
-                    db.add(
-                        CondaPackage(
-                            build=package["build"],
-                            build_number=package["build_number"],
-                            constrains=package.get("constrains"),
-                            depends=package["depends"],
-                            license=package.get("license"),
-                            license_family=package.get("liciense_family"),
-                            md5=package["md5"],
-                            sha256=package["sha256"],
-                            name=package["name"],
-                            size=package["size"],
-                            subdir=package.get("subdir"),
-                            timestamp=package.get("timestamp"),
-                            version=package["version"],
-                            channel_id=self.id,
-                            summary=repodata.get("packages", {})
-                            .get(package["name"], {})
-                            .get("summary"),
-                            description=repodata.get("packages", {})
-                            .get(package["name"], {})
-                            .get("description"),
+            for key, packages in itertools.groupby(
+                sorted(
+                    repodata["architectures"][architecture]["packages"].values(),
+                    key=lambda p: p["sha256"],
+                ),
+                key=lambda p: p["sha256"][:key_depth],
+            ):
+                existing_architecture_sha256 = {
+                    _[0]
+                    for _ in db.query(CondaPackage.sha256)
+                    .filter(CondaPackage.channel_id == self.id)
+                    .filter(CondaPackage.subdir == architecture)
+                    .filter(CondaPackage.sha256.startswith(key))
+                    .all()
+                }
+                for package in packages:
+                    if package["sha256"] not in existing_architecture_sha256:
+                        db.add(
+                            CondaPackage(
+                                build=package["build"],
+                                build_number=package["build_number"],
+                                constrains=package.get("constrains"),
+                                depends=package["depends"],
+                                license=package.get("license"),
+                                license_family=package.get("liciense_family"),
+                                md5=package["md5"],
+                                sha256=package["sha256"],
+                                name=package["name"],
+                                size=package["size"],
+                                subdir=package.get("subdir"),
+                                timestamp=package.get("timestamp"),
+                                version=package["version"],
+                                channel_id=self.id,
+                                summary=repodata.get("packages", {})
+                                .get(package["name"], {})
+                                .get("summary"),
+                                description=repodata.get("packages", {})
+                                .get(package["name"], {})
+                                .get("description"),
+                            )
                         )
-                    )
-                    existing_architecture_sha256.add(package["sha256"])
-            db.commit()
+                        existing_architecture_sha256.add(package["sha256"])
+                    db.commit()
 
         self.last_update = datetime.datetime.utcnow()
         db.commit()

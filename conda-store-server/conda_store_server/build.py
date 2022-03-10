@@ -7,7 +7,6 @@ import subprocess
 import tempfile
 import traceback
 
-from sqlalchemy import and_
 import yaml
 
 from conda_store_server import api, conda, orm, utils, schema
@@ -34,12 +33,10 @@ def set_build_failed(conda_store, build, logs):
 
 
 def set_build_completed(conda_store, build, logs, packages):
-    unique_channel_urls = {p["base_url"] for p in packages}
-
-    channel_url_to_id_map = {}
-    for channel in unique_channel_urls:
+    for package in packages:
+        channel = package["channel_id"]
         if channel == "https://conda.anaconda.org/pypi":
-            # ignore pypi packages
+            # ignore pypi package for now
             continue
 
         channel_id = api.get_conda_channel(conda_store.db, channel)
@@ -47,34 +44,19 @@ def set_build_completed(conda_store, build, logs, packages):
             raise ValueError(
                 f"channel url={channel} not recognized in conda-store channel database"
             )
-        channel_url_to_id_map[channel] = channel_id.id
+        package["channel_id"] = channel_id.id
 
-    def package_query(package):
-        return (
+        _package = (
             conda_store.db.query(orm.CondaPackage)
-            .filter(
-                and_(
-                    orm.CondaPackage.channel_id
-                    == channel_url_to_id_map[package["base_url"]],
-                    orm.CondaPackage.subdir == package["platform"],
-                    orm.CondaPackage.name == package["name"],
-                    orm.CondaPackage.version == package["version"],
-                    orm.CondaPackage.build == package["build_string"],
-                    orm.CondaPackage.build_number == package["build_number"],
-                )
-            )
+            .filter(orm.CondaPackage.md5 == package["md5"])
+            .filter(orm.CondaPackage.channel_id == package["channel_id"])
             .first()
         )
 
-    for package in packages:
-        if package["base_url"] == "https://conda.anaconda.org/pypi":
-            # ignore pypi packages
-            continue
-
-        _package = package_query(package)
-
-        if _package is not None:
-            build.packages.append(_package)
+        if _package is None:
+            _package = orm.CondaPackage(**package)
+            conda_store.db.add(_package)
+        build.packages.append(_package)
 
     conda_store.storage.set(
         conda_store.db,
@@ -172,7 +154,7 @@ def build_conda_environment(conda_store, build):
             with utils.timer(conda_store.log, f"chown of {conda_prefix}"):
                 utils.chown(conda_prefix, uid, gid)
 
-        packages = conda.conda_list(conda_prefix, executable=conda_store.conda_command)
+        packages = conda.conda_prefix_packages(conda_prefix)
         build.size = utils.disk_usage(conda_prefix)
 
         set_build_completed(conda_store, build, output.encode("utf-8"), packages)
