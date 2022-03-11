@@ -19,7 +19,7 @@
     </ul>
     <div class="card-body">
         <a href="{{ url_for('ui.ui_edit_environment', namespace=environment.namespace.name, name=environment.name) }}" class="btn btn-primary btn-block">Edit</a>
-        <button type="button" onclick="deleteEnvironment()" class="btn btn-primary btn-block">
+        <button id="delete-environment" type="button" class="btn btn-primary btn-block">
             Delete
         </button>
     </div>
@@ -31,17 +31,17 @@
     <li class="list-group-item d-flex justify-content-between align-items-center {% if build.id == environment.current_build_id %}list-group-item-success{% elif build.deleted_on is not none %}list-group-item-secondary{% endif %}">
         <a href="{{ url_for('ui.ui_get_build', build_id=build.id) }}">Build {{ build.id }}</a>
         <span>{{ build.status.value }}</span>
-        <div class="btn-group" role="group" aria-label="Build actions">
+        <div id="actions-build" class="btn-group" role="group" aria-label="Build actions">
             {% if build.id != environment.current_build_id and build.status.value == 'COMPLETED' and build.deleted_on is none %}
-            <button type="button" onclick="updateEnvironmentBuild('{{ build.id }}')" class="btn btn-primary mb-2">
+            <button type="button" data-action="set-current" data-id="{{ build.id }}" class="btn btn-primary mb-2">
                 <ion-icon name="checkmark"></ion-icon>
             </button>
             {% endif %}
-            <button type="button" onclick="buildAction('PUT', '{{ build.id }}')" class="btn btn-primary mb-2">
+            <button type="button" data-action="refresh" data-id="{{ build.id }}" class="btn btn-primary mb-2">
                 <ion-icon name="refresh"></ion-icon>
             </button>
             {% if build.status.value in ["COMPLETED", "FAILED"] and  build.deleted_on is none %}
-            <button type="button" onclick="buildAction('DELETE', '{{ build.id }}')" class="btn btn-primary mb-2">
+            <button type="button" data-action="delete" data-id="{{ build.id }}" class="btn btn-primary mb-2">
                 <ion-icon name="trash"></ion-icon>
             </button>
             {% endif %}
@@ -58,26 +58,90 @@
  editor.setFontSize("20px");
  editor.setReadOnly(true);
 
- function updateEnvironmentBuild(buildId) {
-     fetch(`{{ url_for('api.api_get_environment', namespace=environment.namespace.name, name=environment.name) }}`, {
+ function bannerMessage(message) {
+     let banner = document.querySelector('#message');
+     banner.innerHTML = message;
+ }
+
+ async function setCurrentEnvironmentBuild(event) {
+     event.preventDefault();
+     let buildId = event.currentTarget.getAttribute('data-id');
+
+     let url = `{{ url_for('api.api_get_environment', namespace=environment.namespace.name, name=environment.name) }}`;
+     let response = await fetch(url, {
          method: 'PUT',
          headers: {
-             'Content-Type': 'application/json',
+             'Content-Type': 'application/json'
          },
-         body: JSON.stringify({"build_id": buildId})
-     }).then(response => window.location.reload(true));
+         body: JSON.stringify({ build_id: buildId })
+     })
+
+     if (response.ok) {
+         window.location.reload(true);
+     } else {
+         let data = await response.json();
+         bannerMessage(`<div class="alert alert-danger col">${data.message}</div>`);
+     }
  }
 
- function deleteEnvironment() {
-     fetch(`{{ url_for('api.api_get_environment', namespace=environment.namespace.name, name=environment.name) }}`, {
-         method: 'DELETE',
-     }).then(response => window.location = '/');
+ async function refreshBuild(event) {
+     event.preventDefault();
+     let buildId = event.currentTarget.getAttribute('data-id');
+
+     let url = `{{ url_for('api.api_list_builds') }}${ buildId }/`;
+     let response = await fetch(url, { method: 'PUT' });
+
+     if (response.ok) {
+         window.location.reload(true);
+     } else {
+         let data = await response.json();
+         bannerMessage(`<div class="alert alert-danger col">${data.message}</div>`);
+     }
  }
 
- function buildAction(method, buildId) {
-     fetch(`{{ url_for('api.api_list_builds') }}${buildId}/`, {
-         method: method,
-     }).then(response => window.location.reload(true));
+ async function deleteBuild(event) {
+     event.preventDefault();
+     let buildId = event.currentTarget.getAttribute('data-id');
+
+     let url = `{{ url_for('api.api_list_builds') }}${ buildId }/`;
+     let response = await fetch(url, { method: 'DELETE' });
+
+     if (response.ok) {
+         window.location.reload(true);
+     } else {
+         let data = await response.json();
+         bannerMessage(`<div class="alert alert-danger col">${data.message}</div>`);
+     }
  }
+
+ document.querySelectorAll('button[data-action="set-current"]').forEach(item => {
+     item.addEventListener('click', (event) => setCurrentEnvironmentBuild(event));
+ })
+
+ document.querySelectorAll('button[data-action="refresh"]').forEach(item => {
+     item.addEventListener('click', (event) => refreshBuild(event));
+ })
+
+ document.querySelectorAll('button[data-action="delete"]').forEach(item => {
+     item.addEventListener('click', (event) => deleteBuild(event));
+ })
+
+ async function deleteEnvironment(event) {
+     event.preventDefault();
+
+     let url = "{{ url_for('api.api_get_environment', namespace=environment.namespace.name, name=environment.name) }}";
+     let response = await fetch(url, { method: 'DELETE' })
+
+     if (response.ok) {
+         window.location = "{{ url_for('ui.ui_list_environments') }}";
+     } else {
+         let data = await response.json();
+         bannerMessage(`<div class="alert alert-danger col">${data.message}</div>`);
+     }
+ }
+
+ let deleteEnvironmentButton = document.querySelector('#delete-environment');
+ deleteEnvironmentButton.addEventListener('click', (event) => deleteEnvironment(event));
+
 </script>
 {% endblock %}
