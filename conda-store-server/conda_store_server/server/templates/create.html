@@ -7,12 +7,12 @@
 <pre class="alert alert-danger" role="alert">{{ message }}</pre>
 {% endif %}
 
-<form action="{{ url_for('ui.ui_create_get_environment') }}" method="post">
+<form id="create-environment">
     <div>
         <label for="namespace">Namespace</label>
         <select class="form-select" name="namespace" id="namespace" aria-label="namespace">
             {% for namespace in namespaces %}
-            <option {% if loop.index == 0 %}selected{% endif %} value="{{ namespace.id }}">{{ namespace.name }}</option>
+            <option {% if loop.index == 0 %}selected{% endif %} value="{{ namespace.name }}">{{ namespace.name }}</option>
             {% endfor %}
         </select>
     </div>
@@ -52,5 +52,44 @@
      });
      reader.readAsText(event.target.files[0]);
  });
+
+ function bannerMessage(message) {
+     let banner = document.querySelector('#message');
+     banner.innerHTML = message;
+ }
+
+ async function createEnvironmentHandler(event) {
+     event.preventDefault();
+
+     let url = "{{ url_for('api.api_post_specification') }}";
+     let namespaceInput = document.querySelector('#namespace');
+     let specificationInput = document.querySelector('#specification');
+
+     let response = await fetch(url, {
+         method: 'POST',
+         headers: {
+             'Content-Type': 'application/json'
+         },
+         body: JSON.stringify({
+             'namespace': namespaceInput.value,
+             'specification': specificationInput.value,
+         })
+     });
+
+     if (response.ok) {
+         window.location = "{{ url_for('ui.ui_list_environments') }}";
+     } else {
+         let data = await response.json();
+         let message = data.message;
+         if (message.search('[\n\r]') !== -1) {
+             bannerMessage(`<pre class="alert alert-danger col">${data.message}</pre>`);
+         } else {
+             bannerMessage(`<div class="alert alert-danger col">${data.message}</div>`);
+         }
+     }
+ }
+
+ let form = document.querySelector('#create-environment');
+ form.addEventListener('submit', (event) => createEnvironmentHandler(event));
 </script>
 {% endblock %}

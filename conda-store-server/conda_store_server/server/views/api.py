@@ -128,7 +128,7 @@ def api_get_namespace(namespace):
 
     namespace = api.get_namespace(conda_store.db, namespace)
     if namespace is None:
-        return jsonify({"status": "error", "error": "namespace does not exist"}), 404
+        return jsonify({"status": "error", "message": "namespace does not exist"}), 404
 
     return jsonify(
         {
@@ -147,7 +147,7 @@ def api_create_namespace(namespace):
 
     namespace_orm = api.get_namespace(conda_store.db, namespace)
     if namespace_orm:
-        return jsonify({"status": "error", "error": "namespace already exists"}), 409
+        return jsonify({"status": "error", "message": "namespace already exists"}), 409
 
     try:
         api.create_namespace(conda_store.db, namespace)
@@ -166,7 +166,7 @@ def api_delete_namespace(namespace):
 
     namespace_orm = api.get_namespace(conda_store.db, namespace)
     if namespace_orm is None:
-        return jsonify({"status": "error", "error": "namespace does not exist"}), 404
+        return jsonify({"status": "error", "message": "namespace does not exist"}), 404
 
     conda_store.delete_namespace(namespace)
     return jsonify({"status": "ok"})
@@ -205,7 +205,10 @@ def api_get_environment(namespace, name):
 
     environment = api.get_environment(conda_store.db, namespace=namespace, name=name)
     if environment is None:
-        return jsonify({"status": "error", "error": "environment does not exist"}), 404
+        return (
+            jsonify({"status": "error", "message": "environment does not exist"}),
+            404,
+        )
 
     return jsonify(
         {
@@ -268,10 +271,13 @@ def api_post_specification():
         specification = request.json.get("specification")
         specification = yaml.safe_load(specification)
         specification = schema.CondaSpecification.parse_obj(specification)
-    except yaml.error.YAMLError as e:
-        return jsonify({"status": "error", "error": str(e)}), 400
+    except yaml.error.YAMLError:
+        return (
+            jsonify({"status": "error", "message": "Unable to parse. Invalid YAML"}),
+            400,
+        )
     except pydantic.ValidationError as e:
-        return jsonify({"status": "error", "error": e.errors()}), 400
+        return jsonify({"status": "error", "message": str(e)}), 400
 
     auth.authorize_request(
         f"{namespace_name}/{specification.name}",
@@ -282,7 +288,7 @@ def api_post_specification():
     try:
         build_id = api.post_specification(conda_store, specification, namespace_name)
     except ValueError as e:
-        return jsonify({"status": "error", "error": str(e.args[0])}), 400
+        return jsonify({"status": "error", "message": str(e.args[0])}), 400
 
     return jsonify({"status": "ok", "data": {"build_id": build_id}})
 
@@ -313,7 +319,7 @@ def api_get_build(build_id):
 
     build = api.get_build(conda_store.db, build_id)
     if build is None:
-        return jsonify({"status": "error", "error": "build id does not exist"}), 404
+        return jsonify({"status": "error", "message": "build id does not exist"}), 404
 
     auth.authorize_request(
         f"{build.environment.namespace.name}/{build.environment.name}",
@@ -336,11 +342,11 @@ def api_put_build(build_id):
 
     build = api.get_build(conda_store.db, build_id)
     if build is None:
-        return jsonify({"status": "error", "error": "build id does not exist"}), 404
+        return jsonify({"status": "error", "message": "build id does not exist"}), 404
 
     auth.authorize_request(
         f"{build.environment.namespace.name}/{build.environment.name}",
-        {Permissions.ENVIRONMENT_READ},
+        {Permissions.ENVIRONMENT_UPDATE},
         require=True,
     )
 
@@ -355,7 +361,7 @@ def api_delete_build(build_id):
 
     build = api.get_build(conda_store.db, build_id)
     if build is None:
-        return jsonify({"status": "error", "error": "build id does not exist"}), 404
+        return jsonify({"status": "error", "message": "build id does not exist"}), 404
 
     auth.authorize_request(
         f"{build.environment.namespace.name}/{build.environment.name}",
@@ -374,7 +380,7 @@ def api_get_build_packages(build_id):
 
     build = api.get_build(conda_store.db, build_id)
     if build is None:
-        return jsonify({"status": "error", "error": "build id does not exist"}), 404
+        return jsonify({"status": "error", "message": "build id does not exist"}), 404
 
     auth.authorize_request(
         f"{build.environment.namespace.name}/{build.environment.name}",
@@ -406,7 +412,7 @@ def api_get_build_logs(build_id):
 
     build = api.get_build(conda_store.db, build_id)
     if build is None:
-        return jsonify({"status": "error", "error": "build id does not exist"}), 404
+        return jsonify({"status": "error", "message": "build id does not exist"}), 404
 
     auth.authorize_request(
         f"{build.environment.namespace.name}/{build.environment.name}",
@@ -468,7 +474,7 @@ def api_get_build_yaml(build_id):
 
     build = api.get_build(conda_store.db, build_id)
     if build is None:
-        return jsonify({"status": "error", "error": "build id does not exist"}), 404
+        return jsonify({"status": "error", "message": "build id does not exist"}), 404
 
     auth.authorize_request(
         f"{build.environment.namespace.name}/{build.environment.name}",
