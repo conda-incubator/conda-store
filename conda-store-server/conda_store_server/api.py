@@ -116,7 +116,7 @@ def get_build_packages(
     filters = [(orm.build_conda_package.c.build_id == build_id)]
     if search:
         if exact:
-            filters.append(orm.CondaPackage.name.like(search.replace("%", "\%")))
+            filters.append(orm.CondaPackage.name.like(search.replace("%", r"\%")))
         else:
             filters.append(orm.CondaPackage.name.contains(search, autoescape=True))
     if build:
@@ -194,7 +194,7 @@ def list_conda_packages(db, search: str = None, exact: bool = False, build: str 
     filters = []
     if search:
         if exact:
-            filters.append(orm.CondaPackage.name.like(search.replace("%", "\%")))
+            filters.append(orm.CondaPackage.name.like(search.replace("%", r"\%")))
         else:
             filters.append(orm.CondaPackage.name.contains(search, autoescape=True))
     if build:
