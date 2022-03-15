@@ -389,9 +389,11 @@ def api_get_build_packages(build_id):
     )
 
     search = request.args.get("search")
+    exact = request.args.get("exact")
+    
     build_str = request.args.get("build")
     orm_packages = api.get_build_packages(
-        conda_store.db, build.id, search=search, build=build_str
+        conda_store.db, build.id, search=search, exact=exact, build=build_str
     )
     return paginated_api_response(
         orm_packages,
@@ -441,9 +443,11 @@ def api_list_packages():
     conda_store = get_conda_store()
 
     search = request.args.get("search")
+    exact = request.args.get("exact")
+    
     build = request.args.get("build")
 
-    orm_packages = api.list_conda_packages(conda_store.db, search=search, build=build)
+    orm_packages = api.list_conda_packages(conda_store.db, search=search, exact=exact, build=build)
     required_sort_bys, distinct_orm_packages = filter_distinct_on(
         orm_packages,
         allowed_distinct_ons={
