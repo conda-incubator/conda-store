@@ -110,11 +110,13 @@ def get_build(db, build_id: int):
     return db.query(orm.Build).filter(orm.Build.id == build_id).first()
 
 
-def get_build_packages(db, build_id: int, search: str = None, exact: bool = False, build: str = None):
+def get_build_packages(
+    db, build_id: int, search: str = None, exact: bool = False, build: str = None
+):
     filters = [(orm.build_conda_package.c.build_id == build_id)]
     if search:
         if exact:
-            filters.append(orm.CondaPackage.name.like(search.replace("%", "\%") ))
+            filters.append(orm.CondaPackage.name.like(search.replace("%", "\%")))
         else:
             filters.append(orm.CondaPackage.name.contains(search, autoescape=True))
     if build:
@@ -192,7 +194,7 @@ def list_conda_packages(db, search: str = None, exact: bool = False, build: str 
     filters = []
     if search:
         if exact:
-            filters.append(orm.CondaPackage.name.like(search.replace("%", "\%") ))
+            filters.append(orm.CondaPackage.name.like(search.replace("%", "\%")))
         else:
             filters.append(orm.CondaPackage.name.contains(search, autoescape=True))
     if build:
