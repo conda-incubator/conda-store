@@ -179,7 +179,7 @@ rerender`. An example of this can be found in [PR
    - `build` string to search within `build` for example strings include
      `py27_0` etc which can be useful for filtering specific versions of
      packages.
-   - `search` will search within the package names for a match
+   - `search` will search within the package names for a match. The search is fuzzy by default. To get the packages with the exact given name, add the parameter `exact=1`.
 
 ### Conda Channels
 
@@ -193,7 +193,7 @@ rerender`. An example of this can be found in [PR
    - `build` string to search within `build` for example strings include
      `py27_0` etc which can be useful for filtering specific versions of
      packages.
-   - `search` will search within the package names for a match
+   - `search` will search within the package names for a match. The search is fuzzy by default. To get the packages with the exact given name, add the parameter `exact=1`.
 
 ### REST API query format
 
