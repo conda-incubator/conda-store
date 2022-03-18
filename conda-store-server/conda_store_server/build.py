@@ -7,6 +7,7 @@ import subprocess
 import tempfile
 import traceback
 
+import lockfile
 import yaml
 
 from conda_store_server import api, conda, orm, utils, schema
@@ -112,19 +113,20 @@ def build_conda_environment(conda_store, build):
                 tmp_environment_filename = os.path.join(tmpdir, "environment.yaml")
                 with open(tmp_environment_filename, "w") as f:
                     yaml.dump(build.specification.spec, f)
-                    output = subprocess.check_output(
-                        [
-                            conda_store.conda_command,
-                            "env",
-                            "create",
-                            "-p",
-                            conda_prefix,
-                            "-f",
-                            str(tmp_environment_filename),
-                        ],
-                        stderr=subprocess.STDOUT,
-                        encoding="utf-8",
-                    )
+                    with lockfile.LockFile(os.path.join(tempfile.tempdir(), 'conda-store.lock')):
+                        output = subprocess.check_output(
+                            [
+                                conda_store.conda_command,
+                                "env",
+                                "create",
+                                "-p",
+                                conda_prefix,
+                                "-f",
+                                str(tmp_environment_filename),
+                            ],
+                            stderr=subprocess.STDOUT,
+                            encoding="utf-8",
+                        )
 
         utils.symlink(conda_prefix, environment_prefix)
 

@@ -27,6 +27,7 @@
           pythonPackages.flask-cors
           pythonPackages.pyjwt
           pythonPackages.minio
+          pythonPackages.lockfile
         ];
       };
   };
