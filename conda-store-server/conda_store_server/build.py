@@ -130,10 +130,20 @@ def build_conda_environment(conda_store, build):
                 with open(tmp_environment_filename, "w") as f:
                     yaml.dump(build.specification.spec, f)
                     if conda_store.serialize_builds:
-                        with filelock.FileLock(os.path.join(tempfile.tempdir, 'conda-store.lock')):
-                            output = build_environment(conda_store.conda_command, tmp_environment_filename, conda_prefix)
+                        with filelock.FileLock(
+                            os.path.join(tempfile.tempdir, "conda-store.lock")
+                        ):
+                            output = build_environment(
+                                conda_store.conda_command,
+                                tmp_environment_filename,
+                                conda_prefix,
+                            )
                     else:
-                        output = build_environment(conda_store.conda_command, tmp_environment_filename, conda_prefix)
+                        output = build_environment(
+                            conda_store.conda_command,
+                            tmp_environment_filename,
+                            conda_prefix,
+                        )
 
         utils.symlink(conda_prefix, environment_prefix)
 

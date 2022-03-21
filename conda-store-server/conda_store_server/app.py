@@ -170,7 +170,7 @@ class CondaStore(LoggingConfigurable):
     serialize_builds = Bool(
         True,
         help="No longer build conda environment in parallel. This is due to an issue in conda/mamba that when downloading files in two concurent builds the downloads/extraction can overlap. This is a bug in conda/mamba that needs to be fixed.",
-        config=True
+        config=True,
     )
 
     @default("celery_broker_url")

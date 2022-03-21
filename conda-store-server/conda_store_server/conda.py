@@ -32,7 +32,11 @@ def conda_list(prefix, executable: str = "conda"):
 
 
 def conda_pack(prefix, output, ignore_missing_files=True):
-    pack(prefix=str(prefix), output=str(output), ignore_missing_files=ignore_missing_files)
+    pack(
+        prefix=str(prefix),
+        output=str(output),
+        ignore_missing_files=ignore_missing_files,
+    )
 
 
 def download_repodata(
