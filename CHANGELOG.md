@@ -18,6 +18,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [0.3.12] - 2022-03-21
+
+### Added
+
+ - better error messages when user not authenticated #261
+ - conda package builds independent from conda package download #258
+ - exact search route for conda-store api in packages #264
+ - adding lockfile to conda-store to provide a short term fix around conda/mamba concurrency issue #268
+
 ## [0.3.11] - 2022-03-08
 
 ### Added
