@@ -42,7 +42,7 @@ setup(
         "traitlets",
         "pyjwt",
         "yarl",
-        "lockfile",
+        "filelock",
         # conda (which should not be included here)
     ],
     extras_require={

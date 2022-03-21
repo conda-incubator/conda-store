@@ -7,7 +7,7 @@ import subprocess
 import tempfile
 import traceback
 
-import lockfile
+import filelock
 import yaml
 
 from conda_store_server import api, conda, orm, utils, schema
@@ -92,6 +92,22 @@ def set_build_completed(conda_store, build, logs, packages):
     conda_store.db.commit()
 
 
+def build_environment(conda_command, environment_filename, conda_prefix):
+    return subprocess.check_output(
+        [
+            conda_command,
+            "env",
+            "create",
+            "-p",
+            conda_prefix,
+            "-f",
+            str(environment_filename),
+        ],
+        stderr=subprocess.STDOUT,
+        encoding="utf-8",
+    )
+
+
 def build_conda_environment(conda_store, build):
     """Build a conda environment with set uid/gid/and permissions and
     symlink the build to a named environment
@@ -113,20 +129,11 @@ def build_conda_environment(conda_store, build):
                 tmp_environment_filename = os.path.join(tmpdir, "environment.yaml")
                 with open(tmp_environment_filename, "w") as f:
                     yaml.dump(build.specification.spec, f)
-                    with lockfile.LockFile(os.path.join(tempfile.tempdir(), 'conda-store.lock')):
-                        output = subprocess.check_output(
-                            [
-                                conda_store.conda_command,
-                                "env",
-                                "create",
-                                "-p",
-                                conda_prefix,
-                                "-f",
-                                str(tmp_environment_filename),
-                            ],
-                            stderr=subprocess.STDOUT,
-                            encoding="utf-8",
-                        )
+                    if conda_store.serialize_builds:
+                        with filelock.FileLock(os.path.join(tempfile.tempdir, 'conda-store.lock')):
+                            output = build_environment(conda_store.conda_command, tmp_environment_filename, conda_prefix)
+                    else:
+                        output = build_environment(conda_store.conda_command, tmp_environment_filename, conda_prefix)
 
         utils.symlink(conda_prefix, environment_prefix)
 
