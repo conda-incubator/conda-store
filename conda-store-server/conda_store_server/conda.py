@@ -31,8 +31,12 @@ def conda_list(prefix, executable: str = "conda"):
     return json.loads(subprocess.check_output(args))
 
 
-def conda_pack(prefix, output):
-    pack(prefix=str(prefix), output=str(output))
+def conda_pack(prefix, output, ignore_missing_files=True):
+    pack(
+        prefix=str(prefix),
+        output=str(output),
+        ignore_missing_files=ignore_missing_files,
+    )
 
 
 def download_repodata(

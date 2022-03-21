@@ -21,6 +21,7 @@ dependencies:
   - traitlets
   - yarl
   - pyjwt
+  - filelock
   # artifact storage
   - minio
   # CLI

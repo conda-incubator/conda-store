@@ -2,7 +2,7 @@ import os
 import datetime
 
 from celery import Celery, group
-from traitlets import Type, Unicode, Integer, List, default, Callable
+from traitlets import Type, Unicode, Integer, List, default, Callable, Bool
 from traitlets.config import LoggingConfigurable
 from sqlalchemy.pool import NullPool
 from conda.models.match_spec import MatchSpec
@@ -164,6 +164,12 @@ class CondaStore(LoggingConfigurable):
             orm.BuildArtifactType.YAML,
         ],
         help="artifacts to keep on build deletion",
+        config=True,
+    )
+
+    serialize_builds = Bool(
+        True,
+        help="No longer build conda environment in parallel. This is due to an issue in conda/mamba that when downloading files in two concurent builds the downloads/extraction can overlap. This is a bug in conda/mamba that needs to be fixed.",
         config=True,
     )
 
