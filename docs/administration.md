@@ -205,10 +205,10 @@ installed](https://docs.anaconda.com/anaconda/install/linux/). Often
 times for non-graphic and non-gpu environments glibc is enough. Hence
 the default docker image `frolvlad/alpine-glibc:latest`.
 
-`CondaStore.serialize_builds` no longer build conda environment in
-parallel. This is due to an issue in conda/mamba that when downloading
-files in two concurent builds the downloads/extraction can
-overlap. This is a bug in conda/mamba that needs to be fixed. Default
+`CondaStore.serialize_builds` no longer build Conda environment in
+parallel. This is due to an issue in Conda/Mamba that when downloading
+files in two concurrent builds the downloads/extraction can
+overlap. This is a bug in Conda/Mamba that needs to be fixed. Default
 is True until this bug is fixed.
 
 ### `conda_store_server.storage.S3Storage`
