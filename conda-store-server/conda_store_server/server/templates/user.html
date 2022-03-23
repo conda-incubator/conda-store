@@ -5,17 +5,50 @@
 {% block content %}
 
 {% block user %}
-<div class="text-center">
-    <h1 class="h3 mb-3 fw-normal">Logged in as {{ username }}</h1>
-    {% if email is defined %}
-    <p><em>Email:</em> {{ email }}</p>
-    {% endif %}
-    <a class="btn btn-outline-success my-2 my-sm-0 mr-2" href="{{ url_for('ui.ui_list_namespaces') }}" role="button">
-        Manage Namespaces
-    </a>
-    <form action="{{ url_for('ui.ui_list_environments') }}logout/" method="POST">
-        <button type="submit" class="btn btn-outline-success my-2 my-sm-0 mr-2">Logout</button>
-    </form>
+<div class="card m-2">
+    <div class="card-body">
+        <h5 class="card-title">User</h5>
+        <form class="m-2" action="{{ url_for('ui.ui_list_environments') }}logout/" method="POST">
+            <button type="submit" class="btn btn-outline-success my-2 my-sm-0 mr-2">Logout</button>
+        </form>
+    </div>
+</div>
+
+<div class="card m-2">
+    <div class="card-body">
+        <h5 class="card-title">Namespace</h5>
+        <p>Your current default namespace is <span class="badge badge-light">{{ username }}</span>. The ability to create and manage namespace are controlled by permissions shown below.</p>
+        <a class="btn btn-outline-success my-2 my-sm-0 mr-2 text-center" href="{{ url_for('ui.ui_list_namespaces') }}" role="button">
+            Manage Namespaces
+        </a>
+    </div>
+</div>
+
+<div class="card m-2">
+    <div class="card-body">
+        <h5 class="card-title">Permissions</h5>
+        <p>Bellow are your current permissions within the Conda-Store application. The "*" will match any string of characters e.g. "na*ce" will match "namespace". This allows Conda-Store to have flexible and powerful authorization. For further information on authorization see the <a href="https://conda-store.readthedocs.io/en/latest/contributing.html#authorization-model">docs</a></p>
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th scope="col">Namespace/Name</th>
+                    <th scope="col">Permissions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entity_arn, entity_permissions in entity_binding_permissions.items() %}
+                <tr>
+                    <td>{{ entity_arn }}</td>
+                    <td>
+                        {% for permission in entity_permissions|map(attribute="value")|sort %}
+                        <span class="badge badge-light">{{ permission }}</span>
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endblock %}
 

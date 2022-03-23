@@ -163,7 +163,14 @@ def ui_get_user():
     if entity is None:
         return redirect(f"{url_for('ui.ui_list_environments')}login/")
 
-    context = {"username": entity.primary_namespace}
+    entity_binding_permissions = auth.authorization.get_entity_binding_permissions(
+        entity.role_bindings,
+        authenticated=True)
+
+    context = {
+        "username": entity.primary_namespace,
+        "entity_binding_permissions": entity_binding_permissions,
+    }
     return render_template("user.html", **context)
 
 
