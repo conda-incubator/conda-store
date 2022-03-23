@@ -101,6 +101,39 @@ def api_status():
     return jsonify({"status": "ok"})
 
 
+@app_api.route("/api/v1/permission/")
+def api_get_permissions():
+    conda_store = get_conda_store()
+    auth = get_auth()
+
+    entity = auth.authenticate_request(require=False)
+    authenticated = entity is not None
+
+    entity_binding_permissions = auth.authorization.get_entity_binding_permissions(
+        entity.role_bindings if authenticated else {}, authenticated=authenticated
+    )
+
+    # convert Dict[str, set[enum]] -> Dict[str, List[str]]
+    # to be json serializable
+    entity_binding_permissions = {
+        entity_arn: [_.value for _ in entity_permissions]
+        for entity_arn, entity_permissions in entity_binding_permissions.items()
+    }
+
+    return jsonify(
+        {
+            "status": "ok",
+            "data": {
+                "authenticated": authenticated,
+                "entity_permissions": entity_binding_permissions,
+                "primary_namespace": entity.primary_namespace
+                if authenticated
+                else conda_store.default_namespace,
+            },
+        }
+    )
+
+
 @app_api.route("/api/v1/namespace/")
 def api_list_namespaces():
     conda_store = get_conda_store()
