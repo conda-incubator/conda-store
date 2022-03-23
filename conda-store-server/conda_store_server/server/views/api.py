@@ -110,8 +110,8 @@ def api_get_permissions():
     authenticated = entity is not None
 
     entity_binding_permissions = auth.authorization.get_entity_binding_permissions(
-        entity.role_bindings if authenticated else {},
-        authenticated=authenticated)
+        entity.role_bindings if authenticated else {}, authenticated=authenticated
+    )
 
     # convert Dict[str, set[enum]] -> Dict[str, List[str]]
     # to be json serializable
@@ -120,14 +120,18 @@ def api_get_permissions():
         for entity_arn, entity_permissions in entity_binding_permissions.items()
     }
 
-    return jsonify({
-        "status": "ok",
-        "data": {
-            "authenticated": authenticated,
-            "entity_permissions": entity_binding_permissions,
-            "primary_namespace": entity.primary_namespace if authenticated else conda_store.default_namespace
+    return jsonify(
+        {
+            "status": "ok",
+            "data": {
+                "authenticated": authenticated,
+                "entity_permissions": entity_binding_permissions,
+                "primary_namespace": entity.primary_namespace
+                if authenticated
+                else conda_store.default_namespace,
+            },
         }
-    })
+    )
 
 
 @app_api.route("/api/v1/namespace/")

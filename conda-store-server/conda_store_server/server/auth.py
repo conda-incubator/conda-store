@@ -156,23 +156,30 @@ class RBACAuthorizationBackend(LoggingConfigurable):
         return permissions
 
     def get_entity_binding_permissions(self, entity_bindings, authenticated=False):
-        entity_bindings = self.get_entity_bindings(entity_bindings=entity_bindings, authenticated=authenticated)
+        entity_bindings = self.get_entity_bindings(
+            entity_bindings=entity_bindings, authenticated=authenticated
+        )
         return {
             entity_arn: self.convert_roles_to_permissions(roles=entity_roles)
             for entity_arn, entity_roles in entity_bindings.items()
         }
 
     def get_entity_permissions(self, entity_bindings, arn, authenticated=False):
-        entity_binding_permissions = self.get_entity_binding_permissions(entity_bindings=entity_bindings, authenticated=authenticated)
+        entity_binding_permissions = self.get_entity_binding_permissions(
+            entity_bindings=entity_bindings, authenticated=authenticated
+        )
         permissions = set()
         for entity_arn, entity_permissions in entity_binding_permissions.items():
             if self.compile_arn_regex(entity_arn).match(arn):
                 permissions = permissions | set(entity_permissions)
         return permissions
 
-    def authorize(self, entity_bindings, arn, required_permissions, authenticated=False):
+    def authorize(
+        self, entity_bindings, arn, required_permissions, authenticated=False
+    ):
         return required_permissions <= self.get_entity_permissions(
-            entity_bindings=entity_bindings, arn=arn, authenticated=authenticated)
+            entity_bindings=entity_bindings, arn=arn, authenticated=authenticated
+        )
 
 
 class Authentication(LoggingConfigurable):
