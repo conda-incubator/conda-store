@@ -158,8 +158,8 @@ above shows what you will get with JupyterHub authentication.
 ![Conda Store User](_static/images/conda-store-user.png)
 
 Once a user has completed the authentication flow they will be
-directed to the user page. At the moment this page only exposes the
-option to logout and the `username` of the registered user.
+directed to the user page. This page gives information about the
+current authenticated user along with the permissions.
 
 ### `/create/` Create Environment
 

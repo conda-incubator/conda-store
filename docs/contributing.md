@@ -126,6 +126,10 @@ rerender`. An example of this can be found in [PR
 
  - `GET /api/v1/` :: get status of conda-store
 
+### Permissions
+
+ - `GET /api/v1/permission/` :: get the permissions for the currently entity. Does not require authentication and returns the permissions and authentication status for entity.
+
 ### Namespace
 
  - `GET /api/v1/namespace/?page=<int>&size=<int>&sort_by=<str>&order=<str>` :: list namespaces
