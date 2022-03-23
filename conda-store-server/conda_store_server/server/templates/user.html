@@ -31,14 +31,16 @@
         <table class="table table-hover">
             <thead>
                 <tr>
-                    <th scope="col">Namespace/Name</th>
+                    <th scope="col">Namespace</th>
+                    <th scope="col">Name</th>
                     <th scope="col">Permissions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for entity_arn, entity_permissions in entity_binding_permissions.items() %}
                 <tr>
-                    <td>{{ entity_arn }}</td>
+                    <td>{{ entity_arn.split("/")[0] }}</td>
+                    <td>{{ entity_arn.split("/")[1] }}</td>
                     <td>
                         {% for permission in entity_permissions|map(attribute="value")|sort %}
                         <span class="badge badge-light">{{ permission }}</span>
