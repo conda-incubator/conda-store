@@ -15,6 +15,8 @@
         buildInputs = [
           pkgs.vale
 
+          pkgs.minikube
+          pkgs.k9s
           pkgs.docker-compose
 
           pythonPackages.yarl

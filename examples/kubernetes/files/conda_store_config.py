@@ -14,13 +14,13 @@ c.CondaStore.default_gid = 100
 c.CondaStore.default_permissions = "775"
 
 c.S3Storage.internal_endpoint = "minio:9000"
+c.S3Storage.internal_secure = False
 c.S3Storage.external_endpoint = "localhost:30900"
+c.S3Storage.external_secure = False
 c.S3Storage.access_key = "admin"
 c.S3Storage.secret_key = "password"
 c.S3Storage.region = "us-east-1"  # minio region default
 c.S3Storage.bucket_name = "conda-store"
-c.S3Storage.internal_secure = False
-c.S3Storage.external_secure = False
 
 # ==================================
 #        server settings
@@ -46,3 +46,4 @@ c.CondaStoreServer.authentication_class = DummyAuthentication
 # ==================================
 c.CondaStoreWorker.log_level = logging.INFO
 c.CondaStoreWorker.watch_paths = ["/opt/environments"]
+c.CondaStoreWorker.concurrency = 4
