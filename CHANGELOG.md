@@ -18,6 +18,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [0.3.14] - 2022-03-24
+
+### Added
+
+ - Account for None, "" values within namespace POST in `/api/v1/specification` #274
+
 ## [0.3.13] - 2022-03-23
 
 ### Added
