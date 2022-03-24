@@ -18,6 +18,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [0.3.13] - 2022-03-23
+
+### Added
+
+ - API endpoint `/api/v1/permission/` and UI user endpoint showing user permissions #271
+
 ## [0.3.12] - 2022-03-21
 
 ### Added
