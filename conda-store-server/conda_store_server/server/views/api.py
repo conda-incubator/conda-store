@@ -295,7 +295,7 @@ def api_post_specification():
 
     permissions = {Permissions.ENVIRONMENT_CREATE}
 
-    namespace_name = request.json.get("namespace", conda_store.default_namespace)
+    namespace_name = request.json.get("namespace") or conda_store.default_namespace
     namespace = api.get_namespace(conda_store.db, namespace_name)
     if namespace is None:
         permissions.add(Permissions.NAMESPACE_CREATE)
