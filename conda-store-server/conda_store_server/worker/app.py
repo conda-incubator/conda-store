@@ -27,6 +27,7 @@ class CondaStoreWorker(Application):
         None,
         help="Number of worker threads to spawn. Limit the concurrency of conda-builds",
         config=True,
+        allow_none=True,
     )
 
     config_file = Unicode(
