@@ -24,8 +24,17 @@ def ui_create_get_environment():
         api.list_namespaces(conda_store.db, show_soft_deleted=False)
     )
 
+    entity = auth.authenticate_request()
+    default_namespace = entity.primary_namespace if entity else conda_store.default_namespace
+
+    def sort_namespace(n):
+        "Default namespace always first, then alphabetical"
+        if n.name == default_namespace:
+            return f'0{n.name}'
+        return f'1{n.name}'
+
     context = {
-        "namespaces": orm_namespaces.all(),
+        "namespaces": sorted(orm_namespaces.all(), key=sort_namespace),
         "entity": auth.authenticate_request(),
     }
 

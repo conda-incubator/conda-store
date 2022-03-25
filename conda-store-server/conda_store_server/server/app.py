@@ -113,6 +113,7 @@ class CondaStoreServer(Application):
         CORS(
             app,
             resources={f"{cors_prefix}/api/v1/*": {"origins": "*"}},
+            supports_credentials=True,
         )
 
         if self.enable_api:
