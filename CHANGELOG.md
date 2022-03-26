@@ -18,6 +18,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [0.3.15] - 2022-03-25
+
+### Added
+
+ - Debug mode now controlled by CondaStoreServer.log_level
+ - Make concurrency setting optional in configuration
+ - Sort namespaces in create environment UI button
+ - Allow cookies cross domain
+
+### Fixed
+
+ - Correct default namespace for POST /api/v1/specification/
+
 ## [0.3.14] - 2022-03-24
 
 ### Added
