@@ -296,7 +296,9 @@ def api_post_specification():
     permissions = {Permissions.ENVIRONMENT_CREATE}
 
     entity = auth.authenticate_request()
-    default_namespace = entity.primary_namespace if entity else conda_store.default_namespace
+    default_namespace = (
+        entity.primary_namespace if entity else conda_store.default_namespace
+    )
 
     namespace_name = request.json.get("namespace") or default_namespace
     namespace = api.get_namespace(conda_store.db, namespace_name)
