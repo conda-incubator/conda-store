@@ -161,7 +161,9 @@ class CondaStoreServer(Application):
 
         from conda_store_server.worker import tasks
 
-        (tasks.task_watch_paths.si()).apply_async()
-        (tasks.task_update_storage_metrics.si()).apply_async()
-
-        app.run(debug=True, host=self.address, port=self.port)
+        app.run(
+            debug=(self.log_level == logging.DEBUG),
+            host=self.address,
+            port=self.port,
+            use_reloader=False,
+        )
