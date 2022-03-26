@@ -159,7 +159,7 @@ class CondaStoreServer(Application):
         # schedule tasks
         app.conda_store.celery_app
 
-        from conda_store_server.worker import tasks
+        from conda_store_server.worker import tasks  # noqa
 
         app.run(
             debug=(self.log_level == logging.DEBUG),
