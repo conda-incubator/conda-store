@@ -1,13 +1,13 @@
-from flask import current_app
+from fastapi import Request
 
 
-def get_conda_store():
-    return current_app.conda_store
+def get_conda_store(request: Request):
+    return request.state.conda_store
 
 
-def get_server():
-    return current_app.server
+def get_server(request: Request):
+    return request.state.server
 
 
-def get_auth():
-    return current_app.authentication
+def get_auth(request: Request):
+    return request.state.authentication

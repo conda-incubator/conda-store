@@ -14,9 +14,9 @@ dependencies:
   - psycopg2
   - pymysql
   - requests
-  - flask
-  - flask-cors
   - pyyaml
+  - uvicorn
+  - fastapi
   - pydantic
   - traitlets
   - yarl

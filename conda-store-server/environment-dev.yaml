@@ -14,10 +14,10 @@ dependencies:
   - psycopg2
   - pymysql
   - requests
-  - flask
-  - flask-cors
-  - pyyaml
+  - uvicorn
+  - fastapi
   - pydantic
+  - pyyaml
   - traitlets
   - yarl
   - pyjwt
