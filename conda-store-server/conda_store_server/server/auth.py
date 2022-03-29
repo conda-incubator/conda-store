@@ -2,21 +2,15 @@ import enum
 import re
 import secrets
 import datetime
+import os
 
 import jwt
 import requests
 from traitlets.config import LoggingConfigurable
-from traitlets import Dict, Unicode, Type, default, Bool
-from flask import (
-    request,
-    render_template,
-    redirect,
-    g,
-    abort,
-    jsonify,
-    url_for,
-    session,
-)
+from traitlets import Dict, Unicode, Type, default, Bool, Instance
+from fastapi.templating import Jinja2Templates
+from fastapi import APIRouter, Request, Response, HTTPException
+from fastapi.responses import RedirectResponse
 from sqlalchemy import or_, and_
 
 from conda_store_server import schema, orm
@@ -50,6 +44,13 @@ class AuthenticationBackend(LoggingConfigurable):
         help="jwt algorithm to use for encryption/decryption",
         config=True,
     )
+
+    @property
+    def router(self):
+        router = APIRouter(tags=['auth'])
+        for path, method, func in self.routes:
+            getattr(router, method)(path)(func)
+        return router
 
     @property
     def routes(self):
@@ -201,6 +202,19 @@ class Authentication(LoggingConfigurable):
         config=True,
     )
 
+    templates = Instance(
+        help="Initialized fastapi.templating.Jinja2Templates to use for authentication templates",
+        config=True,
+    )
+
+    @default("templates")
+    def _default_templates(self):
+        import conda_store_server.server
+        templates_directory = os.path.join(
+            os.path.dirname(conda_store_server.server.__file__),
+            'templates')
+        return Jinja2Templates(directory=templates_directory)
+
     login_html = Unicode(
         """
 <div class="text-center">
@@ -242,9 +256,9 @@ class Authentication(LoggingConfigurable):
     @property
     def routes(self):
         return [
-            ("/login/", "GET", self.get_login_method),
-            ("/login/", "POST", self.post_login_method),
-            ("/logout/", "POST", self.post_logout_method),
+            ("/login/", "get", self.get_login_method),
+            ("/login/", "post", self.post_login_method),
+            ("/logout/", "post", self.post_logout_method),
         ]
 
     def authenticate(self, request):
@@ -256,18 +270,18 @@ class Authentication(LoggingConfigurable):
         )
 
     def get_login_method(self):
-        return render_template("login.html", login_html=self.get_login_html())
+        return self.templates.TemplateResponse("login.html", {
+            'login_html': self.get_login_html()
+        })
 
-    def post_login_method(self):
+    def post_login_method(self, request: Request, response: Response):
         redirect_url = request.args.get("next", url_for("ui.ui_get_user"))
-        response = redirect(redirect_url)
+        response = RedirectResponse(redirect_url)
         authentication_token = self.authenticate(request)
         if authentication_token is None:
-            abort(
-                jsonify(
-                    {"status": "error", "message": "invalid authentication credentials"}
-                ),
-                403,
+            return HTTPException(
+                status_code=403,
+                detail="invalid authentication credentials"
             )
 
         response.set_cookie(
@@ -280,14 +294,13 @@ class Authentication(LoggingConfigurable):
         )
         return response
 
-    def post_logout_method(self):
-        redirect_url = request.args.get("next", "/")
-        response = redirect(redirect_url)
+    def post_logout_method(self, next: str = "/"):
+        response = RedirectResponse(next)
         response.set_cookie(self.cookie_name, "", expires=0)
         return response
 
-    def authenticate_request(self, require=False):
-        if hasattr(g, "entity"):
+    def authenticate_request(self, request: Request, require=False):
+        if hasattr(request.state, "entity"):
             pass  # only authenticate once
         elif request.cookies.get(self.cookie_name):
             # cookie based authentication
@@ -496,9 +509,9 @@ class GenericOAuthAuthentication(Authentication):
     @property
     def routes(self):
         return [
-            ("/login/", "GET", self.get_login_method),
-            ("/logout/", "POST", self.post_logout_method),
-            ("/oauth_callback/", "GET", self.post_login_method),
+            ("/login/", "get", self.get_login_method),
+            ("/logout/", "post", self.post_logout_method),
+            ("/oauth_callback/", "get", self.post_login_method),
         ]
 
     def authenticate(self, request):

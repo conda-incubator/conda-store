@@ -84,12 +84,12 @@ class CondaStoreServer(Application):
             sys.exit(1)
         return proposal.value
 
-    # authentication_class = Type(
-    #     default_value=auth.DummyAuthentication,
-    #     klass=auth.Authentication,
-    #     allow_none=False,
-    #     config=True,
-    # )
+    authentication_class = Type(
+        default_value=auth.DummyAuthentication,
+        klass=auth.Authentication,
+        allow_none=False,
+        config=True,
+    )
 
     max_page_size = Integer(
         100, help="maximum number of items to return in a single page", config=True
@@ -113,7 +113,7 @@ class CondaStoreServer(Application):
         )
 
         conda_store = CondaStore(parent=self, log=self.log)
-        # authentication = self.authentication_class(parent=self, log=self.log)
+        authentication = self.authentication_class(parent=self, log=self.log)
 
         @app.middleware("http")
         async def conda_store_middleware(request: Request, call_next):
@@ -125,10 +125,6 @@ class CondaStoreServer(Application):
             finally:
                 request.state.conda_store.session_factory.remove()
             return response
-
-        @app.get("/")
-        def hello_world():
-            return "Hello, Conda-Store!"
 
         # if self.enable_api:
         #     app.register_blueprint(views.app_api, url_prefix=self.url_prefix)
