@@ -2,7 +2,7 @@ import pydantic
 from typing import List, Dict, Optional
 
 import yaml
-from fastapi import APIRouter, Request, Depends, HTTPException, Query
+from fastapi import APIRouter, Request, Depends, HTTPException, Query, Body
 from fastapi.responses import RedirectResponse
 
 from conda_store_server import api, orm, schema, utils
@@ -20,7 +20,6 @@ def get_paginated_args(
         page: int = 1,
         order: Optional[str] = None,
         size: Optional[int] = None,
-        distinct_on: List[str] = Query([]),
         sort_by: List[str] = Query([]),
         server = Depends(dependencies.get_server),
 ):
@@ -31,11 +30,9 @@ def get_paginated_args(
     return {
         'limit': size,
         'offset': offset,
-        'distinct_on': distinct_on,
         'sort_by': sort_by,
         'order': order,
     }
-
 
 
 def filter_distinct_on(
@@ -287,19 +284,14 @@ def api_update_environment_build(
         conda_store = Depends(dependencies.get_conda_store),
         auth = Depends(dependencies.get_auth),
         entity = Depends(dependencies.get_entity),
+        build_id: int = Body(...)
 ):
     auth.authorize_request(
         entity,
         f"{namespace}/{name}", {Permissions.ENVIRONMENT_UPDATE}, require=True
     )
 
-    # replace with https://fastapi.tiangolo.com/tutorial/body/
-    data = request.json
-    if "build_id" not in data:
-        return jsonify({"status": "error", "message": "build id not specificated"}), 400
-
     try:
-        build_id = data["build_id"]
         conda_store.update_environment_build(namespace, name, build_id)
     except utils.CondaStoreError as e:
         return e.response
@@ -324,47 +316,47 @@ def api_delete_environment(
     return {"status": "ok"}
 
 
-# @app_api.route("/api/v1/specification/", methods=["POST"])
-# def api_post_specification():
-#     conda_store = get_conda_store()
-#     auth = get_auth()
+@router_api.post("/specification/")
+def api_post_specification(
+        request: Request,
+        conda_store = Depends(dependencies.get_conda_store),
+        auth = Depends(dependencies.get_auth),
+        entity = Depends(dependencies.get_entity),
+        specification: str = Body(""),
+        namespace: Optional[str] = Body(None),
+):
+    permissions = {Permissions.ENVIRONMENT_CREATE}
 
-#     permissions = {Permissions.ENVIRONMENT_CREATE}
+    default_namespace = (
+        entity.primary_namespace if entity else conda_store.default_namespace
+    )
 
-#     entity = auth.authenticate_request()
-#     default_namespace = (
-#         entity.primary_namespace if entity else conda_store.default_namespace
-#     )
+    namespace_name = namespace or default_namespace
+    namespace = api.get_namespace(conda_store.db, namespace_name)
+    if namespace is None:
+        permissions.add(Permissions.NAMESPACE_CREATE)
 
-#     namespace_name = request.json.get("namespace") or default_namespace
-#     namespace = api.get_namespace(conda_store.db, namespace_name)
-#     if namespace is None:
-#         permissions.add(Permissions.NAMESPACE_CREATE)
+    try:
+        specification = yaml.safe_load(specification)
+        specification = schema.CondaSpecification.parse_obj(specification)
+    except yaml.error.YAMLError:
+        return HTTPException(status_code=400, detail="Unable to parse. Invalid YAML")
+    except pydantic.ValidationError as e:
+        return HTTPException(status_code=400, default=str(e))
 
-#     try:
-#         specification = request.json.get("specification")
-#         specification = yaml.safe_load(specification)
-#         specification = schema.CondaSpecification.parse_obj(specification)
-#     except yaml.error.YAMLError:
-#         return (
-#             jsonify({"status": "error", "message": "Unable to parse. Invalid YAML"}),
-#             400,
-#         )
-#     except pydantic.ValidationError as e:
-#         return jsonify({"status": "error", "message": str(e)}), 400
+    auth.authorize_request(
+        request,
+        f"{namespace_name}/{specification.name}",
+        permissions,
+        require=True,
+    )
 
-#     auth.authorize_request(
-#         f"{namespace_name}/{specification.name}",
-#         permissions,
-#         require=True,
-#     )
+    try:
+        build_id = api.post_specification(conda_store, specification, namespace_name)
+    except ValueError as e:
+        return HTTPException(status_code=400, detail=str(e.args[0]))
 
-#     try:
-#         build_id = api.post_specification(conda_store, specification, namespace_name)
-#     except ValueError as e:
-#         return jsonify({"status": "error", "message": str(e.args[0])}), 400
-
-#     return jsonify({"status": "ok", "data": {"build_id": build_id}})
+    return {"status": "ok", "data": {"build_id": build_id}}
 
 
 @router_api.get("/build/")
@@ -372,6 +364,7 @@ def api_list_builds(
         conda_store = Depends(dependencies.get_conda_store),
         auth = Depends(dependencies.get_auth),
         entity = Depends(dependencies.get_entity),
+        paginated_args = Depends(get_paginated_args),
 ):
     orm_builds = auth.filter_builds(
         entity,
@@ -379,6 +372,7 @@ def api_list_builds(
     )
     return paginated_api_response(
         orm_builds,
+        paginated_args,
         schema.Build,
         exclude={"specification", "packages"},
         allowed_sort_bys={
@@ -412,7 +406,7 @@ def api_get_build(
     }
 
 
-@router_api.put("/build/<build_id>/")
+@router_api.put("/build/{build_id}/")
 def api_put_build(
         build_id: int,
         request: Request,
@@ -515,10 +509,12 @@ def api_get_build_logs(
 @router_api.get("/channel/")
 def api_list_channels(
         conda_store = Depends(dependencies.get_conda_store),
+        paginated_args = Depends(get_paginated_args),
 ):
     orm_channels = api.list_conda_channels(conda_store.db)
     return paginated_api_response(
         orm_channels,
+        paginated_args,
         schema.CondaChannel,
         allowed_sort_bys={"name": orm.CondaChannel.name},
         default_sort_by=["name"],
@@ -527,16 +523,19 @@ def api_list_channels(
 
 @router_api.get("/package/")
 def api_list_packages(
-        search: Optional[str],
-        exact: Optional[str],
-        build: Optional[str],
+        search: Optional[str] = None,
+        exact: Optional[str] = None,
+        build: Optional[str] = None,
+        paginated_args = Depends(get_paginated_args),
         conda_store = Depends(dependencies.get_conda_store),
+        distinct_on: List[str] = Query([]),
 ):
     orm_packages = api.list_conda_packages(
         conda_store.db, search=search, exact=exact, build=build
     )
     required_sort_bys, distinct_orm_packages = filter_distinct_on(
         orm_packages,
+        distinct_on=distinct_on,
         allowed_distinct_ons={
             "channel": orm.CondaChannel.name,
             "name": orm.CondaPackage.name,
@@ -545,6 +544,7 @@ def api_list_packages(
     )
     return paginated_api_response(
         distinct_orm_packages,
+        paginated_args,
         schema.CondaPackage,
         allowed_sort_bys={
             "channel": orm.CondaChannel.name,
