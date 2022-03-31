@@ -3,17 +3,18 @@ import re
 import secrets
 import datetime
 import os
+from typing import Optional
 
 import jwt
 import requests
 from traitlets.config import LoggingConfigurable
 from traitlets import Dict, Unicode, Type, default, Bool, Instance
-from fastapi.templating import Jinja2Templates
-from fastapi import APIRouter, Request, Response, HTTPException
+from fastapi import APIRouter, Request, Response, HTTPException, Depends
 from fastapi.responses import RedirectResponse
 from sqlalchemy import or_, and_
 
 from conda_store_server import schema, orm
+from conda_store_server.server import utils
 
 
 ARN_ALLOWED_REGEX = re.compile(
@@ -44,17 +45,6 @@ class AuthenticationBackend(LoggingConfigurable):
         help="jwt algorithm to use for encryption/decryption",
         config=True,
     )
-
-    @property
-    def router(self):
-        router = APIRouter(tags=['auth'])
-        for path, method, func in self.routes:
-            getattr(router, method)(path)(func)
-        return router
-
-    @property
-    def routes(self):
-        raise NotImplementedError()
 
     def encrypt_token(self, token: schema.AuthenticationToken):
         return jwt.encode(token.dict(), self.secret, algorithm=self.jwt_algorithm)
@@ -202,18 +192,12 @@ class Authentication(LoggingConfigurable):
         config=True,
     )
 
-    templates = Instance(
-        help="Initialized fastapi.templating.Jinja2Templates to use for authentication templates",
-        config=True,
-    )
-
-    @default("templates")
-    def _default_templates(self):
-        import conda_store_server.server
-        templates_directory = os.path.join(
-            os.path.dirname(conda_store_server.server.__file__),
-            'templates')
-        return Jinja2Templates(directory=templates_directory)
+    @property
+    def router(self):
+        router = APIRouter(tags=['auth'])
+        for path, method, func in self.routes:
+            getattr(router, method)(path)(func)
+        return router
 
     login_html = Unicode(
         """
@@ -269,13 +253,14 @@ class Authentication(LoggingConfigurable):
             },
         )
 
-    def get_login_method(self):
-        return self.templates.TemplateResponse("login.html", {
-            'login_html': self.get_login_html()
+    def get_login_method(self, request: Request, templates = Depends(utils.get_templates)):
+        return templates.TemplateResponse("login.html", {
+            'request': request,
+            'login_html': self.get_login_html(request)
         })
 
-    def post_login_method(self, request: Request, response: Response):
-        redirect_url = request.args.get("next", url_for("ui.ui_get_user"))
+    def post_login_method(self, next: Optional[str], request: Request, response: Response):
+        redirect_url = next or request.url_for("ui_get_user")
         response = RedirectResponse(redirect_url)
         authentication_token = self.authenticate(request)
         if authentication_token is None:
@@ -305,50 +290,47 @@ class Authentication(LoggingConfigurable):
         elif request.cookies.get(self.cookie_name):
             # cookie based authentication
             token = request.cookies.get(self.cookie_name)
-            g.entity = self.authentication.authenticate(token)
+            request.state.entity = self.authentication.authenticate(token)
         elif request.headers.get("Authorization"):
             # auth bearer based authentication
             token = request.headers.get("Authorization").split(" ")[1]
-            g.entity = self.authentication.authenticate(token)
+            request.state.entity = self.authentication.authenticate(token)
         else:
-            g.entity = None
+            request.state.entity = None
 
-        if require and g.entity is None:
-            response = jsonify(
-                {"status": "error", "message": "request not authenticated"}
+        if require and request.state.entity is None:
+            raise HTTPException(
+                status_code=401,
+                detail="request not authenticated",
             )
-            response.status_code = 401
-            abort(response)
+        return request.state.entity
 
-        return g.entity
-
-    @property
-    def entity_bindings(self):
-        entity = self.authenticate_request()
+    def entity_bindings(self, entity):
         return self.authorization.get_entity_bindings(
             {} if entity is None else entity.role_bindings, entity is not None
         )
 
-    def authorize_request(self, arn, permissions, require=False):
-        if not hasattr(g, "entity"):
-            self.authenticate_request()
+    def authorize_request(self, request: Request, arn, permissions, require=False):
+        if not hasattr(request.state, "entity"):
+            self.authenticate_request(request)
 
-        if not hasattr(g, "authorized"):
-            role_bindings = {} if (g.entity is None) else g.entity.role_bindings
-            g.authorized = self.authorization.authorize(
-                role_bindings, arn, permissions, g.entity is not None
+        if not hasattr(request.state, "authorized"):
+            role_bindings = {} if (request.state.entity is None) else request.state.entity.role_bindings
+            request.state.authorized = self.authorization.authorize(
+                role_bindings, arn, permissions, request.state.entity is not None
             )
 
-        if require and not g.authorized:
-            response = jsonify({"status": "error", "message": "request not authorized"})
-            response.status_code = 403
-            abort(response)
+        if require and not request.state.authorized:
+            raise HTTPException(
+                status_code=403,
+                detail="request not authorized",
+            )
 
-        return g.authorized
+        return request.state.authorized
 
-    def filter_builds(self, query):
+    def filter_builds(self, entity, query):
         cases = []
-        for entity_arn, entity_roles in self.entity_bindings.items():
+        for entity_arn, entity_roles in self.entity_bindings(entity).items():
             namespace, name = self.authorization.compile_arn_sql_like(entity_arn)
             cases.append(
                 and_(
@@ -366,9 +348,9 @@ class Authentication(LoggingConfigurable):
             .filter(or_(*cases))
         )
 
-    def filter_environments(self, query):
+    def filter_environments(self, entity, query):
         cases = []
-        for entity_arn, entity_roles in self.entity_bindings.items():
+        for entity_arn, entity_roles in self.entity_bindings(entity).items():
             namespace, name = self.authorization.compile_arn_sql_like(entity_arn)
             cases.append(
                 and_(
@@ -381,9 +363,9 @@ class Authentication(LoggingConfigurable):
 
         return query.join(orm.Environment.namespace).filter(or_(*cases))
 
-    def filter_namespaces(self, query):
+    def filter_namespaces(self, entity, query):
         cases = []
-        for entity_arn, entity_roles in self.entity_bindings.items():
+        for entity_arn, entity_roles in self.entity_bindings(entity).items():
             namespace, name = self.authorization.compile_arn_sql_like(entity_arn)
             cases.append(orm.Namespace.name.like(namespace))
 
@@ -472,7 +454,8 @@ class GenericOAuthAuthentication(Authentication):
 
     @default("oauth_callback_url")
     def _oauth_callback_url(self):
-        return url_for("auth.post_login_method", _external=True)
+        # return # url_for("auth.post_login_method", _external=True)
+        return "/a/test/path"
 
     login_html = Unicode(
         """
@@ -485,9 +468,9 @@ class GenericOAuthAuthentication(Authentication):
         config=True,
     )
 
-    def get_login_html(self):
+    def get_login_html(self, request: Request):
         state = secrets.token_urlsafe()
-        session["oauth_state"] = state
+        request.session["oauth_state"] = state
         authorization_url = self.oauth_route(
             auth_url=self.authorize_url,
             client_id=self.client_id,

@@ -5,10 +5,12 @@ import sys
 import uvicorn
 from fastapi import FastAPI, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
-from traitlets import Bool, Unicode, Integer, Type, validate
+from starlette.middleware.sessions import SessionMiddleware
+from fastapi.templating import Jinja2Templates
+from traitlets import Bool, Unicode, Integer, Type, validate, Instance, default
 from traitlets.config import Application
 
-# from conda_store_server.server import auth, views
+from conda_store_server.server import auth, views
 from conda_store_server.app import CondaStore
 
 
@@ -72,6 +74,20 @@ class CondaStoreServer(Application):
         config=True,
     )
 
+    templates = Instance(
+        help="Initialized fastapi.templating.Jinja2Templates to use for html templates",
+        klass=Jinja2Templates,
+        config=True,
+    )
+
+    @default("templates")
+    def _default_templates(self):
+        import conda_store_server.server
+        templates_directory = os.path.join(
+            os.path.dirname(conda_store_server.server.__file__),
+            'templates')
+        return Jinja2Templates(directory=templates_directory)
+
     @validate("config_file")
     def _validate_config_file(self, proposal):
         if not os.path.isfile(proposal.value):
@@ -100,6 +116,9 @@ class CondaStoreServer(Application):
         self.load_config_file(self.config_file)
 
     def start(self):
+        conda_store = CondaStore(parent=self, log=self.log)
+        authentication = self.authentication_class(parent=self, log=self.log)
+
         app = FastAPI()
 
         # if self.behind_proxy:
@@ -111,20 +130,23 @@ class CondaStoreServer(Application):
             allow_origins=['*'],
             allow_credentials=True,
         )
-
-        conda_store = CondaStore(parent=self, log=self.log)
-        authentication = self.authentication_class(parent=self, log=self.log)
+        app.add_middleware(
+            SessionMiddleware,
+            secret_key=authentication.authentication.secret)
 
         @app.middleware("http")
         async def conda_store_middleware(request: Request, call_next):
             try:
                 request.state.conda_store = conda_store
                 request.state.server = self
-                # request.state.authentication = authentication
+                request.state.authentication = authentication
+                request.state.templates = self.templates
                 response = await call_next(request)
             finally:
                 request.state.conda_store.session_factory.remove()
             return response
+
+        app.include_router(authentication.router)
 
         # if self.enable_api:
         #     app.register_blueprint(views.app_api, url_prefix=self.url_prefix)
@@ -133,8 +155,8 @@ class CondaStoreServer(Application):
         #     # docker registry api specification does not support a url_prefix
         #     app.register_blueprint(views.app_registry)
 
-        # if self.enable_ui:
-        #     app.register_blueprint(views.app_ui, url_prefix=self.url_prefix)
+        if self.enable_ui:
+            app.include_router(views.router_ui)
 
         # if self.enable_metrics:
         #     app.register_blueprint(views.app_metrics, url_prefix=self.url_prefix)

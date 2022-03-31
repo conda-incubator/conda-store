@@ -1,30 +1,28 @@
-from flask import (
-    Blueprint,
-    render_template,
-    redirect,
-    Response,
-    url_for,
-)
+from fastapi import APIRouter, Request, Depends
+from fastapi.responses import RedirectResponse
 import yaml
 
 from conda_store_server import api
-from conda_store_server.server.utils import get_conda_store, get_auth, get_server
+from conda_store_server.server import utils
 from conda_store_server.server.auth import Permissions
 from conda_store_server.conda import conda_platform
 
-app_ui = Blueprint("ui", __name__, template_folder="templates")
+router_ui = APIRouter(tags=['ui'])
 
 
-@app_ui.route("/create/", methods=["GET"])
-def ui_create_get_environment():
-    conda_store = get_conda_store()
-    auth = get_auth()
-
+@router_ui.get("/create/")
+def ui_create_get_environment(
+        request: Request,
+        templates = Depends(utils.get_templates),
+        conda_store = Depends(utils.get_conda_store),
+        auth = Depends(utils.get_auth),
+        entity = Depends(utils.get_entity),
+):
     orm_namespaces = auth.filter_namespaces(
+        entity,
         api.list_namespaces(conda_store.db, show_soft_deleted=False)
     )
 
-    entity = auth.authenticate_request()
     default_namespace = (
         entity.primary_namespace if entity else conda_store.default_namespace
     )
@@ -36,126 +34,175 @@ def ui_create_get_environment():
         return f"1{n.name}"
 
     context = {
+        'request': request,
         "namespaces": sorted(orm_namespaces.all(), key=sort_namespace),
-        "entity": auth.authenticate_request(),
+        "entity": entity,
     }
 
-    return render_template("create.html", **context)
+    return templates.TemplateResponse(
+        "create.html",
+        context
+    )
 
 
-@app_ui.route("/", methods=["GET"])
-def ui_list_environments():
-    conda_store = get_conda_store()
-    server = get_server()
-    auth = get_auth()
-
+@router_ui.get("/")
+def ui_list_environments(
+        request: Request,
+        templates = Depends(utils.get_templates),
+        conda_store = Depends(utils.get_conda_store),
+        auth = Depends(utils.get_auth),
+        server = Depends(utils.get_server),
+        entity = Depends(utils.get_entity),
+):
     orm_environments = auth.filter_environments(
+        entity,
         api.list_environments(conda_store.db, show_soft_deleted=False)
     )
 
     context = {
+        "request": request,
         "environments": orm_environments.all(),
         "registry_external_url": server.registry_external_url,
-        "entity": auth.authenticate_request(),
+        "entity": entity,
     }
 
-    return render_template("home.html", **context)
+    return templates.TemplateResponse(
+        "home.html",
+        context
+    )
 
 
-@app_ui.route("/namespace/", methods=["GET"])
-def ui_list_namespaces():
-    conda_store = get_conda_store()
-    auth = get_auth()
-
+@router_ui.get("/namespace/")
+def ui_list_namespaces(
+        request: Request,
+        templates = Depends(utils.get_templates),
+        conda_store = Depends(utils.get_conda_store),
+        auth = Depends(utils.get_auth),
+        entity = Depends(utils.get_entity),
+):
     orm_namespaces = auth.filter_namespaces(
+        entity,
         api.list_namespaces(conda_store.db, show_soft_deleted=False)
     )
 
     context = {
+        "request": request,
         "namespaces": orm_namespaces.all(),
-        "entity": auth.authenticate_request(),
+        "entity": entity,
     }
 
-    return render_template("namespace.html", **context)
+    return templates.TemplateResponse(
+        "namespace.html",
+        context
+    )
 
 
-@app_ui.route("/environment/<namespace>/<name>/", methods=["GET"])
-def ui_get_environment(namespace, name):
-    conda_store = get_conda_store()
-    auth = get_auth()
-
+@router_ui.get("/environment/{namespace}/{name}/")
+def ui_get_environment(
+        namespace: str,
+        name: str,
+        request: Request,
+        templates = Depends(utils.get_templates),
+        conda_store = Depends(utils.get_conda_store),
+        auth = Depends(utils.get_auth),
+        entity = Depends(utils.get_entity),
+):
     auth.authorize_request(
+        request,
         f"{namespace}/{name}", {Permissions.ENVIRONMENT_READ}, require=True
     )
 
     environment = api.get_environment(conda_store.db, namespace=namespace, name=name)
     if environment is None:
-        return (
-            render_template(
-                "404.html",
-                message=f"environment namespace={namespace} name={name} not found",
-            ),
-            404,
+        return templates.TemplateResponse(
+            "404.html",
+            {
+                "request": request,
+                "message": f"environment namespace={namespace} name={name} not found",
+            },
+            status_code=404
         )
 
     context = {
+        "request": request,
         "environment": environment,
-        "entity": auth.authenticate_request(),
+        "entity": entity,
         "spec": yaml.dump(environment.current_build.specification.spec),
     }
 
-    return render_template("environment.html", **context)
+    return templates.TemplateResponse("environment.html", context)
 
 
-@app_ui.route("/environment/<namespace>/<name>/edit/", methods=["GET"])
-def ui_edit_environment(namespace, name):
-    conda_store = get_conda_store()
-
-    auth = get_auth()
+@router_ui.get("/environment/{namespace}/{name}/edit/")
+def ui_edit_environment(
+        namespace: str,
+        name: str,
+        request: Request,
+        templates = Depends(utils.get_templates),
+        conda_store = Depends(utils.get_conda_store),
+        auth = Depends(utils.get_auth),
+        entity = Depends(utils.get_entity),
+):
     auth.authorize_request(
+        request,
         f"{namespace}/{name}", {Permissions.ENVIRONMENT_CREATE}, require=True
     )
 
     environment = api.get_environment(conda_store.db, namespace=namespace, name=name)
     if environment is None:
-        return (
-            render_template(
-                "404.html",
-                message=f"environment namespace={namespace} name={name} not found",
-            ),
-            404,
+        return templates.TemplateResponse(
+            "404.html",
+            {
+                "request": request,
+                "message": f"environment namespace={namespace} name={name} not found",
+            },
+            status_code=404
         )
 
     context = {
+        "request": request,
         "environment": environment,
-        "entity": auth.authenticate_request(),
+        "entity": entity,
         "specification": yaml.dump(environment.current_build.specification.spec),
         "namespaces": [environment.namespace],
     }
 
-    return render_template("create.html", **context)
+    return templates.TemplateResponse(
+        "create.html",
+        context
+    )
 
 
-@app_ui.route("/build/<build_id>/", methods=["GET"])
-def ui_get_build(build_id):
-    conda_store = get_conda_store()
-    server = get_server()
-    auth = get_auth()
-
+@router_ui.get("/build/{build_id}/")
+def ui_get_build(
+        build_id: int,
+        request: Request,
+        templates = Depends(utils.get_templates),
+        conda_store = Depends(utils.get_conda_store),
+        auth = Depends(utils.get_auth),
+        server = Depends(utils.get_server),
+        entity = Depends(utils.get_entity),
+):
     build = api.get_build(conda_store.db, build_id)
     if build is None:
-        return (
-            render_template("404.html", message=f"build id={build_id} not found"),
-            404,
+        return templates.TemplateResponse(
+            "404.html",
+            {
+                "request": request,
+                "message": f"build id={build_id} not found",
+            },
+            status_code=404
         )
 
     auth.authorize_request(
+        request,
         f"{build.environment.namespace.name}/{build.environment.name}",
         {Permissions.ENVIRONMENT_READ},
         require=True,
     )
 
     context = {
+        "request": request,
         "build": build,
         "registry_external_url": server.registry_external_url,
         "entity": auth.authenticate_request(),
@@ -163,69 +210,76 @@ def ui_get_build(build_id):
         "spec": yaml.dump(build.specification.spec),
     }
 
-    return render_template("build.html", **context)
+    return templates.TemplateResponse(
+        "build.html",
+        context
+    )
 
 
-@app_ui.route("/user/", methods=["GET"])
-def ui_get_user():
-    auth = get_auth()
-
-    entity = auth.authenticate_request()
+@router_ui.get("/user/")
+def ui_get_user(
+        request: Request,
+        templates = Depends(utils.get_templates),
+        conda_store = Depends(utils.get_conda_store),
+        auth = Depends(utils.get_auth),
+        entity = Depends(utils.get_entity),
+):
     if entity is None:
-        return redirect(f"{url_for('ui.ui_list_environments')}login/")
+        return RedirectResponse(f"{request.url_for('ui_list_environments')}login/")
 
     entity_binding_permissions = auth.authorization.get_entity_binding_permissions(
         entity.role_bindings, authenticated=True
     )
 
     context = {
+        "request": request,
         "username": entity.primary_namespace,
         "entity_binding_permissions": entity_binding_permissions,
     }
-    return render_template("user.html", **context)
+    return templates.TemplateResponse("user.html", context)
 
 
-@app_ui.route("/build/<build_id>/logs/", methods=["GET"])
-def api_get_build_logs(build_id):
-    conda_store = get_conda_store()
-    auth = get_auth()
+# @app_ui.route("/build/<build_id>/logs/", methods=["GET"])
+# def api_get_build_logs(build_id):
+#     conda_store = get_conda_store()
+#     auth = get_auth()
 
-    build = api.get_build(conda_store.db, build_id)
-    auth.authorize_request(
-        f"{build.environment.namespace.name}/{build.environment.name}",
-        {Permissions.ENVIRONMENT_READ},
-        require=True,
-    )
+#     build = api.get_build(conda_store.db, build_id)
+#     auth.authorize_request(
+#         f"{build.environment.namespace.name}/{build.environment.name}",
+#         {Permissions.ENVIRONMENT_READ},
+#         require=True,
+#     )
 
-    return redirect(conda_store.storage.get_url(build.log_key))
-
-
-@app_ui.route("/build/<build_id>/lockfile/", methods=["GET"])
-def api_get_build_lockfile(build_id):
-    conda_store = get_conda_store()
-    auth = get_auth()
-
-    build = api.get_build(conda_store.db, build_id)
-    auth.authorize_request(
-        f"{build.environment.namespace.name}/{build.environment.name}",
-        {Permissions.ENVIRONMENT_READ},
-        require=True,
-    )
-
-    lockfile = api.get_build_lockfile(conda_store.db, build_id)
-    return Response(lockfile, mimetype="text/plain")
+#     return redirect(conda_store.storage.get_url(build.log_key))
 
 
-@app_ui.route("/build/<build_id>/archive/", methods=["GET"])
-def api_get_build_archive(build_id):
-    conda_store = get_conda_store()
-    auth = get_auth()
+# @app_ui.route("/build/<build_id>/lockfile/", methods=["GET"])
+# def api_get_build_lockfile(build_id):
+#     conda_store = get_conda_store()
+#     auth = get_auth()
 
-    build = api.get_build(conda_store.db, build_id)
-    auth.authorize_request(
-        f"{build.environment.namespace.name}/{build.environment.name}",
-        {Permissions.ENVIRONMENT_READ},
-        require=True,
-    )
+#     build = api.get_build(conda_store.db, build_id)
+#     auth.authorize_request(
+#         f"{build.environment.namespace.name}/{build.environment.name}",
+#         {Permissions.ENVIRONMENT_READ},
+#         require=True,
+#     )
 
-    return redirect(conda_store.storage.get_url(build.conda_pack_key))
+#     lockfile = api.get_build_lockfile(conda_store.db, build_id)
+#     return Response(lockfile, mimetype="text/plain")
+
+
+# @app_ui.route("/build/<build_id>/archive/", methods=["GET"])
+# def api_get_build_archive(build_id):
+#     conda_store = get_conda_store()
+#     auth = get_auth()
+
+#     build = api.get_build(conda_store.db, build_id)
+#     auth.authorize_request(
+#         f"{build.environment.namespace.name}/{build.environment.name}",
+#         {Permissions.ENVIRONMENT_READ},
+#         require=True,
+#     )
+
+#     return redirect(conda_store.storage.get_url(build.conda_pack_key))
