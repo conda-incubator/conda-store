@@ -14,7 +14,7 @@ from fastapi.responses import RedirectResponse
 from sqlalchemy import or_, and_
 
 from conda_store_server import schema, orm
-from conda_store_server.server import utils
+from conda_store_server.server import dependencies
 
 
 ARN_ALLOWED_REGEX = re.compile(
@@ -253,7 +253,7 @@ class Authentication(LoggingConfigurable):
             },
         )
 
-    def get_login_method(self, request: Request, templates = Depends(utils.get_templates)):
+    def get_login_method(self, request: Request, templates = Depends(dependencies.get_templates)):
         return templates.TemplateResponse("login.html", {
             'request': request,
             'login_html': self.get_login_html(request)

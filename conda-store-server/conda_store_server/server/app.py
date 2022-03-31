@@ -148,8 +148,8 @@ class CondaStoreServer(Application):
 
         app.include_router(authentication.router)
 
-        # if self.enable_api:
-        #     app.register_blueprint(views.app_api, url_prefix=self.url_prefix)
+        if self.enable_api:
+            app.include_router(views.router_api)
 
         # if self.enable_registry:
         #     # docker registry api specification does not support a url_prefix
@@ -158,20 +158,8 @@ class CondaStoreServer(Application):
         if self.enable_ui:
             app.include_router(views.router_ui)
 
-        # if self.enable_metrics:
-        #     app.register_blueprint(views.app_metrics, url_prefix=self.url_prefix)
-
-        # add dynamic routes
-        # NOTE: this will break`url_for`, since the method names behind each
-        # route are not standardized; we build them "manually" by using `url_for`
-        # pointing to the "/" (index) provider (right now is ui.ui_list_environments)
-        # If the index function changes names, this will HAVE to be updated manually
-        # on some templates too.
-
-        # app_auth = Blueprint("auth", self.authentication_class.__name__)
-        # for route, method, func in app.authentication.routes:
-        #     app_auth.add_url_rule(route, func.__name__, func, methods=[method])
-        # app.register_blueprint(app_auth, url_prefix=self.url_prefix)
+        if self.enable_metrics:
+            app.include_router(views.router_metrics)
 
         conda_store.ensure_namespace()
         conda_store.ensure_conda_channels()

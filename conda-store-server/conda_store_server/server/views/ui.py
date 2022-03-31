@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Request, Depends
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, PlainTextResponse
 import yaml
 
 from conda_store_server import api
-from conda_store_server.server import utils
+from conda_store_server.server import dependencies
 from conda_store_server.server.auth import Permissions
 from conda_store_server.conda import conda_platform
 
@@ -13,10 +13,10 @@ router_ui = APIRouter(tags=['ui'])
 @router_ui.get("/create/")
 def ui_create_get_environment(
         request: Request,
-        templates = Depends(utils.get_templates),
-        conda_store = Depends(utils.get_conda_store),
-        auth = Depends(utils.get_auth),
-        entity = Depends(utils.get_entity),
+        templates = Depends(dependencies.get_templates),
+        conda_store = Depends(dependencies.get_conda_store),
+        auth = Depends(dependencies.get_auth),
+        entity = Depends(dependencies.get_entity),
 ):
     orm_namespaces = auth.filter_namespaces(
         entity,
@@ -48,11 +48,11 @@ def ui_create_get_environment(
 @router_ui.get("/")
 def ui_list_environments(
         request: Request,
-        templates = Depends(utils.get_templates),
-        conda_store = Depends(utils.get_conda_store),
-        auth = Depends(utils.get_auth),
-        server = Depends(utils.get_server),
-        entity = Depends(utils.get_entity),
+        templates = Depends(dependencies.get_templates),
+        conda_store = Depends(dependencies.get_conda_store),
+        auth = Depends(dependencies.get_auth),
+        server = Depends(dependencies.get_server),
+        entity = Depends(dependencies.get_entity),
 ):
     orm_environments = auth.filter_environments(
         entity,
@@ -75,10 +75,10 @@ def ui_list_environments(
 @router_ui.get("/namespace/")
 def ui_list_namespaces(
         request: Request,
-        templates = Depends(utils.get_templates),
-        conda_store = Depends(utils.get_conda_store),
-        auth = Depends(utils.get_auth),
-        entity = Depends(utils.get_entity),
+        templates = Depends(dependencies.get_templates),
+        conda_store = Depends(dependencies.get_conda_store),
+        auth = Depends(dependencies.get_auth),
+        entity = Depends(dependencies.get_entity),
 ):
     orm_namespaces = auth.filter_namespaces(
         entity,
@@ -102,10 +102,10 @@ def ui_get_environment(
         namespace: str,
         name: str,
         request: Request,
-        templates = Depends(utils.get_templates),
-        conda_store = Depends(utils.get_conda_store),
-        auth = Depends(utils.get_auth),
-        entity = Depends(utils.get_entity),
+        templates = Depends(dependencies.get_templates),
+        conda_store = Depends(dependencies.get_conda_store),
+        auth = Depends(dependencies.get_auth),
+        entity = Depends(dependencies.get_entity),
 ):
     auth.authorize_request(
         request,
@@ -138,10 +138,10 @@ def ui_edit_environment(
         namespace: str,
         name: str,
         request: Request,
-        templates = Depends(utils.get_templates),
-        conda_store = Depends(utils.get_conda_store),
-        auth = Depends(utils.get_auth),
-        entity = Depends(utils.get_entity),
+        templates = Depends(dependencies.get_templates),
+        conda_store = Depends(dependencies.get_conda_store),
+        auth = Depends(dependencies.get_auth),
+        entity = Depends(dependencies.get_entity),
 ):
     auth.authorize_request(
         request,
@@ -177,11 +177,11 @@ def ui_edit_environment(
 def ui_get_build(
         build_id: int,
         request: Request,
-        templates = Depends(utils.get_templates),
-        conda_store = Depends(utils.get_conda_store),
-        auth = Depends(utils.get_auth),
-        server = Depends(utils.get_server),
-        entity = Depends(utils.get_entity),
+        templates = Depends(dependencies.get_templates),
+        conda_store = Depends(dependencies.get_conda_store),
+        auth = Depends(dependencies.get_auth),
+        server = Depends(dependencies.get_server),
+        entity = Depends(dependencies.get_entity),
 ):
     build = api.get_build(conda_store.db, build_id)
     if build is None:
@@ -219,10 +219,10 @@ def ui_get_build(
 @router_ui.get("/user/")
 def ui_get_user(
         request: Request,
-        templates = Depends(utils.get_templates),
-        conda_store = Depends(utils.get_conda_store),
-        auth = Depends(utils.get_auth),
-        entity = Depends(utils.get_entity),
+        templates = Depends(dependencies.get_templates),
+        conda_store = Depends(dependencies.get_conda_store),
+        auth = Depends(dependencies.get_auth),
+        entity = Depends(dependencies.get_entity),
 ):
     if entity is None:
         return RedirectResponse(f"{request.url_for('ui_list_environments')}login/")
@@ -239,47 +239,56 @@ def ui_get_user(
     return templates.TemplateResponse("user.html", context)
 
 
-# @app_ui.route("/build/<build_id>/logs/", methods=["GET"])
-# def api_get_build_logs(build_id):
-#     conda_store = get_conda_store()
-#     auth = get_auth()
+@router_ui.get("/build/{build_id}/logs/")
+def api_get_build_logs(
+        build_id: int,
+        request: Request,
+        conda_store = Depends(dependencies.get_conda_store),
+        auth = Depends(dependencies.get_auth),
+):
+    build = api.get_build(conda_store.db, build_id)
+    auth.authorize_request(
+        request,
+        f"{build.environment.namespace.name}/{build.environment.name}",
+        {Permissions.ENVIRONMENT_READ},
+        require=True,
+    )
 
-#     build = api.get_build(conda_store.db, build_id)
-#     auth.authorize_request(
-#         f"{build.environment.namespace.name}/{build.environment.name}",
-#         {Permissions.ENVIRONMENT_READ},
-#         require=True,
-#     )
-
-#     return redirect(conda_store.storage.get_url(build.log_key))
-
-
-# @app_ui.route("/build/<build_id>/lockfile/", methods=["GET"])
-# def api_get_build_lockfile(build_id):
-#     conda_store = get_conda_store()
-#     auth = get_auth()
-
-#     build = api.get_build(conda_store.db, build_id)
-#     auth.authorize_request(
-#         f"{build.environment.namespace.name}/{build.environment.name}",
-#         {Permissions.ENVIRONMENT_READ},
-#         require=True,
-#     )
-
-#     lockfile = api.get_build_lockfile(conda_store.db, build_id)
-#     return Response(lockfile, mimetype="text/plain")
+    return RedirectResponse(conda_store.storage.get_url(build.log_key))
 
 
-# @app_ui.route("/build/<build_id>/archive/", methods=["GET"])
-# def api_get_build_archive(build_id):
-#     conda_store = get_conda_store()
-#     auth = get_auth()
+@router_ui.get("/build/{build_id}/lockfile/", response_class=PlainTextResponse)
+def api_get_build_lockfile(
+        build_id: int,
+        request: Request,
+        conda_store = Depends(dependencies.get_conda_store),
+        auth = Depends(dependencies.get_auth),
+):
+    build = api.get_build(conda_store.db, build_id)
+    auth.authorize_request(
+        request,
+        f"{build.environment.namespace.name}/{build.environment.name}",
+        {Permissions.ENVIRONMENT_READ},
+        require=True,
+    )
 
-#     build = api.get_build(conda_store.db, build_id)
-#     auth.authorize_request(
-#         f"{build.environment.namespace.name}/{build.environment.name}",
-#         {Permissions.ENVIRONMENT_READ},
-#         require=True,
-#     )
+    lockfile = api.get_build_lockfile(conda_store.db, build_id)
+    return lockfile
 
-#     return redirect(conda_store.storage.get_url(build.conda_pack_key))
+
+@router_ui.route("/build/{build_id}/archive/")
+def api_get_build_archive(
+        build_id: int,
+        request: Request,
+        conda_store = Depends(dependencies.get_conda_store),
+        auth = Depends(dependencies.get_auth),
+):
+    build = api.get_build(conda_store.db, build_id)
+    auth.authorize_request(
+        request,
+        f"{build.environment.namespace.name}/{build.environment.name}",
+        {Permissions.ENVIRONMENT_READ},
+        require=True,
+    )
+
+    return RedirectResponse(conda_store.storage.get_url(build.conda_pack_key))
