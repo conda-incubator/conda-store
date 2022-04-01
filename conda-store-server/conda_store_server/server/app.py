@@ -5,6 +5,7 @@ import sys
 import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi.templating import Jinja2Templates
 from traitlets import Bool, Unicode, Integer, Type, validate, Instance, default
@@ -122,7 +123,6 @@ class CondaStoreServer(Application):
 
         app = FastAPI()
 
-        cors_prefix = f"{self.url_prefix if self.url_prefix != '/' else ''}"
         app.add_middleware(
             CORSMiddleware,
             allow_origins=["*"],
@@ -164,6 +164,13 @@ class CondaStoreServer(Application):
                 views.router_ui,
                 prefix=self.url_prefix,
             )
+
+            # convenience to redirect "/" to home page when using a prefix
+            # realistically this url will not be hit with a proxy + prefix
+            if self.url_prefix != "/":
+                @app.get("/")
+                def redirect_home(request: Request):
+                    return RedirectResponse(request.url_for('ui_list_environments'))
 
         if self.enable_metrics:
             app.include_router(
