@@ -201,26 +201,59 @@ class Authentication(LoggingConfigurable):
     login_html = Unicode(
         """
 <div class="text-center">
-    <form class="form-signin" method="POST" id="login">
+    <form class="form-signin" id="login">
         <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
         <div class="form-floating">
-            <input name="username" class="form-control" id="floatingInput" placeholder="Username">
+            <input name="username" class="form-control" id="username" placeholder="Username">
             <label for="floatingInput">Username</label>
         </div>
         <div class="form-floating">
-            <input name="password" type="password" class="form-control" id="floatingPassword" placeholder="Password">
+            <input name="password" type="password" class="form-control" id="password" placeholder="Password">
             <label for="floatingPassword">Password</label>
         </div>
         <button class="w-100 btn btn-lg btn-primary" type="submit">Sign In</button>
     </form>
 </div>
+
+<script>
+function bannerMessage(message) {
+    let banner = document.querySelector('#message');
+    banner.innerHTML = message;
+}
+
+async function loginHandler(event) {
+    event.preventDefault();
+
+    usernameInput = document.querySelector("input#username");
+    passwordInput = document.querySelector("input#password");
+
+    let response = await fetch("{{ url_for('post_login_method') }}", {
+        method: "POST",
+        body: JSON.stringify({
+            username: usernameInput.value,
+            password: passwordInput.value,
+        }),
+        headers: {'Content-Type': "application/json"},
+    });
+
+    if (response.ok) {
+        window.location = "{{ url_for('ui_get_user') }}";
+    } else {
+        let data = await response.json();
+        bannerMessage(`<div class="alert alert-danger col">${data.message}</div>`);
+    }
+}
+
+let form = document.querySelector("form#login")
+form.addEventListener('submit', loginHandler);
+</script>
         """,
         help="html form to use for login",
         config=True,
     )
 
-    def get_login_html(self):
-        return self.login_html
+    def get_login_html(self, request: Request, templates):
+        return templates.env.from_string(self.login_html).render(request=request)
 
     @property
     def authentication(self):
@@ -244,7 +277,7 @@ class Authentication(LoggingConfigurable):
             ("/logout/", "post", self.post_logout_method),
         ]
 
-    def authenticate(self, request):
+    async def authenticate(self, request: Request):
         return schema.AuthenticationToken(
             primary_namespace="default",
             role_bindings={
@@ -257,18 +290,22 @@ class Authentication(LoggingConfigurable):
     ):
         return templates.TemplateResponse(
             "login.html",
-            {"request": request, "login_html": self.get_login_html(request)},
+            {"request": request, "login_html": self.get_login_html(request, templates)},
         )
 
-    def post_login_method(
-        self, request: Request, response: Response, next: Optional[str] = None
+    async def post_login_method(
+        self,
+        request: Request,
+        response: Response,
+        next: Optional[str] = None,
+        templates=Depends(dependencies.get_templates),
     ):
         redirect_url = next or request.url_for("ui_get_user")
-        response = RedirectResponse(redirect_url)
-        authentication_token = self.authenticate(request)
+        response = RedirectResponse(redirect_url, status_code=303)
+        authentication_token = await self.authenticate(request)
         if authentication_token is None:
-            return HTTPException(
-                status_code=403, detail="invalid authentication credentials"
+            raise HTTPException(
+                status_code=403, detail="Invalid authentication credentials"
             )
 
         response.set_cookie(
@@ -281,8 +318,9 @@ class Authentication(LoggingConfigurable):
         )
         return response
 
-    def post_logout_method(self, next: str = "/"):
-        response = RedirectResponse(next)
+    def post_logout_method(self, request: Request, next: Optional[str] = None):
+        redirect_url = next or request.url_for("ui_list_environments")
+        response = RedirectResponse(redirect_url, status_code=303)
         response.set_cookie(self.cookie_name, "", expires=0)
         return response
 
@@ -399,13 +437,14 @@ class DummyAuthentication(Authentication):
 
     # login_html = Unicode()
 
-    def authenticate(self, request):
+    async def authenticate(self, request: Request):
         """Checks against a global password if it's been set. If not, allow any user/pass combo"""
-        if self.password and request.form["password"] != self.password:
+        data = await request.json()
+        if self.password and data.get("password") != self.password:
             return None
 
         return schema.AuthenticationToken(
-            primary_namespace=request.form["username"],
+            primary_namespace=data["username"],
             role_bindings={
                 "*/*": ["admin"],
             },
@@ -474,7 +513,7 @@ class GenericOAuthAuthentication(Authentication):
         config=True,
     )
 
-    def get_login_html(self, request: Request):
+    def get_login_html(self, request: Request, templates):
         state = secrets.token_urlsafe()
         request.session["oauth_state"] = state
         authorization_url = self.oauth_route(
@@ -503,7 +542,7 @@ class GenericOAuthAuthentication(Authentication):
             ("/oauth_callback/", "get", self.post_login_method),
         ]
 
-    def authenticate(self, request: Request):
+    async def authenticate(self, request: Request):
         # 1. using the callback_url code and state in request
         oauth_access_token = self._get_oauth_token(request)
         if oauth_access_token is None:

@@ -43,7 +43,6 @@ jobs:
 
           wait-for-it localhost:5432 # postgresql
           wait-for-it localhost:9000 # minio
-          wait-for-it localhost:8000 # jupyterhub
           wait-for-it localhost:5000 # conda-store-server
 
       ### CYPRESS TESTS

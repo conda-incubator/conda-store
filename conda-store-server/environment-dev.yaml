@@ -24,6 +24,7 @@ dependencies:
   - filelock
   - itsdangerous
   - jinja2
+  - python-multipart
   # artifact storage
   - minio
   # CLI

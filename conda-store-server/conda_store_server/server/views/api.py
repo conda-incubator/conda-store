@@ -182,7 +182,7 @@ def api_get_namespace(
 
     namespace = api.get_namespace(conda_store.db, namespace)
     if namespace is None:
-        return HTTPException(status_code=404, detail="namespace does not exist")
+        raise HTTPException(status_code=404, detail="namespace does not exist")
 
     return {
         "status": "ok",
@@ -203,12 +203,12 @@ def api_create_namespace(
 
     namespace_orm = api.get_namespace(conda_store.db, namespace)
     if namespace_orm:
-        return HTTPException(status_code=409, detail="namespace already exists")
+        raise HTTPException(status_code=409, detail="namespace already exists")
 
     try:
         api.create_namespace(conda_store.db, namespace)
     except ValueError as e:
-        return HTTPException(status_code=400, detail=str(e.args[0]))
+        raise HTTPException(status_code=400, detail=str(e.args[0]))
     conda_store.db.commit()
     return {"status": "ok"}
 
@@ -223,7 +223,7 @@ def api_delete_namespace(
 
     namespace_orm = api.get_namespace(conda_store.db, namespace)
     if namespace_orm is None:
-        return HTTPException(status_code=404, detail="namespace does not exist")
+        raise HTTPException(status_code=404, detail="namespace does not exist")
 
     conda_store.delete_namespace(namespace)
     return {"status": "ok"}
@@ -273,7 +273,7 @@ def api_get_environment(
         conda_store.db, namespace=namespace, name=environment_name
     )
     if environment is None:
-        return HTTPException(status_code=404, detail="environment does not exist")
+        raise HTTPException(status_code=404, detail="environment does not exist")
 
     return {
         "status": "ok",
@@ -299,7 +299,7 @@ def api_update_environment_build(
     try:
         conda_store.update_environment_build(namespace, name, build_id)
     except utils.CondaStoreError as e:
-        return HTTPException(status_code=400, detail=e.message)
+        raise HTTPException(status_code=400, detail=e.message)
 
     return {"status": "ok"}
 
@@ -344,9 +344,9 @@ def api_post_specification(
         specification = yaml.safe_load(specification)
         specification = schema.CondaSpecification.parse_obj(specification)
     except yaml.error.YAMLError:
-        return HTTPException(status_code=400, detail="Unable to parse. Invalid YAML")
+        raise HTTPException(status_code=400, detail="Unable to parse. Invalid YAML")
     except pydantic.ValidationError as e:
-        return HTTPException(status_code=400, default=str(e))
+        raise HTTPException(status_code=400, default=str(e))
 
     auth.authorize_request(
         request,
@@ -358,7 +358,7 @@ def api_post_specification(
     try:
         build_id = api.post_specification(conda_store, specification, namespace_name)
     except ValueError as e:
-        return HTTPException(status_code=400, detail=str(e.args[0]))
+        raise HTTPException(status_code=400, detail=str(e.args[0]))
 
     return {"status": "ok", "data": {"build_id": build_id}}
 
@@ -394,7 +394,7 @@ def api_get_build(
 ):
     build = api.get_build(conda_store.db, build_id)
     if build is None:
-        return HTTPException(status_code=404, detail="build id does not exist")
+        raise HTTPException(status_code=404, detail="build id does not exist")
 
     auth.authorize_request(
         request,
@@ -418,7 +418,7 @@ def api_put_build(
 ):
     build = api.get_build(conda_store.db, build_id)
     if build is None:
-        return HTTPException(status_code=404, detail="build id does not exist")
+        raise HTTPException(status_code=404, detail="build id does not exist")
 
     auth.authorize_request(
         request,
@@ -440,7 +440,7 @@ def api_delete_build(
 ):
     build = api.get_build(conda_store.db, build_id)
     if build is None:
-        return HTTPException(status_code=404, detail="build id does not exist")
+        raise HTTPException(status_code=404, detail="build id does not exist")
 
     auth.authorize_request(
         request,
@@ -465,7 +465,7 @@ def api_get_build_packages(
 ):
     build_orm = api.get_build(conda_store.db, build_id)
     if build_orm is None:
-        return HTTPException(status_code=404, detail="build id does not exist")
+        raise HTTPException(status_code=404, detail="build id does not exist")
 
     auth.authorize_request(
         request,
@@ -497,7 +497,7 @@ def api_get_build_logs(
 ):
     build = api.get_build(conda_store.db, build_id)
     if build is None:
-        return HTTPException(status_code=404, detail="build id does not exist")
+        raise HTTPException(status_code=404, detail="build id does not exist")
 
     auth.authorize_request(
         request,
@@ -570,7 +570,7 @@ def api_get_build_yaml(
 ):
     build = api.get_build(conda_store.db, build_id)
     if build is None:
-        return HTTPException(status_code=404, detail="build id does not exist")
+        raise HTTPException(status_code=404, detail="build id does not exist")
 
     auth.authorize_request(
         request,
