@@ -32,7 +32,7 @@ dependencies:
   # dev dependencies
   - pytest
   - pytest-mock
-  - black ==21.5b0
+  - black ==22.3.0
   - flake8
   - sphinx
   - recommonmark
