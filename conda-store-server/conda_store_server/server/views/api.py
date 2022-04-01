@@ -11,35 +11,35 @@ from conda_store_server.server.auth import Permissions
 
 
 router_api = APIRouter(
-    tags=['api'],
-    prefix='/api/v1',
+    tags=["api"],
+    prefix="/api/v1",
 )
 
 
 def get_paginated_args(
-        page: int = 1,
-        order: Optional[str] = None,
-        size: Optional[int] = None,
-        sort_by: List[str] = Query([]),
-        server = Depends(dependencies.get_server),
+    page: int = 1,
+    order: Optional[str] = None,
+    size: Optional[int] = None,
+    sort_by: List[str] = Query([]),
+    server=Depends(dependencies.get_server),
 ):
     if size is None:
         size = server.max_page_size
     size = min(size, server.max_page_size)
     offset = (page - 1) * size
     return {
-        'limit': size,
-        'offset': offset,
-        'sort_by': sort_by,
-        'order': order,
+        "limit": size,
+        "offset": offset,
+        "sort_by": sort_by,
+        "order": order,
     }
 
 
 def filter_distinct_on(
-        query,
-        distinct_on: List[str] = [],
-        allowed_distinct_ons: Dict = {},
-        default_distinct_on: List[str] = []
+    query,
+    distinct_on: List[str] = [],
+    allowed_distinct_ons: Dict = {},
+    default_distinct_on: List[str] = [],
 ):
     distinct_on = distinct_on or default_distinct_on
     distinct_on = [
@@ -88,8 +88,8 @@ def paginated_api_response(
 ):
 
     sorts = get_sorts(
-        order=paginated_args['order'],
-        sort_by=paginated_args['sort_by'],
+        order=paginated_args["order"],
+        sort_by=paginated_args["sort_by"],
         allowed_sort_bys=allowed_sort_bys,
         required_sort_bys=required_sort_bys,
         default_sort_by=default_sort_by,
@@ -97,15 +97,17 @@ def paginated_api_response(
     )
 
     count = query.count()
-    query = query.order_by(*sorts).limit(paginated_args['limit']).offset(paginated_args['offset'])
+    query = (
+        query.order_by(*sorts)
+        .limit(paginated_args["limit"])
+        .offset(paginated_args["offset"])
+    )
 
     return {
-            "status": "ok",
-        "data": [
-            object_schema.from_orm(_).dict(exclude=exclude) for _ in query.all()
-        ],
-        "page": (paginated_args['offset'] // paginated_args['limit']) + 1,
-        "size": paginated_args['limit'],
+        "status": "ok",
+        "data": [object_schema.from_orm(_).dict(exclude=exclude) for _ in query.all()],
+        "page": (paginated_args["offset"] // paginated_args["limit"]) + 1,
+        "size": paginated_args["limit"],
         "count": count,
     }
 
@@ -117,10 +119,10 @@ def api_status():
 
 @router_api.get("/permission/")
 def api_get_permissions(
-        request: Request,
-        conda_store = Depends(dependencies.get_conda_store),
-        auth = Depends(dependencies.get_auth),
-        entity = Depends(dependencies.get_entity),
+    request: Request,
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
+    entity=Depends(dependencies.get_entity),
 ):
     authenticated = entity is not None
     entity_binding_permissions = auth.authorization.get_entity_binding_permissions(
@@ -140,22 +142,21 @@ def api_get_permissions(
             "authenticated": authenticated,
             "entity_permissions": entity_binding_permissions,
             "primary_namespace": entity.primary_namespace
-                if authenticated
-                else conda_store.default_namespace,
+            if authenticated
+            else conda_store.default_namespace,
         },
     }
 
 
 @router_api.get("/namespace/")
 def api_list_namespaces(
-        conda_store = Depends(dependencies.get_conda_store),
-        auth = Depends(dependencies.get_auth),
-        entity = Depends(dependencies.get_entity),
-        paginated_args: Dict = Depends(get_paginated_args),
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
+    entity=Depends(dependencies.get_entity),
+    paginated_args: Dict = Depends(get_paginated_args),
 ):
     orm_namespaces = auth.filter_namespaces(
-        entity,
-        api.list_namespaces(conda_store.db, show_soft_deleted=False)
+        entity, api.list_namespaces(conda_store.db, show_soft_deleted=False)
     )
     return paginated_api_response(
         orm_namespaces,
@@ -170,12 +171,14 @@ def api_list_namespaces(
 
 @router_api.get("/namespace/{namespace}/")
 def api_get_namespace(
-        namespace: str,
-        request: Request,
-        conda_store = Depends(dependencies.get_conda_store),
-        auth = Depends(dependencies.get_auth),
+    namespace: str,
+    request: Request,
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
 ):
-    auth.authorize_request(request, namespace, {Permissions.NAMESPACE_READ}, require=True)
+    auth.authorize_request(
+        request, namespace, {Permissions.NAMESPACE_READ}, require=True
+    )
 
     namespace = api.get_namespace(conda_store.db, namespace)
     if namespace is None:
@@ -189,12 +192,14 @@ def api_get_namespace(
 
 @router_api.post("/namespace/{namespace}/")
 def api_create_namespace(
-        namespace: str,
-        request: Request,
-        conda_store = Depends(dependencies.get_conda_store),
-        auth = Depends(dependencies.get_auth),
+    namespace: str,
+    request: Request,
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
 ):
-    auth.authorize_request(request, namespace, {Permissions.NAMESPACE_CREATE}, require=True)
+    auth.authorize_request(
+        request, namespace, {Permissions.NAMESPACE_CREATE}, require=True
+    )
 
     namespace_orm = api.get_namespace(conda_store.db, namespace)
     if namespace_orm:
@@ -210,9 +215,9 @@ def api_create_namespace(
 
 @router_api.delete("/namespace/{namespace}/")
 def api_delete_namespace(
-        namespace: str,
-        conda_store = Depends(dependencies.get_conda_store),
-        auth = Depends(dependencies.get_auth),
+    namespace: str,
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
 ):
     auth.authorize_request(namespace, {Permissions.NAMESPACE_DELETE}, require=True)
 
@@ -226,15 +231,15 @@ def api_delete_namespace(
 
 @router_api.get("/environment/")
 def api_list_environments(
-        search: Optional[str] = None,
-        conda_store = Depends(dependencies.get_conda_store),
-        auth = Depends(dependencies.get_auth),
-        entity = Depends(dependencies.get_entity),
-        paginated_args = Depends(get_paginated_args)
+    search: Optional[str] = None,
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
+    entity=Depends(dependencies.get_entity),
+    paginated_args=Depends(get_paginated_args),
 ):
     orm_environments = auth.filter_environments(
         entity,
-        api.list_environments(conda_store.db, search=search, show_soft_deleted=False)
+        api.list_environments(conda_store.db, search=search, show_soft_deleted=False),
     )
     return paginated_api_response(
         orm_environments,
@@ -251,23 +256,24 @@ def api_list_environments(
 
 @router_api.get("/environment/{namespace}/{environment_name}/")
 def api_get_environment(
-        namespace: str,
-        environment_name: str,
-        conda_store = Depends(dependencies.get_conda_store),
-        auth = Depends(dependencies.get_auth),
-        entity = Depends(dependencies.get_entity),
+    namespace: str,
+    environment_name: str,
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
+    entity=Depends(dependencies.get_entity),
 ):
     auth.authorize_request(
         entity,
-        f"{namespace}/{environment_name}", {Permissions.ENVIRONMENT_READ}, require=True
+        f"{namespace}/{environment_name}",
+        {Permissions.ENVIRONMENT_READ},
+        require=True,
     )
 
-    environment = api.get_environment(conda_store.db, namespace=namespace, name=environment_name)
+    environment = api.get_environment(
+        conda_store.db, namespace=namespace, name=environment_name
+    )
     if environment is None:
-        return HTTPException(
-            status_code=404,
-            detail="environment does not exist"
-        )
+        return HTTPException(status_code=404, detail="environment does not exist")
 
     return {
         "status": "ok",
@@ -279,16 +285,15 @@ def api_get_environment(
 
 @router_api.put("/environment/{namespace}/{name}/")
 def api_update_environment_build(
-        namespace: str,
-        name: str,
-        conda_store = Depends(dependencies.get_conda_store),
-        auth = Depends(dependencies.get_auth),
-        entity = Depends(dependencies.get_entity),
-        build_id: int = Body(...)
+    namespace: str,
+    name: str,
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
+    entity=Depends(dependencies.get_entity),
+    build_id: int = Body(...),
 ):
     auth.authorize_request(
-        entity,
-        f"{namespace}/{name}", {Permissions.ENVIRONMENT_UPDATE}, require=True
+        entity, f"{namespace}/{name}", {Permissions.ENVIRONMENT_UPDATE}, require=True
     )
 
     try:
@@ -301,15 +306,14 @@ def api_update_environment_build(
 
 @router_api.delete("/environment/{namespace}/{name}/")
 def api_delete_environment(
-        namespace: str,
-        name: str,
-        conda_store = Depends(dependencies.get_conda_store),
-        auth = Depends(dependencies.get_auth),
-        entity = Depends(dependencies.get_entity),
+    namespace: str,
+    name: str,
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
+    entity=Depends(dependencies.get_entity),
 ):
     auth.authorize_request(
-        entity,
-        f"{namespace}/{name}", {Permissions.ENVIRONMENT_DELETE}, require=True
+        entity, f"{namespace}/{name}", {Permissions.ENVIRONMENT_DELETE}, require=True
     )
 
     conda_store.delete_environment(namespace, name)
@@ -318,12 +322,12 @@ def api_delete_environment(
 
 @router_api.post("/specification/")
 def api_post_specification(
-        request: Request,
-        conda_store = Depends(dependencies.get_conda_store),
-        auth = Depends(dependencies.get_auth),
-        entity = Depends(dependencies.get_entity),
-        specification: str = Body(""),
-        namespace: Optional[str] = Body(None),
+    request: Request,
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
+    entity=Depends(dependencies.get_entity),
+    specification: str = Body(""),
+    namespace: Optional[str] = Body(None),
 ):
     permissions = {Permissions.ENVIRONMENT_CREATE}
 
@@ -361,14 +365,13 @@ def api_post_specification(
 
 @router_api.get("/build/")
 def api_list_builds(
-        conda_store = Depends(dependencies.get_conda_store),
-        auth = Depends(dependencies.get_auth),
-        entity = Depends(dependencies.get_entity),
-        paginated_args = Depends(get_paginated_args),
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
+    entity=Depends(dependencies.get_entity),
+    paginated_args=Depends(get_paginated_args),
 ):
     orm_builds = auth.filter_builds(
-        entity,
-        api.list_builds(conda_store.db, show_soft_deleted=True)
+        entity, api.list_builds(conda_store.db, show_soft_deleted=True)
     )
     return paginated_api_response(
         orm_builds,
@@ -384,10 +387,10 @@ def api_list_builds(
 
 @router_api.get("/build/{build_id}/")
 def api_get_build(
-        build_id: int,
-        request: Request,
-        conda_store = Depends(dependencies.get_conda_store),
-        auth = Depends(dependencies.get_auth),
+    build_id: int,
+    request: Request,
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
 ):
     build = api.get_build(conda_store.db, build_id)
     if build is None:
@@ -408,10 +411,10 @@ def api_get_build(
 
 @router_api.put("/build/{build_id}/")
 def api_put_build(
-        build_id: int,
-        request: Request,
-        conda_store = Depends(dependencies.get_conda_store),
-        auth = Depends(dependencies.get_auth),
+    build_id: int,
+    request: Request,
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
 ):
     build = api.get_build(conda_store.db, build_id)
     if build is None:
@@ -430,10 +433,10 @@ def api_put_build(
 
 @router_api.delete("/build/{build_id}/")
 def api_delete_build(
-        build_id: int,
-        request: Request,
-        conda_store = Depends(dependencies.get_conda_store),
-        auth = Depends(dependencies.get_auth),
+    build_id: int,
+    request: Request,
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
 ):
     build = api.get_build(conda_store.db, build_id)
     if build is None:
@@ -452,13 +455,13 @@ def api_delete_build(
 
 @router_api.get("/build/{build_id}/packages/")
 def api_get_build_packages(
-        build_id: int,
-        search: str,
-        exact: str,
-        build: str,
-        request: Request,
-        conda_store = Depends(dependencies.get_conda_store),
-        auth = Depends(dependencies.get_auth),
+    build_id: int,
+    search: str,
+    exact: str,
+    build: str,
+    request: Request,
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
 ):
     build_orm = api.get_build(conda_store.db, build_id)
     if build_orm is None:
@@ -487,10 +490,10 @@ def api_get_build_packages(
 
 @router_api.get("/build/{build_id}/logs/")
 def api_get_build_logs(
-        build_id: int,
-        request: Request,
-        conda_store = Depends(dependencies.get_conda_store),
-        auth = Depends(dependencies.get_auth),
+    build_id: int,
+    request: Request,
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
 ):
     build = api.get_build(conda_store.db, build_id)
     if build is None:
@@ -508,8 +511,8 @@ def api_get_build_logs(
 
 @router_api.get("/channel/")
 def api_list_channels(
-        conda_store = Depends(dependencies.get_conda_store),
-        paginated_args = Depends(get_paginated_args),
+    conda_store=Depends(dependencies.get_conda_store),
+    paginated_args=Depends(get_paginated_args),
 ):
     orm_channels = api.list_conda_channels(conda_store.db)
     return paginated_api_response(
@@ -523,12 +526,12 @@ def api_list_channels(
 
 @router_api.get("/package/")
 def api_list_packages(
-        search: Optional[str] = None,
-        exact: Optional[str] = None,
-        build: Optional[str] = None,
-        paginated_args = Depends(get_paginated_args),
-        conda_store = Depends(dependencies.get_conda_store),
-        distinct_on: List[str] = Query([]),
+    search: Optional[str] = None,
+    exact: Optional[str] = None,
+    build: Optional[str] = None,
+    paginated_args=Depends(get_paginated_args),
+    conda_store=Depends(dependencies.get_conda_store),
+    distinct_on: List[str] = Query([]),
 ):
     orm_packages = api.list_conda_packages(
         conda_store.db, search=search, exact=exact, build=build
@@ -560,10 +563,10 @@ def api_list_packages(
 
 @router_api.get("/build/{build_id}/yaml/")
 def api_get_build_yaml(
-        build_id: int,
-        request: Request,
-        conda_store = Depends(dependencies.get_conda_store),
-        auth = Depends(dependencies.get_auth),
+    build_id: int,
+    request: Request,
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
 ):
     build = api.get_build(conda_store.db, build_id)
     if build is None:

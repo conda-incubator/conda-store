@@ -2,13 +2,12 @@ import enum
 import re
 import secrets
 import datetime
-import os
 from typing import Optional
 
 import jwt
 import requests
 from traitlets.config import LoggingConfigurable
-from traitlets import Dict, Unicode, Type, default, Bool, Instance
+from traitlets import Dict, Unicode, Type, default, Bool
 from fastapi import APIRouter, Request, Response, HTTPException, Depends
 from fastapi.responses import RedirectResponse
 from sqlalchemy import or_, and_
@@ -194,7 +193,7 @@ class Authentication(LoggingConfigurable):
 
     @property
     def router(self):
-        router = APIRouter(tags=['auth'])
+        router = APIRouter(tags=["auth"])
         for path, method, func in self.routes:
             getattr(router, method)(path, name=func.__name__)(func)
         return router
@@ -253,20 +252,23 @@ class Authentication(LoggingConfigurable):
             },
         )
 
-    def get_login_method(self, request: Request, templates = Depends(dependencies.get_templates)):
-        return templates.TemplateResponse("login.html", {
-            'request': request,
-            'login_html': self.get_login_html(request)
-        })
+    def get_login_method(
+        self, request: Request, templates=Depends(dependencies.get_templates)
+    ):
+        return templates.TemplateResponse(
+            "login.html",
+            {"request": request, "login_html": self.get_login_html(request)},
+        )
 
-    def post_login_method(self, request: Request, response: Response, next: Optional[str] = None):
+    def post_login_method(
+        self, request: Request, response: Response, next: Optional[str] = None
+    ):
         redirect_url = next or request.url_for("ui_get_user")
         response = RedirectResponse(redirect_url)
         authentication_token = self.authenticate(request)
         if authentication_token is None:
             return HTTPException(
-                status_code=403,
-                detail="invalid authentication credentials"
+                status_code=403, detail="invalid authentication credentials"
             )
 
         response.set_cookie(
@@ -315,7 +317,11 @@ class Authentication(LoggingConfigurable):
             self.authenticate_request(request)
 
         if not hasattr(request.state, "authorized"):
-            role_bindings = {} if (request.state.entity is None) else request.state.entity.role_bindings
+            role_bindings = (
+                {}
+                if (request.state.entity is None)
+                else request.state.entity.role_bindings
+            )
             request.state.authorized = self.authorization.authorize(
                 role_bindings, arn, permissions, request.state.entity is not None
             )
@@ -474,7 +480,7 @@ class GenericOAuthAuthentication(Authentication):
         authorization_url = self.oauth_route(
             auth_url=self.authorize_url,
             client_id=self.client_id,
-            redirect_uri=request.url_for('post_login_method'),
+            redirect_uri=request.url_for("post_login_method"),
             scope=self.access_scope,
             state=state,
         )
@@ -531,7 +537,7 @@ class GenericOAuthAuthentication(Authentication):
                 "grant_type": "authorization_code",
                 "client_id": self.client_id,
                 "client_secret": self.client_secret,
-                "redirect_uri": request.url_for('post_login_method'),
+                "redirect_uri": request.url_for("post_login_method"),
             },
             headers={"Accept": "application/json"},
             verify=self.tls_verify,

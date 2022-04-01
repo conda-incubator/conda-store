@@ -3,7 +3,7 @@ import os
 import sys
 
 import uvicorn
-from fastapi import FastAPI, Depends, Request
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi.templating import Jinja2Templates
@@ -83,9 +83,10 @@ class CondaStoreServer(Application):
     @default("templates")
     def _default_templates(self):
         import conda_store_server.server
+
         templates_directory = os.path.join(
-            os.path.dirname(conda_store_server.server.__file__),
-            'templates')
+            os.path.dirname(conda_store_server.server.__file__), "templates"
+        )
         return Jinja2Templates(directory=templates_directory)
 
     @validate("config_file")
@@ -127,12 +128,12 @@ class CondaStoreServer(Application):
         cors_prefix = f"{self.url_prefix if self.url_prefix != '/' else ''}"
         app.add_middleware(
             CORSMiddleware,
-            allow_origins=['*'],
+            allow_origins=["*"],
             allow_credentials=True,
         )
         app.add_middleware(
-            SessionMiddleware,
-            secret_key=authentication.authentication.secret)
+            SessionMiddleware, secret_key=authentication.authentication.secret
+        )
 
         @app.middleware("http")
         async def conda_store_middleware(request: Request, call_next):
@@ -187,5 +188,5 @@ class CondaStoreServer(Application):
             port=self.port,
             reload=False,
             debug=(self.log_level == logging.DEBUG),
-            workers=1
+            workers=1,
         )

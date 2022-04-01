@@ -7,20 +7,19 @@ from conda_store_server.server import dependencies
 from conda_store_server.server.auth import Permissions
 from conda_store_server.conda import conda_platform
 
-router_ui = APIRouter(tags=['ui'])
+router_ui = APIRouter(tags=["ui"])
 
 
 @router_ui.get("/create/")
 def ui_create_get_environment(
-        request: Request,
-        templates = Depends(dependencies.get_templates),
-        conda_store = Depends(dependencies.get_conda_store),
-        auth = Depends(dependencies.get_auth),
-        entity = Depends(dependencies.get_entity),
+    request: Request,
+    templates=Depends(dependencies.get_templates),
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
+    entity=Depends(dependencies.get_entity),
 ):
     orm_namespaces = auth.filter_namespaces(
-        entity,
-        api.list_namespaces(conda_store.db, show_soft_deleted=False)
+        entity, api.list_namespaces(conda_store.db, show_soft_deleted=False)
     )
 
     default_namespace = (
@@ -34,29 +33,25 @@ def ui_create_get_environment(
         return f"1{n.name}"
 
     context = {
-        'request': request,
+        "request": request,
         "namespaces": sorted(orm_namespaces.all(), key=sort_namespace),
         "entity": entity,
     }
 
-    return templates.TemplateResponse(
-        "create.html",
-        context
-    )
+    return templates.TemplateResponse("create.html", context)
 
 
 @router_ui.get("/")
 def ui_list_environments(
-        request: Request,
-        templates = Depends(dependencies.get_templates),
-        conda_store = Depends(dependencies.get_conda_store),
-        auth = Depends(dependencies.get_auth),
-        server = Depends(dependencies.get_server),
-        entity = Depends(dependencies.get_entity),
+    request: Request,
+    templates=Depends(dependencies.get_templates),
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
+    server=Depends(dependencies.get_server),
+    entity=Depends(dependencies.get_entity),
 ):
     orm_environments = auth.filter_environments(
-        entity,
-        api.list_environments(conda_store.db, show_soft_deleted=False)
+        entity, api.list_environments(conda_store.db, show_soft_deleted=False)
     )
 
     context = {
@@ -66,23 +61,19 @@ def ui_list_environments(
         "entity": entity,
     }
 
-    return templates.TemplateResponse(
-        "home.html",
-        context
-    )
+    return templates.TemplateResponse("home.html", context)
 
 
 @router_ui.get("/namespace/")
 def ui_list_namespaces(
-        request: Request,
-        templates = Depends(dependencies.get_templates),
-        conda_store = Depends(dependencies.get_conda_store),
-        auth = Depends(dependencies.get_auth),
-        entity = Depends(dependencies.get_entity),
+    request: Request,
+    templates=Depends(dependencies.get_templates),
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
+    entity=Depends(dependencies.get_entity),
 ):
     orm_namespaces = auth.filter_namespaces(
-        entity,
-        api.list_namespaces(conda_store.db, show_soft_deleted=False)
+        entity, api.list_namespaces(conda_store.db, show_soft_deleted=False)
     )
 
     context = {
@@ -91,28 +82,29 @@ def ui_list_namespaces(
         "entity": entity,
     }
 
-    return templates.TemplateResponse(
-        "namespace.html",
-        context
-    )
+    return templates.TemplateResponse("namespace.html", context)
 
 
 @router_ui.get("/environment/{namespace}/{environment_name}/")
 def ui_get_environment(
-        namespace: str,
-        environment_name: str,
-        request: Request,
-        templates = Depends(dependencies.get_templates),
-        conda_store = Depends(dependencies.get_conda_store),
-        auth = Depends(dependencies.get_auth),
-        entity = Depends(dependencies.get_entity),
+    namespace: str,
+    environment_name: str,
+    request: Request,
+    templates=Depends(dependencies.get_templates),
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
+    entity=Depends(dependencies.get_entity),
 ):
     auth.authorize_request(
         request,
-        f"{namespace}/{environment_name}", {Permissions.ENVIRONMENT_READ}, require=True
+        f"{namespace}/{environment_name}",
+        {Permissions.ENVIRONMENT_READ},
+        require=True,
     )
 
-    environment = api.get_environment(conda_store.db, namespace=namespace, name=environment_name)
+    environment = api.get_environment(
+        conda_store.db, namespace=namespace, name=environment_name
+    )
     if environment is None:
         return templates.TemplateResponse(
             "404.html",
@@ -120,7 +112,7 @@ def ui_get_environment(
                 "request": request,
                 "message": f"environment namespace={namespace} name={environment_name} not found",
             },
-            status_code=404
+            status_code=404,
         )
 
     context = {
@@ -135,20 +127,24 @@ def ui_get_environment(
 
 @router_ui.get("/environment/{namespace}/{environment_name}/edit/")
 def ui_edit_environment(
-        namespace: str,
-        environment_name: str,
-        request: Request,
-        templates = Depends(dependencies.get_templates),
-        conda_store = Depends(dependencies.get_conda_store),
-        auth = Depends(dependencies.get_auth),
-        entity = Depends(dependencies.get_entity),
+    namespace: str,
+    environment_name: str,
+    request: Request,
+    templates=Depends(dependencies.get_templates),
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
+    entity=Depends(dependencies.get_entity),
 ):
     auth.authorize_request(
         request,
-        f"{namespace}/{environment_name}", {Permissions.ENVIRONMENT_CREATE}, require=True
+        f"{namespace}/{environment_name}",
+        {Permissions.ENVIRONMENT_CREATE},
+        require=True,
     )
 
-    environment = api.get_environment(conda_store.db, namespace=namespace, name=environment_name)
+    environment = api.get_environment(
+        conda_store.db, namespace=namespace, name=environment_name
+    )
     if environment is None:
         return templates.TemplateResponse(
             "404.html",
@@ -156,7 +152,7 @@ def ui_edit_environment(
                 "request": request,
                 "message": f"environment namespace={namespace} name={environment_name} not found",
             },
-            status_code=404
+            status_code=404,
         )
 
     context = {
@@ -167,21 +163,18 @@ def ui_edit_environment(
         "namespaces": [environment.namespace],
     }
 
-    return templates.TemplateResponse(
-        "create.html",
-        context
-    )
+    return templates.TemplateResponse("create.html", context)
 
 
 @router_ui.get("/build/{build_id}/")
 def ui_get_build(
-        build_id: int,
-        request: Request,
-        templates = Depends(dependencies.get_templates),
-        conda_store = Depends(dependencies.get_conda_store),
-        auth = Depends(dependencies.get_auth),
-        server = Depends(dependencies.get_server),
-        entity = Depends(dependencies.get_entity),
+    build_id: int,
+    request: Request,
+    templates=Depends(dependencies.get_templates),
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
+    server=Depends(dependencies.get_server),
+    entity=Depends(dependencies.get_entity),
 ):
     build = api.get_build(conda_store.db, build_id)
     if build is None:
@@ -191,7 +184,7 @@ def ui_get_build(
                 "request": request,
                 "message": f"build id={build_id} not found",
             },
-            status_code=404
+            status_code=404,
         )
 
     auth.authorize_request(
@@ -210,19 +203,16 @@ def ui_get_build(
         "spec": yaml.dump(build.specification.spec),
     }
 
-    return templates.TemplateResponse(
-        "build.html",
-        context
-    )
+    return templates.TemplateResponse("build.html", context)
 
 
 @router_ui.get("/user/")
 def ui_get_user(
-        request: Request,
-        templates = Depends(dependencies.get_templates),
-        conda_store = Depends(dependencies.get_conda_store),
-        auth = Depends(dependencies.get_auth),
-        entity = Depends(dependencies.get_entity),
+    request: Request,
+    templates=Depends(dependencies.get_templates),
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
+    entity=Depends(dependencies.get_entity),
 ):
     if entity is None:
         return RedirectResponse(f"{request.url_for('ui_list_environments')}login/")
@@ -241,10 +231,10 @@ def ui_get_user(
 
 @router_ui.get("/build/{build_id}/logs/")
 def api_get_build_logs(
-        build_id: int,
-        request: Request,
-        conda_store = Depends(dependencies.get_conda_store),
-        auth = Depends(dependencies.get_auth),
+    build_id: int,
+    request: Request,
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
 ):
     build = api.get_build(conda_store.db, build_id)
     auth.authorize_request(
@@ -259,10 +249,10 @@ def api_get_build_logs(
 
 @router_ui.get("/build/{build_id}/lockfile/", response_class=PlainTextResponse)
 def api_get_build_lockfile(
-        build_id: int,
-        request: Request,
-        conda_store = Depends(dependencies.get_conda_store),
-        auth = Depends(dependencies.get_auth),
+    build_id: int,
+    request: Request,
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
 ):
     build = api.get_build(conda_store.db, build_id)
     auth.authorize_request(
@@ -278,10 +268,10 @@ def api_get_build_lockfile(
 
 @router_ui.get("/build/{build_id}/archive/")
 def api_get_build_archive(
-        build_id: int,
-        request: Request,
-        conda_store = Depends(dependencies.get_conda_store),
-        auth = Depends(dependencies.get_auth),
+    build_id: int,
+    request: Request,
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
 ):
     build = api.get_build(conda_store.db, build_id)
     auth.authorize_request(

@@ -13,7 +13,7 @@ def get_auth(request: Request):
     return request.state.authentication
 
 
-def get_entity(request: Request, auth = Depends(get_auth)):
+def get_entity(request: Request, auth=Depends(get_auth)):
     return auth.authenticate_request(request)
 
 
