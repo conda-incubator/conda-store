@@ -13,6 +13,7 @@ from traitlets.config import Application
 
 from conda_store_server.server import auth, views
 from conda_store_server.app import CondaStore
+from conda_store_server import __version__
 
 
 class CondaStoreServer(Application):
@@ -121,7 +122,21 @@ class CondaStoreServer(Application):
         conda_store = CondaStore(parent=self, log=self.log)
         authentication = self.authentication_class(parent=self, log=self.log)
 
-        app = FastAPI()
+        app = FastAPI(
+            title="Conda-Store",
+            version=__version__,
+            openapi_url=os.path.join(self.url_prefix, "openapi.json"),
+            docs_url=os.path.join(self.url_prefix, "docs"),
+            redoc_url=os.path.join(self.url_prefix, "redoc"),
+            contact={
+                "name": "Quansight",
+                "url": "https://quansight.com",
+            },
+            license_info={
+                "name": "BSD 3-Clause",
+                "url": "https://opensource.org/licenses/BSD-3-Clause",
+            },
+        )
 
         app.add_middleware(
             CORSMiddleware,

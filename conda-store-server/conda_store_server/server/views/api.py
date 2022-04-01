@@ -5,7 +5,7 @@ import yaml
 from fastapi import APIRouter, Request, Depends, HTTPException, Query, Body
 from fastapi.responses import RedirectResponse
 
-from conda_store_server import api, orm, schema, utils
+from conda_store_server import api, orm, schema, utils, __version__
 from conda_store_server.server import dependencies
 from conda_store_server.server.auth import Permissions
 
@@ -114,7 +114,7 @@ def paginated_api_response(
 
 @router_api.get("/")
 def api_status():
-    return {"status": "ok"}
+    return {"status": "ok", "data": {"version": __version__}}
 
 
 @router_api.get("/permission/")
@@ -299,7 +299,7 @@ def api_update_environment_build(
     try:
         conda_store.update_environment_build(namespace, name, build_id)
     except utils.CondaStoreError as e:
-        return e.response
+        return HTTPException(status_code=400, detail=e.message)
 
     return {"status": "ok"}
 

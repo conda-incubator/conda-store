@@ -6,9 +6,9 @@ services:
     volumes:
       - ./tests/assets/environments:/opt/environments:ro
       - ./tests/assets/conda_store_config.py:/opt/conda_store/conda_store_config.py:ro
-    # depends_on:
-    #   conda-store-server:
-    #     condition: service_healthy
+    depends_on:
+      conda-store-server:
+        condition: service_healthy
     platform: linux/amd64
     command: ['conda-store-worker', '--config', '/opt/conda_store/conda_store_config.py']
 
@@ -21,11 +21,11 @@ services:
         condition: service_healthy
     volumes:
       - ./tests/assets/conda_store_config.py:/opt/conda_store/conda_store_config.py:ro
-    # healthcheck:
-    #   test: ["CMD", "wget", "http://localhost:5000/", "--delete-after"]
-    #   interval: 10s
-    #   timeout: 5s
-    #   retries: 5
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:5000/conda-store/api/v1/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     platform: linux/amd64
     command: ['conda-store-server', '--config', '/opt/conda_store/conda_store_config.py']
     ports:
@@ -34,6 +34,11 @@ services:
   jupyterhub:
     build: conda-store
     user: "1000:1000"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8000/hub/api/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     volumes:
       - ./tests/assets/jupyter_notebook_config.py:/etc/jupyter/jupyter_notebook_config.py
       - ./tests/assets/jupyterhub_config.py:/opt/jupyterhub/jupyterhub_config.py:ro
@@ -75,6 +80,11 @@ services:
     image: mysql:8.0
     ports:
       - 3306:3306
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     environment:
       MYSQL_ROOT_PASSWORD: hbgY8bkoWPMM7EjtcD6wrlVX
       MYSQL_USER: admin

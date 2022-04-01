@@ -22,6 +22,8 @@ dependencies:
   - yarl
   - pyjwt
   - filelock
+  - itsdangerous
+  - jinja2
   # artifact storage
   - minio
   # CLI
