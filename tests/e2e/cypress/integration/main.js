@@ -1,3 +1,16 @@
+function reloadPageUntilCompleted(maxAttempts=10, attempts=0) {
+    if (attempts > maxAttempts) {
+        throw new Error("Timed out waiting for report to be generated")
+    }
+    cy.get("div.card").then($card => {
+        if (!$card.innerHTML.includes('COMPLETED')) {
+            cy.wait(10000); // 10 seconds
+            cy.reload()
+            reloadPageUntilCompleted(maxAttempts, attempts+1)
+        }
+    })
+}
+
 describe('First Test', () => {
   it('Check conda-store home page', () => {
     // display home page without login
@@ -27,8 +40,13 @@ describe('First Test', () => {
 
     // visit environment
     cy.get('h5.card-title > a').contains('filesystem/python-flask-env').click()
+    cy.url().should('include', 'environment')
 
     // visit build
     cy.get('li.list-group-item > a').contains('Build').click()
+    cy.url().should('include', 'build')
+
+    // wait for build to complete
+    reloadPageUntilCompleted()
   })
 })
