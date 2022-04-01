@@ -158,9 +158,9 @@ class CondaStoreServer(Application):
                 prefix=self.url_prefix,
             )
 
-        # if self.enable_registry:
-        #     # docker registry api specification does not support a url_prefix
-        #     app.register_blueprint(views.app_registry)
+        if self.enable_registry:
+            # docker registry api specification does not support a url_prefix
+            app.include_router(views.router_registry)
 
         if self.enable_ui:
             app.include_router(

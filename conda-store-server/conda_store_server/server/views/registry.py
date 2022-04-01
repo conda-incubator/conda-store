@@ -1,17 +1,20 @@
 import json
 import time
 
-from flask import Blueprint, redirect, Response
+from fastapi import APIRouter, Depends
+from fastapi.responses import RedirectResponse, Response
 
-from conda_store_server.server.utils import get_conda_store
+from conda_store_server.server import dependencies
 from conda_store_server import schema, api, orm
 
 
-app_registry = Blueprint("registry", __name__)
+router_registry = APIRouter(tags=["registry"])
 
 
 def _json_response(data, status=200, mimetype="application/json"):
-    response = Response(json.dumps(data, indent=3), status=status, mimetype=mimetype)
+    response = Response(
+        content=json.dumps(data, indent=3), status_code=status, media_type=mimetype
+    )
     response.headers["Docker-Distribution-Api-Version"] = "registry/2.0"
     return response
 
@@ -91,7 +94,7 @@ def get_docker_image_manifest(conda_store, image, tag, timeout=10 * 60):
     elif tag.startswith("sha256:"):
         # looking for sha256 of docker manifest
         manifests_key = f"docker/manifest/{tag}"
-        return redirect(conda_store.storage.get_url(manifests_key))
+        return RedirectResponse(conda_store.storage.get_url(manifests_key))
     else:
         build_key = tag
 
@@ -112,23 +115,25 @@ def get_docker_image_manifest(conda_store, image, tag, timeout=10 * 60):
             return docker_error_message(schema.DockerRegistryError.MANIFEST_UNKNOWN)
 
     manifests_key = f"docker/manifest/{build_key}"
-    return redirect(conda_store.storage.get_url(manifests_key))
+    return RedirectResponse(conda_store.storage.get_url(manifests_key))
 
 
 def get_docker_image_blob(conda_store, image, blobsum):
     blob_key = f"docker/blobs/{blobsum}"
-    return redirect(conda_store.storage.get_url(blob_key))
+    return RedirectResponse(conda_store.storage.get_url(blob_key))
 
 
-@app_registry.route("/v2/")
+@router_registry.get("/v2/")
 def v2():
     return _json_response({})
 
 
-@app_registry.route("/v2/<path:rest>")
-def list_tags(rest):
+@router_registry.get("/v2/<rest:path>")
+def list_tags(
+    rest: str,
+    conda_store=Depends(dependencies.get_conda_store),
+):
     parts = rest.split("/")
-    conda_store = get_conda_store()
 
     # /v2/<image>/tags/list
     if len(parts) > 2 and parts[-2:] == ["tags", "list"]:
