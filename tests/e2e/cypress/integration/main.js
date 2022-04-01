@@ -2,8 +2,8 @@ function reloadPageUntilCompleted(maxAttempts=10, attempts=0) {
     if (attempts > maxAttempts) {
         throw new Error("Timed out waiting for report to be generated")
     }
-    cy.get("div.card").then($card => {
-        if (!$card.innerHTML.includes('COMPLETED')) {
+    cy.get("#build-status").then($build => {
+        if (!($build[0].innerHTML.includes('COMPLETED'))) {
             cy.wait(10000); // 10 seconds
             cy.reload()
             reloadPageUntilCompleted(maxAttempts, attempts+1)
