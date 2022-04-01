@@ -28,12 +28,18 @@ describe('First Test', () => {
 
     // click on sign in with jupyterhub
     // login through jupyterhub oauth server
-    cy.get('#login > a')
-      .should('contain', 'Sign in with JupyterHub')
-      .click();
+    cy.get('#login')
+      .should('contain', 'Please sign in');
 
-    // jupyterhub authorize access
-    cy.get('form > input').click()
+    cy.get('#username')
+      .should('be.visible')
+      .type('username@example.com')
+
+    cy.get('#password')
+      .should('be.visible')
+      .type('password')
+
+    cy.get('form > button').click()
     cy.url().should('include', 'user')
 
     // visit home page again
