@@ -5,6 +5,10 @@ USER root
 ARG GATOR_GIT_URL=https://github.com/Quansight/gator.git
 ARG GATOR_GIT_BRANCH=change-default-view-for-env
 
+RUN apt-get update \
+    && apt-get install -y curl \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY environment.yaml /opt/conda-store/environment.yaml
 
 RUN mamba env create -f /opt/conda-store/environment.yaml

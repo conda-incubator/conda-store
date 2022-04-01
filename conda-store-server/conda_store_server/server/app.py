@@ -122,9 +122,6 @@ class CondaStoreServer(Application):
 
         app = FastAPI()
 
-        # if self.behind_proxy:
-        #     app.wsgi_app = ProxyFix(app.wsgi_app)
-
         cors_prefix = f"{self.url_prefix if self.url_prefix != '/' else ''}"
         app.add_middleware(
             CORSMiddleware,
@@ -189,4 +186,5 @@ class CondaStoreServer(Application):
             reload=False,
             debug=(self.log_level == logging.DEBUG),
             workers=1,
+            proxy_headers=self.behind_proxy,
         )
