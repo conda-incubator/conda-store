@@ -4,27 +4,7 @@ describe('First Test', () => {
     cy.visit('/conda-store/');
 
     // visit login page
-    cy.visit('/conda-store/login/')
-
-    // click on sign in with jupyterhub
-    // login through jupyterhub oauth server
-    cy.get('#login > a')
-      .should('contain', 'Sign in with JupyterHub')
-      .click();
-
-    // fill in username and password and submit
-    cy.get('#username_input')
-      .type('conda-store-test');
-
-    cy.get('#password_input')
-      .type('test');
-
-    // for some reason this does not
-    // respect redirect_uri
-    cy.get('form').submit();
-
-    // visit login page
-    cy.visit('/conda-store/login/')
+    cy.visit('/conda-store/login/');
 
     // click on sign in with jupyterhub
     // login through jupyterhub oauth server
@@ -39,7 +19,7 @@ describe('First Test', () => {
       .should('be.visible')
       .type('password')
 
-    cy.get('form > button').click()
+    cy.get('form').submit()
     cy.url().should('include', 'user')
 
     // visit home page again
