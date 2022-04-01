@@ -30,6 +30,8 @@
           pythonPackages.pyjwt
           pythonPackages.minio
           pythonPackages.filelock
+
+          pythonPackages.pytest
         ];
       };
   };
