@@ -59,18 +59,3 @@ services:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: password
       POSTGRES_DB: conda-store
-
-  mysql:
-    image: mysql:8.0
-    ports:
-      - 3306:3306
-    healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    environment:
-      MYSQL_ROOT_PASSWORD: hbgY8bkoWPMM7EjtcD6wrlVX
-      MYSQL_USER: admin
-      MYSQL_PASSWORD: password
-      MYSQL_DATABASE: conda-store
