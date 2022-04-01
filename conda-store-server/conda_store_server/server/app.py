@@ -146,20 +146,32 @@ class CondaStoreServer(Application):
                 request.state.conda_store.session_factory.remove()
             return response
 
-        app.include_router(authentication.router)
+        app.include_router(
+            authentication.router,
+            prefix=self.url_prefix,
+        )
 
         if self.enable_api:
-            app.include_router(views.router_api)
+            app.include_router(
+                views.router_api,
+                prefix=self.url_prefix,
+            )
 
         # if self.enable_registry:
         #     # docker registry api specification does not support a url_prefix
         #     app.register_blueprint(views.app_registry)
 
         if self.enable_ui:
-            app.include_router(views.router_ui)
+            app.include_router(
+                views.router_ui,
+                prefix=self.url_prefix,
+            )
 
         if self.enable_metrics:
-            app.include_router(views.router_metrics)
+            app.include_router(
+                views.router_metrics,
+                prefix=self.url_prefix,
+            )
 
         conda_store.ensure_namespace()
         conda_store.ensure_conda_channels()

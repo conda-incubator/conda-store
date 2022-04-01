@@ -18,7 +18,7 @@
         </li>
     </ul>
     <div class="card-body">
-        <a href="{{ url_for('ui.ui_edit_environment', namespace=environment.namespace.name, name=environment.name) }}" class="btn btn-primary btn-block">Edit</a>
+        <a href="{{ url_for('ui_edit_environment', namespace=environment.namespace.name, environment_name=environment.name) }}" class="btn btn-primary btn-block">Edit</a>
         <button id="delete-environment" type="button" class="btn btn-primary btn-block">
             Delete
         </button>
@@ -29,7 +29,7 @@
 <ul class="list-group">
     {% for build in environment.builds %}
     <li class="list-group-item d-flex justify-content-between align-items-center {% if build.id == environment.current_build_id %}list-group-item-success{% elif build.deleted_on is not none %}list-group-item-secondary{% endif %}">
-        <a href="{{ url_for('ui.ui_get_build', build_id=build.id) }}">Build {{ build.id }}</a>
+        <a href="{{ url_for('ui_get_build', build_id=build.id) }}">Build {{ build.id }}</a>
         <span>{{ build.status.value }}</span>
         <div id="actions-build" class="btn-group" role="group" aria-label="Build actions">
             {% if build.id != environment.current_build_id and build.status.value == 'COMPLETED' and build.deleted_on is none %}
@@ -67,7 +67,7 @@
      event.preventDefault();
      let buildId = event.currentTarget.getAttribute('data-id');
 
-     let url = `{{ url_for('api.api_get_environment', namespace=environment.namespace.name, name=environment.name) }}`;
+     let url = `{{ url_for('api_get_environment', namespace=environment.namespace.name, environment_name=environment.name) }}`;
      let response = await fetch(url, {
          method: 'PUT',
          headers: {
@@ -88,7 +88,7 @@
      event.preventDefault();
      let buildId = event.currentTarget.getAttribute('data-id');
 
-     let url = `{{ url_for('api.api_list_builds') }}${ buildId }/`;
+     let url = `{{ url_for('api_list_builds') }}${ buildId }/`;
      let response = await fetch(url, { method: 'PUT' });
 
      if (response.ok) {
@@ -103,7 +103,7 @@
      event.preventDefault();
      let buildId = event.currentTarget.getAttribute('data-id');
 
-     let url = `{{ url_for('api.api_list_builds') }}${ buildId }/`;
+     let url = `{{ url_for('api_list_builds') }}${ buildId }/`;
      let response = await fetch(url, { method: 'DELETE' });
 
      if (response.ok) {
@@ -129,11 +129,11 @@
  async function deleteEnvironment(event) {
      event.preventDefault();
 
-     let url = "{{ url_for('api.api_get_environment', namespace=environment.namespace.name, name=environment.name) }}";
+     let url = "{{ url_for('api_get_environment', namespace=environment.namespace.name, environment_name=environment.name) }}";
      let response = await fetch(url, { method: 'DELETE' })
 
      if (response.ok) {
-         window.location = "{{ url_for('ui.ui_list_environments') }}";
+         window.location = "{{ url_for('ui_list_environments') }}";
      } else {
          let data = await response.json();
          bannerMessage(`<div class="alert alert-danger col">${data.message}</div>`);

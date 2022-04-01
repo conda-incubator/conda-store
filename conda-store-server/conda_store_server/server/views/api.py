@@ -179,7 +179,7 @@ def api_get_namespace(
 
     namespace = api.get_namespace(conda_store.db, namespace)
     if namespace is None:
-        return HTTPException(status_code=404, details="namespace does not exist")
+        return HTTPException(status_code=404, detail="namespace does not exist")
 
     return {
         "status": "ok",
@@ -198,7 +198,7 @@ def api_create_namespace(
 
     namespace_orm = api.get_namespace(conda_store.db, namespace)
     if namespace_orm:
-        return HTTPException(status_code=409, details="namespace already exists")
+        return HTTPException(status_code=409, detail="namespace already exists")
 
     try:
         api.create_namespace(conda_store.db, namespace)
@@ -218,7 +218,7 @@ def api_delete_namespace(
 
     namespace_orm = api.get_namespace(conda_store.db, namespace)
     if namespace_orm is None:
-        return HTTPException(status_code=404, details="namespace does not exist")
+        return HTTPException(status_code=404, detail="namespace does not exist")
 
     conda_store.delete_namespace(namespace)
     return {"status": "ok"}
@@ -249,24 +249,24 @@ def api_list_environments(
     )
 
 
-@router_api.get("/environment/{namespace}/{name}/")
+@router_api.get("/environment/{namespace}/{environment_name}/")
 def api_get_environment(
         namespace: str,
-        name: str,
+        environment_name: str,
         conda_store = Depends(dependencies.get_conda_store),
         auth = Depends(dependencies.get_auth),
         entity = Depends(dependencies.get_entity),
 ):
     auth.authorize_request(
         entity,
-        f"{namespace}/{name}", {Permissions.ENVIRONMENT_READ}, require=True
+        f"{namespace}/{environment_name}", {Permissions.ENVIRONMENT_READ}, require=True
     )
 
-    environment = api.get_environment(conda_store.db, namespace=namespace, name=name)
+    environment = api.get_environment(conda_store.db, namespace=namespace, name=environment_name)
     if environment is None:
         return HTTPException(
             status_code=404,
-            details="environment does not exist"
+            detail="environment does not exist"
         )
 
     return {
@@ -391,7 +391,7 @@ def api_get_build(
 ):
     build = api.get_build(conda_store.db, build_id)
     if build is None:
-        return HTTPException(status_code=404, details="build id does not exist")
+        return HTTPException(status_code=404, detail="build id does not exist")
 
     auth.authorize_request(
         request,

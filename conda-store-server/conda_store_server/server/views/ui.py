@@ -97,10 +97,10 @@ def ui_list_namespaces(
     )
 
 
-@router_ui.get("/environment/{namespace}/{name}/")
+@router_ui.get("/environment/{namespace}/{environment_name}/")
 def ui_get_environment(
         namespace: str,
-        name: str,
+        environment_name: str,
         request: Request,
         templates = Depends(dependencies.get_templates),
         conda_store = Depends(dependencies.get_conda_store),
@@ -109,16 +109,16 @@ def ui_get_environment(
 ):
     auth.authorize_request(
         request,
-        f"{namespace}/{name}", {Permissions.ENVIRONMENT_READ}, require=True
+        f"{namespace}/{environment_name}", {Permissions.ENVIRONMENT_READ}, require=True
     )
 
-    environment = api.get_environment(conda_store.db, namespace=namespace, name=name)
+    environment = api.get_environment(conda_store.db, namespace=namespace, name=environment_name)
     if environment is None:
         return templates.TemplateResponse(
             "404.html",
             {
                 "request": request,
-                "message": f"environment namespace={namespace} name={name} not found",
+                "message": f"environment namespace={namespace} name={environment_name} not found",
             },
             status_code=404
         )
@@ -133,10 +133,10 @@ def ui_get_environment(
     return templates.TemplateResponse("environment.html", context)
 
 
-@router_ui.get("/environment/{namespace}/{name}/edit/")
+@router_ui.get("/environment/{namespace}/{environment_name}/edit/")
 def ui_edit_environment(
         namespace: str,
-        name: str,
+        environment_name: str,
         request: Request,
         templates = Depends(dependencies.get_templates),
         conda_store = Depends(dependencies.get_conda_store),
@@ -145,16 +145,16 @@ def ui_edit_environment(
 ):
     auth.authorize_request(
         request,
-        f"{namespace}/{name}", {Permissions.ENVIRONMENT_CREATE}, require=True
+        f"{namespace}/{environment_name}", {Permissions.ENVIRONMENT_CREATE}, require=True
     )
 
-    environment = api.get_environment(conda_store.db, namespace=namespace, name=name)
+    environment = api.get_environment(conda_store.db, namespace=namespace, name=environment_name)
     if environment is None:
         return templates.TemplateResponse(
             "404.html",
             {
                 "request": request,
-                "message": f"environment namespace={namespace} name={name} not found",
+                "message": f"environment namespace={namespace} name={environment_name} not found",
             },
             status_code=404
         )
@@ -205,7 +205,7 @@ def ui_get_build(
         "request": request,
         "build": build,
         "registry_external_url": server.registry_external_url,
-        "entity": auth.authenticate_request(),
+        "entity": entity,
         "platform": conda_platform(),
         "spec": yaml.dump(build.specification.spec),
     }
@@ -276,7 +276,7 @@ def api_get_build_lockfile(
     return lockfile
 
 
-@router_ui.route("/build/{build_id}/archive/")
+@router_ui.get("/build/{build_id}/archive/")
 def api_get_build_archive(
         build_id: int,
         request: Request,

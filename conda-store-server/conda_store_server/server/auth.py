@@ -196,7 +196,7 @@ class Authentication(LoggingConfigurable):
     def router(self):
         router = APIRouter(tags=['auth'])
         for path, method, func in self.routes:
-            getattr(router, method)(path)(func)
+            getattr(router, method)(path, name=func.__name__)(func)
         return router
 
     login_html = Unicode(
@@ -259,7 +259,7 @@ class Authentication(LoggingConfigurable):
             'login_html': self.get_login_html(request)
         })
 
-    def post_login_method(self, next: Optional[str], request: Request, response: Response):
+    def post_login_method(self, request: Request, response: Response, next: Optional[str] = None):
         redirect_url = next or request.url_for("ui_get_user")
         response = RedirectResponse(redirect_url)
         authentication_token = self.authenticate(request)
@@ -447,15 +447,15 @@ class GenericOAuthAuthentication(Authentication):
         help="Disable TLS verification on http request.",
     )
 
-    oauth_callback_url = Unicode(
-        config=True,
-        help="Callback URL to use. Typically `{protocol}://{host}/{prefix}/oauth_callback`",
-    )
+    # oauth_callback_url = Unicode(
+    #     config=True,
+    #     help="Callback URL to use. Typically `{protocol}://{host}/{prefix}/oauth_callback`",
+    # )
 
-    @default("oauth_callback_url")
-    def _oauth_callback_url(self):
-        # return # url_for("auth.post_login_method", _external=True)
-        return "/a/test/path"
+    # @default("oauth_callback_url")
+    # def _oauth_callback_url(self):
+    #     # return # url_for("auth.post_login_method", _external=True)
+    #     return "/a/test/path"
 
     login_html = Unicode(
         """
@@ -474,7 +474,7 @@ class GenericOAuthAuthentication(Authentication):
         authorization_url = self.oauth_route(
             auth_url=self.authorize_url,
             client_id=self.client_id,
-            redirect_uri=self.oauth_callback_url,
+            redirect_uri=request.url_for('post_login_method'),
             scope=self.access_scope,
             state=state,
         )
@@ -497,7 +497,7 @@ class GenericOAuthAuthentication(Authentication):
             ("/oauth_callback/", "get", self.post_login_method),
         ]
 
-    def authenticate(self, request):
+    def authenticate(self, request: Request):
         # 1. using the callback_url code and state in request
         oauth_access_token = self._get_oauth_token(request)
         if oauth_access_token is None:
@@ -514,18 +514,14 @@ class GenericOAuthAuthentication(Authentication):
             },
         )
 
-    def _get_oauth_token(self, request):
+    def _get_oauth_token(self, request: Request):
         # 1. Get callback URI params, which include `code` and `state`
         #    `code` will be used to request the token; `state` must match our session's!
-        code = request.args.get("code")
-        state = request.args.get("state")
-        if session["oauth_state"] != state:
-            response = jsonify(
-                {"status": "error", "message": "OAuth states do not match"}
-            )
-            response.status_code = 401
-            abort(response)
-        del session["oauth_state"]
+        code = request.query_params.get("code")
+        state = request.query_params.get("state")
+        if request.session["oauth_state"] != state:
+            raise HTTPException(status_code=401, detail="OAuth states do not match")
+        del request.session["oauth_state"]
 
         # 2. Request actual access token with code and secret
         r_response = requests.post(
@@ -535,7 +531,7 @@ class GenericOAuthAuthentication(Authentication):
                 "grant_type": "authorization_code",
                 "client_id": self.client_id,
                 "client_secret": self.client_secret,
-                "redirect_uri": self.oauth_callback_url,
+                "redirect_uri": request.url_for('post_login_method'),
             },
             headers={"Accept": "application/json"},
             verify=self.tls_verify,
