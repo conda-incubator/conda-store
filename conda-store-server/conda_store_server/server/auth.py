@@ -21,17 +21,6 @@ ARN_ALLOWED_REGEX = re.compile(
 )
 
 
-class Permissions(enum.Enum):
-    ENVIRONMENT_CREATE = "environment:create"
-    ENVIRONMENT_READ = "environment::read"
-    ENVIRONMENT_UPDATE = "environment::update"
-    ENVIRONMENT_DELETE = "environment::delete"
-    BUILD_DELETE = "build::delete"
-    NAMESPACE_CREATE = "namespace::create"
-    NAMESPACE_READ = "namespace::read"
-    NAMESPACE_DELETE = "namespace::delete"
-
-
 class AuthenticationBackend(LoggingConfigurable):
     secret = Unicode(
         secrets.token_hex(128),
@@ -62,24 +51,24 @@ class RBACAuthorizationBackend(LoggingConfigurable):
     role_mappings = Dict(
         {
             "viewer": {
-                Permissions.ENVIRONMENT_READ,
-                Permissions.NAMESPACE_READ,
+                schema.Permissions.ENVIRONMENT_READ,
+                schema.Permissions.NAMESPACE_READ,
             },
             "developer": {
-                Permissions.ENVIRONMENT_CREATE,
-                Permissions.ENVIRONMENT_READ,
-                Permissions.ENVIRONMENT_UPDATE,
-                Permissions.NAMESPACE_READ,
+                schema.Permissions.ENVIRONMENT_CREATE,
+                schema.Permissions.ENVIRONMENT_READ,
+                schema.Permissions.ENVIRONMENT_UPDATE,
+                schema.Permissions.NAMESPACE_READ,
             },
             "admin": {
-                Permissions.BUILD_DELETE,
-                Permissions.ENVIRONMENT_CREATE,
-                Permissions.ENVIRONMENT_DELETE,
-                Permissions.ENVIRONMENT_READ,
-                Permissions.ENVIRONMENT_UPDATE,
-                Permissions.NAMESPACE_CREATE,
-                Permissions.NAMESPACE_DELETE,
-                Permissions.NAMESPACE_READ,
+                schema.Permissions.BUILD_DELETE,
+                schema.Permissions.ENVIRONMENT_CREATE,
+                schema.Permissions.ENVIRONMENT_DELETE,
+                schema.Permissions.ENVIRONMENT_READ,
+                schema.Permissions.ENVIRONMENT_UPDATE,
+                schema.Permissions.NAMESPACE_CREATE,
+                schema.Permissions.NAMESPACE_DELETE,
+                schema.Permissions.NAMESPACE_READ,
             },
         },
         help="default role to permissions mapping to use",

@@ -7,7 +7,7 @@ from fastapi.responses import RedirectResponse
 
 from conda_store_server import api, orm, schema, utils, __version__
 from conda_store_server.server import dependencies
-from conda_store_server.server.auth import Permissions
+from conda_store_server.schema import Permissions
 
 
 router_api = APIRouter(

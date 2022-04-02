@@ -1,4 +1,6 @@
 import os
+import sys
+sys.path.append(os.path.join(os.getcwd(), 'conda-store-server'))
 
 import pytest
 from requests import Session
@@ -15,7 +17,6 @@ class CondaStoreSession(Session):
 
     def request(self, method, url, *args, **kwargs):
         url = urljoin(self.prefix_url, url)
-        print(url)
         return super().request(method, url, *args, **kwargs)
 
 

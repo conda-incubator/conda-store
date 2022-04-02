@@ -4,7 +4,7 @@ import yaml
 
 from conda_store_server import api
 from conda_store_server.server import dependencies
-from conda_store_server.server.auth import Permissions
+from conda_store_server.schema import Permissions
 from conda_store_server.conda import conda_platform
 
 router_ui = APIRouter(tags=["ui"])

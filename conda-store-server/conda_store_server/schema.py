@@ -1,6 +1,6 @@
 import datetime
 import enum
-from typing import List, Optional, Union, Dict
+from typing import List, Optional, Union, Dict, Any
 import functools
 from pkg_resources import Requirement
 
@@ -16,6 +16,16 @@ def _datetime_factory(offset: datetime.timedelta):
 #########################
 # Authentication Schema
 #########################
+
+class Permissions(enum.Enum):
+    ENVIRONMENT_CREATE = "environment:create"
+    ENVIRONMENT_READ = "environment::read"
+    ENVIRONMENT_UPDATE = "environment::update"
+    ENVIRONMENT_DELETE = "environment::delete"
+    BUILD_DELETE = "build::delete"
+    NAMESPACE_CREATE = "namespace::create"
+    NAMESPACE_READ = "namespace::read"
+    NAMESPACE_DELETE = "namespace::delete"
 
 
 class AuthenticationToken(BaseModel):
@@ -250,3 +260,14 @@ class DockerRegistryError(enum.Enum):
         "detail": "The access controller denied access for the operation on a resource",
         "status": 403,
     }
+
+
+# API Response Objects
+class APIStatus(enum.Enum):
+    OK = "ok"
+    ERROR = "error"
+
+class APIResponse(BaseModel):
+    status: APIStatus
+    data: Optional[Any]
+    message: Optional[str]
