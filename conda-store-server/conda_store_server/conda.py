@@ -14,8 +14,6 @@ import hashlib
 import yarl
 import requests
 from conda_pack import pack
-from conda.base.context import context
-from conda.core.prefix_data import PrefixData
 
 
 def normalize_channel_name(channel_alias, channel):
@@ -100,7 +98,7 @@ def conda_platform():
 
     It will be one of the values in ``conda.base.constants.KNOWN_SUBDIRS``.
     """
-
+    from conda.base.context import context
     return context.subdir
 
 
@@ -109,6 +107,8 @@ def conda_prefix_packages(prefix):
     Returns a list of the packages that exist for a given prefix
 
     """
+    from conda.core.prefix_data import PrefixData
+
     packages = []
 
     prefix_data = PrefixData(prefix)
