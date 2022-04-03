@@ -99,6 +99,7 @@ def conda_platform():
     It will be one of the values in ``conda.base.constants.KNOWN_SUBDIRS``.
     """
     from conda.base.context import context
+
     return context.subdir
 
 
