@@ -4,7 +4,6 @@ from typing import List, Optional, Union, Dict, Any
 import functools
 from pkg_resources import Requirement
 
-from conda.models.match_spec import MatchSpec
 from pydantic import BaseModel, Field, constr, validator
 
 
@@ -160,6 +159,8 @@ class CondaSpecification(BaseModel):
 
     @validator("dependencies", each_item=True)
     def check_dependencies(cls, v):
+        from conda.models.match_spec import MatchSpec
+
         if not isinstance(v, str):
             return v  # ignore pip field
 
