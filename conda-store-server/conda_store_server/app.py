@@ -484,7 +484,10 @@ class CondaStore(LoggingConfigurable):
 
     def delete_build(self, build_id):
         build = api.get_build(self.db, build_id)
-        if build.status not in [schema.BuildStatus.FAILED, schema.BuildStatus.COMPLETED]:
+        if build.status not in [
+            schema.BuildStatus.FAILED,
+            schema.BuildStatus.COMPLETED,
+        ]:
             raise utils.CondaStoreError(
                 "cannot delete build since not finished building"
             )

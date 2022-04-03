@@ -8,7 +8,7 @@ import yaml
 from sqlalchemy.exc import IntegrityError
 
 from conda_store_server.worker.app import CondaStoreWorker
-from conda_store_server import api, environment, utils, orm, schema
+from conda_store_server import api, environment, utils, schema
 from conda_store_server.build import (
     build_conda_environment,
     build_conda_env_export,

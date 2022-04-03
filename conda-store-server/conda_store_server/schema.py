@@ -17,6 +17,7 @@ def _datetime_factory(offset: datetime.timedelta):
 # Authentication Schema
 #########################
 
+
 class Permissions(enum.Enum):
     ENVIRONMENT_CREATE = "environment:create"
     ENVIRONMENT_READ = "environment::read"
@@ -283,6 +284,7 @@ class DockerRegistryError(enum.Enum):
 class APIStatus(enum.Enum):
     OK = "ok"
     ERROR = "error"
+
 
 class APIResponse(BaseModel):
     status: APIStatus
