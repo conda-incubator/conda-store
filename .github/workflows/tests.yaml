@@ -73,6 +73,9 @@ jobs:
           path: |
             ./tests/e2e/cypress/screenshots/
             ./tests/e2e/cypress/videos/
+      - name: Run integration tests
+        run: |
+          pytest tests -v
 
   test-conda-store:
     name: 'Test conda-store'
