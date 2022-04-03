@@ -8,6 +8,8 @@ from urllib.parse import urljoin
 
 
 CONDA_STORE_BASE_URL = os.environ.get('CONDA_STORE_BASE_URL', "http://localhost:5000/conda-store/")
+CONDA_STORE_USERNAME = os.environ.get('CONDA_STORE_USERNAME', "username")
+CONDA_STORE_PASSWORD = os.environ.get('CONDA_STORE_PASSWORD', "password")
 
 
 class CondaStoreSession(Session):
@@ -19,7 +21,7 @@ class CondaStoreSession(Session):
         url = urljoin(self.prefix_url, url)
         return super().request(method, url, *args, **kwargs)
 
-    def login(self, username: str, password: str):
+    def login(self, username: str = CONDA_STORE_USERNAME, password: str = CONDA_STORE_PASSWORD):
         response = super().post("login", json={
             "username": username,
             "password": password,

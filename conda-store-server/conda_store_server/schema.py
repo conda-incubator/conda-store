@@ -291,3 +291,83 @@ class APIResponse(BaseModel):
     status: APIStatus
     data: Optional[Any]
     message: Optional[str]
+
+
+class APIPaginatedResponse(APIResponse):
+    page: int
+    size: int
+    count: int
+
+
+class APIAckResponse(BaseModel):
+    status: APIStatus
+    message: Optional[str]
+
+
+# GET /api/v1
+class APIGetStatusData(BaseModel):
+    version: str
+
+
+class APIGetStatus(APIResponse):
+    data: APIGetStatusData
+
+
+# GET /api/v1/permission
+class APIGetPermissionData(BaseModel):
+    authenticated: bool
+    entity_permissions: Dict[str, List[str]]
+    primary_namespace: str
+
+
+class APIGetPermission(APIResponse):
+    data: APIGetPermissionData
+
+
+# GET /api/v1/namespace
+class APIListNamespace(APIPaginatedResponse):
+    data: List[Namespace]
+
+
+# GET /api/v1/namespace/{name}
+class APIGetNamespace(APIResponse):
+    data: Namespace
+
+
+# GET /api/v1/environment
+class APIListEnvironment(APIPaginatedResponse):
+    data: List[Environment]
+
+
+# GET /api/v1/environment/{namespace}/{name}
+class APIGetEnvironment(APIResponse):
+    data: Environment
+
+
+# POST /api/v1/specification
+class APIPostSpecificationData(BaseModel):
+    build_id: int
+
+
+class APIPostSpecification(APIResponse):
+    data: APIPostSpecificationData
+
+
+# GET /api/v1/build
+class APIListBuild(APIPaginatedResponse):
+    data: List[Build]
+
+
+# GET /api/v1/build/1
+class APIGetBuild(APIResponse):
+    data: Build
+
+
+# GET /api/v1/channel
+class APIListCondaChannel(APIPaginatedResponse):
+    data: List[CondaChannel]
+
+
+# GET /api/v1/package
+class APIListCondaPackage(APIPaginatedResponse):
+    data: List[CondaPackage]

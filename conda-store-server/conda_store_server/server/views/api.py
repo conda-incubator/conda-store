@@ -112,12 +112,18 @@ def paginated_api_response(
     }
 
 
-@router_api.get("/")
+@router_api.get(
+    "/",
+    response_model=schema.APIGetStatus,
+)
 def api_status():
     return {"status": "ok", "data": {"version": __version__}}
 
 
-@router_api.get("/permission/")
+@router_api.get(
+    "/permission/",
+    response_model=schema.APIGetPermission,
+)
 def api_get_permissions(
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
@@ -148,7 +154,10 @@ def api_get_permissions(
     }
 
 
-@router_api.get("/namespace/")
+@router_api.get(
+    "/namespace/",
+    response_model=schema.APIListNamespace,
+)
 def api_list_namespaces(
     conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
@@ -169,7 +178,10 @@ def api_list_namespaces(
     )
 
 
-@router_api.get("/namespace/{namespace}/")
+@router_api.get(
+    "/namespace/{namespace}/",
+    response_model=schema.APIGetNamespace,
+)
 def api_get_namespace(
     namespace: str,
     request: Request,
@@ -190,7 +202,10 @@ def api_get_namespace(
     }
 
 
-@router_api.post("/namespace/{namespace}/")
+@router_api.post(
+    "/namespace/{namespace}/",
+    response_model=schema.APIAckResponse,
+)
 def api_create_namespace(
     namespace: str,
     request: Request,
@@ -213,7 +228,7 @@ def api_create_namespace(
     return {"status": "ok"}
 
 
-@router_api.delete("/namespace/{namespace}/")
+@router_api.delete("/namespace/{namespace}/", response_model=schema.APIAckResponse)
 def api_delete_namespace(
     namespace: str,
     conda_store=Depends(dependencies.get_conda_store),
@@ -229,7 +244,10 @@ def api_delete_namespace(
     return {"status": "ok"}
 
 
-@router_api.get("/environment/")
+@router_api.get(
+    "/environment/",
+    response_model=schema.APIListEnvironment,
+)
 def api_list_environments(
     search: Optional[str] = None,
     conda_store=Depends(dependencies.get_conda_store),
@@ -254,7 +272,10 @@ def api_list_environments(
     )
 
 
-@router_api.get("/environment/{namespace}/{environment_name}/")
+@router_api.get(
+    "/environment/{namespace}/{environment_name}/",
+    response_model=schema.APIGetEnvironment,
+)
 def api_get_environment(
     namespace: str,
     environment_name: str,
@@ -283,7 +304,10 @@ def api_get_environment(
     }
 
 
-@router_api.put("/environment/{namespace}/{name}/")
+@router_api.put(
+    "/environment/{namespace}/{name}/",
+    response_model=schema.APIAckResponse,
+)
 def api_update_environment_build(
     namespace: str,
     name: str,
@@ -304,7 +328,10 @@ def api_update_environment_build(
     return {"status": "ok"}
 
 
-@router_api.delete("/environment/{namespace}/{name}/")
+@router_api.delete(
+    "/environment/{namespace}/{name}/",
+    response_model=schema.APIAckResponse,
+)
 def api_delete_environment(
     namespace: str,
     name: str,
@@ -320,7 +347,10 @@ def api_delete_environment(
     return {"status": "ok"}
 
 
-@router_api.post("/specification/")
+@router_api.post(
+    "/specification/",
+    response_model=schema.APIPostSpecification,
+)
 def api_post_specification(
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
@@ -363,7 +393,7 @@ def api_post_specification(
     return {"status": "ok", "data": {"build_id": build_id}}
 
 
-@router_api.get("/build/")
+@router_api.get("/build/", response_model=schema.APIListBuild)
 def api_list_builds(
     conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
@@ -385,7 +415,7 @@ def api_list_builds(
     )
 
 
-@router_api.get("/build/{build_id}/")
+@router_api.get("/build/{build_id}/", response_model=schema.APIGetBuild)
 def api_get_build(
     build_id: int,
     request: Request,
@@ -409,7 +439,10 @@ def api_get_build(
     }
 
 
-@router_api.put("/build/{build_id}/")
+@router_api.put(
+    "/build/{build_id}/",
+    response_model=schema.APIAckResponse,
+)
 def api_put_build(
     build_id: int,
     request: Request,
@@ -431,7 +464,10 @@ def api_put_build(
     return {"status": "ok", "message": "rebuild triggered"}
 
 
-@router_api.delete("/build/{build_id}/")
+@router_api.delete(
+    "/build/{build_id}/",
+    response_model=schema.APIAckResponse,
+)
 def api_delete_build(
     build_id: int,
     request: Request,
@@ -453,7 +489,10 @@ def api_delete_build(
     return {"status": "ok"}
 
 
-@router_api.get("/build/{build_id}/packages/")
+@router_api.get(
+    "/build/{build_id}/packages/",
+    response_model=schema.APIListCondaPackage,
+)
 def api_get_build_packages(
     build_id: int,
     request: Request,
@@ -511,7 +550,10 @@ def api_get_build_logs(
     return RedirectResponse(conda_store.storage.get_url(build.log_key))
 
 
-@router_api.get("/channel/")
+@router_api.get(
+    "/channel/",
+    response_model=schema.APIListCondaChannel,
+)
 def api_list_channels(
     conda_store=Depends(dependencies.get_conda_store),
     paginated_args=Depends(get_paginated_args),
@@ -526,7 +568,10 @@ def api_list_channels(
     )
 
 
-@router_api.get("/package/")
+@router_api.get(
+    "/package/",
+    response_model=schema.APIListCondaPackage,
+)
 def api_list_packages(
     search: Optional[str] = None,
     exact: Optional[str] = None,
