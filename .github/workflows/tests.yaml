@@ -75,6 +75,7 @@ jobs:
             ./tests/e2e/cypress/videos/
       - name: Run integration tests
         run: |
+          cd ..
           pytest tests -v
 
   test-conda-store:
