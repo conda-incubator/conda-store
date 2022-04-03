@@ -95,7 +95,7 @@ def post_specification(conda_store, specification, namespace=None):
     return conda_store.register_environment(specification, namespace, force_build=True)
 
 
-def list_builds(db, status: orm.BuildStatus = None, show_soft_deleted: bool = False):
+def list_builds(db, status: schema.BuildStatus = None, show_soft_deleted: bool = False):
     filters = []
     if status:
         filters.append(orm.Build.status == status)
@@ -156,7 +156,7 @@ def list_build_artifacts(
     db,
     build_id: int = None,
     key: str = None,
-    excluded_artifact_types: List[orm.BuildArtifactType] = None,
+    excluded_artifact_types: List[schema.BuildArtifactType] = None,
 ):
     filters = []
     if build_id:

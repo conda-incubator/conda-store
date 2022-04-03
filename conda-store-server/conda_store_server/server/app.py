@@ -3,9 +3,9 @@ import os
 import sys
 
 import uvicorn
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, JSONResponse
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi.templating import Jinja2Templates
 from traitlets import Bool, Unicode, Integer, Type, validate, Instance, default
@@ -158,6 +158,16 @@ class CondaStoreServer(Application):
             finally:
                 request.state.conda_store.session_factory.remove()
             return response
+
+        @app.exception_handler(HTTPException)
+        async def http_exception_handler(request, exc):
+            return JSONResponse(
+                {
+                    "status": "error",
+                    "message": exc.detail,
+                },
+                status_code=exc.status_code,
+            )
 
         app.include_router(
             authentication.router,

@@ -93,12 +93,29 @@ class Specification(BaseModel):
         orm_mode = True
 
 
+class BuildArtifactType(enum.Enum):
+    DIRECTORY = "DIRECTORY"
+    LOCKFILE = "LOCKFILE"
+    LOGS = "LOGS"
+    YAML = "YAML"
+    CONDA_PACK = "CONDA_PACK"
+    DOCKER_BLOB = "DOCKER_BLOB"
+    DOCKER_MANIFEST = "DOCKER_MANIFEST"
+
+
+class BuildStatus(enum.Enum):
+    QUEUED = "QUEUED"
+    BUILDING = "BUILDING"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+
+
 class Build(BaseModel):
     id: int
     environment_id: int
-    specification: Specification
-    packages: List[CondaPackage]
-    status: enum.Enum
+    specification: Optional[Specification]
+    packages: Optional[List[CondaPackage]]
+    status: BuildStatus
     size: int
     scheduled_on: datetime.datetime
     started_on: Optional[datetime.datetime]
@@ -114,7 +131,7 @@ class Environment(BaseModel):
     namespace: Namespace
     name: str
     current_build_id: int
-    current_build: Build
+    current_build: Optional[Build]
 
     class Config:
         orm_mode = True

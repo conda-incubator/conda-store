@@ -11,13 +11,20 @@ CONDA_STORE_BASE_URL = os.environ.get('CONDA_STORE_BASE_URL', "http://localhost:
 
 
 class CondaStoreSession(Session):
-    def __init__(self, prefix_url):
+    def __init__(self, prefix_url: str):
         self.prefix_url = prefix_url
         super().__init__()
 
     def request(self, method, url, *args, **kwargs):
         url = urljoin(self.prefix_url, url)
         return super().request(method, url, *args, **kwargs)
+
+    def login(self, username: str, password: str):
+        response = super().post("login", json={
+            "username": username,
+            "password": password,
+        })
+        response.raise_for_status()
 
 
 @pytest.fixture

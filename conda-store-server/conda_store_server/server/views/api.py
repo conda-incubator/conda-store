@@ -132,7 +132,7 @@ def api_get_permissions(
     # convert Dict[str, set[enum]] -> Dict[str, List[str]]
     # to be json serializable
     entity_binding_permissions = {
-        entity_arn: [_.value for _ in entity_permissions]
+        entity_arn: sorted([_.value for _ in entity_permissions])
         for entity_arn, entity_permissions in entity_binding_permissions.items()
     }
 
@@ -258,12 +258,12 @@ def api_list_environments(
 def api_get_environment(
     namespace: str,
     environment_name: str,
+    request: Request,
     conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
-    entity=Depends(dependencies.get_entity),
 ):
     auth.authorize_request(
-        entity,
+        request,
         f"{namespace}/{environment_name}",
         {Permissions.ENVIRONMENT_READ},
         require=True,
@@ -456,12 +456,13 @@ def api_delete_build(
 @router_api.get("/build/{build_id}/packages/")
 def api_get_build_packages(
     build_id: int,
-    search: str,
-    exact: str,
-    build: str,
     request: Request,
+    search: Optional[str] = None,
+    exact: Optional[str] = None,
+    build: Optional[str] = None,
     conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
+    paginated_args=Depends(get_paginated_args),
 ):
     build_orm = api.get_build(conda_store.db, build_id)
     if build_orm is None:
@@ -478,6 +479,7 @@ def api_get_build_packages(
     )
     return paginated_api_response(
         orm_packages,
+        paginated_args,
         schema.CondaPackage,
         allowed_sort_bys={
             "channel": orm.CondaChannel.name,

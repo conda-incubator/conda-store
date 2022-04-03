@@ -14,7 +14,7 @@ from conda_store_server import api, conda, orm, utils, schema
 
 
 def set_build_started(conda_store, build):
-    build.status = orm.BuildStatus.BUILDING
+    build.status = schema.BuildStatus.BUILDING
     build.started_on = datetime.datetime.utcnow()
     conda_store.db.commit()
 
@@ -26,9 +26,9 @@ def set_build_failed(conda_store, build, logs):
         build.log_key,
         logs,
         content_type="text/plain",
-        artifact_type=orm.BuildArtifactType.LOGS,
+        artifact_type=schema.BuildArtifactType.LOGS,
     )
-    build.status = orm.BuildStatus.FAILED
+    build.status = schema.BuildStatus.FAILED
     build.ended_on = datetime.datetime.utcnow()
     conda_store.db.commit()
 
@@ -65,18 +65,18 @@ def set_build_completed(conda_store, build, logs, packages):
         build.log_key,
         logs,
         content_type="text/plain",
-        artifact_type=orm.BuildArtifactType.LOGS,
+        artifact_type=schema.BuildArtifactType.LOGS,
     )
-    build.status = orm.BuildStatus.COMPLETED
+    build.status = schema.BuildStatus.COMPLETED
     build.ended_on = datetime.datetime.utcnow()
 
     # add records for lockfile and directory build artifacts
     lockfile_build_artifact = orm.BuildArtifact(
-        build_id=build.id, artifact_type=orm.BuildArtifactType.LOCKFILE, key=""
+        build_id=build.id, artifact_type=schema.BuildArtifactType.LOCKFILE, key=""
     )
     directory_build_artifact = orm.BuildArtifact(
         build_id=build.id,
-        artifact_type=orm.BuildArtifactType.DIRECTORY,
+        artifact_type=schema.BuildArtifactType.DIRECTORY,
         key=build.build_path(conda_store),
     )
     conda_store.db.add(lockfile_build_artifact)
@@ -204,7 +204,7 @@ def build_conda_env_export(conda_store, build):
         build.conda_env_export_key,
         output,
         content_type="text/yaml",
-        artifact_type=orm.BuildArtifactType.YAML,
+        artifact_type=schema.BuildArtifactType.YAML,
     )
 
 
@@ -221,7 +221,7 @@ def build_conda_pack(conda_store, build):
             build.conda_pack_key,
             output_filename,
             content_type="application/gzip",
-            artifact_type=orm.BuildArtifactType.CONDA_PACK,
+            artifact_type=schema.BuildArtifactType.CONDA_PACK,
         )
 
 
@@ -275,7 +275,7 @@ def build_conda_docker(conda_store, build):
             build.docker_blob_key(content_compressed_hash),
             content_compressed,
             content_type="application/gzip",
-            artifact_type=orm.BuildArtifactType.DOCKER_BLOB,
+            artifact_type=schema.BuildArtifactType.DOCKER_BLOB,
         )
 
         docker_layer = schema.DockerManifestLayer(
@@ -302,7 +302,7 @@ def build_conda_docker(conda_store, build):
         build.docker_blob_key(docker_config_hash),
         docker_config_content,
         content_type="application/vnd.docker.container.image.v1+json",
-        artifact_type=orm.BuildArtifactType.DOCKER_BLOB,
+        artifact_type=schema.BuildArtifactType.DOCKER_BLOB,
     )
 
     # docker likes to have a sha256 key version of the manifest this
@@ -314,7 +314,7 @@ def build_conda_docker(conda_store, build):
         f"docker/manifest/sha256:{docker_manifest_hash}",
         docker_manifest_content,
         content_type="application/vnd.docker.distribution.manifest.v2+json",
-        artifact_type=orm.BuildArtifactType.DOCKER_BLOB,
+        artifact_type=schema.BuildArtifactType.DOCKER_BLOB,
     )
 
     conda_store.storage.set(
@@ -323,7 +323,7 @@ def build_conda_docker(conda_store, build):
         build.docker_manifest_key,
         docker_manifest_content,
         content_type="application/vnd.docker.distribution.manifest.v2+json",
-        artifact_type=orm.BuildArtifactType.DOCKER_MANIFEST,
+        artifact_type=schema.BuildArtifactType.DOCKER_MANIFEST,
     )
 
     conda_store.log.info(
