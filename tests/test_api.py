@@ -348,8 +348,48 @@ def test_create_specification_auth(testclient):
     r = schema.APIPostSpecification.parse_obj(response.json())
     assert r.status == schema.APIStatus.OK
 
+    # check for the given build
     response = testclient.get(f'api/v1/build/{r.data.build_id}')
     response.raise_for_status()
 
     r = schema.APIGetBuild.parse_obj(response.json())
     assert r.status == schema.APIStatus.OK
+    assert r.data.specification.name == environment_name
+
+    # check for the given environment
+    response = testclient.get(f'api/v1/environment/{namespace}/{environment_name}')
+    response.raise_for_status()
+
+    r = schema.APIGetEnvironment.parse_obj(response.json())
+    assert r.data.namespace.name == namespace
+
+
+def test_create_specification_auth_no_namespace_specified(testclient):
+    namespace = 'username' # same as login username
+    environment_name = f'pytest-{uuid.uuid4()}'
+
+    testclient.login()
+    response = testclient.post('api/v1/specification', json={
+        'specification': json.dumps({
+            'name': environment_name
+        })
+    })
+    response.raise_for_status()
+
+    r = schema.APIPostSpecification.parse_obj(response.json())
+    assert r.status == schema.APIStatus.OK
+
+    # check for the given build
+    response = testclient.get(f'api/v1/build/{r.data.build_id}')
+    response.raise_for_status()
+
+    r = schema.APIGetBuild.parse_obj(response.json())
+    assert r.status == schema.APIStatus.OK
+    assert r.data.specification.name == environment_name
+
+    # check for the given environment
+    response = testclient.get(f'api/v1/environment/{namespace}/{environment_name}')
+    response.raise_for_status()
+
+    r = schema.APIGetEnvironment.parse_obj(response.json())
+    assert r.data.namespace.name == namespace
