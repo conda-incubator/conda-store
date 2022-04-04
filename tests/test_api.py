@@ -12,6 +12,7 @@ import json
 import uuid
 from typing import List
 
+import pytest
 from pydantic import parse_obj_as
 
 import conda_store_server
@@ -478,14 +479,37 @@ def test_create_get_delete_namespace_auth(testclient):
     assert r.status == schema.APIStatus.ERROR
 
 
-# def test_update_environment_build(testclient):
-#     # PUT /api/v1/environment/namespace/name
-#     pass
+@pytest.mark.xfail
+def test_update_environment_build(testclient):
+    # PUT /api/v1/environment/namespace/name
+    assert False
 
 
-# def test_delete_environment(testclient):
-#     # DELETE /api/v1/environment/namespace/name
-#     pass
+def test_delete_environment_unauth(testclient):
+    namespace = "filesystem"
+    name = "python-flask-env"
+
+    response = testclient.delete(f'api/v1/environment/{namespace}/{name}')
+    assert response.status_code == 403
+
+    r = schema.APIResponse.parse_obj(response.json())
+    assert r.status == schema.APIStatus.ERROR
+
+
+@pytest.mark.xfail
+def test_delete_environment_auth(testclient):
+    # DELETE /api/v1/environment/namespace/name
+    assert False
+
+
+def test_delete_build_unauth(testclient):
+    build_id = 1
+
+    response = testclient.delete(f'api/v1/build/{build_id}')
+    assert response.status_code == 403
+
+    r = schema.APIResponse.parse_obj(response.json())
+    assert r.status == schema.APIStatus.ERROR
 
 
 def test_delete_build_auth(testclient):
@@ -505,6 +529,7 @@ def test_delete_build_auth(testclient):
     assert r.status == schema.APIStatus.OK
 
     # currently you cannot delete a build before it succeeds or fails
+    # realistically you should be able to delete a build
     response = testclient.delete(f'api/v1/build/{new_build_id}')
     assert response.status_code == 400
 

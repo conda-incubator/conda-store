@@ -341,12 +341,15 @@ def api_update_environment_build(
 def api_delete_environment(
     namespace: str,
     name: str,
+    request: Request,
     conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
-    entity=Depends(dependencies.get_entity),
 ):
     auth.authorize_request(
-        entity, f"{namespace}/{name}", {Permissions.ENVIRONMENT_DELETE}, require=True
+        request,
+        f"{namespace}/{name}",
+        {Permissions.ENVIRONMENT_DELETE},
+        require=True
     )
 
     conda_store.delete_environment(namespace, name)
