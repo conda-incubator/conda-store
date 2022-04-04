@@ -119,6 +119,9 @@ class CondaStoreServer(Application):
         self.load_config_file(self.config_file)
 
     def start(self):
+        def trim_slash(url):
+            return url[:-1] if url.endswith("/") else url
+
         conda_store = CondaStore(parent=self, log=self.log)
         authentication = self.authentication_class(parent=self, log=self.log)
 
@@ -171,13 +174,13 @@ class CondaStoreServer(Application):
 
         app.include_router(
             authentication.router,
-            prefix=self.url_prefix,
+            prefix=trim_slash(self.url_prefix),
         )
 
         if self.enable_api:
             app.include_router(
                 views.router_api,
-                prefix=self.url_prefix,
+                prefix=trim_slash(self.url_prefix),
             )
 
         if self.enable_registry:
@@ -187,13 +190,12 @@ class CondaStoreServer(Application):
         if self.enable_ui:
             app.include_router(
                 views.router_ui,
-                prefix=self.url_prefix,
+                prefix=trim_slash(self.url_prefix),
             )
 
             # convenience to redirect "/" to home page when using a prefix
             # realistically this url will not be hit with a proxy + prefix
             if self.url_prefix != "/":
-
                 @app.get("/")
                 def redirect_home(request: Request):
                     return RedirectResponse(request.url_for("ui_list_environments"))
@@ -201,7 +203,7 @@ class CondaStoreServer(Application):
         if self.enable_metrics:
             app.include_router(
                 views.router_metrics,
-                prefix=self.url_prefix,
+                prefix=trim_slash(self.url_prefix),
             )
 
         conda_store.ensure_namespace()

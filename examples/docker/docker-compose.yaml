@@ -13,7 +13,7 @@ services:
       conda-store-server:
         condition: service_healthy
     platform: linux/amd64
-    command: ['conda-store-worker', '--config', '/opt/conda_store/conda_store_config.py']
+    command: ['conda-store-worker', '--config', '/etc/conda-store/conda_store_config.py']
 
   conda-store-server:
     build: ../../conda-store-server
@@ -25,12 +25,12 @@ services:
     volumes:
       - ./assets/conda_store_config.py:/etc/conda-store/conda_store_config.py:ro
     healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:5000/conda-store/api/v1/"]
+      test: ["CMD", "curl", "--fail", "http://localhost:5000/api/v1/"]
       interval: 10s
       timeout: 5s
       retries: 5
     platform: linux/amd64
-    command: ['conda-store-server', '--config', '/opt/conda_store/conda_store_config.py']
+    command: ['conda-store-server', '--config', '/etc/conda-store/conda_store_config.py']
     ports:
       - "5000:5000"
 
