@@ -393,3 +393,126 @@ def test_create_specification_auth_no_namespace_specified(testclient):
 
     r = schema.APIGetEnvironment.parse_obj(response.json())
     assert r.data.namespace.name == namespace
+
+
+def test_put_build_trigger_build_noauth(testclient):
+    build_id = 1
+
+    response = testclient.put(f'api/v1/build/{build_id}')
+    assert response.status_code == 403
+
+    r = schema.APIResponse.parse_obj(response.json())
+    assert r.status == schema.APIStatus.ERROR
+
+
+def test_put_build_trigger_build_auth(testclient):
+    build_id = 1
+
+    testclient.login()
+    response = testclient.put(f'api/v1/build/{build_id}')
+    r = schema.APIPostSpecification.parse_obj(response.json())
+    assert r.status == schema.APIStatus.OK
+
+    response = testclient.get(f'api/v1/build/{r.data.build_id}')
+    response.raise_for_status()
+
+    r = schema.APIGetBuild.parse_obj(response.json())
+    assert r.status == schema.APIStatus.OK
+
+
+def test_create_namespace_noauth(testclient):
+    namespace = f"pytest-{uuid.uuid4()}"
+
+    response = testclient.post(f"api/v1/namespace/{namespace}")
+    assert response.status_code == 403
+
+    r = schema.APIResponse.parse_obj(response.json())
+    assert r.status == schema.APIStatus.ERROR
+
+
+def test_create_namespace_auth(testclient):
+    namespace = f"pytest-{uuid.uuid4()}"
+
+    testclient.login()
+    response = testclient.post(f"api/v1/namespace/{namespace}")
+    response.raise_for_status()
+
+    r = schema.APIAckResponse.parse_obj(response.json())
+    assert r.status == schema.APIStatus.OK
+
+    response = testclient.get(f"api/v1/namespace/{namespace}")
+    response.raise_for_status()
+
+    r = schema.APIGetNamespace.parse_obj(response.json())
+    assert r.status == schema.APIStatus.OK
+    assert r.data.name == namespace
+
+
+def test_create_get_delete_namespace_auth(testclient):
+    namespace = f"pytest-delete-ns-{uuid.uuid4()}"
+
+    testclient.login()
+    response = testclient.post(f"api/v1/namespace/{namespace}")
+    response.raise_for_status()
+
+    r = schema.APIAckResponse.parse_obj(response.json())
+    assert r.status == schema.APIStatus.OK
+
+    response = testclient.get(f"api/v1/namespace/{namespace}")
+    response.raise_for_status()
+
+    r = schema.APIGetNamespace.parse_obj(response.json())
+    assert r.status == schema.APIStatus.OK
+    assert r.data.name == namespace
+
+    response = testclient.delete(f"api/v1/namespace/{namespace}")
+    response.raise_for_status()
+
+    r = schema.APIAckResponse.parse_obj(response.json())
+    assert r.status == schema.APIStatus.OK
+
+    response = testclient.get(f"api/v1/namespace/{namespace}")
+    assert response.status_code == 404
+
+    r = schema.APIResponse.parse_obj(response.json())
+    assert r.status == schema.APIStatus.ERROR
+
+
+# def test_update_environment_build(testclient):
+#     # PUT /api/v1/environment/namespace/name
+#     pass
+
+
+# def test_delete_environment(testclient):
+#     # DELETE /api/v1/environment/namespace/name
+#     pass
+
+
+def test_delete_build_auth(testclient):
+    build_id = 1
+
+    testclient.login()
+    response = testclient.put(f'api/v1/build/{build_id}')
+    r = schema.APIPostSpecification.parse_obj(response.json())
+    assert r.status == schema.APIStatus.OK
+
+    new_build_id = r.data.build_id
+
+    response = testclient.get(f'api/v1/build/{new_build_id}')
+    response.raise_for_status()
+
+    r = schema.APIGetBuild.parse_obj(response.json())
+    assert r.status == schema.APIStatus.OK
+
+    # currently you cannot delete a build before it succeeds or fails
+    response = testclient.delete(f'api/v1/build/{new_build_id}')
+    assert response.status_code == 400
+
+    # r = schema.APIAckResponse.parse_obj(response.json())
+    # assert r.status == schema.APIStatus.OK
+
+    # response = testclient.get(f'api/v1/build/{new_build_id}')
+    # assert response.status_code == 404
+
+    # r = schema.APIResponse.parse_obj(response.json())
+    # assert r.status == schema.APIStatus.ERROR

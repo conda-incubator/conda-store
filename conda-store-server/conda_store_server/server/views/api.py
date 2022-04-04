@@ -192,7 +192,7 @@ def api_get_namespace(
         request, namespace, {Permissions.NAMESPACE_READ}, require=True
     )
 
-    namespace = api.get_namespace(conda_store.db, namespace)
+    namespace = api.get_namespace(conda_store.db, namespace, show_soft_deleted=False)
     if namespace is None:
         raise HTTPException(status_code=404, detail="namespace does not exist")
 
@@ -231,10 +231,16 @@ def api_create_namespace(
 @router_api.delete("/namespace/{namespace}/", response_model=schema.APIAckResponse)
 def api_delete_namespace(
     namespace: str,
+    request: Request,
     conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
 ):
-    auth.authorize_request(namespace, {Permissions.NAMESPACE_DELETE}, require=True)
+    auth.authorize_request(
+        request,
+        namespace,
+        {Permissions.NAMESPACE_DELETE},
+        require=True
+    )
 
     namespace_orm = api.get_namespace(conda_store.db, namespace)
     if namespace_orm is None:
@@ -441,7 +447,7 @@ def api_get_build(
 
 @router_api.put(
     "/build/{build_id}/",
-    response_model=schema.APIAckResponse,
+    response_model=schema.APIPostSpecification,
 )
 def api_put_build(
     build_id: int,
@@ -460,8 +466,12 @@ def api_put_build(
         require=True,
     )
 
-    conda_store.create_build(build.environment_id, build.specification.sha256)
-    return {"status": "ok", "message": "rebuild triggered"}
+    new_build = conda_store.create_build(build.environment_id, build.specification.sha256)
+    return {
+        "status": "ok",
+        "message": "rebuild triggered",
+        "data": {"build_id": new_build.id}
+    }
 
 
 @router_api.delete(
@@ -485,7 +495,11 @@ def api_delete_build(
         require=True,
     )
 
-    conda_store.delete_build(build_id)
+    try:
+        conda_store.delete_build(build_id)
+    except utils.CondaStoreError as e:
+        raise HTTPException(status_code=400, detail=e.message)
+
     return {"status": "ok"}
 
 

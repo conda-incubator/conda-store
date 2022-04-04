@@ -15,12 +15,14 @@ def list_namespaces(db, show_soft_deleted: bool = False):
     return db.query(orm.Namespace).filter(*filters)
 
 
-def get_namespace(db, name: str = None, id: int = None):
+def get_namespace(db, name: str = None, id: int = None, show_soft_deleted: bool = True):
     filters = []
     if name:
         filters.append(orm.Namespace.name == name)
     if id:
         filters.append(orm.Namespace.id == id)
+    if not show_soft_deleted:
+        filters.append(orm.Namespace.deleted_on == null())
     return db.query(orm.Namespace).filter(*filters).first()
 
 
