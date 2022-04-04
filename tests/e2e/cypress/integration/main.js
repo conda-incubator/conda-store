@@ -1,39 +1,38 @@
+function reloadPageUntilCompleted(maxAttempts=10, attempts=0) {
+    if (attempts > maxAttempts) {
+        throw new Error("Timed out waiting for report to be generated")
+    }
+    cy.get("#build-status").then($build => {
+        if (!($build[0].innerHTML.includes('COMPLETED'))) {
+            cy.wait(10000); // 10 seconds
+            cy.reload()
+            reloadPageUntilCompleted(maxAttempts, attempts+1)
+        }
+    })
+}
+
 describe('First Test', () => {
   it('Check conda-store home page', () => {
     // display home page without login
     cy.visit('/conda-store/');
 
     // visit login page
-    cy.visit('/conda-store/login/')
+    cy.visit('/conda-store/login/');
 
     // click on sign in with jupyterhub
     // login through jupyterhub oauth server
-    cy.get('#login > a')
-      .should('contain', 'Sign in with JupyterHub')
-      .click();
+    cy.get('#login')
+      .should('contain', 'Please sign in');
 
-    // fill in username and password and submit
-    cy.get('#username_input')
-      .type('conda-store-test');
+    cy.get('#username')
+      .should('be.visible')
+      .type('username@example.com')
 
-    cy.get('#password_input')
-      .type('test');
+    cy.get('#password')
+      .should('be.visible')
+      .type('password')
 
-    // for some reason this does not
-    // respect redirect_uri
-    cy.get('form').submit();
-
-    // visit login page
-    cy.visit('/conda-store/login/')
-
-    // click on sign in with jupyterhub
-    // login through jupyterhub oauth server
-    cy.get('#login > a')
-      .should('contain', 'Sign in with JupyterHub')
-      .click();
-
-    // jupyterhub authorize access
-    cy.get('form > input').click()
+    cy.get('form').submit()
     cy.url().should('include', 'user')
 
     // visit home page again
@@ -41,8 +40,13 @@ describe('First Test', () => {
 
     // visit environment
     cy.get('h5.card-title > a').contains('filesystem/python-flask-env').click()
+    cy.url().should('include', 'environment')
 
     // visit build
     cy.get('li.list-group-item > a').contains('Build').click()
+    cy.url().should('include', 'build')
+
+    // wait for build to complete
+    reloadPageUntilCompleted()
   })
 })

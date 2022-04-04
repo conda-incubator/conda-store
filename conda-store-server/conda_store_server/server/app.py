@@ -2,15 +2,18 @@ import logging
 import os
 import sys
 
-from flask import Flask
-from flask.blueprints import Blueprint
-from flask_cors import CORS
-from werkzeug.middleware.proxy_fix import ProxyFix
-from traitlets import Bool, Unicode, Integer, Type, validate
+import uvicorn
+from fastapi import FastAPI, Request, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse, JSONResponse
+from starlette.middleware.sessions import SessionMiddleware
+from fastapi.templating import Jinja2Templates
+from traitlets import Bool, Unicode, Integer, Type, validate, Instance, default
 from traitlets.config import Application
 
-from conda_store_server.server import views, auth
+from conda_store_server.server import auth, views
 from conda_store_server.app import CondaStore
+from conda_store_server import __version__
 
 
 class CondaStoreServer(Application):
@@ -73,6 +76,21 @@ class CondaStoreServer(Application):
         config=True,
     )
 
+    templates = Instance(
+        help="Initialized fastapi.templating.Jinja2Templates to use for html templates",
+        klass=Jinja2Templates,
+        config=True,
+    )
+
+    @default("templates")
+    def _default_templates(self):
+        import conda_store_server.server
+
+        templates_directory = os.path.join(
+            os.path.dirname(conda_store_server.server.__file__), "templates"
+        )
+        return Jinja2Templates(directory=templates_directory)
+
     @validate("config_file")
     def _validate_config_file(self, proposal):
         if not os.path.isfile(proposal.value):
@@ -101,69 +119,108 @@ class CondaStoreServer(Application):
         self.load_config_file(self.config_file)
 
     def start(self):
-        app = Flask(__name__)
+        def trim_slash(url):
+            return url[:-1] if url.endswith("/") else url
 
-        if self.behind_proxy:
-            app.wsgi_app = ProxyFix(app.wsgi_app)
+        conda_store = CondaStore(parent=self, log=self.log)
+        authentication = self.authentication_class(parent=self, log=self.log)
 
-        # ensure that urls are valid with and without a trailing slash
-        app.url_map.strict_slashes = False
+        app = FastAPI(
+            title="Conda-Store",
+            version=__version__,
+            openapi_url=os.path.join(self.url_prefix, "openapi.json"),
+            docs_url=os.path.join(self.url_prefix, "docs"),
+            redoc_url=os.path.join(self.url_prefix, "redoc"),
+            contact={
+                "name": "Quansight",
+                "url": "https://quansight.com",
+            },
+            license_info={
+                "name": "BSD 3-Clause",
+                "url": "https://opensource.org/licenses/BSD-3-Clause",
+            },
+        )
 
-        cors_prefix = f"{self.url_prefix if self.url_prefix != '/' else ''}"
-        CORS(
-            app,
-            resources={f"{cors_prefix}/api/v1/*": {"origins": "*"}},
-            supports_credentials=True,
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=["*"],
+            allow_credentials=True,
+        )
+        app.add_middleware(
+            SessionMiddleware, secret_key=authentication.authentication.secret
+        )
+
+        @app.middleware("http")
+        async def conda_store_middleware(request: Request, call_next):
+            try:
+                request.state.conda_store = conda_store
+                request.state.server = self
+                request.state.authentication = authentication
+                request.state.templates = self.templates
+                response = await call_next(request)
+            finally:
+                request.state.conda_store.session_factory.remove()
+            return response
+
+        @app.exception_handler(HTTPException)
+        async def http_exception_handler(request, exc):
+            return JSONResponse(
+                {
+                    "status": "error",
+                    "message": exc.detail,
+                },
+                status_code=exc.status_code,
+            )
+
+        app.include_router(
+            authentication.router,
+            prefix=trim_slash(self.url_prefix),
         )
 
         if self.enable_api:
-            app.register_blueprint(views.app_api, url_prefix=self.url_prefix)
+            app.include_router(
+                views.router_api,
+                prefix=trim_slash(self.url_prefix),
+            )
 
         if self.enable_registry:
             # docker registry api specification does not support a url_prefix
-            app.register_blueprint(views.app_registry)
+            app.include_router(views.router_registry)
 
         if self.enable_ui:
-            app.register_blueprint(views.app_ui, url_prefix=self.url_prefix)
+            app.include_router(
+                views.router_ui,
+                prefix=trim_slash(self.url_prefix),
+            )
+
+            # convenience to redirect "/" to home page when using a prefix
+            # realistically this url will not be hit with a proxy + prefix
+            if self.url_prefix != "/":
+
+                @app.get("/")
+                def redirect_home(request: Request):
+                    return RedirectResponse(request.url_for("ui_list_environments"))
 
         if self.enable_metrics:
-            app.register_blueprint(views.app_metrics, url_prefix=self.url_prefix)
+            app.include_router(
+                views.router_metrics,
+                prefix=trim_slash(self.url_prefix),
+            )
 
-        app.conda_store = CondaStore(parent=self, log=self.log)
-        app.server = self
-        app.authentication = self.authentication_class(parent=self, log=self.log)
-        app.secret_key = app.authentication.authentication.secret
-
-        @app.after_request
-        def after_request_function(response):
-            # force a new session on next request
-            # since sessions are thread local
-            app.conda_store.session_factory.remove()
-            return response
-
-        # add dynamic routes
-        # NOTE: this will break`url_for`, since the method names behind each
-        # route are not standardized; we build them "manually" by using `url_for`
-        # pointing to the "/" (index) provider (right now is ui.ui_list_environments)
-        # If the index function changes names, this will HAVE to be updated manually
-        # on some templates too.
-
-        app_auth = Blueprint("auth", self.authentication_class.__name__)
-        for route, method, func in app.authentication.routes:
-            app_auth.add_url_rule(route, func.__name__, func, methods=[method])
-        app.register_blueprint(app_auth, url_prefix=self.url_prefix)
-
-        app.conda_store.ensure_namespace()
-        app.conda_store.ensure_conda_channels()
+        conda_store.ensure_namespace()
+        conda_store.ensure_conda_channels()
 
         # schedule tasks
-        app.conda_store.celery_app
+        conda_store.celery_app
 
         from conda_store_server.worker import tasks  # noqa
 
-        app.run(
-            debug=(self.log_level == logging.DEBUG),
+        uvicorn.run(
+            app,
             host=self.address,
             port=self.port,
-            use_reloader=False,
+            reload=False,
+            debug=(self.log_level == logging.DEBUG),
+            workers=1,
+            proxy_headers=self.behind_proxy,
         )

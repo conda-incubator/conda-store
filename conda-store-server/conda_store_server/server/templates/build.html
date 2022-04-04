@@ -21,7 +21,7 @@
             <dd class="col-sm-9">{{ build.ended_on }}</dd>
 
             <dt class="col-sm-3">status</dt>
-            <dd class="col-sm-9">{{ build.status.value }}</dd>
+            <dd class="col-sm-9" id="build-status">{{ build.status.value }}</dd>
         </dl>
 
         <div class="card-body">
@@ -67,13 +67,13 @@
     </div>
     <ul class="list-group list-group-flush">
         {% if build.has_yaml %}
-        <li class="list-group-item">YAML: <a href="{{ url_for('api.api_get_build_yaml', build_id=build.id) }}">environment.yaml</a></li>
+        <li class="list-group-item">YAML: <a href="{{ url_for('api_get_build_yaml', build_id=build.id) }}">environment.yaml</a></li>
         {% endif %}
         {% if build.has_lockfile %}
-        <li class="list-group-item">Lockfile: <a href="{{ url_for('ui.api_get_build_lockfile', build_id=build.id) }}">conda-{{ platform }}.lock</a></li>
+        <li class="list-group-item">Lockfile: <a href="{{ url_for('api_get_build_lockfile', build_id=build.id) }}">conda-{{ platform }}.lock</a></li>
         {% endif %}
         {% if build.has_conda_pack %}
-        <li class="list-group-item">Archive: <a href="{{ url_for('ui.api_get_build_archive', build_id=build.id) }}">environment.tar.gz</a></li>
+        <li class="list-group-item">Archive: <a href="{{ url_for('api_get_build_archive', build_id=build.id) }}">environment.tar.gz</a></li>
         {% endif %}
         {% if build.has_docker_manifest %}
         <li class="list-group-item">Docker: {{ registry_external_url }}/{{ build.environment.namespace.name }}/{{ build.environment.name }}:{{ build.build_key }}</a></li>
@@ -85,7 +85,7 @@
 {% if build.status.value in ['COMPLETED', 'FAILED'] %}
 <div class="card my-2">
     <div class="card-body">
-        <a href="{{ url_for('ui.api_get_build_logs', build_id=build.id) }}" class="btn btn-primary btn-block">Full Logs</a>
+        <a href="{{ url_for('api_get_build_logs', build_id=build.id) }}" class="btn btn-primary btn-block">Full Logs</a>
     </div>
 </div>
 {% endif %}

@@ -61,7 +61,7 @@
  async function createEnvironmentHandler(event) {
      event.preventDefault();
 
-     let url = "{{ url_for('api.api_post_specification') }}";
+     let url = "{{ url_for('api_post_specification') }}";
      let namespaceInput = document.querySelector('#namespace');
      let specificationInput = document.querySelector('#specification');
 
@@ -77,7 +77,7 @@
      });
 
      if (response.ok) {
-         window.location = "{{ url_for('ui.ui_list_environments') }}";
+         window.location = "{{ url_for('ui_list_environments') }}";
      } else {
          let data = await response.json();
          let message = data.message;
