@@ -236,10 +236,7 @@ def api_delete_namespace(
     auth=Depends(dependencies.get_auth),
 ):
     auth.authorize_request(
-        request,
-        namespace,
-        {Permissions.NAMESPACE_DELETE},
-        require=True
+        request, namespace, {Permissions.NAMESPACE_DELETE}, require=True
     )
 
     namespace_orm = api.get_namespace(conda_store.db, namespace)
@@ -346,10 +343,7 @@ def api_delete_environment(
     auth=Depends(dependencies.get_auth),
 ):
     auth.authorize_request(
-        request,
-        f"{namespace}/{name}",
-        {Permissions.ENVIRONMENT_DELETE},
-        require=True
+        request, f"{namespace}/{name}", {Permissions.ENVIRONMENT_DELETE}, require=True
     )
 
     conda_store.delete_environment(namespace, name)
@@ -469,11 +463,13 @@ def api_put_build(
         require=True,
     )
 
-    new_build = conda_store.create_build(build.environment_id, build.specification.sha256)
+    new_build = conda_store.create_build(
+        build.environment_id, build.specification.sha256
+    )
     return {
         "status": "ok",
         "message": "rebuild triggered",
-        "data": {"build_id": new_build.id}
+        "data": {"build_id": new_build.id},
     }
 
 
