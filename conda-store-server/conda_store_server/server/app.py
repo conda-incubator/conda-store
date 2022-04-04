@@ -196,6 +196,7 @@ class CondaStoreServer(Application):
             # convenience to redirect "/" to home page when using a prefix
             # realistically this url will not be hit with a proxy + prefix
             if self.url_prefix != "/":
+
                 @app.get("/")
                 def redirect_home(request: Request):
                     return RedirectResponse(request.url_for("ui_list_environments"))
