@@ -8,7 +8,7 @@ import yaml
 from sqlalchemy.exc import IntegrityError
 
 from conda_store_server.worker.app import CondaStoreWorker
-from conda_store_server import api, environment, utils, orm
+from conda_store_server import api, environment, utils, schema
 from conda_store_server.build import (
     build_conda_environment,
     build_conda_env_export,
@@ -117,7 +117,7 @@ def task_update_environment_build(self, environment_id):
 
 
 def delete_build_artifact(conda_store, build_artifact):
-    if build_artifact.artifact_type == orm.BuildArtifactType.DIRECTORY:
+    if build_artifact.artifact_type == schema.BuildArtifactType.DIRECTORY:
         # ignore key
         conda_prefix = build_artifact.build.build_path(conda_store)
         # be REALLY sure this is a directory within store directory
@@ -126,7 +126,7 @@ def delete_build_artifact(conda_store, build_artifact):
         ):
             shutil.rmtree(conda_prefix)
             conda_store.db.delete(build_artifact)
-    elif build_artifact.artifact_type == orm.BuildArtifactType.LOCKFILE:
+    elif build_artifact.artifact_type == schema.BuildArtifactType.LOCKFILE:
         pass
     else:
         conda_store.log.info(f"deleting {build_artifact.key}")

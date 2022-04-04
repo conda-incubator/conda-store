@@ -14,13 +14,16 @@ dependencies:
   - psycopg2
   - pymysql
   - requests
-  - flask
-  - flask-cors
   - pyyaml
+  - uvicorn
+  - fastapi
   - pydantic
   - traitlets
   - yarl
   - pyjwt
   - filelock
+  - itsdangerous
+  - jinja2
+  - python-multipart
   # artifact storage
   - minio

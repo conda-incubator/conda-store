@@ -8,7 +8,7 @@ from minio.credentials.providers import Provider
 from traitlets.config import LoggingConfigurable
 from traitlets import Unicode, Bool, Type, Dict, List
 
-from conda_store_server import orm, api
+from conda_store_server import orm, api, schema
 
 
 class Storage(LoggingConfigurable):
@@ -18,7 +18,7 @@ class Storage(LoggingConfigurable):
         build_id: int,
         key: str,
         filename: str,
-        artifact_type: orm.BuildArtifactType,
+        artifact_type: schema.BuildArtifactType,
     ):
         db.add(
             orm.BuildArtifact(build_id=build_id, key=key, artifact_type=artifact_type)
@@ -31,7 +31,7 @@ class Storage(LoggingConfigurable):
         build_id: int,
         key: str,
         value: bytes,
-        artifact_type: orm.BuildArtifactType,
+        artifact_type: schema.BuildArtifactType,
     ):
         db.add(
             orm.BuildArtifact(build_id=build_id, key=key, artifact_type=artifact_type)

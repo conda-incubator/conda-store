@@ -148,10 +148,10 @@ class CondaStore(LoggingConfigurable):
 
     build_artifacts = List(
         [
-            orm.BuildArtifactType.LOCKFILE,
-            orm.BuildArtifactType.YAML,
-            orm.BuildArtifactType.CONDA_PACK,
-            orm.BuildArtifactType.DOCKER_MANIFEST,
+            schema.BuildArtifactType.LOCKFILE,
+            schema.BuildArtifactType.YAML,
+            schema.BuildArtifactType.CONDA_PACK,
+            schema.BuildArtifactType.DOCKER_MANIFEST,
         ],
         help="artifacts to build in conda-store. By default all of the artifacts",
         config=True,
@@ -159,9 +159,9 @@ class CondaStore(LoggingConfigurable):
 
     build_artifacts_kept_on_deletion = List(
         [
-            orm.BuildArtifactType.LOGS,
-            orm.BuildArtifactType.LOCKFILE,
-            orm.BuildArtifactType.YAML,
+            schema.BuildArtifactType.LOGS,
+            schema.BuildArtifactType.LOCKFILE,
+            schema.BuildArtifactType.YAML,
         ],
         help="artifacts to keep on build deletion",
         config=True,
@@ -396,11 +396,11 @@ class CondaStore(LoggingConfigurable):
         from conda_store_server.worker import tasks
 
         artifact_tasks = []
-        if orm.BuildArtifactType.YAML in self.build_artifacts:
+        if schema.BuildArtifactType.YAML in self.build_artifacts:
             artifact_tasks.append(tasks.task_build_conda_env_export.si(build.id))
-        if orm.BuildArtifactType.CONDA_PACK in self.build_artifacts:
+        if schema.BuildArtifactType.CONDA_PACK in self.build_artifacts:
             artifact_tasks.append(tasks.task_build_conda_pack.si(build.id))
-        if orm.BuildArtifactType.DOCKER_MANIFEST in self.build_artifacts:
+        if schema.BuildArtifactType.DOCKER_MANIFEST in self.build_artifacts:
             artifact_tasks.append(tasks.task_build_conda_docker.si(build.id))
 
         (
@@ -423,7 +423,7 @@ class CondaStore(LoggingConfigurable):
                 f"environment namespace={namespace} name={name} does not exist"
             )
 
-        if build.status != orm.BuildStatus.COMPLETED:
+        if build.status != schema.BuildStatus.COMPLETED:
             raise utils.CondaStoreError(
                 "cannot update environment to build id since not completed"
             )
@@ -484,7 +484,10 @@ class CondaStore(LoggingConfigurable):
 
     def delete_build(self, build_id):
         build = api.get_build(self.db, build_id)
-        if build.status not in [orm.BuildStatus.FAILED, orm.BuildStatus.COMPLETED]:
+        if build.status not in [
+            schema.BuildStatus.FAILED,
+            schema.BuildStatus.COMPLETED,
+        ]:
             raise utils.CondaStoreError(
                 "cannot delete build since not finished building"
             )

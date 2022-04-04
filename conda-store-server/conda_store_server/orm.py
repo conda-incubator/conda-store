@@ -1,5 +1,4 @@
 import os
-import enum
 import datetime
 import shutil
 import itertools
@@ -25,7 +24,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import create_engine
 
-from conda_store_server import utils
+from conda_store_server import utils, schema
 from conda_store_server.environment import validate_environment
 from conda_store_server.conda import download_repodata
 
@@ -33,23 +32,6 @@ from conda_store_server.conda import download_repodata
 from celery.contrib.rdb import set_trace as bp
 
 Base = declarative_base()
-
-
-class BuildArtifactType(enum.Enum):
-    DIRECTORY = "DIRECTORY"
-    LOCKFILE = "LOCKFILE"
-    LOGS = "LOGS"
-    YAML = "YAML"
-    CONDA_PACK = "CONDA_PACK"
-    DOCKER_BLOB = "DOCKER_BLOB"
-    DOCKER_MANIFEST = "DOCKER_MANIFEST"
-
-
-class BuildStatus(enum.Enum):
-    QUEUED = "QUEUED"
-    BUILDING = "BUILDING"
-    COMPLETED = "COMPLETED"
-    FAILED = "FAILED"
 
 
 class Namespace(Base):
@@ -118,7 +100,7 @@ class Build(Base):
 
     packages = relationship("CondaPackageBuild", secondary=build_conda_package)
 
-    status = Column(Enum(BuildStatus), default=BuildStatus.QUEUED)
+    status = Column(Enum(schema.BuildStatus), default=schema.BuildStatus.QUEUED)
     size = Column(BigInteger, default=0)
     scheduled_on = Column(DateTime, default=datetime.datetime.utcnow)
     started_on = Column(DateTime, default=None)
@@ -202,28 +184,28 @@ class Build(Base):
     @hybrid_property
     def has_lockfile(self):
         return any(
-            artifact.artifact_type == BuildArtifactType.LOCKFILE
+            artifact.artifact_type == schema.BuildArtifactType.LOCKFILE
             for artifact in self.build_artifacts
         )
 
     @hybrid_property
     def has_yaml(self):
         return any(
-            artifact.artifact_type == BuildArtifactType.YAML
+            artifact.artifact_type == schema.BuildArtifactType.YAML
             for artifact in self.build_artifacts
         )
 
     @hybrid_property
     def has_conda_pack(self):
         return any(
-            artifact.artifact_type == BuildArtifactType.CONDA_PACK
+            artifact.artifact_type == schema.BuildArtifactType.CONDA_PACK
             for artifact in self.build_artifacts
         )
 
     @hybrid_property
     def has_docker_manifest(self):
         return any(
-            artifact.artifact_type == BuildArtifactType.DOCKER_MANIFEST
+            artifact.artifact_type == schema.BuildArtifactType.DOCKER_MANIFEST
             for artifact in self.build_artifacts
         )
 
@@ -238,7 +220,7 @@ class BuildArtifact(Base):
     build_id = Column(Integer, ForeignKey("build.id"))
     build = relationship(Build, back_populates="build_artifacts")
 
-    artifact_type = Column(Enum(BuildArtifactType), nullable=False)
+    artifact_type = Column(Enum(schema.BuildArtifactType), nullable=False)
 
     key = Column(Unicode(255))
 

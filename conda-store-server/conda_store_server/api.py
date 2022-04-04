@@ -15,12 +15,14 @@ def list_namespaces(db, show_soft_deleted: bool = False):
     return db.query(orm.Namespace).filter(*filters)
 
 
-def get_namespace(db, name: str = None, id: int = None):
+def get_namespace(db, name: str = None, id: int = None, show_soft_deleted: bool = True):
     filters = []
     if name:
         filters.append(orm.Namespace.name == name)
     if id:
         filters.append(orm.Namespace.id == id)
+    if not show_soft_deleted:
+        filters.append(orm.Namespace.deleted_on == null())
     return db.query(orm.Namespace).filter(*filters).first()
 
 
@@ -95,7 +97,7 @@ def post_specification(conda_store, specification, namespace=None):
     return conda_store.register_environment(specification, namespace, force_build=True)
 
 
-def list_builds(db, status: orm.BuildStatus = None, show_soft_deleted: bool = False):
+def list_builds(db, status: schema.BuildStatus = None, show_soft_deleted: bool = False):
     filters = []
     if status:
         filters.append(orm.Build.status == status)
@@ -156,7 +158,7 @@ def list_build_artifacts(
     db,
     build_id: int = None,
     key: str = None,
-    excluded_artifact_types: List[orm.BuildArtifactType] = None,
+    excluded_artifact_types: List[schema.BuildArtifactType] = None,
 ):
     filters = []
     if build_id:

@@ -1,41 +1,23 @@
-import enum
 import re
 import secrets
 import datetime
+from typing import Optional
 
 import jwt
 import requests
 from traitlets.config import LoggingConfigurable
-from traitlets import Dict, Unicode, Type, default, Bool
-from flask import (
-    request,
-    render_template,
-    redirect,
-    g,
-    abort,
-    jsonify,
-    url_for,
-    session,
-)
+from traitlets import Dict, Unicode, Type, default, Bool, Union, Callable
+from fastapi import APIRouter, Request, Response, HTTPException, Depends
+from fastapi.responses import RedirectResponse
 from sqlalchemy import or_, and_
 
 from conda_store_server import schema, orm
+from conda_store_server.server import dependencies
 
 
 ARN_ALLOWED_REGEX = re.compile(
     f"^([{schema.ALLOWED_CHARACTERS}*]+)/([{schema.ALLOWED_CHARACTERS}*]+)$"
 )
-
-
-class Permissions(enum.Enum):
-    ENVIRONMENT_CREATE = "environment:create"
-    ENVIRONMENT_READ = "environment::read"
-    ENVIRONMENT_UPDATE = "environment::update"
-    ENVIRONMENT_DELETE = "environment::delete"
-    BUILD_DELETE = "build::delete"
-    NAMESPACE_CREATE = "namespace::create"
-    NAMESPACE_READ = "namespace::read"
-    NAMESPACE_DELETE = "namespace::delete"
 
 
 class AuthenticationBackend(LoggingConfigurable):
@@ -50,10 +32,6 @@ class AuthenticationBackend(LoggingConfigurable):
         help="jwt algorithm to use for encryption/decryption",
         config=True,
     )
-
-    @property
-    def routes(self):
-        raise NotImplementedError()
 
     def encrypt_token(self, token: schema.AuthenticationToken):
         return jwt.encode(token.dict(), self.secret, algorithm=self.jwt_algorithm)
@@ -72,24 +50,24 @@ class RBACAuthorizationBackend(LoggingConfigurable):
     role_mappings = Dict(
         {
             "viewer": {
-                Permissions.ENVIRONMENT_READ,
-                Permissions.NAMESPACE_READ,
+                schema.Permissions.ENVIRONMENT_READ,
+                schema.Permissions.NAMESPACE_READ,
             },
             "developer": {
-                Permissions.ENVIRONMENT_CREATE,
-                Permissions.ENVIRONMENT_READ,
-                Permissions.ENVIRONMENT_UPDATE,
-                Permissions.NAMESPACE_READ,
+                schema.Permissions.ENVIRONMENT_CREATE,
+                schema.Permissions.ENVIRONMENT_READ,
+                schema.Permissions.ENVIRONMENT_UPDATE,
+                schema.Permissions.NAMESPACE_READ,
             },
             "admin": {
-                Permissions.BUILD_DELETE,
-                Permissions.ENVIRONMENT_CREATE,
-                Permissions.ENVIRONMENT_DELETE,
-                Permissions.ENVIRONMENT_READ,
-                Permissions.ENVIRONMENT_UPDATE,
-                Permissions.NAMESPACE_CREATE,
-                Permissions.NAMESPACE_DELETE,
-                Permissions.NAMESPACE_READ,
+                schema.Permissions.BUILD_DELETE,
+                schema.Permissions.ENVIRONMENT_CREATE,
+                schema.Permissions.ENVIRONMENT_DELETE,
+                schema.Permissions.ENVIRONMENT_READ,
+                schema.Permissions.ENVIRONMENT_UPDATE,
+                schema.Permissions.NAMESPACE_CREATE,
+                schema.Permissions.NAMESPACE_DELETE,
+                schema.Permissions.NAMESPACE_READ,
             },
         },
         help="default role to permissions mapping to use",
@@ -201,29 +179,69 @@ class Authentication(LoggingConfigurable):
         config=True,
     )
 
+    @property
+    def router(self):
+        router = APIRouter(tags=["auth"])
+        for path, method, func in self.routes:
+            getattr(router, method)(path, name=func.__name__)(func)
+        return router
+
     login_html = Unicode(
         """
 <div class="text-center">
-    <form class="form-signin" method="POST" id="login">
+    <form class="form-signin" id="login">
         <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
         <div class="form-floating">
-            <input name="username" class="form-control" id="floatingInput" placeholder="Username">
+            <input name="username" class="form-control" id="username" placeholder="Username">
             <label for="floatingInput">Username</label>
         </div>
         <div class="form-floating">
-            <input name="password" type="password" class="form-control" id="floatingPassword" placeholder="Password">
+            <input name="password" type="password" class="form-control" id="password" placeholder="Password">
             <label for="floatingPassword">Password</label>
         </div>
         <button class="w-100 btn btn-lg btn-primary" type="submit">Sign In</button>
     </form>
 </div>
+
+<script>
+function bannerMessage(message) {
+    let banner = document.querySelector('#message');
+    banner.innerHTML = message;
+}
+
+async function loginHandler(event) {
+    event.preventDefault();
+
+    usernameInput = document.querySelector("input#username");
+    passwordInput = document.querySelector("input#password");
+
+    let response = await fetch("{{ url_for('post_login_method') }}", {
+        method: "POST",
+        body: JSON.stringify({
+            username: usernameInput.value,
+            password: passwordInput.value,
+        }),
+        headers: {'Content-Type': "application/json"},
+    });
+
+    if (response.ok) {
+        window.location = "{{ url_for('ui_get_user') }}";
+    } else {
+        let data = await response.json();
+        bannerMessage(`<div class="alert alert-danger col">${data.message}</div>`);
+    }
+}
+
+let form = document.querySelector("form#login")
+form.addEventListener('submit', loginHandler);
+</script>
         """,
         help="html form to use for login",
         config=True,
     )
 
-    def get_login_html(self):
-        return self.login_html
+    def get_login_html(self, request: Request, templates):
+        return templates.env.from_string(self.login_html).render(request=request)
 
     @property
     def authentication(self):
@@ -242,12 +260,12 @@ class Authentication(LoggingConfigurable):
     @property
     def routes(self):
         return [
-            ("/login/", "GET", self.get_login_method),
-            ("/login/", "POST", self.post_login_method),
-            ("/logout/", "POST", self.post_logout_method),
+            ("/login/", "get", self.get_login_method),
+            ("/login/", "post", self.post_login_method),
+            ("/logout/", "post", self.post_logout_method),
         ]
 
-    def authenticate(self, request):
+    async def authenticate(self, request: Request):
         return schema.AuthenticationToken(
             primary_namespace="default",
             role_bindings={
@@ -255,19 +273,27 @@ class Authentication(LoggingConfigurable):
             },
         )
 
-    def get_login_method(self):
-        return render_template("login.html", login_html=self.get_login_html())
+    def get_login_method(
+        self, request: Request, templates=Depends(dependencies.get_templates)
+    ):
+        return templates.TemplateResponse(
+            "login.html",
+            {"request": request, "login_html": self.get_login_html(request, templates)},
+        )
 
-    def post_login_method(self):
-        redirect_url = request.args.get("next", url_for("ui.ui_get_user"))
-        response = redirect(redirect_url)
-        authentication_token = self.authenticate(request)
+    async def post_login_method(
+        self,
+        request: Request,
+        response: Response,
+        next: Optional[str] = None,
+        templates=Depends(dependencies.get_templates),
+    ):
+        redirect_url = next or request.url_for("ui_get_user")
+        response = RedirectResponse(redirect_url, status_code=303)
+        authentication_token = await self.authenticate(request)
         if authentication_token is None:
-            abort(
-                jsonify(
-                    {"status": "error", "message": "invalid authentication credentials"}
-                ),
-                403,
+            raise HTTPException(
+                status_code=403, detail="Invalid authentication credentials"
             )
 
         response.set_cookie(
@@ -280,62 +306,63 @@ class Authentication(LoggingConfigurable):
         )
         return response
 
-    def post_logout_method(self):
-        redirect_url = request.args.get("next", "/")
-        response = redirect(redirect_url)
+    def post_logout_method(self, request: Request, next: Optional[str] = None):
+        redirect_url = next or request.url_for("ui_list_environments")
+        response = RedirectResponse(redirect_url, status_code=303)
         response.set_cookie(self.cookie_name, "", expires=0)
         return response
 
-    def authenticate_request(self, require=False):
-        if hasattr(g, "entity"):
+    def authenticate_request(self, request: Request, require=False):
+        if hasattr(request.state, "entity"):
             pass  # only authenticate once
         elif request.cookies.get(self.cookie_name):
             # cookie based authentication
             token = request.cookies.get(self.cookie_name)
-            g.entity = self.authentication.authenticate(token)
+            request.state.entity = self.authentication.authenticate(token)
         elif request.headers.get("Authorization"):
             # auth bearer based authentication
             token = request.headers.get("Authorization").split(" ")[1]
-            g.entity = self.authentication.authenticate(token)
+            request.state.entity = self.authentication.authenticate(token)
         else:
-            g.entity = None
+            request.state.entity = None
 
-        if require and g.entity is None:
-            response = jsonify(
-                {"status": "error", "message": "request not authenticated"}
+        if require and request.state.entity is None:
+            raise HTTPException(
+                status_code=401,
+                detail="request not authenticated",
             )
-            response.status_code = 401
-            abort(response)
+        return request.state.entity
 
-        return g.entity
-
-    @property
-    def entity_bindings(self):
-        entity = self.authenticate_request()
+    def entity_bindings(self, entity):
         return self.authorization.get_entity_bindings(
             {} if entity is None else entity.role_bindings, entity is not None
         )
 
-    def authorize_request(self, arn, permissions, require=False):
-        if not hasattr(g, "entity"):
-            self.authenticate_request()
+    def authorize_request(self, request: Request, arn, permissions, require=False):
+        if not hasattr(request.state, "entity"):
+            self.authenticate_request(request)
 
-        if not hasattr(g, "authorized"):
-            role_bindings = {} if (g.entity is None) else g.entity.role_bindings
-            g.authorized = self.authorization.authorize(
-                role_bindings, arn, permissions, g.entity is not None
+        if not hasattr(request.state, "authorized"):
+            role_bindings = (
+                {}
+                if (request.state.entity is None)
+                else request.state.entity.role_bindings
+            )
+            request.state.authorized = self.authorization.authorize(
+                role_bindings, arn, permissions, request.state.entity is not None
             )
 
-        if require and not g.authorized:
-            response = jsonify({"status": "error", "message": "request not authorized"})
-            response.status_code = 403
-            abort(response)
+        if require and not request.state.authorized:
+            raise HTTPException(
+                status_code=403,
+                detail="request not authorized",
+            )
 
-        return g.authorized
+        return request.state.authorized
 
-    def filter_builds(self, query):
+    def filter_builds(self, entity, query):
         cases = []
-        for entity_arn, entity_roles in self.entity_bindings.items():
+        for entity_arn, entity_roles in self.entity_bindings(entity).items():
             namespace, name = self.authorization.compile_arn_sql_like(entity_arn)
             cases.append(
                 and_(
@@ -353,9 +380,9 @@ class Authentication(LoggingConfigurable):
             .filter(or_(*cases))
         )
 
-    def filter_environments(self, query):
+    def filter_environments(self, entity, query):
         cases = []
-        for entity_arn, entity_roles in self.entity_bindings.items():
+        for entity_arn, entity_roles in self.entity_bindings(entity).items():
             namespace, name = self.authorization.compile_arn_sql_like(entity_arn)
             cases.append(
                 and_(
@@ -368,9 +395,9 @@ class Authentication(LoggingConfigurable):
 
         return query.join(orm.Environment.namespace).filter(or_(*cases))
 
-    def filter_namespaces(self, query):
+    def filter_namespaces(self, entity, query):
         cases = []
-        for entity_arn, entity_roles in self.entity_bindings.items():
+        for entity_arn, entity_roles in self.entity_bindings(entity).items():
             namespace, name = self.authorization.compile_arn_sql_like(entity_arn)
             cases.append(orm.Namespace.name.like(namespace))
 
@@ -398,13 +425,14 @@ class DummyAuthentication(Authentication):
 
     # login_html = Unicode()
 
-    def authenticate(self, request):
+    async def authenticate(self, request: Request):
         """Checks against a global password if it's been set. If not, allow any user/pass combo"""
-        if self.password and request.form["password"] != self.password:
+        data = await request.json()
+        if self.password and data.get("password") != self.password:
             return None
 
         return schema.AuthenticationToken(
-            primary_namespace=request.form["username"],
+            primary_namespace=data["username"],
             role_bindings={
                 "*/*": ["admin"],
             },
@@ -452,14 +480,24 @@ class GenericOAuthAuthentication(Authentication):
         help="Disable TLS verification on http request.",
     )
 
-    oauth_callback_url = Unicode(
+    oauth_callback_url = Union(
+        [Unicode(), Callable()],
         config=True,
         help="Callback URL to use. Typically `{protocol}://{host}/{prefix}/oauth_callback`",
     )
 
     @default("oauth_callback_url")
-    def _oauth_callback_url(self):
-        return url_for("auth.post_login_method", _external=True)
+    def _default_oauth_callback_url(self):
+        def _oauth_callback_url(request: Request):
+            return request.url_for("post_login_method")
+
+        return _oauth_callback_url
+
+    def get_oauth_callback_url(self, request: Request):
+        if callable(self.oauth_callback_url):
+            return self.oauth_callback_url(request)
+        else:
+            return self.oauth_callback_url
 
     login_html = Unicode(
         """
@@ -472,13 +510,13 @@ class GenericOAuthAuthentication(Authentication):
         config=True,
     )
 
-    def get_login_html(self):
+    def get_login_html(self, request: Request, templates):
         state = secrets.token_urlsafe()
-        session["oauth_state"] = state
+        request.session["oauth_state"] = state
         authorization_url = self.oauth_route(
             auth_url=self.authorize_url,
             client_id=self.client_id,
-            redirect_uri=self.oauth_callback_url,
+            redirect_uri=self.get_oauth_callback_url(request),
             scope=self.access_scope,
             state=state,
         )
@@ -496,12 +534,12 @@ class GenericOAuthAuthentication(Authentication):
     @property
     def routes(self):
         return [
-            ("/login/", "GET", self.get_login_method),
-            ("/logout/", "POST", self.post_logout_method),
-            ("/oauth_callback/", "GET", self.post_login_method),
+            ("/login/", "get", self.get_login_method),
+            ("/logout/", "post", self.post_logout_method),
+            ("/oauth_callback/", "get", self.post_login_method),
         ]
 
-    def authenticate(self, request):
+    async def authenticate(self, request: Request):
         # 1. using the callback_url code and state in request
         oauth_access_token = self._get_oauth_token(request)
         if oauth_access_token is None:
@@ -518,18 +556,14 @@ class GenericOAuthAuthentication(Authentication):
             },
         )
 
-    def _get_oauth_token(self, request):
+    def _get_oauth_token(self, request: Request):
         # 1. Get callback URI params, which include `code` and `state`
         #    `code` will be used to request the token; `state` must match our session's!
-        code = request.args.get("code")
-        state = request.args.get("state")
-        if session["oauth_state"] != state:
-            response = jsonify(
-                {"status": "error", "message": "OAuth states do not match"}
-            )
-            response.status_code = 401
-            abort(response)
-        del session["oauth_state"]
+        code = request.query_params.get("code")
+        state = request.query_params.get("state")
+        if request.session["oauth_state"] != state:
+            raise HTTPException(status_code=401, detail="OAuth states do not match")
+        del request.session["oauth_state"]
 
         # 2. Request actual access token with code and secret
         r_response = requests.post(
@@ -539,7 +573,7 @@ class GenericOAuthAuthentication(Authentication):
                 "grant_type": "authorization_code",
                 "client_id": self.client_id,
                 "client_secret": self.client_secret,
-                "redirect_uri": self.oauth_callback_url,
+                "redirect_uri": self.get_oauth_callback_url(request),
             },
             headers={"Accept": "application/json"},
             verify=self.tls_verify,

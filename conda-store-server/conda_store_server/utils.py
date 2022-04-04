@@ -6,17 +6,11 @@ import time
 import hashlib
 import json
 
-from flask import jsonify
-
 
 class CondaStoreError(Exception):
     @property
     def message(self):
         return self.args[0]
-
-    @property
-    def response(self):
-        return jsonify({"status": "error", "message": self.args[0]}), 400
 
 
 def symlink(source, target):

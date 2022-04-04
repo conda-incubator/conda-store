@@ -1,10 +1,9 @@
 import datetime
 import enum
-from typing import List, Optional, Union, Dict
+from typing import List, Optional, Union, Dict, Any
 import functools
 from pkg_resources import Requirement
 
-from conda.models.match_spec import MatchSpec
 from pydantic import BaseModel, Field, constr, validator
 
 
@@ -16,6 +15,17 @@ def _datetime_factory(offset: datetime.timedelta):
 #########################
 # Authentication Schema
 #########################
+
+
+class Permissions(enum.Enum):
+    ENVIRONMENT_CREATE = "environment:create"
+    ENVIRONMENT_READ = "environment::read"
+    ENVIRONMENT_UPDATE = "environment::update"
+    ENVIRONMENT_DELETE = "environment::delete"
+    BUILD_DELETE = "build::delete"
+    NAMESPACE_CREATE = "namespace::create"
+    NAMESPACE_READ = "namespace::read"
+    NAMESPACE_DELETE = "namespace::delete"
 
 
 class AuthenticationToken(BaseModel):
@@ -95,12 +105,29 @@ class Specification(BaseModel):
         orm_mode = True
 
 
+class BuildArtifactType(enum.Enum):
+    DIRECTORY = "DIRECTORY"
+    LOCKFILE = "LOCKFILE"
+    LOGS = "LOGS"
+    YAML = "YAML"
+    CONDA_PACK = "CONDA_PACK"
+    DOCKER_BLOB = "DOCKER_BLOB"
+    DOCKER_MANIFEST = "DOCKER_MANIFEST"
+
+
+class BuildStatus(enum.Enum):
+    QUEUED = "QUEUED"
+    BUILDING = "BUILDING"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+
+
 class Build(BaseModel):
     id: int
     environment_id: int
-    specification: Specification
-    packages: List[CondaPackage]
-    status: enum.Enum
+    specification: Optional[Specification]
+    packages: Optional[List[CondaPackage]]
+    status: BuildStatus
     size: int
     scheduled_on: datetime.datetime
     started_on: Optional[datetime.datetime]
@@ -116,7 +143,7 @@ class Environment(BaseModel):
     namespace: Namespace
     name: str
     current_build_id: int
-    current_build: Build
+    current_build: Optional[Build]
 
     class Config:
         orm_mode = True
@@ -144,6 +171,8 @@ class CondaSpecification(BaseModel):
 
     @validator("dependencies", each_item=True)
     def check_dependencies(cls, v):
+        from conda.models.match_spec import MatchSpec
+
         if not isinstance(v, str):
             return v  # ignore pip field
 
@@ -262,3 +291,95 @@ class DockerRegistryError(enum.Enum):
         "detail": "The access controller denied access for the operation on a resource",
         "status": 403,
     }
+
+
+# API Response Objects
+class APIStatus(enum.Enum):
+    OK = "ok"
+    ERROR = "error"
+
+
+class APIResponse(BaseModel):
+    status: APIStatus
+    data: Optional[Any]
+    message: Optional[str]
+
+
+class APIPaginatedResponse(APIResponse):
+    page: int
+    size: int
+    count: int
+
+
+class APIAckResponse(BaseModel):
+    status: APIStatus
+    message: Optional[str]
+
+
+# GET /api/v1
+class APIGetStatusData(BaseModel):
+    version: str
+
+
+class APIGetStatus(APIResponse):
+    data: APIGetStatusData
+
+
+# GET /api/v1/permission
+class APIGetPermissionData(BaseModel):
+    authenticated: bool
+    entity_permissions: Dict[str, List[str]]
+    primary_namespace: str
+
+
+class APIGetPermission(APIResponse):
+    data: APIGetPermissionData
+
+
+# GET /api/v1/namespace
+class APIListNamespace(APIPaginatedResponse):
+    data: List[Namespace]
+
+
+# GET /api/v1/namespace/{name}
+class APIGetNamespace(APIResponse):
+    data: Namespace
+
+
+# GET /api/v1/environment
+class APIListEnvironment(APIPaginatedResponse):
+    data: List[Environment]
+
+
+# GET /api/v1/environment/{namespace}/{name}
+class APIGetEnvironment(APIResponse):
+    data: Environment
+
+
+# POST /api/v1/specification
+class APIPostSpecificationData(BaseModel):
+    build_id: int
+
+
+class APIPostSpecification(APIResponse):
+    data: APIPostSpecificationData
+
+
+# GET /api/v1/build
+class APIListBuild(APIPaginatedResponse):
+    data: List[Build]
+
+
+# GET /api/v1/build/1
+class APIGetBuild(APIResponse):
+    data: Build
+
+
+# GET /api/v1/channel
+class APIListCondaChannel(APIPaginatedResponse):
+    data: List[CondaChannel]
+
+
+# GET /api/v1/package
+class APIListCondaPackage(APIPaginatedResponse):
+    data: List[CondaPackage]

@@ -25,11 +25,13 @@
           pythonPackages.pyyaml
           pythonPackages.traitlets
           pythonPackages.celery
-          pythonPackages.flask
-          pythonPackages.flask-cors
+          pythonPackages.uvicorn
+          pythonPackages.fastapi
           pythonPackages.pyjwt
           pythonPackages.minio
           pythonPackages.filelock
+
+          pythonPackages.pytest
         ];
       };
   };
