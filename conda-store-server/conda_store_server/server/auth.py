@@ -6,7 +6,7 @@ from typing import Optional
 import jwt
 import requests
 from traitlets.config import LoggingConfigurable
-from traitlets import Dict, Unicode, Type, default, Bool
+from traitlets import Dict, Unicode, Type, default, Bool, Union, Callable
 from fastapi import APIRouter, Request, Response, HTTPException, Depends
 from fastapi.responses import RedirectResponse
 from sqlalchemy import or_, and_
@@ -480,15 +480,24 @@ class GenericOAuthAuthentication(Authentication):
         help="Disable TLS verification on http request.",
     )
 
-    # oauth_callback_url = Unicode(
-    #     config=True,
-    #     help="Callback URL to use. Typically `{protocol}://{host}/{prefix}/oauth_callback`",
-    # )
+    oauth_callback_url = Union(
+        [Unicode(), Callable()],
+        config=True,
+        help="Callback URL to use. Typically `{protocol}://{host}/{prefix}/oauth_callback`",
+    )
 
-    # @default("oauth_callback_url")
-    # def _oauth_callback_url(self):
-    #     # return # url_for("auth.post_login_method", _external=True)
-    #     return "/a/test/path"
+    @default("oauth_callback_url")
+    def _default_oauth_callback_url(self):
+        def _oauth_callback_url(request: Request):
+            return request.url_for("post_login_method")
+
+        return _oauth_callback_url
+
+    def get_oauth_callback_url(self, request: Request):
+        if callable(self.oauth_callback_url):
+            return self.oauth_callback_url(request)
+        else:
+            return self.oauth_callback_url
 
     login_html = Unicode(
         """
@@ -507,7 +516,7 @@ class GenericOAuthAuthentication(Authentication):
         authorization_url = self.oauth_route(
             auth_url=self.authorize_url,
             client_id=self.client_id,
-            redirect_uri=request.url_for("post_login_method"),
+            redirect_uri=self.get_oauth_callback_url(request),
             scope=self.access_scope,
             state=state,
         )
@@ -564,7 +573,7 @@ class GenericOAuthAuthentication(Authentication):
                 "grant_type": "authorization_code",
                 "client_id": self.client_id,
                 "client_secret": self.client_secret,
-                "redirect_uri": request.url_for("post_login_method"),
+                "redirect_uri": self.get_oauth_callback_url(request),
             },
             headers={"Accept": "application/json"},
             verify=self.tls_verify,
