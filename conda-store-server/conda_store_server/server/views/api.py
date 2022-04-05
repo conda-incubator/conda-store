@@ -314,13 +314,13 @@ def api_get_environment(
 def api_update_environment_build(
     namespace: str,
     name: str,
+    request: Request,
     conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
-    entity=Depends(dependencies.get_entity),
-    build_id: int = Body(...),
+    build_id: int = Body(..., embed=True),
 ):
     auth.authorize_request(
-        entity, f"{namespace}/{name}", {Permissions.ENVIRONMENT_UPDATE}, require=True
+        request, f"{namespace}/{name}", {Permissions.ENVIRONMENT_UPDATE}, require=True
     )
 
     try:

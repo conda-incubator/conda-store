@@ -450,7 +450,7 @@ def test_create_namespace_auth(testclient):
 
 
 def test_create_get_delete_namespace_auth(testclient):
-    namespace = f"pytest-delete-ns-{uuid.uuid4()}"
+    namespace = f"pytest-delete-namespace-{uuid.uuid4()}"
 
     testclient.login()
     response = testclient.post(f"api/v1/namespace/{namespace}")
@@ -479,10 +479,40 @@ def test_create_get_delete_namespace_auth(testclient):
     assert r.status == schema.APIStatus.ERROR
 
 
-@pytest.mark.xfail
-def test_update_environment_build(testclient):
-    # PUT /api/v1/environment/namespace/name
-    assert False
+def test_update_environment_build_unauth(testclient):
+    namespace = "filesystem"
+    name = "python-flask-env"
+    build_id = 1
+
+    response = testclient.put(f'api/v1/environment/{namespace}/{name}', json={
+        "build_id": build_id
+    })
+    assert response.status_code == 403
+
+    r = schema.APIResponse.parse_obj(response.json())
+    assert r.status == schema.APIStatus.ERROR
+
+
+def test_update_environment_build_auth(testclient):
+    namespace = "filesystem"
+    name = "python-flask-env"
+    build_id = 1
+
+    testclient.login()
+    response = testclient.put(f'api/v1/environment/{namespace}/{name}', json={
+        "build_id": build_id
+    })
+    response.raise_for_status()
+
+    r = schema.APIAckResponse.parse_obj(response.json())
+    assert r.status == schema.APIStatus.OK
+
+    response = testclient.get(f'api/v1/environment/{namespace}/{name}')
+    response.raise_for_status()
+
+    r = schema.APIGetEnvironment.parse_obj(response.json())
+    assert r.status == schema.APIStatus.OK
+    assert r.data.current_build_id == 1
 
 
 def test_delete_environment_unauth(testclient):
@@ -496,10 +526,27 @@ def test_delete_environment_unauth(testclient):
     assert r.status == schema.APIStatus.ERROR
 
 
-@pytest.mark.xfail
 def test_delete_environment_auth(testclient):
-    # DELETE /api/v1/environment/namespace/name
-    assert False
+    namespace = 'default'
+    environment_name = f'pytest-delete-environment-{uuid.uuid4()}'
+
+    testclient.login()
+    response = testclient.post('api/v1/specification', json={
+        'namespace': namespace,
+        'specification': json.dumps({
+            'name': environment_name
+        })
+    })
+    response.raise_for_status()
+
+    r = schema.APIAckResponse.parse_obj(response.json())
+    assert r.status == schema.APIStatus.OK
+
+    response = testclient.delete(f'api/v1/environment/{namespace}/{environment_name}')
+    response.raise_for_status()
+
+    r = schema.APIAckResponse.parse_obj(response.json())
+    assert r.status == schema.APIStatus.OK
 
 
 def test_delete_build_unauth(testclient):
