@@ -1,6 +1,7 @@
-import pydantic
 from typing import List, Dict, Optional
+import uuid
 
+import pydantic
 import yaml
 from fastapi import APIRouter, Request, Depends, HTTPException, Query, Body
 from fastapi.responses import RedirectResponse
@@ -348,6 +349,42 @@ def api_delete_environment(
 
     conda_store.delete_environment(namespace, name)
     return {"status": "ok"}
+
+
+@router_api.get(
+    "/specification/",
+)
+def api_post_specification(
+    request: Request,
+    name: Optional[str] = Query(...),
+    channel: List[str] = Query([]),
+    conda: List[str] = Query([]),
+    pip: List[str] = Query([]),
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
+    entity=Depends(dependencies.get_entity),
+):
+    # GET is used for the solve to make this endpoint easily
+    # cachable
+    name = name or f'conda-store-{uuid.uuid4()}'
+
+    from conda_store_server.conda import conda_lock
+
+    if pip:
+        conda.append({'pip': pip})
+
+    specification = schema.CondaSpecification(
+        name=name,
+        channels=channel,
+        dependencies=conda,
+    )
+
+    try:
+        specification = conda_store.validate_specification(conda_store, "api", specification)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=e.args[0])
+
+    return conda_lock(specification)
 
 
 @router_api.post(
