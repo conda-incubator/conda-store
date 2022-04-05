@@ -77,6 +77,11 @@ def task_update_conda_channels(self):
         self.retry(exc=exc, countdown=random.randrange(15, 30))
 
 
+@current_app.task(base=WorkerTask, name="task_solve_conda_environment", bind=True)
+def task_solve_conda_environment(self):
+    pass
+
+
 @current_app.task(base=WorkerTask, name="task_build_conda_environment", bind=True)
 def task_build_conda_environment(self, build_id):
     conda_store = self.worker.conda_store

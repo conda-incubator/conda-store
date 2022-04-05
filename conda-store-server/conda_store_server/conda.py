@@ -35,6 +35,7 @@ def conda_list(prefix, executable: str = "conda"):
 
 def conda_pack(prefix, output, ignore_missing_files=True):
     from conda_pack import pack
+
     pack(
         prefix=str(prefix),
         output=str(output),
@@ -42,14 +43,14 @@ def conda_pack(prefix, output, ignore_missing_files=True):
     )
 
 
-def conda_lock(specification: schema.CondaSpecification, conda_exe: str = 'mamba'):
+def conda_lock(specification: schema.CondaSpecification, conda_exe: str = "mamba"):
     from conda_lock.conda_lock import run_lock
 
     with tempfile.TemporaryDirectory() as tmpdir:
-        environment_path = pathlib.Path(tmpdir) / 'environment.yaml'
-        lockfile_path = pathlib.Path(tmpdir) / 'environment-lock.yaml'
+        environment_path = pathlib.Path(tmpdir) / "environment.yaml"
+        lockfile_path = pathlib.Path(tmpdir) / "environment-lock.yaml"
 
-        with environment_path.open('w') as f:
+        with environment_path.open("w") as f:
             f.write(specification.json())
 
         run_lock(

@@ -354,9 +354,9 @@ def api_delete_environment(
 @router_api.get(
     "/specification/",
 )
-def api_post_specification(
+def api_get_specification(
     request: Request,
-    name: Optional[str] = Query(...),
+    name: Optional[str] = Query(None),
     channel: List[str] = Query([]),
     conda: List[str] = Query([]),
     pip: List[str] = Query([]),
@@ -366,12 +366,12 @@ def api_post_specification(
 ):
     # GET is used for the solve to make this endpoint easily
     # cachable
-    name = name or f'conda-store-{uuid.uuid4()}'
+    name = name or f"conda-store-{uuid.uuid4()}"
 
     from conda_store_server.conda import conda_lock
 
     if pip:
-        conda.append({'pip': pip})
+        conda.append({"pip": pip})
 
     specification = schema.CondaSpecification(
         name=name,
@@ -380,7 +380,9 @@ def api_post_specification(
     )
 
     try:
-        specification = conda_store.validate_specification(conda_store, "api", specification)
+        specification = conda_store.validate_specification(
+            conda_store, "api", specification
+        )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=e.args[0])
 
