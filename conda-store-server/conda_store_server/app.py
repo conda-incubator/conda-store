@@ -136,7 +136,7 @@ class CondaStore(LoggingConfigurable):
     )
 
     conda_max_solve_time = Integer(
-        5 * 60, # 5 minute
+        5 * 60,  # 5 minute
         help="Maximum time in seconds to allow for solving a given conda environment",
         config=True,
     )
@@ -325,10 +325,7 @@ class CondaStore(LoggingConfigurable):
                 self.db.add(conda_channel)
                 self.db.commit()
 
-    def register_solve(
-            self,
-            specification: schema.CondaSpecification
-    ):
+    def register_solve(self, specification: schema.CondaSpecification):
         specification_model = self.validate_specification(
             conda_store=self,
             namespace="solve",
@@ -356,7 +353,8 @@ class CondaStore(LoggingConfigurable):
         from conda_store_server.worker import tasks
 
         task = tasks.task_solve_conda_environment.apply_async(
-            args=[solve_model.id], time_limit=self.conda_max_solve_time)
+            args=[solve_model.id], time_limit=self.conda_max_solve_time
+        )
 
         return task, solve_model.id
 

@@ -197,7 +197,7 @@ def solve_conda_environment(conda_store, solve):
         specification = schema.CondaSpecification.parse_obj(solve.specification.spec)
         packages = conda_lock(specification, conda_store.conda_command)
 
-        for package in packages['conda']:
+        for package in packages["conda"]:
             channel = package["channel_id"]
             if channel == "https://conda.anaconda.org/pypi":
                 # ignore pypi package for now
@@ -224,7 +224,7 @@ def solve_conda_environment(conda_store, solve):
         solve.ended_on = datetime.datetime.utcnow()
         conda_store.db.commit()
     except Exception as e:
-        print('Task failed!!!!!!!!!!!', str(e))
+        print("Task failed!!!!!!!!!!!", str(e))
         raise e
 
 

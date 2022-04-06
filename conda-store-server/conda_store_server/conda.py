@@ -70,39 +70,40 @@ def conda_lock(specification: schema.CondaSpecification, conda_exe: str = "mamba
     conda_packages = []
     pip_packages = []
 
-    for package in lockfile['package']:
-        if package['manager'] == 'conda':
-            dist = Dist.from_string(package['url'])
-            conda_packages.append({
-                "name": dist.name,
-                "build": dist.build,
-                "build_number": dist.build_number,
-                "constrains": None,
-                "depends": [],
-                "license": None,
-                "license_family": None,
-                "size": -1,
-                "subdir": dist.subdir,
-                "timestamp": None,
-                "version": dist.version,
-                "channel_id": dist.base_url,
-                "md5": package['hash'].get('md5'),
-                "sha256": package['hash'].get('sha256', ""),
-                "summary": None,
-                "description": None,
-            })
-        elif package['manager'] == 'pip':
-            pip_packages.append({
-                'name': package['name'],
-                'url': package['url'],
-                'version': package['version'],
-                'sha256': package['hash']['sha256']
-            })
+    for package in lockfile["package"]:
+        if package["manager"] == "conda":
+            dist = Dist.from_string(package["url"])
+            conda_packages.append(
+                {
+                    "name": dist.name,
+                    "build": dist.build,
+                    "build_number": dist.build_number,
+                    "constrains": None,
+                    "depends": [],
+                    "license": None,
+                    "license_family": None,
+                    "size": -1,
+                    "subdir": dist.subdir,
+                    "timestamp": None,
+                    "version": dist.version,
+                    "channel_id": dist.base_url,
+                    "md5": package["hash"].get("md5"),
+                    "sha256": package["hash"].get("sha256", ""),
+                    "summary": None,
+                    "description": None,
+                }
+            )
+        elif package["manager"] == "pip":
+            pip_packages.append(
+                {
+                    "name": package["name"],
+                    "url": package["url"],
+                    "version": package["version"],
+                    "sha256": package["hash"]["sha256"],
+                }
+            )
 
-    return {
-        "conda": conda_packages,
-        "pip": pip_packages
-    }
+    return {"conda": conda_packages, "pip": pip_packages}
 
 
 def download_repodata(

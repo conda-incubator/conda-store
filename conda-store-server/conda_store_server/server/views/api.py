@@ -1,5 +1,4 @@
 from typing import List, Dict, Optional
-import uuid
 
 import pydantic
 import yaml
@@ -359,7 +358,9 @@ def api_get_specification(
     channel: List[str] = Query([]),
     conda: List[str] = Query([]),
     pip: List[str] = Query([]),
-    format: schema.APIGetSpecificationFormat = Query(schema.APIGetSpecificationFormat.YAML),
+    format: schema.APIGetSpecificationFormat = Query(
+        schema.APIGetSpecificationFormat.YAML
+    ),
     conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
     entity=Depends(dependencies.get_entity),
@@ -370,7 +371,7 @@ def api_get_specification(
         conda.append({"pip": pip})
 
     specification = schema.CondaSpecification(
-        name=f"conda-store-solve",
+        name="conda-store-solve",
         channels=channel,
         dependencies=conda,
     )
@@ -383,7 +384,7 @@ def api_get_specification(
 
     solve = api.get_solve(conda_store.db, solve_id)
 
-    return {'solve': solve.packages}
+    return {"solve": solve.packages}
 
 
 @router_api.post(
