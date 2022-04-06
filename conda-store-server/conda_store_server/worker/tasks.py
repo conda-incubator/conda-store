@@ -14,6 +14,7 @@ from conda_store_server.build import (
     build_conda_env_export,
     build_conda_pack,
     build_conda_docker,
+    solve_conda_environment,
 )
 
 
@@ -78,8 +79,10 @@ def task_update_conda_channels(self):
 
 
 @current_app.task(base=WorkerTask, name="task_solve_conda_environment", bind=True)
-def task_solve_conda_environment(self):
-    pass
+def task_solve_conda_environment(self, solve_id):
+    conda_store = self.worker.conda_store
+    solve = api.get_solve(conda_store.db, solve_id)
+    solve_conda_environment(conda_store, solve)
 
 
 @current_app.task(base=WorkerTask, name="task_build_conda_environment", bind=True)

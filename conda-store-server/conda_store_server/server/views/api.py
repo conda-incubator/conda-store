@@ -356,37 +356,34 @@ def api_delete_environment(
 )
 def api_get_specification(
     request: Request,
-    name: Optional[str] = Query(None),
     channel: List[str] = Query([]),
     conda: List[str] = Query([]),
     pip: List[str] = Query([]),
+    format: schema.APIGetSpecificationFormat = Query(schema.APIGetSpecificationFormat.YAML),
     conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
     entity=Depends(dependencies.get_entity),
 ):
     # GET is used for the solve to make this endpoint easily
     # cachable
-    name = name or f"conda-store-{uuid.uuid4()}"
-
-    from conda_store_server.conda import conda_lock
-
     if pip:
         conda.append({"pip": pip})
 
     specification = schema.CondaSpecification(
-        name=name,
+        name=f"conda-store-solve",
         channels=channel,
         dependencies=conda,
     )
 
     try:
-        specification = conda_store.validate_specification(
-            conda_store, "api", specification
-        )
+        task, solve_id = api.post_solve(conda_store, specification)
+        task.wait()
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=e.args[0])
+        raise HTTPException(status_code=400, detail=str(e.args[0]))
 
-    return conda_lock(specification)
+    solve = api.get_solve(conda_store.db, solve_id)
+
+    return {'solve': solve.packages}
 
 
 @router_api.post(

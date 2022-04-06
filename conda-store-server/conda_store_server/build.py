@@ -187,6 +187,47 @@ def build_conda_environment(conda_store, build):
         raise e
 
 
+def solve_conda_environment(conda_store, solve):
+    from conda_store_server.conda import conda_lock
+
+    try:
+        solve.started_on = datetime.datetime.utcnow()
+        conda_store.db.commit()
+
+        specification = schema.CondaSpecification.parse_obj(solve.specification.spec)
+        packages = conda_lock(specification, conda_store.conda_command)
+
+        for package in packages['conda']:
+            channel = package["channel_id"]
+            if channel == "https://conda.anaconda.org/pypi":
+                # ignore pypi package for now
+                continue
+
+            channel_id = api.get_conda_channel(conda_store.db, channel)
+            if channel_id is None:
+                raise ValueError(
+                    f"channel url={channel} not recognized in conda-store channel database"
+                )
+            package["channel_id"] = channel_id.id
+
+            _package = (
+                conda_store.db.query(orm.CondaPackage)
+                .filter(orm.CondaPackage.md5 == package["md5"])
+                .filter(orm.CondaPackage.channel_id == package["channel_id"])
+                .first()
+            )
+
+            if _package is None:
+                _package = orm.CondaPackage(**package)
+                conda_store.db.add(_package)
+            solve.packages.append(_package)
+        solve.ended_on = datetime.datetime.utcnow()
+        conda_store.db.commit()
+    except Exception as e:
+        print('Task failed!!!!!!!!!!!', str(e))
+        raise e
+
+
 def build_conda_env_export(conda_store, build):
     conda_prefix = build.build_path(conda_store)
 

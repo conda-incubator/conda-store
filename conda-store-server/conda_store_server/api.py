@@ -97,6 +97,14 @@ def post_specification(conda_store, specification, namespace=None):
     return conda_store.register_environment(specification, namespace, force_build=True)
 
 
+def post_solve(conda_store, specification):
+    return conda_store.register_solve(specification)
+
+
+def get_solve(db, solve_id: int):
+    return db.query(orm.Solve).filter(orm.Solve.id == solve_id).first()
+
+
 def list_builds(db, status: schema.BuildStatus = None, show_soft_deleted: bool = False):
     filters = []
     if status:
