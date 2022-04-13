@@ -14,9 +14,7 @@ def conda_store_validate_specification(
     conda_store: "CondaStore", namespace: str, specification: schema.CondaSpecification
 ) -> schema.CondaSpecification:
     def _package_names(dependencies):
-        return {
-            MatchSpec(_).name: _ for _ in dependencies if isinstance(_, str)
-        }
+        return {MatchSpec(_).name: _ for _ in dependencies if isinstance(_, str)}
 
     # ============== MODIFICATION =================
     # CondaStore.conda_default_channels
@@ -29,7 +27,9 @@ def conda_store_validate_specification(
 
     # CondaStore.conda_included_packages
     included_packages = _package_names(conda_store.conda_included_packages)
-    for package in (included_packages.keys() - _package_names(specification.dependencies).keys()):
+    for package in (
+        included_packages.keys() - _package_names(specification.dependencies).keys()
+    ):
         specification.dependencies.append(included_packages[package])
 
     # ================ VALIDATION ===============
@@ -49,7 +49,10 @@ def conda_store_validate_specification(
         )
 
     # validate that required conda package are in specification
-    missing_packages = _package_names(conda_store.conda_required_packages).keys() <= _package_names(specification.dependencies).keys()
+    missing_packages = (
+        _package_names(conda_store.conda_required_packages).keys()
+        <= _package_names(specification.dependencies).keys()
+    )
     if not missing_packages:
         raise ValueError(
             f"Conda packages {missing_packages} required and missing from specification"
