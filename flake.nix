@@ -32,6 +32,8 @@
           pythonPackages.filelock
 
           pythonPackages.pytest
+          pythonPackages.black
+          pythonPackages.flake8
         ];
       };
   };
