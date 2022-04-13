@@ -223,4 +223,5 @@ class CondaStoreServer(Application):
             debug=(self.log_level == logging.DEBUG),
             workers=1,
             proxy_headers=self.behind_proxy,
+            forwarded_allow_ips=("*" if self.behind_proxy else None),
         )

@@ -64,6 +64,35 @@ class Specification(Base):
     created_on = Column(DateTime, default=datetime.datetime.utcnow)
 
     builds = relationship("Build", back_populates="specification")
+    solves = relationship("Solve", back_populates="specification")
+
+
+solve_conda_package = Table(
+    "solve_conda_package",
+    Base.metadata,
+    Column("solve_id", ForeignKey("solve.id", ondelete="CASCADE"), primary_key=True),
+    Column(
+        "conda_package_id",
+        ForeignKey("conda_package.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+)
+
+
+class Solve(Base):
+    """A solve for a particular specification"""
+
+    __tablename__ = "solve"
+
+    id = Column(Integer, primary_key=True)
+    specification_id = Column(Integer, ForeignKey("specification.id"), nullable=False)
+    specification = relationship(Specification, back_populates="solves")
+
+    scheduled_on = Column(DateTime, default=datetime.datetime.utcnow)
+    started_on = Column(DateTime, default=None)
+    ended_on = Column(DateTime, default=None)
+
+    packages = relationship("CondaPackage", secondary=solve_conda_package)
 
 
 build_conda_package = Table(
