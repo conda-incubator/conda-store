@@ -17,13 +17,13 @@ c.CondaStore.conda_included_packages = [
 ]
 
 c.S3Storage.internal_endpoint = "minio:9000"
-c.S3Storage.external_endpoint = "localhost:9000"
+c.S3Storage.external_endpoint = "conda-store.localhost:9080"
 c.S3Storage.access_key = "admin"
 c.S3Storage.secret_key = "password"
 c.S3Storage.region = "us-east-1"  # minio region default
 c.S3Storage.bucket_name = "conda-store"
 c.S3Storage.internal_secure = False
-c.S3Storage.external_secure = False
+c.S3Storage.external_secure = True
 
 # ==================================
 #        server settings
@@ -36,22 +36,18 @@ c.CondaStoreServer.enable_metrics = True
 c.CondaStoreServer.address = "0.0.0.0"
 c.CondaStoreServer.port = 5000
 # This MUST start with `/`
-c.CondaStoreServer.url_prefix = "/"
+c.CondaStoreServer.url_prefix = "/conda-store"
+c.CondaStoreServer.behind_proxy = True
 
 
 # ==================================
 #         auth settings
 # ==================================
 c.CondaStoreServer.authentication_class = JupyterHubOAuthAuthentication
-c.JupyterHubOAuthAuthentication.jupyterhub_url = "http://jupyterhub:8000"
+c.JupyterHubOAuthAuthentication.jupyterhub_url = "https://conda-store.localhost"
 c.JupyterHubOAuthAuthentication.client_id = "service-this-is-a-jupyterhub-client"
 c.JupyterHubOAuthAuthentication.client_secret = "this-is-a-jupyterhub-secret"
-# in the case of docker-compose the internal and external dns
-# routes do not match. Inside the docker compose deployment
-# jupyterhub is accessible via the `jupyterhub` hostname in dns
-# however outside of the docker it is accessible via localhost
-# hence this small change needed for testing
-c.JupyterHubOAuthAuthentication.authorize_url = "http://localhost:8000/hub/api/oauth2/authorize"
+c.JupyterHubOAuthAuthentication.tls_verify = False
 
 # ==================================
 #         worker settings
