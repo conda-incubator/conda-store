@@ -13,6 +13,10 @@ from conda_store_server import orm, utils, storage, schema, api, conda
 def conda_store_validate_specification(
     conda_store: "CondaStore", namespace: str, specification: schema.CondaSpecification
 ) -> schema.CondaSpecification:
+    def _package_names(dependencies):
+        return {
+            MatchSpec(_).name: _ for _ in dependencies if isinstance(_, str)
+        }
 
     # ============== MODIFICATION =================
     # CondaStore.conda_default_channels
@@ -24,11 +28,9 @@ def conda_store_validate_specification(
         specification.dependencies = conda_store.conda_default_packages.copy()
 
     # CondaStore.conda_included_packages
-    dependency_names = set(
-        MatchSpec(_).name for _ in specification.dependencies if isinstance(_, str)
-    )
-    for package in set(conda_store.conda_included_packages) - dependency_names:
-        specification.dependencies.append(package)
+    included_packages = _package_names(conda_store.conda_included_packages)
+    for package in (included_packages.keys() - _package_names(specification.dependencies).keys()):
+        specification.dependencies.append(included_packages[package])
 
     # ================ VALIDATION ===============
     normalized_conda_channels = set(
@@ -47,12 +49,10 @@ def conda_store_validate_specification(
         )
 
     # validate that required conda package are in specification
-    dependency_names = set(
-        MatchSpec(_).name for _ in specification.dependencies if isinstance(_, str)
-    )
-    if not (set(conda_store.conda_required_packages) <= dependency_names):
+    missing_packages = _package_names(conda_store.conda_required_packages).keys() <= _package_names(specification.dependencies).keys()
+    if not missing_packages:
         raise ValueError(
-            f"Conda packages {conda_store.conda_required_packages - dependency_names} required and missing from specification"
+            f"Conda packages {missing_packages} required and missing from specification"
         )
 
     return specification
