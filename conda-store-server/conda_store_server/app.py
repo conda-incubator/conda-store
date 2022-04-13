@@ -135,6 +135,12 @@ class CondaStore(LoggingConfigurable):
         config=True,
     )
 
+    conda_max_solve_time = Integer(
+        5 * 60,  # 5 minute
+        help="Maximum time in seconds to allow for solving a given conda environment",
+        config=True,
+    )
+
     database_url = Unicode(
         "sqlite:///conda-store.sqlite",
         help="url for the database. e.g. 'sqlite:///conda-store.sqlite' tables will be automatically created if they do not exist",
@@ -318,6 +324,39 @@ class CondaStore(LoggingConfigurable):
                 )
                 self.db.add(conda_channel)
                 self.db.commit()
+
+    def register_solve(self, specification: schema.CondaSpecification):
+        specification_model = self.validate_specification(
+            conda_store=self,
+            namespace="solve",
+            specification=specification,
+        )
+        specification_sha256 = utils.datastructure_hash(specification_model.dict())
+        specification = api.get_specification(self.db, sha256=specification_sha256)
+        if specification is None:
+            self.log.info(
+                f"specification name={specification_model.name} sha256={specification_sha256} registered"
+            )
+            specification = orm.Specification(specification_model.dict())
+            self.db.add(specification)
+            self.db.commit()
+        else:
+            self.log.debug(
+                f"specification name={specification_model.name} sha256={specification_sha256} already registered"
+            )
+
+        solve_model = orm.Solve(specification_id=specification.id)
+        self.db.add(solve_model)
+        self.db.commit()
+
+        # must import tasks after a celery app has been initialized
+        from conda_store_server.worker import tasks
+
+        task = tasks.task_solve_conda_environment.apply_async(
+            args=[solve_model.id], time_limit=self.conda_max_solve_time
+        )
+
+        return task, solve_model.id
 
     def register_environment(
         self, specification: dict, namespace: str = None, force_build=False

@@ -356,6 +356,12 @@ class APIGetEnvironment(APIResponse):
     data: Environment
 
 
+# GET /api/v1/specification
+class APIGetSpecificationFormat(enum.Enum):
+    YAML = "yaml"
+    LOCKFILE = "lockfile"
+
+
 # POST /api/v1/specification
 class APIPostSpecificationData(BaseModel):
     build_id: int

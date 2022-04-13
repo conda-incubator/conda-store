@@ -10,10 +10,14 @@ import subprocess
 import bz2
 import datetime
 import hashlib
+import tempfile
+import pathlib
 
+import yaml
 import yarl
 import requests
-from conda_pack import pack
+
+from conda_store_server import schema
 
 
 def normalize_channel_name(channel_alias, channel):
@@ -30,11 +34,76 @@ def conda_list(prefix, executable: str = "conda"):
 
 
 def conda_pack(prefix, output, ignore_missing_files=True):
+    from conda_pack import pack
+
     pack(
         prefix=str(prefix),
         output=str(output),
         ignore_missing_files=ignore_missing_files,
     )
+
+
+def conda_lock(specification: schema.CondaSpecification, conda_exe: str = "mamba"):
+    from conda_lock.conda_lock import run_lock
+    from conda.models.dist import Dist
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        environment_path = pathlib.Path(tmpdir) / "environment.yaml"
+        lockfile_path = pathlib.Path(tmpdir) / "environment-lock.yaml"
+
+        with environment_path.open("w") as f:
+            f.write(specification.json())
+
+        try:
+            run_lock(
+                environment_files=[environment_path],
+                platforms=[conda_platform()],
+                lockfile_path=lockfile_path,
+                conda_exe=conda_exe,
+            )
+        except subprocess.CalledProcessError as e:
+            raise ValueError(e.output)
+
+        with lockfile_path.open() as f:
+            lockfile = yaml.safe_load(f)
+
+    conda_packages = []
+    pip_packages = []
+
+    for package in lockfile["package"]:
+        if package["manager"] == "conda":
+            dist = Dist.from_string(package["url"])
+            conda_packages.append(
+                {
+                    "name": dist.name,
+                    "build": dist.build,
+                    "build_number": dist.build_number,
+                    "constrains": None,
+                    "depends": [],
+                    "license": None,
+                    "license_family": None,
+                    "size": -1,
+                    "subdir": dist.subdir,
+                    "timestamp": None,
+                    "version": dist.version,
+                    "channel_id": dist.base_url,
+                    "md5": package["hash"].get("md5"),
+                    "sha256": package["hash"].get("sha256", ""),
+                    "summary": None,
+                    "description": None,
+                }
+            )
+        elif package["manager"] == "pip":
+            pip_packages.append(
+                {
+                    "name": package["name"],
+                    "url": package["url"],
+                    "version": package["version"],
+                    "sha256": package["hash"]["sha256"],
+                }
+            )
+
+    return {"conda": conda_packages, "pip": pip_packages}
 
 
 def download_repodata(

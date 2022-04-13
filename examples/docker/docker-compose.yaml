@@ -4,6 +4,29 @@ volumes:
   conda_store_data:
 
 services:
+  traefik:
+    image: "traefik:v2.6"
+    container_name: "traefik"
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.minio.address=:9080"
+      - "--entrypoints.websecure.http.tls=true"
+      - "--entrypoints.minio.http.tls=true"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+      - "9080:9080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
   conda-store-worker:
     build: ../../conda-store-server
     volumes:
@@ -12,20 +35,29 @@ services:
     depends_on:
       conda-store-server:
         condition: service_healthy
+    links:
+      - "traefik:conda-store.localhost"
     platform: linux/amd64
     command: ['conda-store-worker', '--config', '/etc/conda-store/conda_store_config.py']
 
   conda-store-server:
     build: ../../conda-store-server
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.conda-store.rule=Host(`conda-store.localhost`) && PathPrefix(`/conda-store`)"
+      - "traefik.http.routers.conda-store.entrypoints=websecure"
+      - "traefik.port=5000"
     depends_on:
       postgres:
         condition: service_healthy
       minio:
         condition: service_healthy
+    links:
+      - "traefik:conda-store.localhost"
     volumes:
       - ./assets/conda_store_config.py:/etc/conda-store/conda_store_config.py:ro
     healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:5000/api/v1/"]
+      test: ["CMD", "curl", "--fail", "http://localhost:5000/conda-store/api/v1/"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -36,12 +68,19 @@ services:
 
   jupyterhub:
     build: ../../conda-store
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.jupyterhub.rule=Host(`conda-store.localhost`) && (Path(`/`) || PathPrefix(`/hub`) || PathPrefix(`/user`))"
+      - "traefik.http.routers.jupyterhub.entrypoints=websecure"
+      - "traefik.port=8000"
     user: "1000:1000"
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:8000/hub/api/"]
       interval: 10s
       timeout: 5s
       retries: 5
+    links:
+      - "traefik:conda-store.localhost"
     volumes:
       - conda_store_data:/opt/conda-store
       - ./assets/jupyter_notebook_config.py:/etc/jupyter/jupyter_notebook_config.py:ro
@@ -53,8 +92,11 @@ services:
 
   minio:
     image: minio/minio:RELEASE.2020-11-10T21-02-24Z
-    ports:
-      - "9000:9000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.minio.rule=Host(`conda-store.localhost`)"
+      - "traefik.http.routers.minio.entrypoints=minio"
+      - "traefik.port=9000"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 10s

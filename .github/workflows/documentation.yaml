@@ -17,6 +17,9 @@ jobs:
     steps:
       - name: 'Checkout Infrastructure'
         uses: actions/checkout@v2
+      - name: 'Add git safe directory'
+        run: |
+          git config --global --add safe.directory /github/workspace
       - name: Documentation Quality Check
         uses: errata-ai/vale-action@v1.4.0
         with:
@@ -24,14 +27,16 @@ jobs:
           onlyAnnotateModifiedLines: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Broken link checker
-        uses: gaurav-nelson/github-action-markdown-link-check@v1
-        with:
-          config-file: 'tests/links-check/markdown.links.config.json'
-          folder-path: 'docs/'
-          check-modified-files-only: 'yes'
-          file-extension: '.md'
-          base-branch: 'main'
+      # # https://github.com/gaurav-nelson/github-action-markdown-link-check/issues/132
+      # # Disabled until resolved
+      # - name: Broken link checker
+      #   uses: gaurav-nelson/github-action-markdown-link-check@v1
+      #   with:
+      #     config-file: 'tests/links-check/markdown.links.config.json'
+      #     folder-path: 'docs/'
+      #     check-modified-files-only: 'yes'
+      #     file-extension: '.md'
+      #     base-branch: 'main'
       - name: Set up Python
         uses: actions/setup-python@v2
         with:

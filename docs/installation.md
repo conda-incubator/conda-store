@@ -71,10 +71,10 @@ To install on a local docker daemon there is an existing
 `examples/docker`
 
 ```shell
-docker-compose up
+docker-compose up --build
 ```
 
-Then visit via your web browser [http://localhost:5000](http://localhost:5000). By default, you can log in with any username and use the password `test`, since [we are using](https://github.com/Quansight/conda-store/blob/a679e5c4d2f2fe7d992fd93c5d90c34b38c513ef/tests/assets/jupyterhub_config.py#L4) the [DummyAuthenticator](https://github.com/jupyterhub/jupyterhub/blob/4e7936056744cdad31d608388a349207196efa56/jupyterhub/auth.py#L1122)
+Then visit via your web browser [https://conda-store.localhost/conda-store](https://conda-store.localhost/conda-store). By default, you can log in with any username and use the password `test`, since [we are using](https://github.com/Quansight/conda-store/blob/a679e5c4d2f2fe7d992fd93c5d90c34b38c513ef/tests/assets/jupyterhub_config.py#L4) the [DummyAuthenticator](https://github.com/jupyterhub/jupyterhub/blob/4e7936056744cdad31d608388a349207196efa56/jupyterhub/auth.py#L1122)
 
 ## Local Automated systemd Install
 
