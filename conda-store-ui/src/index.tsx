@@ -13,46 +13,52 @@ import SvgIcon from "@mui/material/SvgIcon";
 import TextField from "@mui/material/TextField";
 
 interface Spec {
-  name: string | null
-  current: number | null
-  request: number | null
+  name: string
+  current?: number
+  default?: number
+  options?: number[]
+  request?: number
 }
 
-const nameOptions = ["numpy", "pandas"];
-const versionInfo = {
-  dask: {
+const specRef: Spec[] = [
+  {
+    name: "dask",
     current: 14.37,
     default: 15,
     options: [1.00, 2.00, 14.37, 15],
   },
-  numpy: {
+  {
+    name: "numpy",
     current: 1.99,
     default: 1.99,
     options: [1.00, 1.10, 1.99],
   },
-  pandas: {
-    default: 1.99,
-    options: [1.00, 1.10, 1.99],
+  {
+    name: "pandas",
+    default: 69.420,
+    options: [13.00, 14.10, 69.420],
   },
-  spark: {
-    default: 1.99,
-    options: [1.00, 1.10, 1.99],
+  {
+    name: "spark",
+    default: 1024.00,
+    options: [36.00, 47.10, 1024.00],
   },
+];
 
-};
+const specMap = new Map<string, Spec>(specRef.map(x => [x.name, x]));
 
-const getNameOptions = () => nameOptions;
-const getVersionDefault = (name: string) => versionInfo[name as keyof typeof versionInfo].default;
-const getVersionCurrent = (name: string) => versionInfo[name as keyof typeof versionInfo].current ?? null;
-const getVersionOptions = (name: string) => versionInfo[name as keyof typeof versionInfo].options;
+const getNameOptions: () => string[] = () => specRef.map(x => x.name);
+const getSpec = (name: string | null) => name === null || !specMap.has(name) ? null : {...specMap.get(name)!};
+const getVersionOptions: (name: string) => number[] = name => specMap.get(name)?.options ?? [];
 
 export function PackagePickerList() {
-  const [specs, setSpecs] = React.useState<Spec[]>([{name: null, current: null, request: null}]);
+  const [specs, setSpecs] = React.useState<(Spec | null)[]>([null]);
 
-  const onSpecChange = (newSpec: Spec, ix?: number) => {
+  const onSpecChange = (newSpec: Spec | null, ix?: number) => {
     specs.splice(ix ?? specs.length, 1, newSpec);
     setSpecs([...specs]);
   }
+  const addSpec = () => {onSpecChange(null);}
 
   return (
     <Stack>
@@ -65,7 +71,7 @@ export function PackagePickerList() {
       />
     )}
       <IconButton
-        onClick={() => onSpecChange({name: null, current: null, request: null})}
+        onClick={addSpec}
         sx={{width: 24}}
       >
         <PlusIcon/>
@@ -75,30 +81,33 @@ export function PackagePickerList() {
 }
 
 export function PackagePickerItem(params: {
-  spec: Spec,
+  spec: Spec | null,
   ix: number,
-  onSpecChange: (newSpec: Spec, key: number) => void,
+  onSpecChange: (newSpec: Spec | null, key: number) => void,
 }) {
   return (
     <Stack direction="row">
       <Autocomplete
         onChange={(event: any, name: string | null) => {
-          params.onSpecChange({name, current: name === null ? null : getVersionDefault(name)}, params.ix)
+          params.onSpecChange(getSpec(name), params.ix)
         }}
         options={getNameOptions()}
         renderInput={(params) => <TextField {...params} label="Pkg Name" />}
         sx = {{minWidth: 300}}
-        value={params.spec.name}
+        value={params.spec?.name ?? null}
       />
       <Autocomplete
-        disabled={!params.spec.name}
-        onChange={(event: any, version: number | null) => {
-          params.onSpecChange({name: params.spec.name, current: version}, params.ix)
+        disabled={params.spec === null}
+        getOptionLabel={option => option?.toString() ?? ""}
+        onChange={(event: any, version?: number) => {
+          if (params.spec !== null) {
+            params.onSpecChange({...params.spec, current: version}, params.ix)
+          }
         }}
-        options={params.spec.name === null ? [] : getVersionOptions(params.spec.name)}
+        options={params.spec === null ? [] : getVersionOptions(params.spec.name)}
         renderInput={(params) => <TextField {...params} label="Pkg Version" />}
         sx = {{minWidth: 150}}
-        value={params.spec.name === null ? null : params.spec.current}
+        value={params.spec === null || params.spec.current === null ? null : params.spec.current ?? params.spec.default ?? params.spec.options?.at(-1)}
       />
     </Stack>
   );
@@ -115,6 +124,8 @@ export function PlusIcon() {
 }
 
 export function PackagePicker() {
+  const nameOptions = specRef.map(x => x.name);
+
   const [nameValue, setNameValue] = React.useState<string | null>(null);
 
   const [versionDisabled, setVersionDisabled] = React.useState<boolean>(true);
@@ -126,8 +137,8 @@ export function PackagePicker() {
 
     if (newValue !== null) {
       setVersionDisabled(false);
-      setVersionOptions(versionInfo[newValue as keyof typeof versionInfo].options);
-      setVersionValue(versionInfo[newValue as keyof typeof versionInfo].default);
+      setVersionOptions(specMap.get(newValue)?.options ?? []);
+      setVersionValue(specMap.get(newValue)?.default ?? null);
     } else {
       setVersionDisabled(true);
       setVersionOptions([]);
