@@ -21,3 +21,8 @@ docs/_build
 # nix
 .direnv
 **/.DS_Store
+
+# vscode
+.history/
+.vscode/
+*.code-workspace
