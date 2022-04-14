@@ -123,52 +123,6 @@ export function PlusIcon() {
   )
 }
 
-export function PackagePicker() {
-  const nameOptions = specRef.map(x => x.name);
-
-  const [nameValue, setNameValue] = React.useState<string | null>(null);
-
-  const [versionDisabled, setVersionDisabled] = React.useState<boolean>(true);
-  const [versionOptions, setVersionOptions] = React.useState<number[]>([]);
-  const [versionValue, setVersionValue] = React.useState<number | null>(null);
-
-  const onNameChange = (event: any, newValue: string | null) => {
-    setNameValue(newValue);
-
-    if (newValue !== null) {
-      setVersionDisabled(false);
-      setVersionOptions(specMap.get(newValue)?.options ?? []);
-      setVersionValue(specMap.get(newValue)?.default ?? null);
-    } else {
-      setVersionDisabled(true);
-      setVersionOptions([]);
-      setVersionValue(null);
-    }
-  }
-
-  return (
-    <Stack direction="row">
-      <Autocomplete
-        onChange={onNameChange}
-        options={nameOptions}
-        renderInput={(params) => <TextField {...params} label="Pkg Name" />}
-        sx = {{minWidth: 300}}
-        value={nameValue}
-      />
-      <Autocomplete
-        disabled={versionDisabled}
-        onChange={(event: any, newValue: number | null) => {
-          setVersionValue(newValue);
-        }}
-        options={versionOptions}
-        renderInput={(params) => <TextField {...params} label="Pkg Version" />}
-        sx = {{minWidth: 150}}
-        value={versionValue}
-      />
-    </Stack>
-  );
-}
-
 const rootElem = document.createElement("div");
 document.body.appendChild(rootElem);
 const root = createRoot(rootElem);
