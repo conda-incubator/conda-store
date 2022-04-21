@@ -7,56 +7,29 @@ from traitlets.config import LoggingConfigurable
 from sqlalchemy.pool import NullPool
 from conda.models.match_spec import MatchSpec
 
-from conda_store_server import orm, utils, storage, schema, api, conda
+from conda_store_server import orm, utils, storage, schema, api, conda, environment
 
 
 def conda_store_validate_specification(
     conda_store: "CondaStore", namespace: str, specification: schema.CondaSpecification
 ) -> schema.CondaSpecification:
-    def _package_names(dependencies):
-        return {MatchSpec(_).name: _ for _ in dependencies if isinstance(_, str)}
+    specification = environment.validate_environment_channels(
+        specification,
+        conda_store.conda_channel_alias,
+        conda_store.conda_default_channels,
+        conda_store.conda_allowed_channels)
 
-    # ============== MODIFICATION =================
-    # CondaStore.conda_default_channels
-    if len(specification.channels) == 0:
-        specification.channels = conda_store.conda_default_channels.copy()
+    specification = environment.validate_environment_pypi_packages(
+        specification,
+        conda_store.pypi_default_packages,
+        conda_store.pypi_included_packages,
+        conda_store.pypi_required_packages)
 
-    # CondaStore.conda_default_packages
-    if len(specification.dependencies) == 0:
-        specification.dependencies = conda_store.conda_default_packages.copy()
-
-    # CondaStore.conda_included_packages
-    included_packages = _package_names(conda_store.conda_included_packages)
-    for package in (
-        included_packages.keys() - _package_names(specification.dependencies).keys()
-    ):
-        specification.dependencies.append(included_packages[package])
-
-    # ================ VALIDATION ===============
-    normalized_conda_channels = set(
-        conda.normalize_channel_name(conda_store.conda_channel_alias, _)
-        for _ in specification.channels
-    )
-
-    # validate that all listed channels in specification are allowed
-    normalized_conda_allowed_channels = set(
-        conda.normalize_channel_name(conda_store.conda_channel_alias, _)
-        for _ in conda_store.conda_allowed_channels
-    )
-    if not (normalized_conda_channels <= normalized_conda_allowed_channels):
-        raise ValueError(
-            f"Conda channels {normalized_conda_channels - normalized_conda_allowed_channels} not allowed in specification"
-        )
-
-    # validate that required conda package are in specification
-    missing_packages = (
-        _package_names(conda_store.conda_required_packages).keys()
-        <= _package_names(specification.dependencies).keys()
-    )
-    if not missing_packages:
-        raise ValueError(
-            f"Conda packages {missing_packages} required and missing from specification"
-        )
+    specification = environment.validate_environment_conda_packages(
+        specification,
+        conda_store.conda_default_packages,
+        conda_store.conda_included_packages,
+        conda_store.conda_required_packages)
 
     return specification
 
@@ -135,6 +108,24 @@ class CondaStore(LoggingConfigurable):
     conda_included_packages = List(
         [],
         help="Conda packages that auto included within environment specification. Will not raise a validation error if package not in specification and will be auto added",
+        config=True,
+    )
+
+    pypi_default_packages = List(
+        [],
+        help="PyPi packages that included by default if none are included",
+        config=True,
+    )
+
+    pypi_required_packages = List(
+        [],
+        help="PyPi packages that are required to be within environment specification. Will raise a validation error is package not in specification",
+        config=True,
+    )
+
+    pypi_included_packages = List(
+        [],
+        help="PyPi packages that auto included within environment specification. Will not raise a validation error if package not in specification and will be auto added",
         config=True,
     )
 
