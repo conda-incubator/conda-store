@@ -14,6 +14,7 @@
       in pkgs.mkShell {
         buildInputs = [
           pkgs.vale
+          pkgs.yarn
 
           pkgs.minikube
           pkgs.k9s
