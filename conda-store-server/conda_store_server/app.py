@@ -5,7 +5,6 @@ from celery import Celery, group
 from traitlets import Type, Unicode, Integer, List, default, Callable, Bool
 from traitlets.config import LoggingConfigurable
 from sqlalchemy.pool import NullPool
-from conda.models.match_spec import MatchSpec
 
 from conda_store_server import orm, utils, storage, schema, api, conda, environment
 
@@ -17,19 +16,22 @@ def conda_store_validate_specification(
         specification,
         conda_store.conda_channel_alias,
         conda_store.conda_default_channels,
-        conda_store.conda_allowed_channels)
+        conda_store.conda_allowed_channels,
+    )
 
     specification = environment.validate_environment_pypi_packages(
         specification,
         conda_store.pypi_default_packages,
         conda_store.pypi_included_packages,
-        conda_store.pypi_required_packages)
+        conda_store.pypi_required_packages,
+    )
 
     specification = environment.validate_environment_conda_packages(
         specification,
         conda_store.conda_default_packages,
         conda_store.conda_included_packages,
-        conda_store.conda_required_packages)
+        conda_store.conda_required_packages,
+    )
 
     return specification
 
@@ -482,9 +484,9 @@ class CondaStore(LoggingConfigurable):
 
         utcnow = datetime.datetime.utcnow()
         namespace.deleted_on = utcnow
-        for environment in namespace.environments:
-            environment.deleted_on = utcnow
-            for build in environment.builds:
+        for environment_orm in namespace.environments:
+            environment_orm.deleted_on = utcnow
+            for build in environment_orm.builds:
                 build.deleted_on = utcnow
         self.db.commit()
 
