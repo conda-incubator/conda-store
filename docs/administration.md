@@ -142,6 +142,19 @@ are missing.
 if not specified within the specification dependencies will be auto
 added.
 
+`CondaStore.pypi_default_packages` is a list of PyPi packages that
+are included by default if none are specified within the specification
+dependencies.
+
+`CondaStore.pypi_required_packages` is a list of PyPi packages that
+are required upon validation of the specification dependencies. This
+will not auto add the packages but instead throw an error that they
+are missing.
+
+`CondaStore.pypi_included_packages` is a list of PyPi packages that
+if not specified within the specification dependencies will be auto
+added.
+
 `CondaStore.database_url` is the url string for connecting to the
 database. Behind the scenes [SQLAlchemy](https://www.sqlalchemy.org/)
 is used for the connection so [consult their

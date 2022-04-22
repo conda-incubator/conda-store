@@ -1,9 +1,12 @@
 import pathlib
+from typing import List
 
 import yaml
 import pydantic
+from conda.models.match_spec import MatchSpec
+from pkg_resources import Requirement
 
-from conda_store_server import schema
+from conda_store_server import schema, conda
 
 
 def validate_environment(specification):
@@ -33,3 +36,103 @@ def discover_environments(paths):
                 if is_environment_file(_path):
                     environments.append(_path)
     return environments
+
+
+def validate_environment_channels(
+    specification: schema.Specification,
+    conda_channel_alias: str,
+    default_channels: List[str],
+    allowed_channels: List[str],
+) -> schema.Specification:
+    if len(specification.channels) == 0:
+        specification.channels = default_channels.copy()
+
+    normalized_conda_channels = set(
+        conda.normalize_channel_name(conda_channel_alias, _)
+        for _ in specification.channels
+    )
+
+    normalized_conda_allowed_channels = set(
+        conda.normalize_channel_name(conda_channel_alias, _) for _ in allowed_channels
+    )
+
+    if not (normalized_conda_channels <= normalized_conda_allowed_channels):
+        raise ValueError(
+            f"Conda channels {normalized_conda_channels - normalized_conda_allowed_channels} not allowed in specification"
+        )
+
+    return specification
+
+
+def validate_environment_conda_packages(
+    specification: schema.Specification,
+    default_packages: List[str],
+    included_packages: List[str],
+    required_packages: List[str],
+) -> schema.Specification:
+    def _package_names(dependencies):
+        return {MatchSpec(_).name: _ for _ in dependencies if isinstance(_, str)}
+
+    if len(specification.dependencies) == 0:
+        specification.dependencies = default_packages.copy()
+
+    _included_packages = _package_names(included_packages)
+    for package in (
+        _included_packages.keys() - _package_names(specification.dependencies).keys()
+    ):
+        specification.dependencies.append(_included_packages[package])
+
+    missing_packages = (
+        _package_names(required_packages).keys()
+        <= _package_names(specification.dependencies).keys()
+    )
+    if not missing_packages:
+        raise ValueError(
+            f"Conda packages {missing_packages} required and missing from specification"
+        )
+
+    return specification
+
+
+def validate_environment_pypi_packages(
+    specification: schema.Specification,
+    default_packages: List[str],
+    included_packages: List[str],
+    required_packages: List[str],
+) -> schema.Specification:
+    def _package_names(packages):
+        return {Requirement.parse(_).name: _ for _ in packages if isinstance(_, str)}
+
+    def _get_pip_packages(specification):
+        for package in specification.dependencies:
+            if isinstance(package, dict) and "pip" in package:
+                return package
+        return []
+
+    def _append_pip_packages(specification, packages):
+        for package in specification.dependencies:
+            if isinstance(package, dict) and "pip" in package:
+                package.extend(packages)
+                return
+        specification.dependencies.append({"pip": packages})
+
+    if len(_get_pip_packages(specification)) == 0 and len(default_packages) != 0:
+        _append_pip_packages(specification, default_packages)
+
+    _included_packages = _package_names(included_packages)
+    for package in (
+        _included_packages.keys()
+        - _package_names(_get_pip_packages(specification)).keys()
+    ):
+        _append_pip_packages(specification, [_included_packages[package]])
+
+    missing_packages = (
+        _package_names(required_packages).keys()
+        <= _package_names(_get_pip_packages(specification)).keys()
+    )
+    if not missing_packages:
+        raise ValueError(
+            f"Conda packages {missing_packages} required and missing from specification"
+        )
+
+    return specification

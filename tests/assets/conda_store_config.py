@@ -18,6 +18,10 @@ c.CondaStore.conda_included_packages = [
     'ipykernel'
 ]
 
+c.CondaStore.pypi_included_packages = [
+    'nothing'
+]
+
 
 c.S3Storage.internal_endpoint = "minio:9000"
 c.S3Storage.external_endpoint = "localhost:9000"
