@@ -416,7 +416,7 @@ def api_post_specification(
     except yaml.error.YAMLError:
         raise HTTPException(status_code=400, detail="Unable to parse. Invalid YAML")
     except pydantic.ValidationError as e:
-        raise HTTPException(status_code=400, default=str(e))
+        raise HTTPException(status_code=400, detail=str(e))
 
     auth.authorize_request(
         request,

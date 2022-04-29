@@ -1,3 +1,4 @@
+import re
 import datetime
 import enum
 from typing import List, Optional, Union, Dict, Any
@@ -155,10 +156,20 @@ class CondaSpecificationPip(BaseModel):
 
     @validator("pip", each_item=True)
     def check_pip(cls, v):
-        try:
-            Requirement.parse(v)
-        except Exception:
-            raise ValueError(f"Invalid pypi package dependency {v}")
+
+        allowed_pip_params = ["--index-url", "--extra-index-url", "--trusted-host"]
+
+        if v.startswith("--"):
+            match = re.fullmatch("(.+?)[ =](.*)", v)
+            if match is None or match.group(1) not in allowed_pip_params:
+                raise ValueError(
+                    f"Invalid pip option '{v}' supported options are {allowed_pip_params}"
+                )
+        else:
+            try:
+                Requirement.parse(v)
+            except Exception:
+                raise ValueError(f"Invalid pypi package dependency {v}")
 
         return v
 
