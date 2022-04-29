@@ -144,7 +144,7 @@ class CondaSpecificationPip(BaseModel):
     @validator("pip", each_item=True)
     def check_pip(cls, v):
 
-        allowed_pip_params = ["--index-url", "--extra-urls", "--trusted-urls"]
+        allowed_pip_params = ["--index-url", "--extra-index-url", "--trusted-host"]
 
         try:
             if v is not None and not v.startswith("--"):
