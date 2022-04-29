@@ -148,7 +148,7 @@ class CondaSpecificationPip(BaseModel):
         allowed_pip_params = ["--index-url", "--extra-index-url", "--trusted-host"]
 
         if v.startswith("--"):
-            match = re.fullmatch("(.+)[ =](.+)", v)
+            match = re.fullmatch("(.+?)[ =](.*)", v)
             if match is None or match.group(1) not in allowed_pip_params:
                 raise ValueError(
                     f"Invalid pip option '{v}' supported options are {allowed_pip_params}"
