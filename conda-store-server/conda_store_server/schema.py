@@ -143,16 +143,14 @@ class CondaSpecificationPip(BaseModel):
 
     @validator("pip", each_item=True)
     def check_pip(cls, v):
-    
-        allowed_pip_params = ["--index-url",
-                                "--extra-urls",
-                                "--trusted-urls"]
-    
+
+        allowed_pip_params = ["--index-url", "--extra-urls", "--trusted-urls"]
+
         try:
             if v is not None and not v.startswith("--"):
                 Requirement.parse(v)
             elif v is not None and v.startswith("--"):
-                pip_param, _  = v.split(" ")
+                pip_param, _ = v.split(" ")
 
                 if pip_param not in allowed_pip_params:
                     raise Exception(f"Invalid pip param {pip_param}")
@@ -161,7 +159,6 @@ class CondaSpecificationPip(BaseModel):
             raise ValueError(f"Invalid pypi package dependency {v}")
 
         return v
-    
 
 
 class CondaSpecification(BaseModel):
