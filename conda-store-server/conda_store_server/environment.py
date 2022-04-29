@@ -101,7 +101,12 @@ def validate_environment_pypi_packages(
     required_packages: List[str],
 ) -> schema.Specification:
     def _package_names(packages):
-        return {Requirement.parse(_).name: _ for _ in packages if isinstance(_, str)}
+        
+        result = {}
+        for p in packages:
+            if isinstance(p, str) and not p.startswith('--'):
+                result[ Requirement.parse(p).name ] = p
+        return result
 
     def _get_pip_packages(specification):
         for package in specification.dependencies:
