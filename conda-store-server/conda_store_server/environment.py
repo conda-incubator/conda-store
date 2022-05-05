@@ -103,8 +103,11 @@ def validate_environment_pypi_packages(
     def _package_names(packages):
         result = {}
         for p in packages:
-            if isinstance(p, str) and not p.startswith("--"):
-                result[Requirement.parse(p).name] = p
+            if isinstance(p, str):
+                if p.startswith("--"):
+                    result[p] = p
+                else:
+                    result[Requirement.parse(p).name] = p
         return result
 
     def _get_pip_packages(specification):
@@ -116,7 +119,7 @@ def validate_environment_pypi_packages(
     def _append_pip_packages(specification, packages):
         for package in specification.dependencies:
             if isinstance(package, dict) and "pip" in package:
-                package.extend(packages)
+                package["pip"] += packages
                 return
         specification.dependencies.append({"pip": packages})
 
