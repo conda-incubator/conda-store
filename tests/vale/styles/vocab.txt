@@ -7,6 +7,8 @@ EFS
 GCP
 GitHub
 IP
+Starlette
+FastAPI
 JupyterHub
 JupyterLab
 MinIO

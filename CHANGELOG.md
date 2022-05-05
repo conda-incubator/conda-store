@@ -18,6 +18,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [0.4.0] - 2022-05-04
+
+### Changed
+
+ - Transition to FastAPI for web server from Flask (#277) end user API should not have changed
+ - `conda_store_server.server.auth.Authentication.authenticate` is now an `async` method receiving a [Starlette request object](https://www.starlette.io/requests/)
+
+### Added
+ 
+ - Adding PyPi validation for included, required, and default packages (#292)
+ - Creating a Conda solve API endpoint (#279)
+ - Fully tested API for `/api/v1/...` endpoints (#281)
+
+### Fixed
+
+ - Support for valid `pip` options in `environment.yaml` (#295)
+
+
 ## [0.3.15] - 2022-03-25
 
 ### Added
