@@ -129,7 +129,7 @@ class Build(Base):
         foreign_keys=[environment_id],
     )
 
-    packages = relationship("CondaPackageBuild", secondary=build_conda_package)
+    package_builds = relationship("CondaPackageBuild", secondary=build_conda_package)
 
     status = Column(Enum(schema.BuildStatus), default=schema.BuildStatus.QUEUED)
     size = Column(BigInteger, default=0)
@@ -240,6 +240,9 @@ class Build(Base):
             for artifact in self.build_artifacts
         )
 
+    def __repr__(self):
+       return f"<Build (id={self.id} status={self.status} nbr package_builds={len(self.package_builds)})>"
+
 
 class BuildArtifact(Base):
     """Artifacts of a given build"""
@@ -290,9 +293,10 @@ class CondaChannel(Base):
     name = Column(Unicode(255), unique=True, nullable=False)
     last_update = Column(DateTime)
 
-    def update_packages(self, db):
+    def update_packages(self, db, subdirs=None, batch_size=5000):
+        #TODO reuse batch_size ? 
         #bp()
-        repodata = download_repodata(self.name, self.last_update)
+        repodata = download_repodata(self.name, self.last_update, subdirs=subdirs)
         if not repodata:
             # nothing to update
             return
@@ -305,6 +309,7 @@ class CondaChannel(Base):
             existing_architecture_sha256 = {
                 _[0]
                 for _ in db.query(CondaPackageBuild.sha256)
+                .join(CondaPackageBuild.package)
                 .filter(CondaPackage.channel_id == self.id)
                 .filter(CondaPackageBuild.subdir == architecture)
                 .all()
@@ -414,6 +419,7 @@ class CondaPackageBuild(Base):
 
     __table_args__ = (
         UniqueConstraint(
+            "package_id", 
             "subdir",
             "build",
             "build_number",

@@ -142,9 +142,10 @@ def get_build_packages(
 
 def get_build_lockfile(db, build_id: int):
     build = db.query(orm.Build).filter(orm.Build.id == build_id).first()
+    packages = [ pb.package for pb in build.package_builds ]
     packages = [
         f"{row.channel.name}/{row.subdir}/{row.name}-{row.version}-{row.build}.tar.bz2#{row.md5}"
-        for row in build.packages
+        for row in packages
     ]
     return """#platform: {0}
 @EXPLICIT

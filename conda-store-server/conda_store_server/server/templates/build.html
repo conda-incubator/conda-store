@@ -47,12 +47,12 @@
             </tr>
         </thead>
         <tbody>
-{% for package in build.packages %}
+{% for package_build in build.package_builds %}
             <tr>
                 <th scope="row">{{ loop.index }}</th>
-                <td>{{ package.name }}</td>
-                <td>{{ package.version }}</td>
-                <td>{{ package.channel.name }}</td>
+                <td>{{ package_build.package.name }}</td>
+                <td>{{ package_build.package.version }}</td>
+                <td>{{ package_build.package.channel.name }}</td>
             </tr>
 {% endfor %}
         </tbody>

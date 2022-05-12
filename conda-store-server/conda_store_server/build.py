@@ -12,7 +12,6 @@ import yaml
 
 from conda_store_server import api, conda, orm, utils, schema
 
-
 def set_build_started(conda_store, build):
     build.status = schema.BuildStatus.BUILDING
     build.started_on = datetime.datetime.utcnow()
@@ -34,7 +33,12 @@ def set_build_failed(conda_store, build, logs):
 
 
 def set_build_completed(conda_store, build, logs, packages):
+
+    package_keys = ['channel_id', 'license', 'license_family', 'name', 'version', 'summary', 'description']
+    package_build_keys = ["build","build_number","constrains","depends","md5","sha256","size","subdir","timestamp"]
+
     for package in packages:
+
         channel = package["channel_id"]
         if channel == "https://conda.anaconda.org/pypi":
             # ignore pypi package for now
@@ -47,17 +51,40 @@ def set_build_completed(conda_store, build, logs, packages):
             )
         package["channel_id"] = channel_id.id
 
+        # Retrieve the package from the DB if it already exists
         _package = (
             conda_store.db.query(orm.CondaPackage)
-            .filter(orm.CondaPackage.md5 == package["md5"])
             .filter(orm.CondaPackage.channel_id == package["channel_id"])
+            .filter(orm.CondaPackage.name == package["name"])
+            .filter(orm.CondaPackage.version == package["version"])
             .first()
         )
 
+        # If it doesn't exist, let's create it in DB
         if _package is None:
-            _package = orm.CondaPackage(**package)
+            package_dict = { k:package[k] for k in package_keys }
+            _package = orm.CondaPackage(**package_dict)
             conda_store.db.add(_package)
-        build.packages.append(_package)
+        
+        # Retrieve the build for this pacakge, if it already exists
+        _package_build = (
+            conda_store.db.query(orm.CondaPackageBuild)
+            .filter(orm.CondaPackageBuild.package == _package)
+            .filter(orm.CondaPackageBuild.md5 == package["md5"])
+            .first()
+        )
+
+        # If it doesn't exist, let's create it in DB
+        if _package_build is None:
+            package_build_dict = { k:package[k] for k in package_build_keys }
+            # Attach the package_build to its package
+            package_build_dict['package_id'] = _package.id
+            _package_build = orm.CondaPackageBuild(**package_build_dict)
+            conda_store.db.add(_package_build)
+        
+
+        build.package_builds.append(_package_build)
+        conda_store.db.commit()
 
     conda_store.storage.set(
         conda_store.db,
