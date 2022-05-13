@@ -12,6 +12,7 @@ import yaml
 
 from conda_store_server import api, conda, orm, utils, schema
 
+
 def set_build_started(conda_store, build):
     build.status = schema.BuildStatus.BUILDING
     build.started_on = datetime.datetime.utcnow()
@@ -34,8 +35,26 @@ def set_build_failed(conda_store, build, logs):
 
 def set_build_completed(conda_store, build, logs, packages):
 
-    package_keys = ['channel_id', 'license', 'license_family', 'name', 'version', 'summary', 'description']
-    package_build_keys = ["build","build_number","constrains","depends","md5","sha256","size","subdir","timestamp"]
+    package_keys = [
+        "channel_id",
+        "license",
+        "license_family",
+        "name",
+        "version",
+        "summary",
+        "description",
+    ]
+    package_build_keys = [
+        "build",
+        "build_number",
+        "constrains",
+        "depends",
+        "md5",
+        "sha256",
+        "size",
+        "subdir",
+        "timestamp",
+    ]
 
     for package in packages:
 
@@ -62,10 +81,10 @@ def set_build_completed(conda_store, build, logs, packages):
 
         # If it doesn't exist, let's create it in DB
         if _package is None:
-            package_dict = { k:package[k] for k in package_keys }
+            package_dict = {k: package[k] for k in package_keys}
             _package = orm.CondaPackage(**package_dict)
             conda_store.db.add(_package)
-        
+
         # Retrieve the build for this pacakge, if it already exists
         _package_build = (
             conda_store.db.query(orm.CondaPackageBuild)
@@ -76,12 +95,11 @@ def set_build_completed(conda_store, build, logs, packages):
 
         # If it doesn't exist, let's create it in DB
         if _package_build is None:
-            package_build_dict = { k:package[k] for k in package_build_keys }
+            package_build_dict = {k: package[k] for k in package_build_keys}
             # Attach the package_build to its package
-            package_build_dict['package_id'] = _package.id
+            package_build_dict["package_id"] = _package.id
             _package_build = orm.CondaPackageBuild(**package_build_dict)
             conda_store.db.add(_package_build)
-        
 
         build.package_builds.append(_package_build)
         conda_store.db.commit()

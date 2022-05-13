@@ -56,7 +56,6 @@ class CondaChannel(BaseModel):
         orm_mode = True
 
 
-
 class CondaPackageBuild(BaseModel):
     id: int
     # channel: CondaChannel
@@ -69,6 +68,7 @@ class CondaPackageBuild(BaseModel):
 
     class Config:
         orm_mode = True
+
 
 class CondaPackage(BaseModel):
     id: int
