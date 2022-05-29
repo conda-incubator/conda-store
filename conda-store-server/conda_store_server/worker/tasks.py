@@ -49,7 +49,8 @@ def task_watch_paths(self):
     for path in environment_paths:
         with open(path) as f:
             conda_store.register_environment(
-                specification=yaml.safe_load(f), namespace="filesystem"
+                specification=yaml.safe_load(f),
+                namespace=conda_store.filesystem_namespace,
             )
 
 
@@ -134,6 +135,13 @@ def task_update_conda_channel(self, channel_name):
         if is_locked:
             lock.release()
             
+
+
+@current_app.task(base=WorkerTask, name="task_solve_conda_environment", bind=True)
+def task_solve_conda_environment(self, solve_id):
+    conda_store = self.worker.conda_store
+    solve = api.get_solve(conda_store.db, solve_id)
+    solve_conda_environment(conda_store, solve)
 
 
 @current_app.task(base=WorkerTask, name="task_solve_conda_environment", bind=True)

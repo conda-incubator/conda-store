@@ -192,6 +192,12 @@ class CondaStore(LoggingConfigurable):
         "default", help="default namespace for conda-store", config=True
     )
 
+    filesystem_namespace = Unicode(
+        "filesystem",
+        help="namespace to use for environments picked up via `CondaStoreWorker.watch_paths` on the filesystem",
+        config=True,
+    )
+
     default_uid = Integer(
         os.getuid(),
         help="default uid to assign to built environments",

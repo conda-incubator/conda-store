@@ -196,6 +196,10 @@ backend](https://docs.celeryproject.org/en/stable/getting-started/backends-and-b
 Conda-Store to use. All environments are built behind a given
 namespace.
 
+`CondaStore.filesystem_namespace` is the namespace to use for
+environments picked up via `CondaStoreWorker.watch_paths` on the
+filesystem.
+
 `CondaStore.default_uid` is the uid (user id) to assign to all
 files and directories in a given built environment. This setting is
 useful if you want to protect environments from modification from

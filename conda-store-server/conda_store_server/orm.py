@@ -2,6 +2,8 @@ import itertools
 import os
 import datetime
 import shutil
+import itertools
+import math
 
 from sqlalchemy import (
     Table,
@@ -72,7 +74,6 @@ class Specification(Base):
 
     builds = relationship("Build", back_populates="specification")
     solves = relationship("Solve", back_populates="specification")
-
 
 solve_conda_package = Table(
     "solve_conda_package",
@@ -294,7 +295,6 @@ class CondaChannel(Base):
     name = Column(Unicode(255), unique=True, nullable=False)
     last_update = Column(DateTime)
 
-
     # @TODO replace these prints by logs
     def update_packages(self, db, subdirs=None):
         print(f"update packages {self.name} ", flush=True)
@@ -501,6 +501,7 @@ class CondaChannel(Base):
 
 
             print(f"DONE for architecture  : {architecture}", flush=True)
+
 
         self.last_update = datetime.datetime.utcnow()
         db.commit()
