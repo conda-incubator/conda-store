@@ -17,6 +17,8 @@ from conda_store_server.build import (
     solve_conda_environment,
 )
 
+from celery.execute import send_task
+import redis
 
 @worker_ready.connect
 def at_start(sender, **k):
@@ -100,10 +102,6 @@ https://docs.celeryq.dev/en/latest/tutorials/task-cookbook.html#ensuring-a-task-
 
 '''
 
-# @TODO move these imports up once the new design is validated by Chris
-from celery.execute import send_task
-import redis
-
 @current_app.task(base=WorkerTask, name="task_update_conda_channels", bind=True)
 def task_update_conda_channels(self):
     conda_store = self.worker.conda_store
@@ -121,7 +119,8 @@ def task_update_conda_channel(self, channel_name):
     task_key = f"lock_{self.name}_{channel_name}"
 
     is_locked = False
-    lock = redis.Redis().lock(task_key)
+    lock = redis.Redis(host=self.worker.redis_host, 
+                        port=self.worker.redis_port).lock(task_key)
     try:
         is_locked = lock.acquire(blocking=False)
         if is_locked:

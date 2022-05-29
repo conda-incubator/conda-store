@@ -35,6 +35,8 @@ services:
       - conda_store_data:/opt/conda-store/
       - ./assets/conda_store_config.py:/etc/conda-store/conda_store_config.py:ro
     depends_on:
+      redis:
+        condition: service_healthy
       conda-store-server:
         condition: service_healthy
     links:
@@ -74,6 +76,8 @@ services:
     ports:
       - '6379:6379'
     command: redis-server --save 20 1 --loglevel debug
+    healthcheck:
+      test: ["CMD", "redis-cli","ping"]
     volumes: 
       - redis:/etc/redis
 
