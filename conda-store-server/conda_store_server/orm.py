@@ -75,13 +75,13 @@ class Specification(Base):
     builds = relationship("Build", back_populates="specification")
     solves = relationship("Solve", back_populates="specification")
 
-solve_conda_package = Table(
-    "solve_conda_package",
+solve_conda_package_build = Table(
+    "solve_conda_package_build",
     Base.metadata,
     Column("solve_id", ForeignKey("solve.id", ondelete="CASCADE"), primary_key=True),
     Column(
-        "conda_package_id",
-        ForeignKey("conda_package.id", ondelete="CASCADE"),
+        "conda_package_build_id",
+        ForeignKey("conda_package_build.id", ondelete="CASCADE"),
         primary_key=True,
     ),
 )
@@ -100,7 +100,7 @@ class Solve(Base):
     started_on = Column(DateTime, default=None)
     ended_on = Column(DateTime, default=None)
 
-    packages = relationship("CondaPackage", secondary=solve_conda_package)
+    package_builds = relationship("CondaPackageBuild", secondary=solve_conda_package_build)
 
 
 build_conda_package = Table(
@@ -523,7 +523,7 @@ class CondaPackage(Base):
 
     id = Column(Integer, primary_key=True)
 
-    channel_id = Column(Integer, ForeignKey("conda_channel.id"))
+    channel_id = Column(Integer, ForeignKey("conda_channel.id"), index=True)
     channel = relationship(CondaChannel)
 
     builds = relationship(
@@ -563,7 +563,7 @@ class CondaPackageBuild(Base):
     # channel_id = Column(Integer, ForeignKey("conda_channel.id"))
     # channel = relationship(CondaChannel)
 
-    build = Column(Unicode(64), nullable=False)
+    build = Column(Unicode(64), nullable=False, index=True)
     build_number = Column(Integer, nullable=False)
     constrains = Column(JSON, nullable=True)
     depends = Column(JSON, nullable=False)
