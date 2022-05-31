@@ -1,8 +1,19 @@
 import os
 import datetime
 
+import redis
 from celery import Celery, group
-from traitlets import Type, Unicode, Integer, List, default, Callable, Bool
+from traitlets import (
+    Type,
+    Unicode,
+    Integer,
+    List,
+    default,
+    Callable,
+    Bool,
+    validate,
+    TraitError,
+)
 from traitlets.config import LoggingConfigurable
 from sqlalchemy.pool import NullPool
 
@@ -143,6 +154,25 @@ class CondaStore(LoggingConfigurable):
         config=True,
     )
 
+    redis_url = Unicode(
+        help="Redis connection url in form 'redis://:<password>@<hostname>:<port>/0'. Connection is used by Celery along with Conda-Store internally",
+        config=True,
+    )
+
+    @default("redis_url")
+    def _default_redis(self):
+        raise TraitError("c.CondaStore.redis_url Redis connection url is required")
+
+    @validate("redis_url")
+    def _check_redis(self, proposal):
+        try:
+            self.redis.ping()
+        except Exception:
+            raise TraitError(
+                f'c.CondaStore.redis_url unable to connect with Redis database at "{self.redis_url}"'
+            )
+        return proposal.value
+
     celery_broker_url = Unicode(
         help="broker url to use for celery tasks",
         config=True,
@@ -177,7 +207,7 @@ class CondaStore(LoggingConfigurable):
 
     @default("celery_broker_url")
     def _default_celery_broker_url(self):
-        return f"sqla+{self.database_url}"
+        return self.redis_url
 
     celery_results_backend = Unicode(
         help="backend to use for celery task results",
@@ -186,7 +216,7 @@ class CondaStore(LoggingConfigurable):
 
     @default("celery_results_backend")
     def _default_celery_results_backend(self):
-        return f"db+{self.database_url}"
+        return self.redis_url
 
     default_namespace = Unicode(
         "default", help="default namespace for conda-store", config=True
@@ -247,6 +277,13 @@ class CondaStore(LoggingConfigurable):
         # session if within the same thread
         # https://docs.sqlalchemy.org/en/14/orm/contextual.html
         return self.session_factory()
+
+    @property
+    def redis(self):
+        if hasattr(self, "_redis"):
+            return self._redis
+        self._redis = redis.Redis.from_url(self.redis_url)
+        return self._redis
 
     @property
     def configuration(self):

@@ -4,6 +4,7 @@ namespace: default
 resources:
   - minio.yaml
   - postgres.yaml
+  - redis.yaml
   - conda-store-server.yaml
   - conda-store-worker.yaml
 configMapGenerator:

@@ -8,7 +8,8 @@ from conda_store_server.server.auth import JupyterHubOAuthAuthentication
 # ==================================
 c.CondaStore.storage_class = S3Storage
 c.CondaStore.store_directory = "/opt/conda-store/conda-store"
-c.CondaStore.database_url = "postgresql+psycopg2://admin:password@postgres/conda-store"
+c.CondaStore.database_url = "postgresql+psycopg2://postgres:password@postgres/conda-store"
+c.CondaStore.redis_url = "redis://:password@redis:6379/0"
 c.CondaStore.default_uid = 1000
 c.CondaStore.default_gid = 100
 c.CondaStore.default_permissions = "775"
