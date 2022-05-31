@@ -112,16 +112,16 @@ def validate_environment_pypi_packages(
 
     def _get_pip_packages(specification):
         for package in specification.dependencies:
-            if isinstance(package, dict) and "pip" in package:
-                return package
+            if isinstance(package, schema.CondaSpecificationPip):
+                return package.pip
         return []
 
     def _append_pip_packages(specification, packages):
         for package in specification.dependencies:
-            if isinstance(package, dict) and "pip" in package:
-                package["pip"] += packages
+            if isinstance(package, schema.CondaSpecificationPip):
+                package.pip += packages
                 return
-        specification.dependencies.append({"pip": packages})
+        specification.dependencies.append(schema.CondaSpecificationPip(pip=packages))
 
     if len(_get_pip_packages(specification)) == 0 and len(default_packages) != 0:
         _append_pip_packages(specification, default_packages)

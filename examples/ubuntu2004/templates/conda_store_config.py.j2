@@ -10,6 +10,7 @@ c.CondaStore.storage_class = S3Storage
 c.CondaStore.store_directory = "/opt/conda-store/conda-store/"
 c.CondaStore.conda_command = "conda"
 c.CondaStore.database_url = "postgresql+psycopg2://admin:password@localhost/conda-store"
+c.CondaStore.redis_url = "redis://:password@localhost:6379/0"
 c.CondaStore.default_uid = 1000
 c.CondaStore.default_gid = 100
 c.CondaStore.default_permissions = "775"

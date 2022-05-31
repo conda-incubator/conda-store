@@ -3,7 +3,7 @@ import os
 import sys
 
 from traitlets import Unicode, Integer, List, validate
-from traitlets.config import Application
+from traitlets.config import Application, catch_config_error
 
 from conda_store_server.app import CondaStore
 
@@ -59,17 +59,14 @@ class CondaStoreWorker(Application):
             sys.exit(1)
         return proposal.value
 
+    @catch_config_error
     def initialize(self, *args, **kwargs):
         super().initialize(*args, **kwargs)
         self.load_config_file(self.config_file)
 
-    @property
-    def conda_store(self):
-        if hasattr(self, "_conda_store"):
-            return self._conda_store
-
-        self._conda_store = CondaStore(parent=self, log=self.log)
-        return self._conda_store
+        self.conda_store = CondaStore(parent=self, log=self.log)
+        # ensure checks on redis_url
+        self.conda_store.redis_url
 
     def start(self):
         argv = [
