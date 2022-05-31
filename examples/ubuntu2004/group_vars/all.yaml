@@ -20,5 +20,8 @@ postgres:
       password: password
       postgresql_role: SUPERUSER
 
+redis:
+  password: password
+
 conda_store:
-  version: "0.3.3"
+  version: "0.4.2"

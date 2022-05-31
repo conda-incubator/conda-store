@@ -19,6 +19,8 @@ services:
         condition: service_healthy
       minio:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     volumes:
       - ./tests/assets/conda_store_config.py:/opt/conda_store/conda_store_config.py:ro
     healthcheck:
@@ -48,6 +50,7 @@ services:
 
   postgres:
     image: postgres:13
+    user: postgres
     ports:
       - 5432:5432
     healthcheck:
@@ -56,6 +59,15 @@ services:
       timeout: 5s
       retries: 5
     environment:
-      POSTGRES_USER: admin
       POSTGRES_PASSWORD: password
       POSTGRES_DB: conda-store
+
+  redis:
+    image: bitnami/redis
+    healthcheck:
+      test: ["CMD", "redis-cli","ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    environment:
+      REDIS_PASSWORD: password

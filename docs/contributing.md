@@ -274,7 +274,7 @@ not be returned.
 Conda Store was designed with the idea of scalable enterprise
 management of reproducible Conda environments.
 
-![Conda Store architecture diagram](_static/images/conda-store-architecture-simple.png)
+![Conda Store architecture diagram](_static/images/conda-store-architecture.png)
 
 ### Configuration
 
@@ -296,6 +296,7 @@ the following responsibilities:
  - build Conda docker images
  - remove Conda builds
  - modify symlinks to point current environment to given build
+ - generally any tasks that can take an unbounded amount of time
 
 All of the worker logic is in `conda_store_server/build.py` and
 `conda_store_server/worker/*.py`. Celery is used for managing tasks so
@@ -310,25 +311,25 @@ The web server has several responsibilities:
  - serve a programmatic Docker registry for interesting docker-conda abilities
 
 The web server is based on
-[Flask](https://flask.palletsprojects.com/en/2.0.x/). Flask was chosen
+[FastAPI](https://fastapi.tiangolo.com/). Originally Flask was chosen
 due to it being battle tested and that conda-store is not doing any
-special things with the web server. The flask app is defined in
-`conda_store_server.server.app`. There are several components to the server:
+special things with the web server. However, over time the ability for
+robust input and output guarantees from the endpoints along with auto
+documentation made FastAPI appealing. The backend web app is defined
+in `conda_store_server.server.app`. There are several components to
+the server:
  - UI :: `conda_store_server/server/views/ui.py`
  - REST API :: `conda_store_server/server/views/api.py`
  - registry :: `conda_store_server/server/views/registry.py`
 
-Both the worker and server need a connection to the database and s3
-server. The s3 server is used to store all build artifacts for example
-logs, docker layers, and the
-[Conda-Pack](https://conda.github.io/conda-pack/) tarball. The
-PostgreSQL database is used for managing the tasks for the Conda-Store
-workers along with powering the Conda-Store web server UI, REST API, and
-Docker registry. Optionally a broker can be used for tasks that is not
-a database for example a message queue similar to
-[RabbitMQ](https://www.rabbitmq.com/),
-[Kafka](https://kafka.apache.org/), etc. It is not believed that a
-full blown message queue will help Conda-Store with performance.
+Both the worker and server need a connection to a SQLAchemy compatible
+database, Redis, and S3 compatible object storage. The S3 server is
+used to store all build artifacts for example logs, docker layers, and
+the [Conda-Pack](https://conda.github.io/conda-pack/) tarball. The
+PostgreSQL database is used for storing all states on environments and
+builds along with powering the Conda-Store web server UI, REST API,
+and Docker registry. Redis is used for keeping track of task state and
+results along with enabling locks and realtime streaming of logs.
 
 ### Terminology
 

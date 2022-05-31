@@ -9,7 +9,7 @@ from fastapi.responses import RedirectResponse, JSONResponse
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi.templating import Jinja2Templates
 from traitlets import Bool, Unicode, Integer, Type, validate, Instance, default
-from traitlets.config import Application
+from traitlets.config import Application, catch_config_error
 
 from conda_store_server.server import auth, views
 from conda_store_server.app import CondaStore
@@ -114,16 +114,19 @@ class CondaStoreServer(Application):
         100, help="maximum number of items to return in a single page", config=True
     )
 
+    @catch_config_error
     def initialize(self, *args, **kwargs):
         super().initialize(*args, **kwargs)
         self.load_config_file(self.config_file)
 
+        self.conda_store = CondaStore(parent=self, log=self.log)
+        self.authentication = self.authentication_class(parent=self, log=self.log)
+        # ensure checks on redis_url
+        self.conda_store.redis_url
+
     def start(self):
         def trim_slash(url):
             return url[:-1] if url.endswith("/") else url
-
-        conda_store = CondaStore(parent=self, log=self.log)
-        authentication = self.authentication_class(parent=self, log=self.log)
 
         app = FastAPI(
             title="Conda-Store",
@@ -147,15 +150,15 @@ class CondaStoreServer(Application):
             allow_credentials=True,
         )
         app.add_middleware(
-            SessionMiddleware, secret_key=authentication.authentication.secret
+            SessionMiddleware, secret_key=self.authentication.authentication.secret
         )
 
         @app.middleware("http")
         async def conda_store_middleware(request: Request, call_next):
             try:
-                request.state.conda_store = conda_store
+                request.state.conda_store = self.conda_store
                 request.state.server = self
-                request.state.authentication = authentication
+                request.state.authentication = self.authentication
                 request.state.templates = self.templates
                 response = await call_next(request)
             finally:
@@ -173,7 +176,7 @@ class CondaStoreServer(Application):
             )
 
         app.include_router(
-            authentication.router,
+            self.authentication.router,
             prefix=trim_slash(self.url_prefix),
         )
 
@@ -207,11 +210,11 @@ class CondaStoreServer(Application):
                 prefix=trim_slash(self.url_prefix),
             )
 
-        conda_store.ensure_namespace()
-        conda_store.ensure_conda_channels()
+        self.conda_store.ensure_namespace()
+        self.conda_store.ensure_conda_channels()
 
         # schedule tasks
-        conda_store.celery_app
+        self.conda_store.celery_app
 
         from conda_store_server.worker import tasks  # noqa
 

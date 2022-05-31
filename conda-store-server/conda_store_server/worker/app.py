@@ -51,13 +51,9 @@ class CondaStoreWorker(Application):
         super().initialize(*args, **kwargs)
         self.load_config_file(self.config_file)
 
-    @property
-    def conda_store(self):
-        if hasattr(self, "_conda_store"):
-            return self._conda_store
-
-        self._conda_store = CondaStore(parent=self, log=self.log)
-        return self._conda_store
+        self.conda_store = CondaStore(parent=self, log=self.log)
+        # ensure checks on redis_url
+        self.conda_store.redis_url
 
     def start(self):
         argv = [

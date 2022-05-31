@@ -55,15 +55,6 @@ All build artifacts from Conda-Store are stored in object storage that
 behaves S3 like. S3 traditionally has great performance if you use the
 cloud provider implementation.
 
-### Celery Broker
-
-Celery is used for sending out tasks for building and deleting
-environment and builds. By default a SQLAlchemy database backed
-backend is used. Databases like PostgreSQL perform well and are
-unlikely to be a bottleneck. However if issues arise celery can use
-many [message queue based databases as a
-broker](https://docs.celeryproject.org/en/stable/getting-started/backends-and-brokers/index.html).
-
 ## Configuration
 
 Conda-Store is configured via
@@ -162,13 +153,21 @@ docs](https://docs.sqlalchemy.org/en/14/core/engines.html) for
 connecting to your specific database. Conda-Store will automatically
 create the tables if they do not already exist.
 
+`CondaStore.redis_url` is a required argument to a running Redis
+instance. This became a dependency as of release `0.4.1` due to the
+massive advantages of features that Conda-Store can provide with this
+dependency. See
+[documentation](https://github.com/redis/redis-py/#connecting-to-redis)
+for proper specification. This url is used by default for the Celery
+broker and results backend.
+
 `CondaStore.celery_broker_url` is the broker use to use for
 celery. Celery supports a [wide range of
 brokers](https://docs.celeryproject.org/en/stable/getting-started/backends-and-brokers/index.html)
-each with different guarantees. By default the SQLAlchemy based broker
-is used. It is not the ideal broker, but it is production ready and
-has worked well in practice. The url must be provided in a format that
-celery understands.
+each with different guarantees. By default the Redis based broker is
+used. It is production ready and has worked well in practice. The url
+must be provided in a format that celery understands. The default
+value is `CondaStore.redis_url`.
 
 `CondaStore.build_artifacts` is the list of artifacts for Conda-Store
 to build. By default it is all the artifacts that Conda-Store is
@@ -187,9 +186,8 @@ the given build.
 `CondaStore.celery_results_backend` is the backend to use for storing
 all results from celery task execution. Conda-Store currently does not
 leverage the backend results but it may be needed for future work
-using celery. The backend defaults to using the SQLAlchemy
-backend. This choice works great in production. Please consult the
-[celery docs on
+using celery. The backend defaults to using the Redis backend. This
+choice works great in production. Please consult the [celery docs on
 backend](https://docs.celeryproject.org/en/stable/getting-started/backends-and-brokers/index.html).
 
 `CondaStore.default_namespace` is the default namespace for
