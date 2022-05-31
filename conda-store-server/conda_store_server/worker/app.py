@@ -3,7 +3,7 @@ import os
 import sys
 
 from traitlets import Unicode, Integer, List, validate
-from traitlets.config import Application
+from traitlets.config import Application, catch_config_error
 
 from conda_store_server.app import CondaStore
 
@@ -47,6 +47,7 @@ class CondaStoreWorker(Application):
             sys.exit(1)
         return proposal.value
 
+    @catch_config_error
     def initialize(self, *args, **kwargs):
         super().initialize(*args, **kwargs)
         self.load_config_file(self.config_file)
