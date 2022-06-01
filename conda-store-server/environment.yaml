@@ -12,6 +12,7 @@ dependencies:
   - flower
   - redis-py
   - sqlalchemy
+  - alembic
   - psycopg2
   - pymysql
   - requests
