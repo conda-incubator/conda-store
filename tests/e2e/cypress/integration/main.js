@@ -33,10 +33,7 @@ describe('First Test', () => {
       .type('password')
 
     cy.get('form').submit()
-    cy.url().should('include', 'user')
-
-    // visit home page again
-    cy.get('a.navbar-brand').click()
+    // should redirect to home page
 
     // visit environment
     cy.get('h5.card-title > a').contains('filesystem/python-flask-env').click()
@@ -48,5 +45,8 @@ describe('First Test', () => {
 
     // wait for build to complete
     reloadPageUntilCompleted()
+
+    // visit user page
+    cy.visit('/conda-store/user/');
   })
 })
