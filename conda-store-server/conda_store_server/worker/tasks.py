@@ -50,8 +50,8 @@ def task_watch_builds(self):
 
     for build in api.list_builds(conda_store.db, status=schema.BuildStatus.BUILDING):
         result = AsyncResult(str(build.id))
-        if result.status == 'PENDING':
-            set_build_failed(conda_store, build, b'Build lost in BUILDING state\n')
+        if result.status == "PENDING":
+            set_build_failed(conda_store, build, b"Build lost in BUILDING state\n")
 
 
 @current_app.task(base=WorkerTask, name="task_watch_paths", bind=True)
