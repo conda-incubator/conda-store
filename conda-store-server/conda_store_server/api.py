@@ -1,5 +1,6 @@
 from typing import List
 import re
+import uuid
 
 from sqlalchemy import func, null
 
@@ -116,12 +117,12 @@ def list_builds(db, status: schema.BuildStatus = None, show_soft_deleted: bool =
     return db.query(orm.Build).filter(*filters)
 
 
-def get_build(db, build_id: int):
+def get_build(db, build_id: uuid.UUID):
     return db.query(orm.Build).filter(orm.Build.id == build_id).first()
 
 
 def get_build_packages(
-    db, build_id: int, search: str = None, exact: bool = False, build: str = None
+    db, build_id: uuid.UUID, search: str = None, exact: bool = False, build: str = None
 ):
     filters = [(orm.build_conda_package.c.build_id == build_id)]
     if search:
@@ -140,7 +141,7 @@ def get_build_packages(
     )
 
 
-def get_build_lockfile(db, build_id: int):
+def get_build_lockfile(db, build_id: uuid.UUID):
     build = db.query(orm.Build).filter(orm.Build.id == build_id).first()
     packages = [
         f"{row.channel.name}/{row.subdir}/{row.name}-{row.version}-{row.build}.tar.bz2#{row.md5}"
@@ -154,7 +155,7 @@ def get_build_lockfile(db, build_id: int):
     )
 
 
-def get_build_artifact_types(db, build_id: int):
+def get_build_artifact_types(db, build_id: uuid.UUID):
     return (
         db.query(orm.BuildArtifact.artifact_type)
         .filter(orm.BuildArtifact.build_id == build_id)
@@ -164,7 +165,7 @@ def get_build_artifact_types(db, build_id: int):
 
 def list_build_artifacts(
     db,
-    build_id: int = None,
+    build_id: uuid.UUID = None,
     key: str = None,
     excluded_artifact_types: List[schema.BuildArtifactType] = None,
 ):
@@ -181,7 +182,7 @@ def list_build_artifacts(
     return db.query(orm.BuildArtifact).filter(*filters)
 
 
-def get_build_artifact(db, build_id: int, key: str):
+def get_build_artifact(db, build_id: uuid.UUID, key: str):
     return (
         db.query(orm.BuildArtifact)
         .filter(orm.BuildArtifact.build_id == build_id, orm.BuildArtifact.key == key)

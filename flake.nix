@@ -28,6 +28,8 @@
           pythonPackages.celery
           pythonPackages.uvicorn
           pythonPackages.fastapi
+          pythonPackages.sqlalchemy
+          pythonPackages.redis
           pythonPackages.pyjwt
           pythonPackages.minio
           pythonPackages.filelock

@@ -1,4 +1,5 @@
 from typing import List, Dict, Optional
+import uuid
 
 import pydantic
 import yaml
@@ -317,7 +318,7 @@ def api_update_environment_build(
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
-    build_id: int = Body(..., embed=True),
+    build_id: uuid.UUID = Body(..., embed=True),
 ):
     auth.authorize_request(
         request, f"{namespace}/{name}", {Permissions.ENVIRONMENT_UPDATE}, require=True
@@ -457,7 +458,7 @@ def api_list_builds(
 
 @router_api.get("/build/{build_id}/", response_model=schema.APIGetBuild)
 def api_get_build(
-    build_id: int,
+    build_id: uuid.UUID,
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
@@ -484,7 +485,7 @@ def api_get_build(
     response_model=schema.APIPostSpecification,
 )
 def api_put_build(
-    build_id: int,
+    build_id: uuid.UUID,
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
@@ -515,7 +516,7 @@ def api_put_build(
     response_model=schema.APIAckResponse,
 )
 def api_delete_build(
-    build_id: int,
+    build_id: uuid.UUID,
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
@@ -544,7 +545,7 @@ def api_delete_build(
     response_model=schema.APIListCondaPackage,
 )
 def api_get_build_packages(
-    build_id: int,
+    build_id: uuid.UUID,
     request: Request,
     search: Optional[str] = None,
     exact: Optional[str] = None,
@@ -581,7 +582,7 @@ def api_get_build_packages(
 
 @router_api.get("/build/{build_id}/logs/")
 def api_get_build_logs(
-    build_id: int,
+    build_id: uuid.UUID,
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
@@ -660,7 +661,7 @@ def api_list_packages(
 
 @router_api.get("/build/{build_id}/yaml/")
 def api_get_build_yaml(
-    build_id: int,
+    build_id: uuid.UUID,
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),

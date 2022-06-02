@@ -1,8 +1,9 @@
 import os
 import datetime
+import uuid
 
 import redis
-from celery import Celery, group
+from celery import Celery, group, Signature
 from traitlets import (
     Type,
     Unicode,
@@ -315,12 +316,14 @@ class CondaStore(LoggingConfigurable):
                 "schedule": 60.0,  # 1 minute
                 "args": [],
                 "kwargs": {},
+                "options": {"expires": 15.0},
             },
             "update-conda-channels": {
                 "task": "task_update_conda_channels",
                 "schedule": 15.0 * 60.0,  # 15 minutes
                 "args": [],
                 "kwargs": {},
+                "options": {"expires": 10.0 * 60.0}, # 10 minutes
             },
         }
 
@@ -463,7 +466,9 @@ class CondaStore(LoggingConfigurable):
     def create_build(self, environment_id: int, specification_sha256: str):
         specification = api.get_specification(self.db, specification_sha256)
         build = orm.Build(
-            environment_id=environment_id, specification_id=specification.id
+            id=uuid.uuid4(),
+            environment_id=environment_id,
+            specification_id=specification.id
         )
         self.db.add(build)
         self.db.commit()
@@ -483,14 +488,14 @@ class CondaStore(LoggingConfigurable):
 
         (
             tasks.task_update_storage_metrics.si()
-            | tasks.task_build_conda_environment.si(build.id)
+            | Signature(tasks.task_build_conda_environment, args=[build.id], options={'task_id': str(build.id)}, immutable=True)
             | group(*artifact_tasks)
             | tasks.task_update_storage_metrics.si()
         ).apply_async()
 
         return build
 
-    def update_environment_build(self, namespace, name, build_id):
+    def update_environment_build(self, namespace : str, name : str, build_id : uuid.UUID):
         build = api.get_build(self.db, build_id)
         if build is None:
             raise utils.CondaStoreError(f"build id={build_id} does not exist")
@@ -560,7 +565,7 @@ class CondaStore(LoggingConfigurable):
 
         tasks.task_delete_environment.si(environment.id).apply_async()
 
-    def delete_build(self, build_id):
+    def delete_build(self, build_id : uuid.UUID):
         build = api.get_build(self.db, build_id)
         if build.status not in [
             schema.BuildStatus.FAILED,

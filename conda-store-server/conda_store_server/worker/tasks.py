@@ -3,12 +3,14 @@ import os
 import random
 
 from celery import Task, current_app
+from celery.result import AsyncResult
 from celery.signals import worker_ready
 import yaml
 from sqlalchemy.exc import IntegrityError
 
 from conda_store_server.worker.app import CondaStoreWorker
 from conda_store_server import api, environment, utils, schema
+from conda_store_server.build import set_build_failed
 from conda_store_server.build import (
     build_conda_environment,
     build_conda_env_export,
@@ -24,6 +26,7 @@ def at_start(sender, **k):
         sender.app.send_task("task_update_conda_channels")
         sender.app.send_task("task_update_storage_metrics")
         sender.app.send_task("task_watch_paths")
+        sender.app.send_task("task_watch_builds")
 
 
 class WorkerTask(Task):
@@ -39,6 +42,16 @@ class WorkerTask(Task):
             self._worker = CondaStoreWorker()
             self._worker.initialize()
         return self._worker
+
+
+@current_app.task(base=WorkerTask, name="task_watch_builds", bind=True)
+def task_watch_builds(self):
+    conda_store = self.worker.conda_store
+
+    for build in api.list_builds(conda_store.db, status=schema.BuildStatus.BUILDING):
+        result = AsyncResult(str(build.id))
+        if result.status == 'PENDING':
+            set_build_failed(conda_store, build, b'Build lost in BUILDING state\n')
 
 
 @current_app.task(base=WorkerTask, name="task_watch_paths", bind=True)

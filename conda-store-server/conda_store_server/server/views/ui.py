@@ -1,3 +1,5 @@
+import uuid
+
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import RedirectResponse, PlainTextResponse
 import yaml
@@ -168,7 +170,7 @@ def ui_edit_environment(
 
 @router_ui.get("/build/{build_id}/")
 def ui_get_build(
-    build_id: int,
+    build_id: uuid.UUID,
     request: Request,
     templates=Depends(dependencies.get_templates),
     conda_store=Depends(dependencies.get_conda_store),
@@ -231,7 +233,7 @@ def ui_get_user(
 
 @router_ui.get("/build/{build_id}/logs/")
 def api_get_build_logs(
-    build_id: int,
+    build_id: uuid.UUID,
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
@@ -249,7 +251,7 @@ def api_get_build_logs(
 
 @router_ui.get("/build/{build_id}/lockfile/", response_class=PlainTextResponse)
 def api_get_build_lockfile(
-    build_id: int,
+    build_id: uuid.UUID,
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
@@ -268,7 +270,7 @@ def api_get_build_lockfile(
 
 @router_ui.get("/build/{build_id}/archive/")
 def api_get_build_archive(
-    build_id: int,
+    build_id: uuid.UUID,
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
