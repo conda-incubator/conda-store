@@ -225,7 +225,7 @@ async function loginHandler(event) {
     });
 
     if (response.ok) {
-        window.location = "{{ url_for('ui_get_user') }}";
+        window.location = "{{ url_for('ui_list_environments') }}";
     } else {
         let data = await response.json();
         bannerMessage(`<div class="alert alert-danger col">${data.message}</div>`);
@@ -288,7 +288,7 @@ form.addEventListener('submit', loginHandler);
         next: Optional[str] = None,
         templates=Depends(dependencies.get_templates),
     ):
-        redirect_url = next or request.url_for("ui_get_user")
+        redirect_url = next or request.url_for("ui_list_environments")
         response = RedirectResponse(redirect_url, status_code=303)
         authentication_token = await self.authenticate(request)
         if authentication_token is None:
