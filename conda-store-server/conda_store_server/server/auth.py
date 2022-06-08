@@ -73,13 +73,13 @@ class RBACAuthorizationBackend(LoggingConfigurable):
     )
 
     unauthenticated_role_bindings = Dict(
-        {"default/*": {"viewer"},},
+        {"default/*": {"viewer"}, },
         help="default roles bindings to asign to unauthenticated users",
         config=True,
     )
 
     authenticated_role_bindings = Dict(
-        {"default/*": {"viewer"}, "filesystem/*": {"viewer"},},
+        {"default/*": {"viewer"}, "filesystem/*": {"viewer"}, },
         help="default permissions to apply to specific resources",
     )
 
@@ -258,7 +258,7 @@ form.addEventListener('submit', loginHandler);
 
     async def authenticate(self, request: Request):
         return schema.AuthenticationToken(
-            primary_namespace="default", role_bindings={"*/*": ["admin"],},
+            primary_namespace="default", role_bindings={"*/*": ["admin"], },
         )
 
     def get_login_method(
@@ -417,7 +417,7 @@ class DummyAuthentication(Authentication):
             return None
 
         return schema.AuthenticationToken(
-            primary_namespace=data["username"], role_bindings={"*/*": ["admin"],},
+            primary_namespace=data["username"], role_bindings={"*/*": ["admin"], },
         )
 
 
@@ -528,7 +528,7 @@ class GenericOAuthAuthentication(Authentication):
 
         # 3. create our own internal token
         return schema.AuthenticationToken(
-            primary_namespace=username, role_bindings={"*/*": ["admin"],},
+            primary_namespace=username, role_bindings={"*/*": ["admin"], },
         )
 
     def _get_oauth_token(self, request: Request):

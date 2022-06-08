@@ -180,7 +180,7 @@ def ui_get_build(
     if build is None:
         return templates.TemplateResponse(
             "404.html",
-            {"request": request, "message": f"build id={build_id} not found",},
+            {"request": request, "message": f"build id={build_id} not found", },
             status_code=404,
         )
 

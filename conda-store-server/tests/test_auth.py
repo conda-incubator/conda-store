@@ -24,7 +24,7 @@ def test_compile_arn_regex(expression, resource, match):
 
 @pytest.mark.parametrize(
     "expression, namespace, name",
-    [("e*/d*", "e%", "d%"), ("*e*d*/*e", "%e%d%", "%e"),],
+    [("e*/d*", "e%", "d%"), ("*e*d*/*e", "%e%d%", "%e"), ],
 )
 def test_compile_arn_sql_like(expression, namespace, name):
     result = RBACAuthorizationBackend.compile_arn_sql_like(expression)
@@ -32,7 +32,7 @@ def test_compile_arn_sql_like(expression, namespace, name):
 
 
 @pytest.mark.parametrize(
-    "token_string,authenticated", [("", False), ("asdf", False),],
+    "token_string,authenticated", [("", False), ("asdf", False), ],
 )
 def test_authenticated(token_string, authenticated):
     authentication = AuthenticationBackend()
@@ -47,7 +47,7 @@ def test_valid_token():
     token = authentication.encrypt_token(
         AuthenticationToken(
             primary_namespace="default",
-            role_bindings={"default/*": ["viewer"], "e*/e*": ["admin"],},
+            role_bindings={"default/*": ["viewer"], "e*/e*": ["admin"], },
         )
     )
 
@@ -63,7 +63,7 @@ def test_expired_token():
         AuthenticationToken(
             primary_namespace="default",
             exp=datetime.datetime.utcnow() - datetime.timedelta(hours=1),
-            role_bindings={"default/*": ["viewer"], "e*/e*": ["admin"],},
+            role_bindings={"default/*": ["viewer"], "e*/e*": ["admin"], },
         )
     )
 
@@ -74,25 +74,25 @@ def test_expired_token():
     "entity_bindings,arn,permissions,authorized",
     [
         (
-            {"example-namespace/example-name": {"developer"},},
+            {"example-namespace/example-name": {"developer"}, },
             "example-namespace/example-name",
             {Permissions.ENVIRONMENT_CREATE},
             True,
         ),
         (
-            {"example-namespace/example-name": {"developer", "viewer"},},
+            {"example-namespace/example-name": {"developer", "viewer"}, },
             "example-namespace/example-name",
             {Permissions.ENVIRONMENT_DELETE},
             True,
         ),
         (
-            {"e*/e*am*": {"admin"},},
+            {"e*/e*am*": {"admin"}, },
             "example-namespace/example-name",
             {Permissions.ENVIRONMENT_CREATE},
             True,
         ),
         (
-            {"e*/e*am*": {"viewer"},},
+            {"e*/e*am*": {"viewer"}, },
             "example-namespace/example-name",
             {Permissions.ENVIRONMENT_CREATE},
             False,
@@ -111,7 +111,7 @@ def test_end_to_end_auth_flow():
     token = authentication.encrypt_token(
         AuthenticationToken(
             primary_namespace="default",
-            role_bindings={"default/*": ["viewer"], "e*/e*": ["admin"],},
+            role_bindings={"default/*": ["viewer"], "e*/e*": ["admin"], },
         )
     )
 
@@ -121,6 +121,6 @@ def test_end_to_end_auth_flow():
     assert authorization.authorize(
         token_model.role_bindings,
         "example-namespace/example-name",
-        {Permissions.ENVIRONMENT_DELETE, Permissions.ENVIRONMENT_READ,},
+        {Permissions.ENVIRONMENT_DELETE, Permissions.ENVIRONMENT_READ, },
         authenticated=True,
     )

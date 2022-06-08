@@ -1,12 +1,7 @@
 import os
-import shutil
-import sys
 from contextlib import contextmanager
-from datetime import datetime
 from subprocess import check_call
 from tempfile import TemporaryDirectory
-from urllib.parse import urlparse
-from venv import create
 
 from sqlalchemy import create_engine, inspect
 from alembic import command

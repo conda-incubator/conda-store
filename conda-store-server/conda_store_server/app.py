@@ -96,7 +96,7 @@ class CondaStore(LoggingConfigurable):
     )
 
     conda_allowed_channels = List(
-        ["main", "conda-forge",],
+        ["main", "conda-forge", ],
         help="Allowed conda channels to be used in conda environments",
         config=True,
     )
@@ -292,7 +292,7 @@ class CondaStore(LoggingConfigurable):
             "tasks",
             backend=self.celery_results_backend,
             broker=self.celery_broker_url,
-            include=["conda_store_server.worker.tasks",],
+            include=["conda_store_server.worker.tasks", ],
         )
         self._celery_app.conf.beat_schedule = {
             "watch-paths": {

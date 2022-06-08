@@ -165,7 +165,7 @@ def api_list_namespaces(
         orm_namespaces,
         paginated_args,
         schema.Namespace,
-        allowed_sort_bys={"name": orm.Namespace.name,},
+        allowed_sort_bys={"name": orm.Namespace.name, },
         default_sort_by=["name"],
     )
 
@@ -427,7 +427,7 @@ def api_list_builds(
         paginated_args,
         schema.Build,
         exclude={"specification", "packages"},
-        allowed_sort_bys={"id": orm.Build.id,},
+        allowed_sort_bys={"id": orm.Build.id, },
         default_sort_by=["id"],
     )
 

@@ -18,7 +18,7 @@ fileConfig(config.config_file_name)
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-from conda_store_server.orm import Base
+from conda_store_server.orm import Base # noqa E402
 
 target_metadata = Base.metadata
 

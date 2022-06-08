@@ -127,7 +127,7 @@ class CondaStoreServer(Application):
             openapi_url=os.path.join(self.url_prefix, "openapi.json"),
             docs_url=os.path.join(self.url_prefix, "docs"),
             redoc_url=os.path.join(self.url_prefix, "redoc"),
-            contact={"name": "Quansight", "url": "https://quansight.com",},
+            contact={"name": "Quansight", "url": "https://quansight.com", },
             license_info={
                 "name": "BSD 3-Clause",
                 "url": "https://opensource.org/licenses/BSD-3-Clause",
@@ -156,7 +156,7 @@ class CondaStoreServer(Application):
         @app.exception_handler(HTTPException)
         async def http_exception_handler(request, exc):
             return JSONResponse(
-                {"status": "error", "message": exc.detail,},
+                {"status": "error", "message": exc.detail, },
                 status_code=exc.status_code,
             )
 
