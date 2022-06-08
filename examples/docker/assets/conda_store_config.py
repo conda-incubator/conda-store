@@ -10,6 +10,7 @@ c.CondaStore.storage_class = S3Storage
 c.CondaStore.store_directory = "/opt/conda-store/conda-store"
 # Also edit `conda-store-server/alembic.ini` accordingly for key sqlalchemy.url
 c.CondaStore.database_url = "postgresql+psycopg2://postgres:password@postgres/conda-store"
+c.CondaStore.upgrade_db = True
 c.CondaStore.redis_url = "redis://:password@redis:6379/0"
 c.CondaStore.default_uid = 1000
 c.CondaStore.default_gid = 100

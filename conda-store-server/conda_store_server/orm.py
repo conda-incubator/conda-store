@@ -416,10 +416,5 @@ class CondaStoreConfiguration(Base):
 def new_session_factory(url="sqlite:///:memory:", reset=False, **kwargs):
     engine = create_engine(url, **kwargs)
 
-    if reset:
-        Base.metadata.drop_all(engine)
-
-    Base.metadata.create_all(engine)
-
     session_factory = scoped_session(sessionmaker(bind=engine))
     return session_factory

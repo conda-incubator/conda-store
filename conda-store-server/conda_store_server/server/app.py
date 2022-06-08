@@ -15,10 +15,13 @@ from conda_store_server.server import auth, views
 from conda_store_server.app import CondaStore
 from conda_store_server import __version__
 
+import conda_store_server.server.dbutil as dbutil
+
 
 class CondaStoreServer(Application):
     aliases = {
         "config": "CondaStoreServer.config_file",
+        "upgrade-db":"CondaStoreServer.upgrade_db"
     }
 
     log_level = Integer(
@@ -114,10 +117,14 @@ class CondaStoreServer(Application):
         100, help="maximum number of items to return in a single page", config=True
     )
 
+
     @catch_config_error
     def initialize(self, *args, **kwargs):
         super().initialize(*args, **kwargs)
         self.load_config_file(self.config_file)
+
+        if self.config.CondaStore.upgrade_db:
+            dbutil.upgrade(self.config.CondaStore.database_url)
 
         self.conda_store = CondaStore(parent=self, log=self.log)
         self.authentication = self.authentication_class(parent=self, log=self.log)

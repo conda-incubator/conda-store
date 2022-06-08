@@ -324,16 +324,6 @@ class CondaStore(LoggingConfigurable):
             },
         }
 
-        if self.celery_results_backend.startswith("sqla"):
-            # https://github.com/celery/celery/issues/4653#issuecomment-400029147
-            # race condition in table construction in celery
-            # despite issue being closed still causes first task to fail
-            # in celery if tables not created
-            from celery.backends.database import SessionManager
-
-            session = SessionManager()
-            engine = session.get_engine(self._celery_app.backend.url)
-            session.prepare_models(engine)
 
         return self._celery_app
 
