@@ -80,7 +80,10 @@ def upgrade(db_url, revision="head"):
 
     with _temp_alembic_ini(db_url) as alembic_ini:
 
-        if "alembic_version" not in current_table_names:
+        if (
+            "alembic_version" not in current_table_names
+            and len(current_table_names) > 0
+        ):
             # If table alembic_version is missing,
             # we stamp the revision at the first one, that introduces the alembic revisions.
             # I chose the leave the revision number hardcoded as it's not something
