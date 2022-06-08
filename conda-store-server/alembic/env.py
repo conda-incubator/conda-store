@@ -6,7 +6,6 @@ from sqlalchemy import pool
 from alembic import context
 
 
-
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
@@ -20,6 +19,7 @@ fileConfig(config.config_file_name)
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 from conda_store_server.orm import Base
+
 target_metadata = Base.metadata
 
 
@@ -62,15 +62,11 @@ def run_migrations_online():
     """
     alembic_config = config.get_section(config.config_ini_section)
     connectable = engine_from_config(
-        alembic_config,
-        prefix="sqlalchemy.",
-        poolclass=pool.NullPool,
+        alembic_config, prefix="sqlalchemy.", poolclass=pool.NullPool,
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()

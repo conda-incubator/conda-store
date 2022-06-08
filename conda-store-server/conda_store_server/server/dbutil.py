@@ -14,8 +14,8 @@ from alembic.config import Config
 
 _here = os.path.abspath(os.path.dirname(__file__))
 
-ALEMBIC_INI_TEMPLATE_PATH = os.path.join(_here, 'templates/alembic.ini')
-ALEMBIC_DIR = os.path.join(_here, '../../alembic')
+ALEMBIC_INI_TEMPLATE_PATH = os.path.join(_here, "templates/alembic.ini")
+ALEMBIC_DIR = os.path.join(_here, "../../alembic")
 
 
 def write_alembic_ini(alembic_ini, db_url):
@@ -31,7 +31,7 @@ def write_alembic_ini(alembic_ini, db_url):
     with open(ALEMBIC_INI_TEMPLATE_PATH) as f:
         alembic_ini_tpl = f.read()
 
-    with open(alembic_ini, 'w') as f:
+    with open(alembic_ini, "w") as f:
         f.write(
             alembic_ini_tpl.format(
                 alembic_dir=ALEMBIC_DIR,
@@ -39,7 +39,7 @@ def write_alembic_ini(alembic_ini, db_url):
                 # by default uses %() for substitution. You'll get %s in your URL when you have usernames
                 # with special chars (such as '@') that need to be URL encoded. URL Encoding is done with %s.
                 # YAY for nested templates?
-                db_url=str(db_url).replace('%', '%%'),
+                db_url=str(db_url).replace("%", "%%"),
             )
         )
 
@@ -64,12 +64,12 @@ def _temp_alembic_ini(db_url):
         This file will be cleaned up on exit from the context manager.
     """
     with TemporaryDirectory() as td:
-        alembic_ini = os.path.join(td, 'alembic.ini')
+        alembic_ini = os.path.join(td, "alembic.ini")
         write_alembic_ini(alembic_ini, db_url)
         yield alembic_ini
 
 
-def upgrade(db_url, revision='head'):
+def upgrade(db_url, revision="head"):
     """Upgrade the given database to revision.
 
     db_url: str
@@ -86,15 +86,14 @@ def upgrade(db_url, revision='head'):
     with _temp_alembic_ini(db_url) as alembic_ini:
 
         if "alembic_version" not in current_table_names:
-            # If table alembic_version is missing, 
+            # If table alembic_version is missing,
             # we stamp the revision at the first one, that introduces the alembic revisions.
-            # I chose the leave the revision number hardcoded as it's not something 
+            # I chose the leave the revision number hardcoded as it's not something
             # dynamic, not something we want to change, and tightly related to the codebase
             command.stamp(Config(alembic_ini), "48be4072fe58")
-            # After this point, whatever is in the database, Alembic will 
+            # After this point, whatever is in the database, Alembic will
             # believe it's at the first revision. If there are more upgrades/migrations
-            # to run, they'll be at the next step : 
-        
-        # run the upgrade.
-        check_call(['alembic', '-c', alembic_ini, 'upgrade', revision])
+            # to run, they'll be at the next step :
 
+        # run the upgrade.
+        check_call(["alembic", "-c", alembic_ini, "upgrade", revision])

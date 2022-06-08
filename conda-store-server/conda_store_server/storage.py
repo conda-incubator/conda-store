@@ -58,29 +58,13 @@ class S3Storage(Storage):
         config=True,
     )
 
-    access_key = Unicode(
-        help="access key for S3 bucket",
-        allow_none=True,
-        config=True,
-    )
+    access_key = Unicode(help="access key for S3 bucket", allow_none=True, config=True,)
 
-    secret_key = Unicode(
-        help="secret key for S3 bucket",
-        allow_none=True,
-        config=True,
-    )
+    secret_key = Unicode(help="secret key for S3 bucket", allow_none=True, config=True,)
 
-    region = Unicode(
-        "us-east-1",
-        help="region for s3 bucket",
-        config=True,
-    )
+    region = Unicode("us-east-1", help="region for s3 bucket", config=True,)
 
-    bucket_name = Unicode(
-        "conda-store",
-        help="bucket name for s3 bucket",
-        config=True,
-    )
+    bucket_name = Unicode("conda-store", help="bucket name for s3 bucket", config=True,)
 
     internal_secure = Bool(
         True,
@@ -102,16 +86,10 @@ class S3Storage(Storage):
         config=True,
     )
 
-    credentials_args = List(
-        [],
-        help="arguments to pass to Provider",
-        config=True,
-    )
+    credentials_args = List([], help="arguments to pass to Provider", config=True,)
 
     credentials_kwargs = Dict(
-        {},
-        help="keyword arguments to pass to Provider",
-        config=True,
+        {}, help="keyword arguments to pass to Provider", config=True,
     )
 
     @property

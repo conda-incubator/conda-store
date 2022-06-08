@@ -44,10 +44,7 @@ def delete_namespace(db, name: str = None, id: int = None):
 
 
 def list_environments(
-    db,
-    namespace: str = None,
-    search: str = None,
-    show_soft_deleted: bool = False,
+    db, namespace: str = None, search: str = None, show_soft_deleted: bool = False,
 ):
     filters = []
     if namespace:

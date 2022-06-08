@@ -10,10 +10,7 @@ from conda_store_server.server import dependencies
 from conda_store_server.schema import Permissions
 
 
-router_api = APIRouter(
-    tags=["api"],
-    prefix="/api/v1",
-)
+router_api = APIRouter(tags=["api"], prefix="/api/v1",)
 
 
 def get_paginated_args(
@@ -113,16 +110,14 @@ def paginated_api_response(
 
 
 @router_api.get(
-    "/",
-    response_model=schema.APIGetStatus,
+    "/", response_model=schema.APIGetStatus,
 )
 def api_status():
     return {"status": "ok", "data": {"version": __version__}}
 
 
 @router_api.get(
-    "/permission/",
-    response_model=schema.APIGetPermission,
+    "/permission/", response_model=schema.APIGetPermission,
 )
 def api_get_permissions(
     request: Request,
@@ -155,8 +150,7 @@ def api_get_permissions(
 
 
 @router_api.get(
-    "/namespace/",
-    response_model=schema.APIListNamespace,
+    "/namespace/", response_model=schema.APIListNamespace,
 )
 def api_list_namespaces(
     conda_store=Depends(dependencies.get_conda_store),
@@ -171,16 +165,13 @@ def api_list_namespaces(
         orm_namespaces,
         paginated_args,
         schema.Namespace,
-        allowed_sort_bys={
-            "name": orm.Namespace.name,
-        },
+        allowed_sort_bys={"name": orm.Namespace.name,},
         default_sort_by=["name"],
     )
 
 
 @router_api.get(
-    "/namespace/{namespace}/",
-    response_model=schema.APIGetNamespace,
+    "/namespace/{namespace}/", response_model=schema.APIGetNamespace,
 )
 def api_get_namespace(
     namespace: str,
@@ -203,8 +194,7 @@ def api_get_namespace(
 
 
 @router_api.post(
-    "/namespace/{namespace}/",
-    response_model=schema.APIAckResponse,
+    "/namespace/{namespace}/", response_model=schema.APIAckResponse,
 )
 def api_create_namespace(
     namespace: str,
@@ -248,8 +238,7 @@ def api_delete_namespace(
 
 
 @router_api.get(
-    "/environment/",
-    response_model=schema.APIListEnvironment,
+    "/environment/", response_model=schema.APIListEnvironment,
 )
 def api_list_environments(
     search: Optional[str] = None,
@@ -308,8 +297,7 @@ def api_get_environment(
 
 
 @router_api.put(
-    "/environment/{namespace}/{name}/",
-    response_model=schema.APIAckResponse,
+    "/environment/{namespace}/{name}/", response_model=schema.APIAckResponse,
 )
 def api_update_environment_build(
     namespace: str,
@@ -332,8 +320,7 @@ def api_update_environment_build(
 
 
 @router_api.delete(
-    "/environment/{namespace}/{name}/",
-    response_model=schema.APIAckResponse,
+    "/environment/{namespace}/{name}/", response_model=schema.APIAckResponse,
 )
 def api_delete_environment(
     namespace: str,
@@ -350,9 +337,7 @@ def api_delete_environment(
     return {"status": "ok"}
 
 
-@router_api.get(
-    "/specification/",
-)
+@router_api.get("/specification/",)
 def api_get_specification(
     request: Request,
     channel: List[str] = Query([]),
@@ -371,9 +356,7 @@ def api_get_specification(
         conda.append({"pip": pip})
 
     specification = schema.CondaSpecification(
-        name="conda-store-solve",
-        channels=channel,
-        dependencies=conda,
+        name="conda-store-solve", channels=channel, dependencies=conda,
     )
 
     try:
@@ -388,8 +371,7 @@ def api_get_specification(
 
 
 @router_api.post(
-    "/specification/",
-    response_model=schema.APIPostSpecification,
+    "/specification/", response_model=schema.APIPostSpecification,
 )
 def api_post_specification(
     request: Request,
@@ -419,10 +401,7 @@ def api_post_specification(
         raise HTTPException(status_code=400, detail=str(e))
 
     auth.authorize_request(
-        request,
-        f"{namespace_name}/{specification.name}",
-        permissions,
-        require=True,
+        request, f"{namespace_name}/{specification.name}", permissions, require=True,
     )
 
     try:
@@ -448,9 +427,7 @@ def api_list_builds(
         paginated_args,
         schema.Build,
         exclude={"specification", "packages"},
-        allowed_sort_bys={
-            "id": orm.Build.id,
-        },
+        allowed_sort_bys={"id": orm.Build.id,},
         default_sort_by=["id"],
     )
 
@@ -480,8 +457,7 @@ def api_get_build(
 
 
 @router_api.put(
-    "/build/{build_id}/",
-    response_model=schema.APIPostSpecification,
+    "/build/{build_id}/", response_model=schema.APIPostSpecification,
 )
 def api_put_build(
     build_id: int,
@@ -511,8 +487,7 @@ def api_put_build(
 
 
 @router_api.delete(
-    "/build/{build_id}/",
-    response_model=schema.APIAckResponse,
+    "/build/{build_id}/", response_model=schema.APIAckResponse,
 )
 def api_delete_build(
     build_id: int,
@@ -540,8 +515,7 @@ def api_delete_build(
 
 
 @router_api.get(
-    "/build/{build_id}/packages/",
-    response_model=schema.APIListCondaPackage,
+    "/build/{build_id}/packages/", response_model=schema.APIListCondaPackage,
 )
 def api_get_build_packages(
     build_id: int,
@@ -601,8 +575,7 @@ def api_get_build_logs(
 
 
 @router_api.get(
-    "/channel/",
-    response_model=schema.APIListCondaChannel,
+    "/channel/", response_model=schema.APIListCondaChannel,
 )
 def api_list_channels(
     conda_store=Depends(dependencies.get_conda_store),
@@ -619,8 +592,7 @@ def api_list_channels(
 
 
 @router_api.get(
-    "/package/",
-    response_model=schema.APIListCondaPackage,
+    "/package/", response_model=schema.APIListCondaPackage,
 )
 def api_list_packages(
     search: Optional[str] = None,
