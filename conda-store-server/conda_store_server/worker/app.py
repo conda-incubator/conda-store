@@ -13,7 +13,11 @@ class CondaStoreWorker(Application):
         "config": "CondaStoreWorker.config_file",
     }
 
-    log_level = Integer(logging.INFO, help="log level to use", config=True,)
+    log_level = Integer(
+        logging.INFO,
+        help="log level to use",
+        config=True,
+    )
 
     watch_paths = List(
         [], help="list of paths to watch for environment changes", config=True
@@ -26,7 +30,10 @@ class CondaStoreWorker(Application):
         allow_none=True,
     )
 
-    config_file = Unicode(help="config file to load for conda-store", config=True,)
+    config_file = Unicode(
+        help="config file to load for conda-store",
+        config=True,
+    )
 
     @validate("config_file")
     def _validate_config_file(self, proposal):

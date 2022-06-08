@@ -107,7 +107,9 @@ def conda_lock(specification: schema.CondaSpecification, conda_exe: str = "mamba
 
 
 def download_repodata(
-    channel: str, last_update: datetime.datetime = None, subdirs=None,
+    channel: str,
+    last_update: datetime.datetime = None,
+    subdirs=None,
 ):
     """Download repodata for channel only if changed since last update
 

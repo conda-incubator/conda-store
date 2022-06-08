@@ -74,7 +74,9 @@ class CondaStore(LoggingConfigurable):
     )
 
     conda_command = Unicode(
-        "mamba", help="conda executable to use for solves", config=True,
+        "mamba",
+        help="conda executable to use for solves",
+        config=True,
     )
 
     conda_channel_alias = Unicode(
@@ -96,7 +98,10 @@ class CondaStore(LoggingConfigurable):
     )
 
     conda_allowed_channels = List(
-        ["main", "conda-forge", ],
+        [
+            "main",
+            "conda-forge",
+        ],
         help="Allowed conda channels to be used in conda environments",
         config=True,
     )
@@ -168,7 +173,10 @@ class CondaStore(LoggingConfigurable):
             )
         return proposal.value
 
-    celery_broker_url = Unicode(help="broker url to use for celery tasks", config=True,)
+    celery_broker_url = Unicode(
+        help="broker url to use for celery tasks",
+        config=True,
+    )
 
     build_artifacts = List(
         [
@@ -202,7 +210,8 @@ class CondaStore(LoggingConfigurable):
         return self.redis_url
 
     celery_results_backend = Unicode(
-        help="backend to use for celery task results", config=True,
+        help="backend to use for celery task results",
+        config=True,
     )
 
     @default("celery_results_backend")
@@ -220,11 +229,15 @@ class CondaStore(LoggingConfigurable):
     )
 
     default_uid = Integer(
-        os.getuid(), help="default uid to assign to built environments", config=True,
+        os.getuid(),
+        help="default uid to assign to built environments",
+        config=True,
     )
 
     default_gid = Integer(
-        os.getgid(), help="default gid to assign to built environments", config=True,
+        os.getgid(),
+        help="default gid to assign to built environments",
+        config=True,
     )
 
     default_permissions = Unicode(
@@ -292,7 +305,9 @@ class CondaStore(LoggingConfigurable):
             "tasks",
             backend=self.celery_results_backend,
             broker=self.celery_broker_url,
-            include=["conda_store_server.worker.tasks", ],
+            include=[
+                "conda_store_server.worker.tasks",
+            ],
         )
         self._celery_app.conf.beat_schedule = {
             "watch-paths": {
@@ -340,7 +355,9 @@ class CondaStore(LoggingConfigurable):
 
     def register_solve(self, specification: schema.CondaSpecification):
         specification_model = self.validate_specification(
-            conda_store=self, namespace="solve", specification=specification,
+            conda_store=self,
+            namespace="solve",
+            specification=specification,
         )
         specification_sha256 = utils.datastructure_hash(specification_model.dict())
         specification = api.get_specification(self.db, sha256=specification_sha256)
@@ -418,7 +435,8 @@ class CondaStore(LoggingConfigurable):
         environment_was_empty = environment is None
         if environment_was_empty:
             environment = orm.Environment(
-                name=specification.name, namespace_id=namespace.id,
+                name=specification.name,
+                namespace_id=namespace.id,
             )
             self.db.add(environment)
             self.db.commit()

@@ -24,18 +24,28 @@ class CondaStoreServer(Application):
         "upgrade-db": "CondaStoreServer.upgrade_db",
     }
 
-    log_level = Integer(logging.INFO, help="log level to use", config=True,)
+    log_level = Integer(
+        logging.INFO,
+        help="log level to use",
+        config=True,
+    )
 
     enable_ui = Bool(True, help="serve the web ui for conda-store", config=True)
 
-    enable_api = Bool(True, help="enable the rest api for conda-store", config=True,)
+    enable_api = Bool(
+        True,
+        help="enable the rest api for conda-store",
+        config=True,
+    )
 
     enable_registry = Bool(
         True, help="enable the docker registry for conda-store", config=True
     )
 
     enable_metrics = Bool(
-        True, help="enable the prometheus metrics for conda-store", config=True,
+        True,
+        help="enable the prometheus metrics for conda-store",
+        config=True,
     )
 
     address = Unicode(
@@ -58,7 +68,10 @@ class CondaStoreServer(Application):
         config=True,
     )
 
-    config_file = Unicode(help="config file to load for conda-store", config=True,)
+    config_file = Unicode(
+        help="config file to load for conda-store",
+        config=True,
+    )
 
     behind_proxy = Bool(
         False,
@@ -127,7 +140,10 @@ class CondaStoreServer(Application):
             openapi_url=os.path.join(self.url_prefix, "openapi.json"),
             docs_url=os.path.join(self.url_prefix, "docs"),
             redoc_url=os.path.join(self.url_prefix, "redoc"),
-            contact={"name": "Quansight", "url": "https://quansight.com", },
+            contact={
+                "name": "Quansight",
+                "url": "https://quansight.com",
+            },
             license_info={
                 "name": "BSD 3-Clause",
                 "url": "https://opensource.org/licenses/BSD-3-Clause",
@@ -135,7 +151,9 @@ class CondaStoreServer(Application):
         )
 
         app.add_middleware(
-            CORSMiddleware, allow_origins=["*"], allow_credentials=True,
+            CORSMiddleware,
+            allow_origins=["*"],
+            allow_credentials=True,
         )
         app.add_middleware(
             SessionMiddleware, secret_key=self.authentication.authentication.secret
@@ -156,17 +174,22 @@ class CondaStoreServer(Application):
         @app.exception_handler(HTTPException)
         async def http_exception_handler(request, exc):
             return JSONResponse(
-                {"status": "error", "message": exc.detail, },
+                {
+                    "status": "error",
+                    "message": exc.detail,
+                },
                 status_code=exc.status_code,
             )
 
         app.include_router(
-            self.authentication.router, prefix=trim_slash(self.url_prefix),
+            self.authentication.router,
+            prefix=trim_slash(self.url_prefix),
         )
 
         if self.enable_api:
             app.include_router(
-                views.router_api, prefix=trim_slash(self.url_prefix),
+                views.router_api,
+                prefix=trim_slash(self.url_prefix),
             )
 
         if self.enable_registry:
@@ -175,7 +198,8 @@ class CondaStoreServer(Application):
 
         if self.enable_ui:
             app.include_router(
-                views.router_ui, prefix=trim_slash(self.url_prefix),
+                views.router_ui,
+                prefix=trim_slash(self.url_prefix),
             )
 
             # convenience to redirect "/" to home page when using a prefix
@@ -188,7 +212,8 @@ class CondaStoreServer(Application):
 
         if self.enable_metrics:
             app.include_router(
-                views.router_metrics, prefix=trim_slash(self.url_prefix),
+                views.router_metrics,
+                prefix=trim_slash(self.url_prefix),
             )
 
         self.conda_store.ensure_namespace()

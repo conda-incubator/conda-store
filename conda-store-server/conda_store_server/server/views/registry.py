@@ -130,7 +130,8 @@ def v2():
 
 @router_registry.get("/v2/<rest:path>")
 def list_tags(
-    rest: str, conda_store=Depends(dependencies.get_conda_store),
+    rest: str,
+    conda_store=Depends(dependencies.get_conda_store),
 ):
     parts = rest.split("/")
 

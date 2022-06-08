@@ -9,7 +9,9 @@ router_metrics = APIRouter(tags=["metrics"])
 
 
 @router_metrics.get("/metrics", response_class=PlainTextResponse)
-def prometheus_metrics(conda_store=Depends(dependencies.get_conda_store),):
+def prometheus_metrics(
+    conda_store=Depends(dependencies.get_conda_store),
+):
     metrics = api.get_metrics(conda_store.db)
     return "\n".join(f"conda_store_{key} {value}" for key, value in metrics.items())
 
