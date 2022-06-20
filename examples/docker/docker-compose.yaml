@@ -119,6 +119,7 @@ services:
       timeout: 5s
       retries: 5
     environment:
+      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: conda-store
 
