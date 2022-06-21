@@ -1,7 +1,7 @@
 from typing import List
 import re
 
-from sqlalchemy import func, null
+from sqlalchemy import func, null, or_
 
 from conda_store_server import orm, schema
 from conda_store_server.conda import conda_platform
@@ -46,15 +46,25 @@ def delete_namespace(db, name: str = None, id: int = None):
 def list_environments(
     db,
     namespace: str = None,
+    name: str = None,
     search: str = None,
     show_soft_deleted: bool = False,
 ):
     filters = []
+
     if namespace:
         filters.append(orm.Namespace.name == namespace)
 
+    if name:
+        filters.append(orm.Environment.name == name)
+
     if search:
-        filters.append(orm.Environment.name.contains(search, autoescape=True))
+        filters.append(
+            or_(
+                orm.Namespace.name.contains(search, autoescape=True),
+                orm.Environment.name.contains(search, autoescape=True),
+            )
+        )
 
     if not show_soft_deleted:
         filters.append(orm.Environment.deleted_on == null())

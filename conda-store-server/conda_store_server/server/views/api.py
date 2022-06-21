@@ -253,6 +253,8 @@ def api_delete_namespace(
 )
 def api_list_environments(
     search: Optional[str] = None,
+    namespace: Optional[str] = None,
+    name: Optional[str] = None,
     conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
     entity=Depends(dependencies.get_entity),
@@ -260,7 +262,13 @@ def api_list_environments(
 ):
     orm_environments = auth.filter_environments(
         entity,
-        api.list_environments(conda_store.db, search=search, show_soft_deleted=False),
+        api.list_environments(
+            conda_store.db,
+            search=search,
+            namespace=namespace,
+            name=name,
+            show_soft_deleted=False,
+        ),
     )
     return paginated_api_response(
         orm_environments,
