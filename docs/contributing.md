@@ -43,7 +43,9 @@ docker-compose up --build
 The REST API is considered somewhat stable. If any changes are made to
 the API make sure the update the OpenAPI/Swagger specification in
 `docs/_static/openapi.json`. This may be downloaded from the `/docs`
-endpoint when running Conda-Store.
+endpoint when running Conda-Store. Ensure that the
+`c.CondaStoreServer.url_prefix` is set to `/` when generating the
+endpoints.
 
 ## Documentation
 
