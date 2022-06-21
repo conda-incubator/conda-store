@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import RedirectResponse, PlainTextResponse
 import yaml
@@ -44,6 +46,7 @@ def ui_create_get_environment(
 @router_ui.get("/")
 def ui_list_environments(
     request: Request,
+    search: Optional[str] = None,
     templates=Depends(dependencies.get_templates),
     conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
@@ -51,7 +54,8 @@ def ui_list_environments(
     entity=Depends(dependencies.get_entity),
 ):
     orm_environments = auth.filter_environments(
-        entity, api.list_environments(conda_store.db, show_soft_deleted=False)
+        entity,
+        api.list_environments(conda_store.db, search=search, show_soft_deleted=False),
     )
 
     context = {
