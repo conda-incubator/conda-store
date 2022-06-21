@@ -25,6 +25,7 @@ The following resources will be available:
   - conda-store web server running at [http://localhost:5000](http://localhost:5000)
   - [MinIO](https://min.io/) s3 running at [http://localhost:9000](http://localhost:9000) with username `admin` and password `password`
   - [PostgreSQL](https://www.postgresql.org/) running at [localhost:5432](localhost:5432) with username `admin` and password `password` database `conda-store`
+  - [Redis](https://www.redis.com/) running at [localhost:6379](localhost:6379) with password `password`
   - [JupyterHub](https://jupyter.org/hub) running at [http://localhost:8000](http://localhost:8000) with any username and password `test`
 
 On a fast machine this deployment should only take 10 or so seconds
@@ -36,6 +37,13 @@ those changes in the deployment. Run.
 docker-compose down  # not always necessary
 docker-compose up --build
 ```
+
+### Changes to API
+
+The REST API is considered somewhat stable. If any changes are made to
+the API make sure the update the OpenAPI/Swagger specification in
+`docs/_static/openapi.json`. This may be downloaded from the `/docs`
+endpoint when running Conda-Store.
 
 ## Documentation
 
@@ -119,155 +127,6 @@ Once the PR has been created ensure that you request a `rerender` of
 the feedstock with the following comment `@conda-forge-admin please
 rerender`. An example of this can be found in [PR
 #2](https://github.com/conda-forge/conda-store-feedstock/pull/2)
-
-## REST API
-
-### Status
-
- - `GET /api/v1/` :: get status of conda-store
-
-### Permissions
-
- - `GET /api/v1/permission/` :: get the permissions for the currently entity. Does not require authentication and returns the permissions and authentication status for entity.
-
-### Namespace
-
- - `GET /api/v1/namespace/?page=<int>&size=<int>&sort_by=<str>&order=<str>` :: list namespaces
-   - allowed `sort_by` values: `name` for the name of the namespace
-
- - `GET /api/v1/namespace/<namespace>/` :: get namespace
-
- - `POST /api/v1/namespace/<namespace>/` :: create namespace
-
- - `DELETE /api/v1/namespace/<namespace>/` :: delete namespace
-
-### Environments
-
- - `GET /api/v1/environment/?search=<str>&page=<int>&size=<int>&sort_by=<str>&order=<str>` :: list environments
-   - allowed `sort_by` values : `namespace` for namespace name, `name` for environment name
-
- - `GET /api/v1/environment/<namespace>/<name>/` :: get environment
-
- - `PUT /api/v1/environment/<namespace>/<name>/` :: update environment to given build id
-
- - `DELETE /api/v1/environment/<namespace>/<name>/` :: delete the environment along with all artifacts and builds
-
-### Specifications
-
- - `POST /api/v1/environment/` :: create given environment
-    - JSON message with optional namespace (will use `CondaStore.default_namespace` if not specified) and a specification string that's a valid environment.yaml for Conda, like so:
-    ```
-    {
-      "namespace": "some_namespace",
-      "specification": "name: some_environment_name\ndependencies:\n  - python=3.10.2=h543edf9_0_cpython\n"
-    }
-    ```
-
-### Builds
-
- - `GET /api/v1/build/?page=<int>&size=<int>&sort_by=<str>&order=<str>` :: list builds
-   - allowed `sort_by` values : `id` to sort by build id
-
- - `GET /api/v1/build/<build_id>/` :: get build
-
- - `PUT /api/v1/build/<build_id>/` :: trigger new build of given build specification
-
- - `DELETE /api/v1/build/<build_id>/` :: delete given build along with all artifacts that are not in `c.CondaStore.build_artifacts_kept_on_deletion`
-
- - `GET /api/v1/build/<build_id>/logs/` :: get build logs
-
- - `GET /api/v1/build/<build_id>/yaml/` :: export environment.yml specification for the given build
-
- - `GET /api/v1/build/<build_id>/packages/?search=<str>&build=<str>&page=<int>&size=<int>&sort_by=<str>&order=<str>` :: list packages within build
-   - allowed `sort_by` values : `channel` to sort by channel name, `name` to sort by package name
-   - `build` string to search within `build` for example strings include
-     `py27_0` etc which can be useful for filtering specific versions of
-     packages.
-   - `search` will search within the package names for a match. The search is fuzzy by default. To get the packages with the exact given name, add the parameter `exact=1`.
-
-### Conda Channels
-
- - `GET /api/v1/channel/?page=<int>&size=<int>` :: list channels
-
-### Conda Packages
-
- - `GET /api/v1/package/?search=<str>&build=<str>&page=<int>&size=<int>?sort_by=<str>?order=<str>&distinct_on=<str>` :: list packages
-   - allowed `sort_by` values : `channel` to sort by channel name, `name` to sort by package name
-   - allowed `distinct_on` values : `channel` to be distinct on channel name, `name` to be distinct on package name, `version` to be distinct on version.
-   - `build` string to search within `build` for example strings include
-     `py27_0` etc which can be useful for filtering specific versions of
-     packages.
-   - `search` will search within the package names for a match. The search is fuzzy by default. To get the packages with the exact given name, add the parameter `exact=1`.
-
-### REST API query format
-
-For several paginated results the following query parameters are accepted.
-
- - `page` page numbers indexing start at 1
- - `size` the number of results to return in each page. The max size
-   is determined by the
-   [Traitlets](https://traitlets.readthedocs.io/en/stable/) parameter
-   `c.CondaStoreServer.max_page_size` with default of 100.
- - `sort_by` (can be multiple order_by parameters) indicating a multi-column
-   ordering. Each route has a list of allowed sorting keys:
-   for example `namespace`, `name`, `channel`. All paginated routes support
-   this and have a default specific to the given resource.
- - `distinct_on` (can be multiple distinct_on parameters) indicating a
-   multi-column distinct on. Each route has a list of allowed distinct
-   keys.
- - `order` is either `desc` descending or `asc` ascending with a
-   default of `asc`. Only one order parameter is accepted.
-
-If a query requests a page that does not exist a data response of an
-empty list is returned.
-
-### REST API Response Format
-
-Several Standard Error Codes are returned
- - 200 :: response was processed normally
- - 400 :: indicates a bad request that is invalid
- - 401 :: indicates that request was unauthenticated indicates that authentication is required
- - 403 :: indicates that request was not authorized to access resource
- - 404 :: indicates that request for resource was not found
- - 500 :: hopefully you don't see this error. If you do this is a bug
-
-Response Format for Errors.
-
-```json
-{
-   "status": "error",
-   "message": "<reason for error>"
-}
-```
-
-Response Format for Success. Several of these response parts are
-optional. A route may optionally return a `message` that may be
-displayed to the user.
-
-If the route is paginated it will return a `page`, `size`, and `count`
-key.
-
-```
-{
-   "status": "ok",
-   "message": "<message>",
-   "data": [...],
-   "page": <int>,
-   "size": <int>,
-   "count": <int>,
-}
-```
-
-If the route is not paginated the `page`, `size`, and `count` keys will
-not be returned.
-
-```
-{
-   "status": "ok",
-   "message": "<message>",
-   "data": {},
-}
-```
 
 ## Architecture
 

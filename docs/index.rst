@@ -100,6 +100,7 @@ Contents
    user_guide
    administration
    contributing
+   api
 
 Indices and tables
 ==================
