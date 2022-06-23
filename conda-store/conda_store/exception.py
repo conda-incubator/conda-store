@@ -1,0 +1,2 @@
+class CondaStoreError(Exception):
+    pass

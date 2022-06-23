@@ -32,6 +32,10 @@
           pythonPackages.minio
           pythonPackages.filelock
 
+          pythonPackages.rich
+          pythonPackages.click
+          pythonPackages.aiohttp
+
           pythonPackages.pytest
           pythonPackages.black
           pythonPackages.flake8
