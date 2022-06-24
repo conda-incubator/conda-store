@@ -3,8 +3,6 @@ import re
 import tempfile
 
 import click
-from rich.panel import Panel
-from rich.pretty import Pretty
 
 from conda_store import api, runner, utils
 
@@ -21,19 +19,32 @@ async def parse_build(conda_store_api: api.CondaStoreAPI, uri: str):
 
 @click.group()
 @click.option(
-    "--conda-store-url", default="http://localhost:5000", help="Conda-Store url"
+    "--conda-store-url",
+    default="http://localhost:5000",
+    envvar="CONDA_STORE_URL",
+    help="Conda-Store base url including prefix",
 )
-@click.option("--auth", type=click.Choice(["token", "basic"], case_sensitive=False))
-@click.option("--no-verify-ssl", is_flag=True, default=False)
+@click.option(
+    "--auth",
+    envvar="CONDA_STORE_AUTH",
+    type=click.Choice(["none", "token", "basic"], case_sensitive=False),
+    help="Conda-Store authentication to use",
+    default="none",
+)
+@click.option(
+    "--no-verify-ssl",
+    envvar="CONDA_STORE_NO_VERIFY",
+    is_flag=True,
+    default=False,
+    help="Disable tls verification on API requests",
+)
 @click.pass_context
 def cli(ctx, conda_store_url: str, auth: str, no_verify_ssl: bool):
     ctx.ensure_object(dict)
     ctx.obj["CONDA_STORE_API"] = api.CondaStoreAPI(
-        conda_store_url=os.environ.get("CONDA_STORE_URL", conda_store_url),
-        verify_ssl=False
-        if "CONDA_STORE_NO_VERIFY" in os.environ
-        else not no_verify_ssl,
-        auth=os.environ.get("CONDA_STORE_AUTH", auth),
+        conda_store_url=conda_store_url,
+        verify_ssl=not no_verify_ssl,
+        auth=auth,
     )
 
 
@@ -41,6 +52,7 @@ def cli(ctx, conda_store_url: str, auth: str, no_verify_ssl: bool):
 @click.pass_context
 @utils.coro
 async def get_permissions(ctx):
+    """Get current permissions and default namespace"""
     async with ctx.obj["CONDA_STORE_API"] as conda_store:
         data = await conda_store.get_permissions()
 
@@ -75,10 +87,17 @@ async def get_permissions(ctx):
     default="lockfile",
     type=click.Choice(["logs", "yaml", "lockfile", "archive"], case_sensitive=False),
 )
-@click.option("--output-filename")
+@click.option(
+    "--output-filename",
+    help="Output filename for given download. build-{build_id}.{extension yaml|lock|tar.gz|image}",
+)
 @click.pass_context
 @utils.coro
 async def download(ctx, uri: str, artifact: str, output_filename: str = None):
+    """Download artifacts for given build
+
+    URI in format '<build-id>', '<namespace>/<name>', '<namespace>/<name>:<build-id>'
+    """
     async with ctx.obj["CONDA_STORE_API"] as conda_store:
         build_id = await parse_build(conda_store, uri)
 
@@ -101,17 +120,31 @@ async def download(ctx, uri: str, artifact: str, output_filename: str = None):
 
 
 @cli.command("run")
-@click.argument("uri")
-@click.option("--cache", type=bool, default=True)
-@click.option("--command", default="python")
 @click.option(
     "--artifact",
     default="archive",
     type=click.Choice(["yaml", "lockfile", "archive"], case_sensitive=False),
+    help="Artifact type to use for execution. Conda-Pack is the default format",
 )
+@click.option(
+    "--no-cache",
+    is_flag=True,
+    default=False,
+    help="Disable caching builds for fast execution",
+)
+@click.argument("uri")
+@click.argument("command", nargs=-1)
 @click.pass_context
 @utils.coro
 async def run_environment(ctx, uri: str, cache: bool, command: str, artifact: str):
+    """Execute given environment specified as a URI with COMMAND
+
+    URI in format '<build-id>', '<namespace>/<name>', '<namespace>/<name>:<build-id>'\n
+    COMMAND is a list of arguments to execute in given environment
+    """
+    if len(command) == 0:
+        command = ["python"]
+
     async with ctx.obj["CONDA_STORE_API"] as conda_store:
         build_id = await parse_build(conda_store, uri)
 

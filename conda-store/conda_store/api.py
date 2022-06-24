@@ -12,7 +12,7 @@ class CondaStoreAPIError(exception.CondaStoreError):
 
 class CondaStoreAPI:
     def __init__(
-        self, conda_store_url: str, auth_type: str = "token", verify_ssl=True, **kwargs
+        self, conda_store_url: str, auth_type: str = "none", verify_ssl=True, **kwargs
     ):
         self.conda_store_url = yarl.URL(conda_store_url)
         self.api_url = self.conda_store_url / "api/v1"
@@ -26,6 +26,8 @@ class CondaStoreAPI:
             self.password = kwargs.get("password", os.environ["CONDA_STORE_PASSWORD"])
 
     async def __aenter__(self):
+        if self.auth_type == "none":
+            self.session = await auth.none_authentication(verify_ssl=self.verify_ssl)
         if self.auth_type == "token":
             self.session = await auth.token_authentication(
                 self.api_token, verify_ssl=self.verify_ssl

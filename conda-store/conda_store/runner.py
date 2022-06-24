@@ -1,3 +1,4 @@
+from typing import List
 import os
 import io
 import tarfile
@@ -12,7 +13,7 @@ async def run_build(
     conda_store_api: api.CondaStoreAPI,
     directory: str,
     build_id: int,
-    command: str,
+    command: List[str],
     artifact="archive",
 ):
     if artifact == "archive":
@@ -25,11 +26,10 @@ async def run_build_archive(
     conda_store_api: api.CondaStoreAPI,
     conda_prefix: str,
     build_id: int,
-    command: str,
+    command: List[str],
 ):
     activate = os.path.join(conda_prefix, "bin", "activate")
     conda_unpack = os.path.join(conda_prefix, "bin", "conda-unpack")
-    quoted_command = [shlex.quote(c) for c in shlex.split(command)]
 
     if not os.path.isfile(activate):
         content = await conda_store_api.download(build_id, "archive")
@@ -44,7 +44,7 @@ async def run_build_archive(
         "bash",
         "-c",
         ". '{}' '{}' && exec {}".format(
-            activate, conda_prefix, " ".join(quoted_command)
+            activate, conda_prefix, " ".join(shlex.quote(c) for c in command)
         ),
     ]
     os.execvp(wrapped_command[0], wrapped_command)
