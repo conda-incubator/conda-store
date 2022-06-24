@@ -18,6 +18,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [0.4.1] - 2022-06-24
+
+### Added
+
+ - Command line client for conda-store (#327)
+ - Adding searchbar for UI (#326)
+ - OpenAPI specification in documentation
+ - Added namespace query parameter to `/api/v1/environment/?namespace=` (#324)
+
 ## [0.4.0] - 2022-05-04
 
 ### Changed
