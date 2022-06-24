@@ -5,10 +5,11 @@ import subprocess
 import shlex
 
 from conda_store.exception import CondaStoreError
+from conda_store import api
 
 
 async def run_build(
-    conda_store_api: "CondaStoreAPI",
+    conda_store_api: api.CondaStoreAPI,
     directory: str,
     build_id: int,
     command: str,
@@ -21,20 +22,20 @@ async def run_build(
 
 
 async def run_build_archive(
-    conda_store_api: "CondaStoreAPI",
+    conda_store_api: api.CondaStoreAPI,
     conda_prefix: str,
     build_id: int,
     command: str,
 ):
-    activate = os.path.join(conda_prefix, 'bin', 'activate')
-    conda_unpack = os.path.join(conda_prefix, 'bin', 'conda-unpack')
+    activate = os.path.join(conda_prefix, "bin", "activate")
+    conda_unpack = os.path.join(conda_prefix, "bin", "conda-unpack")
     quoted_command = [shlex.quote(c) for c in shlex.split(command)]
 
     if not os.path.isfile(activate):
         content = await conda_store_api.download(build_id, "archive")
         content = io.BytesIO(content)
 
-        tarfile.open(fileobj=content, mode='r:gz').extractall(path=conda_prefix)
+        tarfile.open(fileobj=content, mode="r:gz").extractall(path=conda_prefix)
 
         if os.path.exists(conda_unpack):
             subprocess.check_output(conda_unpack)
@@ -42,6 +43,8 @@ async def run_build_archive(
     wrapped_command = [
         "bash",
         "-c",
-        ". '{}' '{}' && echo CONDA_PREFIX=$CONDA_PREFIX && echo $PATH && {}".format(activate, conda_prefix, ' '.join(quoted_command))
+        ". '{}' '{}' && exec {}".format(
+            activate, conda_prefix, " ".join(quoted_command)
+        ),
     ]
     os.execvp(wrapped_command[0], wrapped_command)
