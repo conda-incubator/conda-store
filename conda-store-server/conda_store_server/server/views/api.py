@@ -685,23 +685,6 @@ def api_get_build_yaml(
     )
     return RedirectResponse(conda_store.storage.get_url(build.conda_env_export_key))
 
-@router_api.get("/build/{build_id}/logs/")
-def api_get_build_logs(
-    build_id: int,
-    request: Request,
-    conda_store=Depends(dependencies.get_conda_store),
-    auth=Depends(dependencies.get_auth),
-):
-    build = api.get_build(conda_store.db, build_id)
-    auth.authorize_request(
-        request,
-        f"{build.environment.namespace.name}/{build.environment.name}",
-        {Permissions.ENVIRONMENT_READ},
-        require=True,
-    )
-
-    return RedirectResponse(conda_store.storage.get_url(build.log_key))
-
 
 @router_api.get("/build/{build_id}/lockfile/", response_class=PlainTextResponse)
 def api_get_build_lockfile(
