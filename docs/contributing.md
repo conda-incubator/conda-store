@@ -571,7 +571,9 @@ build::update, build::delete}`. The delete environment action requires
 `build::delete` permissions which the user has thus the action is
 permitted.
 
-### Database Model
+## Database
+
+### Model
 
 At a high level the database model can be described in the image
 bellow.
@@ -599,3 +601,63 @@ eralchemy -i "postgresql+psycopg2://admin:password@localhost:5432/conda-store" -
 ```
 
 ![entity relationship diagram](_static/images/conda-store-entity-relationship-diagram.png)
+
+### Migrations
+
+Conda Store relies on [SQLAlchemy](https://www.sqlalchemy.org/) for ORM mapping, and on [Alembic](https://alembic.sqlalchemy.org/en/latest/) for DB migrations.
+
+The procedure to modify the database is the following : 
+- First, modify [the ORM Model](https://github.com/Quansight/conda-store/blob/main/conda-store-server/conda_store_server/orm.py) according to the changes you want to make
+- edit the file `conda-store-server/alembic.ini` and replace the value for entry `sqlalchemy.url` to match the connection URL of your database.
+
+- in your command line, run the following : 
+```sh
+cd conda-store-server
+alembic revision --autogenerate -m "description of your changes" 
+```
+- You should have a new file in `conda-store-server/alembic/versions/` . **Review it thoroughly**. It contains the [`alembic` operations](https://alembic.sqlalchemy.org/en/latest/ops.html) (`op`) to actually modify the database, either when upgrading (`upgrade` function) or downgrading (`downgrade`)
+
+- You can migrate your data within these `upgrade`/`downgrade` functions, for example :
+```python
+from alembic import op
+
+# revision identifiers, used by Alembic.
+revision = 'abcdef01234567'
+down_revision = '987654321f0edc'
+branch_labels = None
+depends_on = None
+
+def upgrade():
+    
+    # operations to modify the database structure 
+    # ...
+    op.create_table(
+        'new_table',
+        Column('id', INTEGER, primary_key=True),
+        Column('field1', VARCHAR(50), nullable=False),
+        Column('field2', INTEGER),
+        Column('timestamp', TIMESTAMP, server_default=func.now())
+    )
+    # ...
+
+    op.execute('''INSERT INTO new_table (field1, field2) 
+                  SELECT field1, field2 
+                  FROM old_table''')
+    
+    # other operations to modify the database structure 
+    # ...
+
+
+def downgrade():
+    
+    op.drop_table('new_table')
+
+```
+
+
+- Once you're sure about the changes generated, you can apply them by running :
+```sh
+alembic upgrade head
+```
+
+- Check your database : your changes should be reflected. If not, refer to [Alembic's documentation](https://alembic.sqlalchemy.org/en/latest/).
