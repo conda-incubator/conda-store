@@ -40,6 +40,13 @@
           pythonPackages.black
           pythonPackages.flake8
         ];
+
+        shellHook = ''
+          export CONDA_STORE_URL=http://localhost:5000/conda-store/
+          export CONDA_STORE_AUTH=basic
+          export CONDA_STORE_USERNAME=username
+          export CONDA_STORE_PASSWORD=password
+        '';
       };
   };
 }

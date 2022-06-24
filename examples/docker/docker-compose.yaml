@@ -86,7 +86,7 @@ services:
       - ./assets/jupyter_notebook_config.py:/etc/jupyter/jupyter_notebook_config.py:ro
       - ./assets/jupyterhub_config.py:/opt/jupyterhub/jupyterhub_config.py:ro
     platform: linux/amd64
-    command: ['/opt/conda/envs/conda-store/bin/jupyterhub', '--config', '/opt/jupyterhub/jupyterhub_config.py']
+    command: ['/opt/conda/envs/conda-store/bin/jupyterhub', '--config', '/opt/jupyterhub/jupyterhub_config.py', '--debug']
     ports:
       - "8000:8000"
 

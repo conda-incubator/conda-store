@@ -20,12 +20,20 @@ class CondaStoreAPI:
 
         if auth_type == "token":
             self.api_token = kwargs.get("api_token", os.environ["CONDA_STORE_TOKEN"])
+        elif auth_type == "basic":
+            self.username = kwargs.get("username", os.environ["CONDA_STORE_USERNAME"])
+            self.password = kwargs.get("password", os.environ["CONDA_STORE_PASSWORD"])
+
 
     async def __aenter__(self):
         if self.auth_type == "token":
             token = os.environ.get('CONDA_STORE_TOKEN', self.api_token)
             self.session = await auth.token_authentication(
                 self.api_token, verify_ssl=self.verify_ssl
+            )
+        elif self.auth_type == "basic":
+            self.session = await auth.basic_authentication(
+                self.hub_url, self.username, self.password, verify_ssl=self.verify_ssl
             )
         return self
 
@@ -93,5 +101,20 @@ class CondaStoreAPI:
 
             return (await response.json())['data']
 
-    async def download(self, build_id: str, artifact: str):
-        pass
+    async def list_builds(self):
+        return await self.get_paginated_request(self.api_url / "build")
+
+    async def get_build(self, build_id: int):
+        async with self.session.get(self.api_url / "build" / str(build_id)) as response:
+            if response.status != 200:
+                raise CondaStoreAPIError(f"Error getting build {build_id}")
+
+            return (await response.json())['data']
+
+    async def download(self, build_id: int, artifact: str) -> bytes:
+        url = self.api_url / "build" / str(build_id) / artifact
+        async with self.session.get(url) as response:
+            if response.status != 200:
+                raise CondaStoreAPIError(f"Error downloading build {build_id}")
+
+            return await response.content.read()

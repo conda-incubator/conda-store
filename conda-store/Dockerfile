@@ -13,19 +13,19 @@ COPY environment.yaml /opt/conda-store/environment.yaml
 
 RUN mamba env create -f /opt/conda-store/environment.yaml
 
-COPY ./ /opt/conda-store/
-
 ENV PATH=/opt/conda/condabin:/opt/conda/envs/conda-store/bin:/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${PATH}
-
-RUN cd /opt/conda-store && \
-    pip install . && \
-    jupyter labextension install jupyterlab-launcher-shortcuts
 
 RUN git clone ${GATOR_GIT_URL} && \
     cd gator && \
     git checkout origin/${GATOR_GIT_BRANCH} && \
     pip install -e . && \
-    jupyter server extension enable mamba_gator --sys-prefix
+    jupyter server extension enable mamba_gator --sys-prefix && \
+    jupyter labextension install jupyterlab-launcher-shortcuts
+
+COPY ./ /opt/conda-store/
+
+RUN cd /opt/conda-store && \
+    pip install -e .
 
 RUN mkdir -p /opt/jupyterhub && \
     chown -R 1000:1000 /opt/jupyterhub
