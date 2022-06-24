@@ -7,4 +7,18 @@ A client library for interacting with a Conda-Store server. See the
 more information. The client library provides a CLI for interacting
 with conda-store.
 
-Currently this part of conda-store is not well developed.
+```shell
+$ conda_store --help
+Usage: conda_store [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  --conda-store-url TEXT     Conda-Store base url including prefix
+  --auth [none|token|basic]  Conda-Store authentication to use
+  --no-verify-ssl            Disable tls verification on API requests
+  --help                     Show this message and exit.
+
+Commands:
+  download  Download artifacts for given build
+  info      Get current permissions and default namespace
+  run       Execute given environment specified as a URI with COMMAND
+```

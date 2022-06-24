@@ -3,7 +3,7 @@ from typing import List, Dict, Optional
 import pydantic
 import yaml
 from fastapi import APIRouter, Request, Depends, HTTPException, Query, Body
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, PlainTextResponse
 
 from conda_store_server import api, orm, schema, utils, __version__
 from conda_store_server.server import dependencies
@@ -684,3 +684,40 @@ def api_get_build_yaml(
         require=True,
     )
     return RedirectResponse(conda_store.storage.get_url(build.conda_env_export_key))
+
+
+@router_api.get("/build/{build_id}/lockfile/", response_class=PlainTextResponse)
+def api_get_build_lockfile(
+    build_id: int,
+    request: Request,
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
+):
+    build = api.get_build(conda_store.db, build_id)
+    auth.authorize_request(
+        request,
+        f"{build.environment.namespace.name}/{build.environment.name}",
+        {Permissions.ENVIRONMENT_READ},
+        require=True,
+    )
+
+    lockfile = api.get_build_lockfile(conda_store.db, build_id)
+    return lockfile
+
+
+@router_api.get("/build/{build_id}/archive/")
+def api_get_build_archive(
+    build_id: int,
+    request: Request,
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
+):
+    build = api.get_build(conda_store.db, build_id)
+    auth.authorize_request(
+        request,
+        f"{build.environment.namespace.name}/{build.environment.name}",
+        {Permissions.ENVIRONMENT_READ},
+        require=True,
+    )
+
+    return RedirectResponse(conda_store.storage.get_url(build.conda_pack_key))
