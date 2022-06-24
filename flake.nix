@@ -39,6 +39,8 @@
           pythonPackages.pytest
           pythonPackages.black
           pythonPackages.flake8
+          pythonPackages.build
+          pythonPackages.setuptools
         ];
 
         shellHook = ''

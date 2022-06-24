@@ -21,13 +21,13 @@ jobs:
           python-version: 3.8
       - name: Install twine
         run: |
-          pip install twine
+          pip install twine build
       - name: Build and Distribute
         env:
           PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
           PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         run: |
-          python setup.py sdist
+          python -m build --sdist
           twine upload -u $PYPI_USERNAME -p $PYPI_PASSWORD dist/*
 
   release-conda-store:
@@ -45,14 +45,14 @@ jobs:
           python-version: 3.8
       - name: Install twine and jupyter-packaging
         run: |
-          pip install twine
+          pip install twine build
       - name: Build and Distribute
         env:
           PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
           PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         shell: bash -l {0}
         run: |
-          python setup.py sdist
+          python -m build --sdist
           twine upload -u $PYPI_USERNAME -p $PYPI_PASSWORD dist/*
 
   docker:
@@ -66,7 +66,7 @@ jobs:
     steps:
       - name: 'Checkout Infrastructure'
         uses: actions/checkout@master
-      
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
