@@ -2,12 +2,11 @@ import os
 import re
 import tempfile
 import time
-import sys
 import asyncio
 
 import click
 
-from conda_store import api, runner, utils, exceptions
+from conda_store import api, runner, utils, exception
 
 
 async def parse_build(conda_store_api: api.CondaStoreAPI, uri: str):
@@ -15,8 +14,10 @@ async def parse_build(conda_store_api: api.CondaStoreAPI, uri: str):
         namespace, name, build_id = re.fullmatch("(.+)/(.*):(.*)", uri).groups()
         build = await conda_store_api.get_build(build_id)
         environment = await conda_store_api.get_environment(build_id)
-        if build['environment_id'] != environment['id']:
-            raise exceptions.CondaStoreError(f'build {build_id} does not belong to environment {namespace}/{name}')
+        if build["environment_id"] != environment["id"]:
+            raise exception.CondaStoreError(
+                f"build {build_id} does not belong to environment {namespace}/{name}"
+            )
         build_id = int(build_id)
     elif re.fullmatch("(.+)/(.*)", uri):
         namespace, name = re.fullmatch("(.+)/(.*)", uri).groups()
@@ -134,14 +135,14 @@ async def download(ctx, uri: str, artifact: str, output_filename: str = None):
 @click.option(
     "--timeout",
     type=int,
-    default=10*60,
-    help="Time to wait for build to complete until reporting an error. Default 10 minutes"
+    default=10 * 60,
+    help="Time to wait for build to complete until reporting an error. Default 10 minutes",
 )
 @click.option(
     "--interval",
     type=int,
     default=10,
-    help="Time to wait between polling for build status.Default 10 seconds"
+    help="Time to wait between polling for build status.Default 10 seconds",
 )
 @click.pass_context
 @utils.coro
@@ -152,13 +153,15 @@ async def wait_environment(ctx, uri: str, timeout: int, interval: int):
     start_time = time.time()
     while (start_time - time.time()) < timeout:
         build = await conda_store.get_build(build_id)
-        if build['status'] == 'COMPLETED':
+        if build["status"] == "COMPLETED":
             return
-        elif build['status'] == 'FAILED':
-            raise exceptions.CondaStoreError(f'Build {build_id} failed')
+        elif build["status"] == "FAILED":
+            raise exception.CondaStoreError(f"Build {build_id} failed")
         await asyncio.sleep(interval)
 
-    raise exceptions.CondaStoreError(f'Build {build_id} failed to complete in {timeout} seconds')
+    raise exception.CondaStoreError(
+        f"Build {build_id} failed to complete in {timeout} seconds"
+    )
 
 
 @cli.command("run")

@@ -101,6 +101,7 @@ jobs:
       - name: Install Dependencies
         run: |
           pip install .[dev]
+          sudo apt install wait-for-it -y
       - name: Black Formatting
         run: |
           black --version
