@@ -132,6 +132,7 @@ async def download(ctx, uri: str, artifact: str, output_filename: str = None):
 
 
 @cli.command("wait")
+@click.argument("uri")
 @click.option(
     "--timeout",
     type=int,
@@ -147,6 +148,10 @@ async def download(ctx, uri: str, artifact: str, output_filename: str = None):
 @click.pass_context
 @utils.coro
 async def wait_environment(ctx, uri: str, timeout: int, interval: int):
+    """Wait for given URI to complete or fail building
+
+    URI in format '<build-id>', '<namespace>/<name>', '<namespace>/<name>:<build-id>'
+    """
     async with ctx.obj["CONDA_STORE_API"] as conda_store:
         build_id = await parse_build(conda_store, uri)
 
