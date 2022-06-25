@@ -1,19 +1,30 @@
 import os
 import re
 import tempfile
+import time
+import sys
+import asyncio
 
 import click
 
-from conda_store import api, runner, utils
+from conda_store import api, runner, utils, exceptions
 
 
 async def parse_build(conda_store_api: api.CondaStoreAPI, uri: str):
-    if re.fullmatch(r"\d+", uri):  # build_id
-        build_id = int(uri)
+    if re.fullmatch("(.+)/(.*):(.*)", uri):
+        namespace, name, build_id = re.fullmatch("(.+)/(.*):(.*)", uri).groups()
+        build = await conda_store_api.get_build(build_id)
+        environment = await conda_store_api.get_environment(build_id)
+        if build['environment_id'] != environment['id']:
+            raise exceptions.CondaStoreError(f'build {build_id} does not belong to environment {namespace}/{name}')
+        build_id = int(build_id)
     elif re.fullmatch("(.+)/(.*)", uri):
-        namespace, name = uri.split("/")
+        namespace, name = re.fullmatch("(.+)/(.*)", uri).groups()
         environment = await conda_store_api.get_environment(namespace, name)
         build_id = environment["current_build_id"]
+    if re.fullmatch(r"\d+", uri):  # build_id
+        build_id = int(uri)
+
     return build_id
 
 
@@ -119,6 +130,37 @@ async def download(ctx, uri: str, artifact: str, output_filename: str = None):
         print(os.path.abspath(output_filename), end="")
 
 
+@cli.command("wait")
+@click.option(
+    "--timeout",
+    type=int,
+    default=10*60,
+    help="Time to wait for build to complete until reporting an error. Default 10 minutes"
+)
+@click.option(
+    "--interval",
+    type=int,
+    default=10,
+    help="Time to wait between polling for build status.Default 10 seconds"
+)
+@click.pass_context
+@utils.coro
+async def wait_environment(ctx, uri: str, timeout: int, interval: int):
+    async with ctx.obj["CONDA_STORE_API"] as conda_store:
+        build_id = await parse_build(conda_store, uri)
+
+    start_time = time.time()
+    while (start_time - time.time()) < timeout:
+        build = await conda_store.get_build(build_id)
+        if build['status'] == 'COMPLETED':
+            return
+        elif build['status'] == 'FAILED':
+            raise exceptions.CondaStoreError(f'Build {build_id} failed')
+        await asyncio.sleep(interval)
+
+    raise exceptions.CondaStoreError(f'Build {build_id} failed to complete in {timeout} seconds')
+
+
 @cli.command("run")
 @click.option(
     "--artifact",
@@ -136,7 +178,7 @@ async def download(ctx, uri: str, artifact: str, output_filename: str = None):
 @click.argument("command", nargs=-1)
 @click.pass_context
 @utils.coro
-async def run_environment(ctx, uri: str, cache: bool, command: str, artifact: str):
+async def run_environment(ctx, uri: str, no_cache: bool, command: str, artifact: str):
     """Execute given environment specified as a URI with COMMAND
 
     URI in format '<build-id>', '<namespace>/<name>', '<namespace>/<name>:<build-id>'\n
@@ -148,7 +190,7 @@ async def run_environment(ctx, uri: str, cache: bool, command: str, artifact: st
     async with ctx.obj["CONDA_STORE_API"] as conda_store:
         build_id = await parse_build(conda_store, uri)
 
-        if not cache:
+        if no_cache:
             with tempfile.TemporaryDirectory() as tmpdir:
                 await runner.run_build(conda_store, tmpdir, build_id, command, artifact)
         else:
