@@ -207,3 +207,33 @@ async def run_environment(ctx, uri: str, no_cache: bool, command: str, artifact:
             )
             os.makedirs(directory, exist_ok=True)
             await runner.run_build(conda_store, directory, build_id, command, artifact)
+
+
+# ================= LIST ==================
+@cli.group("list")
+def list_group():
+    pass
+
+
+@list_group.command("build")
+@click.option(
+    "--output",
+    default="table",
+    type=click.Choice(["json", "table"]),
+    help="Output format to display builds. Default table.",
+)
+@click.pass_context
+@utils.coro
+async def list_build(ctx, output: str):
+    async with ctx.obj["CONDA_STORE_API"] as conda_store:
+        builds = await conda_store.list_builds()
+
+    for build in builds:
+        build["size"] = utils.sizeof_fmt(build["size"])
+
+    if output == "table":
+        utils.output_table(
+            "Builds", {"Id": "id", "Size": "size", "Status": "status"}, builds
+        )
+    elif output == "json":
+        utils.output_json(builds)

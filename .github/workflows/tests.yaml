@@ -129,9 +129,12 @@ jobs:
           # wait for build to register
 
           export CONDA_STORE_URL=http://localhost:5000/conda-store
+          export CONDA_STORE_AUTH=basic
           export CONDA_STORE_USERNAME=username
           export CONDA_STORE_PASSWORD=password
+
           conda-store info
+          conda-store list build
           conda-store wait 1
           conda-store wait filesystem/python-flask-env
           conda-store wait filesystem/python-flask-env:1
