@@ -150,7 +150,8 @@ jobs:
           conda-store download 1 --artifact yaml
           conda-store download 1 --artifact lockfile
           conda-store download 1 --artifact archive
-          conda-store run 1 -- python -c "print(1 + 3)"
+          time conda-store run 1 -- python -c "print(1 + 3)"
+          time conda-store run 1 -- python -c "print(1 + 4)"
 
   build-docker-image:
     name: 'Build docker images'
