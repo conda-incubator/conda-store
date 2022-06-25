@@ -123,11 +123,17 @@ jobs:
           wait-for-it localhost:5432 # postgresql
           wait-for-it localhost:9000 # minio
           wait-for-it localhost:5000 # conda-store-server
-      - name: Basic tests
+      - name: Basic tests not authenticated
         run: |
           sleep 20
-          # wait for build to register
 
+          export CONDA_STORE_URL=http://localhost:5000/conda-store
+          export CONDA_STORE_AUTH=none
+          conda-store info
+          conda-store list build
+
+      - name: Basic tests authenticated
+        run: |
           export CONDA_STORE_URL=http://localhost:5000/conda-store
           export CONDA_STORE_AUTH=basic
           export CONDA_STORE_USERNAME=username

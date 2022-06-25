@@ -28,13 +28,16 @@ class CondaStoreAPI:
     async def __aenter__(self):
         if self.auth_type == "none":
             self.session = await auth.none_authentication(verify_ssl=self.verify_ssl)
-        if self.auth_type == "token":
+        elif self.auth_type == "token":
             self.session = await auth.token_authentication(
                 self.api_token, verify_ssl=self.verify_ssl
             )
         elif self.auth_type == "basic":
             self.session = await auth.basic_authentication(
-                self.hub_url, self.username, self.password, verify_ssl=self.verify_ssl
+                self.conda_store_url,
+                self.username,
+                self.password,
+                verify_ssl=self.verify_ssl,
             )
         return self
 

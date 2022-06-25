@@ -24,7 +24,7 @@ async def basic_authentication(
 
     await session.post(
         yarl.URL(conda_store_url) / "login",
-        data={
+        json={
             "username": username,
             "password": password,
         },

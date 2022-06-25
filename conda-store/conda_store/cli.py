@@ -13,7 +13,7 @@ async def parse_build(conda_store_api: api.CondaStoreAPI, uri: str):
     if re.fullmatch("(.+)/(.*):(.*)", uri):
         namespace, name, build_id = re.fullmatch("(.+)/(.*):(.*)", uri).groups()
         build = await conda_store_api.get_build(build_id)
-        environment = await conda_store_api.get_environment(build_id)
+        environment = await conda_store_api.get_environment(namespace, name)
         if build["environment_id"] != environment["id"]:
             raise exception.CondaStoreError(
                 f"build {build_id} does not belong to environment {namespace}/{name}"
@@ -56,7 +56,7 @@ def cli(ctx, conda_store_url: str, auth: str, no_verify_ssl: bool):
     ctx.obj["CONDA_STORE_API"] = api.CondaStoreAPI(
         conda_store_url=conda_store_url,
         verify_ssl=not no_verify_ssl,
-        auth=auth,
+        auth_type=auth,
     )
 
 
@@ -71,6 +71,7 @@ async def get_permissions(ctx):
     utils.console.print(
         f"Default namespace is [bold]{data['primary_namespace']}[/bold]"
     )
+    utils.console.print(f"Authenticated [bold]{data['authenticated']}[/bold]")
 
     columns = {
         "Namespace": "namespace",
