@@ -155,18 +155,18 @@ async def wait_environment(ctx, uri: str, timeout: int, interval: int):
     async with ctx.obj["CONDA_STORE_API"] as conda_store:
         build_id = await parse_build(conda_store, uri)
 
-    start_time = time.time()
-    while (start_time - time.time()) < timeout:
-        build = await conda_store.get_build(build_id)
-        if build["status"] == "COMPLETED":
-            return
-        elif build["status"] == "FAILED":
-            raise exception.CondaStoreError(f"Build {build_id} failed")
-        await asyncio.sleep(interval)
+        start_time = time.time()
+        while (time.time() - start_time) < timeout:
+            build = await conda_store.get_build(build_id)
+            if build["status"] == "COMPLETED":
+                return
+            elif build["status"] == "FAILED":
+                raise exception.CondaStoreError(f"Build {build_id} failed")
+            await asyncio.sleep(interval)
 
-    raise exception.CondaStoreError(
-        f"Build {build_id} failed to complete in {timeout} seconds"
-    )
+        raise exception.CondaStoreError(
+            f"Build {build_id} failed to complete in {timeout} seconds"
+        )
 
 
 @cli.command("run")
