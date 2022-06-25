@@ -125,6 +125,9 @@ jobs:
           wait-for-it localhost:5000 # conda-store-server
       - name: Basic tests
         run: |
+          sleep 20
+          # wait for build to register
+
           export CONDA_STORE_URL=http://localhost:5000/conda-store
           export CONDA_STORE_USERNAME=username
           export CONDA_STORE_PASSWORD=password
