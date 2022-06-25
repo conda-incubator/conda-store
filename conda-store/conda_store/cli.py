@@ -146,9 +146,17 @@ async def download(ctx, uri: str, artifact: str, output_filename: str = None):
     default=10,
     help="Time to wait between polling for build status.Default 10 seconds",
 )
+@click.option(
+    "--artifact",
+    type=click.Choice(
+        ["build", "lockfile", "yaml", "archive", "docker"], case_sensitive=False
+    ),
+    default="build",
+    help="Choice of artifact to wait for. Default is 'build' which indicates the environment was built.",
+)
 @click.pass_context
 @utils.coro
-async def wait_environment(ctx, uri: str, timeout: int, interval: int):
+async def wait_environment(ctx, uri: str, timeout: int, interval: int, artifact: str):
     """Wait for given URI to complete or fail building
 
     URI in format '<build-id>', '<namespace>/<name>', '<namespace>/<name>:<build-id>'
@@ -159,10 +167,22 @@ async def wait_environment(ctx, uri: str, timeout: int, interval: int):
         start_time = time.time()
         while (time.time() - start_time) < timeout:
             build = await conda_store.get_build(build_id)
-            if build["status"] == "COMPLETED":
+            build_artifact_types = set(
+                _["artifact_type"] for _ in build["build_artifacts"]
+            )
+
+            if artifact == "build" and build["status"] == "COMPLETED":
                 return
-            elif build["status"] == "FAILED":
+            elif artifact == "build" and build["status"] == "FAILED":
                 raise exception.CondaStoreError(f"Build {build_id} failed")
+            elif artifact == "lockfile" and "LOCKFILE" in build_artifact_types:
+                return
+            elif artifact == "yaml" and "YAML" in build_artifact_types:
+                return
+            elif artifact == "archive" and "CONDA_PACK" in build_artifact_types:
+                return
+            elif artifact == "docker" and "DOCKER_MANIFEST" in build_artifact_types:
+                return
             await asyncio.sleep(interval)
 
         raise exception.CondaStoreError(

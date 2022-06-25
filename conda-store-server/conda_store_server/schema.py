@@ -111,6 +111,16 @@ class BuildStatus(enum.Enum):
     FAILED = "FAILED"
 
 
+class BuildArtifact(BaseModel):
+    id: int
+    artifact_type: BuildArtifactType
+    key: str
+
+    class Config:
+        orm_mode = True
+        use_enum_values = True
+
+
 class Build(BaseModel):
     id: int
     environment_id: int
@@ -121,6 +131,7 @@ class Build(BaseModel):
     scheduled_on: datetime.datetime
     started_on: Optional[datetime.datetime]
     ended_on: Optional[datetime.datetime]
+    build_artifacts: Optional[List[BuildArtifact]]
 
     class Config:
         orm_mode = True

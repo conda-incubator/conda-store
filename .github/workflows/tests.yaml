@@ -145,6 +145,7 @@ jobs:
           conda-store wait 1
           conda-store wait filesystem/python-flask-env
           conda-store wait filesystem/python-flask-env:1
+          conda-store wait filesystem/python-flask-env:1 --artifact=archive
           conda-store list build
           conda-store download 1 --artifact yaml
           conda-store download 1 --artifact lockfile

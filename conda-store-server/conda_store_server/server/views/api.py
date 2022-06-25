@@ -455,7 +455,7 @@ def api_list_builds(
         orm_builds,
         paginated_args,
         schema.Build,
-        exclude={"specification", "packages"},
+        exclude={"specification", "packages", "build_artifacts"},
         allowed_sort_bys={
             "id": orm.Build.id,
         },
