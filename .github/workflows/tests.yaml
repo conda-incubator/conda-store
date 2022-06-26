@@ -101,6 +101,7 @@ jobs:
       - name: Install Dependencies
         run: |
           pip install .[dev]
+          sudo apt install wait-for-it -y
       - name: Black Formatting
         run: |
           black --version
@@ -114,6 +115,43 @@ jobs:
         run: |
           python -m build --sdist
           twine check dist/*
+      - name: Deploy docker-compose
+        run: |
+          docker-compose up -d
+          docker ps
+
+          wait-for-it localhost:5432 # postgresql
+          wait-for-it localhost:9000 # minio
+          wait-for-it localhost:5000 # conda-store-server
+      - name: Basic tests not authenticated
+        run: |
+          sleep 20
+
+          export CONDA_STORE_URL=http://localhost:5000/conda-store
+          export CONDA_STORE_AUTH=none
+          conda-store info
+          conda-store list build
+
+      - name: Basic tests authenticated
+        run: |
+          export CONDA_STORE_URL=http://localhost:5000/conda-store
+          export CONDA_STORE_AUTH=basic
+          export CONDA_STORE_USERNAME=username
+          export CONDA_STORE_PASSWORD=password
+
+          conda-store info
+          conda-store list build
+          echo "waiting for build 1 to finish"
+          conda-store wait 1
+          conda-store wait filesystem/python-flask-env
+          conda-store wait filesystem/python-flask-env:1
+          conda-store wait filesystem/python-flask-env:1 --artifact=archive
+          conda-store list build
+          conda-store download 1 --artifact yaml
+          conda-store download 1 --artifact lockfile
+          conda-store download 1 --artifact archive
+          time conda-store run 1 -- python -c "print(1 + 3)"
+          time conda-store run 1 -- python -c "print(1 + 4)"
 
   build-docker-image:
     name: 'Build docker images'

@@ -1,19 +1,31 @@
 import os
 import re
 import tempfile
+import time
+import asyncio
 
 import click
 
-from conda_store import api, runner, utils
+from conda_store import api, runner, utils, exception
 
 
 async def parse_build(conda_store_api: api.CondaStoreAPI, uri: str):
-    if re.fullmatch(r"\d+", uri):  # build_id
-        build_id = int(uri)
+    if re.fullmatch("(.+)/(.*):(.*)", uri):
+        namespace, name, build_id = re.fullmatch("(.+)/(.*):(.*)", uri).groups()
+        build = await conda_store_api.get_build(build_id)
+        environment = await conda_store_api.get_environment(namespace, name)
+        if build["environment_id"] != environment["id"]:
+            raise exception.CondaStoreError(
+                f"build {build_id} does not belong to environment {namespace}/{name}"
+            )
+        build_id = int(build_id)
     elif re.fullmatch("(.+)/(.*)", uri):
-        namespace, name = uri.split("/")
+        namespace, name = re.fullmatch("(.+)/(.*)", uri).groups()
         environment = await conda_store_api.get_environment(namespace, name)
         build_id = environment["current_build_id"]
+    if re.fullmatch(r"\d+", uri):  # build_id
+        build_id = int(uri)
+
     return build_id
 
 
@@ -44,7 +56,7 @@ def cli(ctx, conda_store_url: str, auth: str, no_verify_ssl: bool):
     ctx.obj["CONDA_STORE_API"] = api.CondaStoreAPI(
         conda_store_url=conda_store_url,
         verify_ssl=not no_verify_ssl,
-        auth=auth,
+        auth_type=auth,
     )
 
 
@@ -59,6 +71,7 @@ async def get_permissions(ctx):
     utils.console.print(
         f"Default namespace is [bold]{data['primary_namespace']}[/bold]"
     )
+    utils.console.print(f"Authenticated [bold]{data['authenticated']}[/bold]")
 
     columns = {
         "Namespace": "namespace",
@@ -119,6 +132,64 @@ async def download(ctx, uri: str, artifact: str, output_filename: str = None):
         print(os.path.abspath(output_filename), end="")
 
 
+@cli.command("wait")
+@click.argument("uri")
+@click.option(
+    "--timeout",
+    type=int,
+    default=10 * 60,
+    help="Time to wait for build to complete until reporting an error. Default 10 minutes",
+)
+@click.option(
+    "--interval",
+    type=int,
+    default=10,
+    help="Time to wait between polling for build status.Default 10 seconds",
+)
+@click.option(
+    "--artifact",
+    type=click.Choice(
+        ["build", "lockfile", "yaml", "archive", "docker"], case_sensitive=False
+    ),
+    default="build",
+    help="Choice of artifact to wait for. Default is 'build' which indicates the environment was built.",
+)
+@click.pass_context
+@utils.coro
+async def wait_environment(ctx, uri: str, timeout: int, interval: int, artifact: str):
+    """Wait for given URI to complete or fail building
+
+    URI in format '<build-id>', '<namespace>/<name>', '<namespace>/<name>:<build-id>'
+    """
+    async with ctx.obj["CONDA_STORE_API"] as conda_store:
+        build_id = await parse_build(conda_store, uri)
+
+        start_time = time.time()
+        while (time.time() - start_time) < timeout:
+            build = await conda_store.get_build(build_id)
+            build_artifact_types = set(
+                _["artifact_type"] for _ in build["build_artifacts"]
+            )
+
+            if artifact == "build" and build["status"] == "COMPLETED":
+                return
+            elif artifact == "build" and build["status"] == "FAILED":
+                raise exception.CondaStoreError(f"Build {build_id} failed")
+            elif artifact == "lockfile" and "LOCKFILE" in build_artifact_types:
+                return
+            elif artifact == "yaml" and "YAML" in build_artifact_types:
+                return
+            elif artifact == "archive" and "CONDA_PACK" in build_artifact_types:
+                return
+            elif artifact == "docker" and "DOCKER_MANIFEST" in build_artifact_types:
+                return
+            await asyncio.sleep(interval)
+
+        raise exception.CondaStoreError(
+            f"Build {build_id} failed to complete in {timeout} seconds"
+        )
+
+
 @cli.command("run")
 @click.option(
     "--artifact",
@@ -136,7 +207,7 @@ async def download(ctx, uri: str, artifact: str, output_filename: str = None):
 @click.argument("command", nargs=-1)
 @click.pass_context
 @utils.coro
-async def run_environment(ctx, uri: str, cache: bool, command: str, artifact: str):
+async def run_environment(ctx, uri: str, no_cache: bool, command: str, artifact: str):
     """Execute given environment specified as a URI with COMMAND
 
     URI in format '<build-id>', '<namespace>/<name>', '<namespace>/<name>:<build-id>'\n
@@ -148,7 +219,7 @@ async def run_environment(ctx, uri: str, cache: bool, command: str, artifact: st
     async with ctx.obj["CONDA_STORE_API"] as conda_store:
         build_id = await parse_build(conda_store, uri)
 
-        if not cache:
+        if no_cache:
             with tempfile.TemporaryDirectory() as tmpdir:
                 await runner.run_build(conda_store, tmpdir, build_id, command, artifact)
         else:
@@ -157,3 +228,33 @@ async def run_environment(ctx, uri: str, cache: bool, command: str, artifact: st
             )
             os.makedirs(directory, exist_ok=True)
             await runner.run_build(conda_store, directory, build_id, command, artifact)
+
+
+# ================= LIST ==================
+@cli.group("list")
+def list_group():
+    pass
+
+
+@list_group.command("build")
+@click.option(
+    "--output",
+    default="table",
+    type=click.Choice(["json", "table"]),
+    help="Output format to display builds. Default table.",
+)
+@click.pass_context
+@utils.coro
+async def list_build(ctx, output: str):
+    async with ctx.obj["CONDA_STORE_API"] as conda_store:
+        builds = await conda_store.list_builds()
+
+    for build in builds:
+        build["size"] = utils.sizeof_fmt(build["size"])
+
+    if output == "table":
+        utils.output_table(
+            "Builds", {"Id": "id", "Size": "size", "Status": "status"}, builds
+        )
+    elif output == "json":
+        utils.output_json(builds)

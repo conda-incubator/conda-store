@@ -231,3 +231,43 @@ This namespace page allows a user with correct permissions to list,
 create, and delete namespaces. Note that the deletion of a namespace
 is destructive and deletes all environments and builds within that
 namespace.
+
+## Conda-Store cli
+
+The conda-store client can be easily installed via pip and conda.
+
+```shell
+pip install conda-store
+conda install -c conda-forge conda-store
+```
+
+The base cli is inspired by tools such as
+[conda](https://docs.conda.io/en/latest/),
+[kubectl](https://kubernetes.io/docs/reference/kubectl/), and
+[docker](https://docs.docker.com/get-docker/). The base commands are
+`download`, `info`, `list`, `run`, `wait`.
+
+```shell
+$ conda-store --help
+Usage: conda-store [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  --conda-store-url TEXT     Conda-Store base url including prefix
+  --auth [none|token|basic]  Conda-Store authentication to use
+  --no-verify-ssl            Disable tls verification on API requests
+  --help                     Show this message and exit.
+
+Commands:
+  download  Download artifacts for given build
+  info      Get current permissions and default namespace
+  list
+  run       Execute given environment specified as a URI with COMMAND
+  wait      Wait for given URI to complete or fail building
+```
+
+One of the motivating features of the `conda-store` cli is that you
+can directly execute Conda-Store environments that exist remotely.
+
+```shell
+conda-store run devops/datascience -- python -m "print(1)"
+```

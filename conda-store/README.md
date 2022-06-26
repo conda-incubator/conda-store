@@ -8,8 +8,8 @@ more information. The client library provides a CLI for interacting
 with conda-store.
 
 ```shell
-$ conda_store --help
-Usage: conda_store [OPTIONS] COMMAND [ARGS]...
+$ conda-store --help
+Usage: conda-store [OPTIONS] COMMAND [ARGS]...
 
 Options:
   --conda-store-url TEXT     Conda-Store base url including prefix
@@ -20,5 +20,7 @@ Options:
 Commands:
   download  Download artifacts for given build
   info      Get current permissions and default namespace
+  list
   run       Execute given environment specified as a URI with COMMAND
+  wait      Wait for given URI to complete or fail building
 ```
