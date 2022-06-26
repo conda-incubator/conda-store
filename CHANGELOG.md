@@ -18,6 +18,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [0.4.4] - 2022-06-25
+
+### Added
+
+ - `wait` option in cli for waiting on artifacts and builds (#328)
+ - `list build` command (#328)
+ - tests for client conda-store (#328)
+
+### Fixed
+
+ - issue with caching option in run command (#328)
+
+### Changed
+
+ - api now exposes the build_artifacts field on `api/v1/build/<build-id>/`
+
 ## [0.4.2] - 2022-06-24
 
 ### Fixed
