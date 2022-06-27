@@ -21,7 +21,7 @@ import conda_store_server.server.dbutil as dbutil
 class CondaStoreServer(Application):
     aliases = {
         "config": "CondaStoreServer.config_file",
-        "upgrade-db": "CondaStoreServer.upgrade_db",
+        #"upgrade-db": "CondaStoreServer.upgrade_db",
     }
 
     log_level = Integer(
@@ -122,10 +122,11 @@ class CondaStoreServer(Application):
         super().initialize(*args, **kwargs)
         self.load_config_file(self.config_file)
 
-        if self.config.CondaStore.upgrade_db:
+        self.conda_store = CondaStore(parent=self, log=self.log)
+
+        if self.conda_store.upgrade_db:
             dbutil.upgrade(self.config.CondaStore.database_url)
 
-        self.conda_store = CondaStore(parent=self, log=self.log)
         self.authentication = self.authentication_class(parent=self, log=self.log)
         # ensure checks on redis_url
         self.conda_store.redis_url

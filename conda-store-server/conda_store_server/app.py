@@ -154,6 +154,14 @@ class CondaStore(LoggingConfigurable):
         config=True,
     )
 
+    upgrade_db = Bool(
+        True,
+        help="""Upgrade the database automatically on start.
+        Only safe if database is regularly backed up.
+        """,
+        config=True
+    )
+
     redis_url = Unicode(
         help="Redis connection url in form 'redis://:<password>@<hostname>:<port>/0'. Connection is used by Celery along with Conda-Store internally",
         config=True,
