@@ -154,6 +154,14 @@ class CondaStore(LoggingConfigurable):
         config=True,
     )
 
+    upgrade_db = Bool(
+        True,
+        help="""Upgrade the database automatically on start.
+        Only safe if database is regularly backed up.
+        """,
+        config=True,
+    )
+
     redis_url = Unicode(
         help="Redis connection url in form 'redis://:<password>@<hostname>:<port>/0'. Connection is used by Celery along with Conda-Store internally",
         config=True,
@@ -323,17 +331,6 @@ class CondaStore(LoggingConfigurable):
                 "kwargs": {},
             },
         }
-
-        if self.celery_results_backend.startswith("sqla"):
-            # https://github.com/celery/celery/issues/4653#issuecomment-400029147
-            # race condition in table construction in celery
-            # despite issue being closed still causes first task to fail
-            # in celery if tables not created
-            from celery.backends.database import SessionManager
-
-            session = SessionManager()
-            engine = session.get_engine(self._celery_app.backend.url)
-            session.prepare_models(engine)
 
         return self._celery_app
 

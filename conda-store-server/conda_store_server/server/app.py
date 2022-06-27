@@ -15,6 +15,8 @@ from conda_store_server.server import auth, views
 from conda_store_server.app import CondaStore
 from conda_store_server import __version__
 
+import conda_store_server.server.dbutil as dbutil
+
 
 class CondaStoreServer(Application):
     aliases = {
@@ -120,6 +122,10 @@ class CondaStoreServer(Application):
         self.load_config_file(self.config_file)
 
         self.conda_store = CondaStore(parent=self, log=self.log)
+
+        if self.conda_store.upgrade_db:
+            dbutil.upgrade(self.config.CondaStore.database_url)
+
         self.authentication = self.authentication_class(parent=self, log=self.log)
         # ensure checks on redis_url
         self.conda_store.redis_url

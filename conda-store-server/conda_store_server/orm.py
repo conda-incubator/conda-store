@@ -269,7 +269,7 @@ class Environment(Base):
 
     name = Column(Unicode(255), nullable=False)
 
-    current_build_id = Column(Integer, ForeignKey("build.id"))
+    current_build_id = Column(Integer, ForeignKey("build.id", use_alter=True))
     current_build = relationship(
         Build, foreign_keys=[current_build_id], post_update=True
     )
@@ -415,11 +415,6 @@ class CondaStoreConfiguration(Base):
 
 def new_session_factory(url="sqlite:///:memory:", reset=False, **kwargs):
     engine = create_engine(url, **kwargs)
-
-    if reset:
-        Base.metadata.drop_all(engine)
-
-    Base.metadata.create_all(engine)
 
     session_factory = scoped_session(sessionmaker(bind=engine))
     return session_factory
