@@ -21,7 +21,6 @@ import conda_store_server.server.dbutil as dbutil
 class CondaStoreServer(Application):
     aliases = {
         "config": "CondaStoreServer.config_file",
-        #"upgrade-db": "CondaStoreServer.upgrade_db",
     }
 
     log_level = Integer(

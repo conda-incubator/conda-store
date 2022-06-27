@@ -159,7 +159,7 @@ class CondaStore(LoggingConfigurable):
         help="""Upgrade the database automatically on start.
         Only safe if database is regularly backed up.
         """,
-        config=True
+        config=True,
     )
 
     redis_url = Unicode(
