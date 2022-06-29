@@ -3,7 +3,9 @@ import re
 import tempfile
 import time
 import asyncio
+from typing import List
 
+from ruamel.yaml import YAML
 import click
 
 from conda_store import api, runner, utils, exception
@@ -230,13 +232,64 @@ async def run_environment(ctx, uri: str, no_cache: bool, command: str, artifact:
             await runner.run_build(conda_store, directory, build_id, command, artifact)
 
 
+@cli.command("solve")
+@click.argument("filename", type=click.File("r"))
+@click.option(
+    "--output",
+    default="table",
+    type=click.Choice(["json", "table"]),
+    help="Output format to display solve. Default table.",
+)
+@click.pass_context
+@utils.coro
+async def solve_environment(ctx, filename, output: str):
+    """Remotely solve given environment.yaml"""
+    yaml = YAML(typ="safe")
+    data = yaml.load(filename)
+
+    def _get_pip(data):
+        for _ in data.get("dependencies", []):
+            if isinstance(_, dict):
+                return _.get("pip", [])
+        return []
+
+    arguments = {
+        "channels": data.get("channels", []),
+        "conda": [_ for _ in data.get("dependencies", []) if isinstance(_, str)],
+        "pip": _get_pip(data),
+    }
+
+    async with ctx.obj["CONDA_STORE_API"] as conda_store:
+        packages = await conda_store.solve_environment(**arguments)
+
+    total_size = 0
+    for package in packages:
+        total_size += package["size"]
+        package["size"] = utils.sizeof_fmt(package["size"])
+
+    if output == "table":
+        utils.output_table(
+            "Packages",
+            {
+                "Name": "name",
+                "Version": "version",
+                "Channel": "channel_id",
+                "Size": "size",
+            },
+            packages,
+        )
+        utils.console.print(f"Total Size: {utils.sizeof_fmt(total_size)}")
+    elif output == "json":
+        utils.output_json(packages)
+
+
 # ================= LIST ==================
 @cli.group("list")
 def list_group():
     pass
 
 
-@list_group.command("build")
+@list_group.command("namespace")
 @click.option(
     "--output",
     default="table",
@@ -245,9 +298,59 @@ def list_group():
 )
 @click.pass_context
 @utils.coro
-async def list_build(ctx, output: str):
+async def list_namespace(ctx, output: str):
     async with ctx.obj["CONDA_STORE_API"] as conda_store:
-        builds = await conda_store.list_builds()
+        namespaces = await conda_store.list_namespaces()
+
+    if output == "table":
+        utils.output_table("Builds", {"Id": "id", "Name": "name"}, namespaces)
+    elif output == "json":
+        utils.output_json(namespaces)
+
+
+@list_group.command("build")
+@click.option(
+    "--status",
+    # see conda_store_server.schema.BuildStatus
+    type=click.Choice(["QUEUED", "BUILDING", "COMPLETED", "FAILED"]),
+    help="Filter builds which have given status",
+)
+@click.option(
+    "--artifact",
+    # see conda_store_server.schema.BuildArtifactType
+    type=click.Choice(
+        [
+            "DIRECTORY",
+            "LOCKFILE",
+            "LOGS",
+            "YAML",
+            "CONDA_PACK",
+            "DOCKER_BLOB",
+            "DOCKER_MANIFEST",
+        ]
+    ),
+    help="Filter builds which have given artifact",
+)
+@click.option(
+    "--package",
+    help="Filter builds which have given package (can be used multiple times)",
+    multiple=True,
+)
+@click.option(
+    "--output",
+    default="table",
+    type=click.Choice(["json", "table"]),
+    help="Output format to display builds. Default table.",
+)
+@click.pass_context
+@utils.coro
+async def list_build(ctx, output: str, status: str, artifact: str, package: List[str]):
+    async with ctx.obj["CONDA_STORE_API"] as conda_store:
+        builds = await conda_store.list_builds(
+            status=status,
+            artifact=artifact,
+            packages=package,
+        )
 
     for build in builds:
         build["size"] = utils.sizeof_fmt(build["size"])
@@ -255,6 +358,62 @@ async def list_build(ctx, output: str):
     if output == "table":
         utils.output_table(
             "Builds", {"Id": "id", "Size": "size", "Status": "status"}, builds
+        )
+    elif output == "json":
+        utils.output_json(builds)
+
+
+@list_group.command("environment")
+@click.option(
+    "--status",
+    # see conda_store_server.schema.BuildStatus
+    type=click.Choice(["QUEUED", "BUILDING", "COMPLETED", "FAILED"]),
+    help="Filter environments which have given status",
+)
+@click.option(
+    "--artifact",
+    # see conda_store_server.schema.BuildArtifactType
+    type=click.Choice(
+        [
+            "DIRECTORY",
+            "LOCKFILE",
+            "LOGS",
+            "YAML",
+            "CONDA_PACK",
+            "DOCKER_BLOB",
+            "DOCKER_MANIFEST",
+        ]
+    ),
+    help="Filter environments which have given artifact",
+)
+@click.option(
+    "--package",
+    help="Filter environments which have given package (can be used multiple times)",
+    multiple=True,
+)
+@click.option(
+    "--output",
+    default="table",
+    type=click.Choice(["json", "table"]),
+    help="Output format to display builds. Default table.",
+)
+@click.pass_context
+@utils.coro
+async def list_environment(
+    ctx, output: str, status: str, artifact: str, package: List[str]
+):
+    async with ctx.obj["CONDA_STORE_API"] as conda_store:
+        builds = await conda_store.list_environments(
+            status=status,
+            artifact=artifact,
+            packages=package,
+        )
+
+    if output == "table":
+        utils.output_table(
+            "Environments",
+            {"Id": "id", "Namespace Id": "namespace.id", "Name": "name"},
+            builds,
         )
     elif output == "json":
         utils.output_json(builds)
