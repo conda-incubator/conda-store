@@ -257,6 +257,7 @@ def api_list_environments(
     name: Optional[str] = None,
     status: Optional[schema.BuildStatus] = None,
     packages: Optional[List[str]] = Query([]),
+    artifact: Optional[schema.BuildArtifactType] = None,
     conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
     entity=Depends(dependencies.get_entity),
@@ -271,6 +272,7 @@ def api_list_environments(
             name=name,
             status=status,
             packages=packages,
+            artifact=artifact,
             show_soft_deleted=False,
         ),
     )
@@ -449,6 +451,7 @@ def api_post_specification(
 def api_list_builds(
     status: Optional[schema.BuildStatus] = None,
     packages: Optional[List[str]] = Query([]),
+    artifact: Optional[schema.BuildArtifactType] = None,
     conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
     entity=Depends(dependencies.get_entity),
@@ -457,7 +460,11 @@ def api_list_builds(
     orm_builds = auth.filter_builds(
         entity,
         api.list_builds(
-            conda_store.db, status=status, packages=packages, show_soft_deleted=True
+            conda_store.db,
+            status=status,
+            packages=packages,
+            artifact=artifact,
+            show_soft_deleted=True,
         ),
     )
     return paginated_api_response(

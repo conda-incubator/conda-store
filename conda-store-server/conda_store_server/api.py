@@ -49,6 +49,7 @@ def list_environments(
     name: str = None,
     status: schema.BuildStatus = None,
     packages: List[str] = None,
+    artifact: schema.BuildArtifactType = None,
     search: str = None,
     show_soft_deleted: bool = False,
 ):
@@ -78,15 +79,23 @@ def list_environments(
         db.query(orm.Environment)
         .join(orm.Environment.namespace)
         .join(orm.Environment.current_build)
+        .join(orm.Build.build_artifacts)
         .filter(*filters)
     )
 
-    if packages:
-        query = (
-            query.join(orm.Build.packages)
-            .filter(orm.CondaPackage.name.in_(packages))
-            .group_by(orm.Namespace.name, orm.Environment.name, orm.Environment.id)
-            .having(func.count() == len(packages))
+    # one to many relationships
+    if artifact or packages:
+        if artifact:
+            query = query.filter(orm.BuildArtifact.artifact_type == artifact)
+
+        if packages:
+            query = (
+                query.join(orm.Build.packages)
+                .filter(orm.CondaPackage.name.in_(packages))
+                .having(func.count() == len(packages))
+            )
+        query = query.group_by(
+            orm.Namespace.name, orm.Environment.name, orm.Environment.id
         )
 
     return query
@@ -139,6 +148,7 @@ def list_builds(
     db,
     status: schema.BuildStatus = None,
     packages: List[str] = None,
+    artifact: schema.BuildArtifactType = None,
     show_soft_deleted: bool = False,
 ):
     filters = []
@@ -148,15 +158,20 @@ def list_builds(
     if not show_soft_deleted:
         filters.append(orm.Build.deleted_on == null())
 
-    query = db.query(orm.Build).filter(*filters)
+    query = db.query(orm.Build).join(orm.BuildArtifact).filter(*filters)
 
-    if packages:
-        query = (
-            query.join(orm.Build.packages)
-            .filter(orm.CondaPackage.name.in_(packages))
-            .group_by(orm.Build.id)
-            .having(func.count() == len(packages))
-        )
+    # one to many relationships
+    if artifact or packages:
+        if artifact:
+            query = query.filter(orm.BuildArtifact.artifact_type == artifact)
+
+        if packages:
+            query = (
+                query.join(orm.Build.packages)
+                .filter(orm.CondaPackage.name.in_(packages))
+                .having(func.count() == len(packages))
+            )
+        query = query.group_by(orm.Build.id)
 
     return query
 
