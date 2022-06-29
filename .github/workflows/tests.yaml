@@ -130,7 +130,9 @@ jobs:
           export CONDA_STORE_URL=http://localhost:5000/conda-store
           export CONDA_STORE_AUTH=none
           conda-store info
+          conda-store list namespace
           conda-store list build
+          conda-store list environment
 
       - name: Basic tests authenticated
         run: |
@@ -146,7 +148,10 @@ jobs:
           conda-store wait filesystem/python-flask-env
           conda-store wait filesystem/python-flask-env:1
           conda-store wait filesystem/python-flask-env:1 --artifact=archive
+          conda-store list namespace
           conda-store list build
+          conda-store list environment
+          conda-store list environment --package python --package ipykernel --status COMPLETED --artifact CONDA_PACK
           conda-store download 1 --artifact yaml
           conda-store download 1 --artifact lockfile
           conda-store download 1 --artifact archive
