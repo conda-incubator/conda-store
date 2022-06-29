@@ -47,19 +47,22 @@ def list_environments(
     db,
     namespace: str = None,
     name: str = None,
+    status: schema.BuildStatus = None,
+    packages: List[str] = None,
+    artifact: schema.BuildArtifactType = None,
     search: str = None,
     show_soft_deleted: bool = False,
 ):
-    filters = []
+    query = db.query(orm.Environment).join(orm.Environment.namespace)
 
     if namespace:
-        filters.append(orm.Namespace.name == namespace)
+        query = query.filter(orm.Namespace.name == namespace)
 
     if name:
-        filters.append(orm.Environment.name == name)
+        query = query.filter(orm.Environment.name == name)
 
     if search:
-        filters.append(
+        query = query.filter(
             or_(
                 orm.Namespace.name.contains(search, autoescape=True),
                 orm.Environment.name.contains(search, autoescape=True),
@@ -67,9 +70,32 @@ def list_environments(
         )
 
     if not show_soft_deleted:
-        filters.append(orm.Environment.deleted_on == null())
+        query = query.filter(orm.Environment.deleted_on == null())
 
-    return db.query(orm.Environment).join(orm.Environment.namespace).filter(*filters)
+    if status or artifact or packages:
+        query = query.join(orm.Environment.current_build)
+
+    if status:
+        query = query.filter(orm.Build.status == status)
+
+    if artifact:
+        # DOCKER_BLOB can return multiple results
+        # use DOCKER_MANIFEST instead
+        if artifact == schema.BuildArtifactType.DOCKER_BLOB:
+            artifact = schema.BuildArtifactType.DOCKER_MANIFEST
+        query = query.join(orm.Build.build_artifacts).filter(
+            orm.BuildArtifact.artifact_type == artifact
+        )
+
+    if packages:
+        query = (
+            query.join(orm.Build.packages)
+            .filter(orm.CondaPackage.name.in_(packages))
+            .group_by(orm.Namespace.name, orm.Environment.name, orm.Environment.id)
+            .having(func.count() == len(packages))
+        )
+
+    return query
 
 
 def get_environment(
@@ -115,15 +141,39 @@ def get_solve(db, solve_id: int):
     return db.query(orm.Solve).filter(orm.Solve.id == solve_id).first()
 
 
-def list_builds(db, status: schema.BuildStatus = None, show_soft_deleted: bool = False):
-    filters = []
+def list_builds(
+    db,
+    status: schema.BuildStatus = None,
+    packages: List[str] = None,
+    artifact: schema.BuildArtifactType = None,
+    show_soft_deleted: bool = False,
+):
+    query = db.query(orm.Build)
+
     if status:
-        filters.append(orm.Build.status == status)
+        query = query.filter(orm.Build.status == status)
 
     if not show_soft_deleted:
-        filters.append(orm.Build.deleted_on == null())
+        query = query.filter(orm.Build.deleted_on == null())
 
-    return db.query(orm.Build).filter(*filters)
+    if artifact:
+        # DOCKER_BLOB can return multiple results
+        # use DOCKER_MANIFEST instead
+        if artifact == schema.BuildArtifactType.DOCKER_BLOB:
+            artifact = schema.BuildArtifactType.DOCKER_MANIFEST
+        query = query.join(orm.Build.build_artifacts).filter(
+            orm.BuildArtifact.artifact_type == artifact
+        )
+
+    if packages:
+        query = (
+            query.join(orm.Build.packages)
+            .filter(orm.CondaPackage.name.in_(packages))
+            .group_by(orm.Build.id)
+            .having(func.count() == len(packages))
+        )
+
+    return query
 
 
 def get_build(db, build_id: int):
