@@ -18,6 +18,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [0.4.5] - 2022-06-29
+
+### Added
+
+ - Adding cli command `solve` to call remote conda solve api (#329)
+ - New filters for build and environment api calls status, artifact, package (#329)
+ - Adding Alembic migration integration (#314)
+
 ## [0.4.4] - 2022-06-25
 
 ### Added
