@@ -22,5 +22,6 @@ Commands:
   info      Get current permissions and default namespace
   list
   run       Execute given environment specified as a URI with COMMAND
+  solve     Remotely solve given environment.yaml
   wait      Wait for given URI to complete or fail building
 ```

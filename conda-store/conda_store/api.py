@@ -1,5 +1,6 @@
 import os
 import math
+from typing import List
 
 import yarl
 
@@ -82,8 +83,15 @@ class CondaStoreAPI:
             if response.status != 200:
                 raise CondaStoreAPIError(f"Error deleting namespace {namespace}")
 
-    async def list_environments(self):
-        return await self.get_paginated_request(self.api_url / "environment")
+    async def list_environments(self, status: str, artifact: str, packages: List[str]):
+        url = self.api_url / "environment"
+        if status:
+            url = url % {"status": status}
+        if artifact:
+            url = url % {"artifact": artifact}
+        if packages:
+            url = url % {"packages": packages}
+        return await self.get_paginated_request(url)
 
     async def delete_environment(self, namespace: str, name: str):
         async with self.session.delete(
@@ -122,8 +130,29 @@ class CondaStoreAPI:
 
             return (await response.json())["data"]
 
-    async def list_builds(self):
-        return await self.get_paginated_request(self.api_url / "build")
+    async def solve_environment(
+        self, channels: List[str], conda: List[str], pip: List[str]
+    ):
+        async with self.session.get(
+            self.api_url
+            / "specification"
+            % {
+                "channels": channels,
+                "conda": conda,
+                "pip": pip,
+            }
+        ) as response:
+            return (await response.json())["solve"]
+
+    async def list_builds(self, status: str, artifact: str, packages: List[str]):
+        url = self.api_url / "build"
+        if status:
+            url = url % {"status": status}
+        if artifact:
+            url = url % {"artifact": artifact}
+        if packages:
+            url = url % {"packages": packages}
+        return await self.get_paginated_request(url)
 
     async def get_build(self, build_id: int):
         async with self.session.get(self.api_url / "build" / str(build_id)) as response:

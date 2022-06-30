@@ -262,8 +262,11 @@ Commands:
   info      Get current permissions and default namespace
   list
   run       Execute given environment specified as a URI with COMMAND
+  solve     Remotely solve given environment.yaml
   wait      Wait for given URI to complete or fail building
 ```
+
+### `conda-store run`
 
 One of the motivating features of the `conda-store` cli is that you
 can directly execute Conda-Store environments that exist remotely.
@@ -271,3 +274,16 @@ can directly execute Conda-Store environments that exist remotely.
 ```shell
 conda-store run devops/datascience -- python -m "print(1)"
 ```
+
+### `conda-store solve`
+
+Conda-Store is capable to remote solves of environment files. If
+requested Conda-Store can perform intelligent solves with caching.
+
+### `conda-store download`
+
+### `conda-store info`
+
+### `conda-store wait`
+
+### `conda-store list [namespace|environment|build]`
