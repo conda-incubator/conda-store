@@ -66,6 +66,10 @@ class CondaStoreAPI:
         async with self.session.get(self.api_url / "permission") as response:
             return (await response.json())["data"]
 
+    async def create_token(self):
+        async with self.session.post(self.api_url / "token") as response:
+            return (await response.json())["data"]["token"]
+
     async def list_namespaces(self):
         return await self.get_paginated_request(self.api_url / "namespace")
 

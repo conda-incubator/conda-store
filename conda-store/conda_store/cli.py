@@ -417,3 +417,11 @@ async def list_environment(
         )
     elif output == "json":
         utils.output_json(builds)
+
+
+@cli.command()
+@click.pass_context
+@utils.coro
+async def token(ctx):
+    async with ctx.obj["CONDA_STORE_API"] as conda_store:
+        print(await conda_store.create_token(), end="")
