@@ -3,7 +3,6 @@ import datetime
 import enum
 from typing import List, Optional, Union, Dict, Any
 import functools
-from pkg_resources import Requirement
 
 from pydantic import BaseModel, Field, constr, validator
 
@@ -11,6 +10,12 @@ from pydantic import BaseModel, Field, constr, validator
 def _datetime_factory(offset: datetime.timedelta):
     """utcnow datetime + timezone as string"""
     return datetime.datetime.utcnow() + offset
+
+
+# namespace and name cannot contain "*" ":" "#" " " "/"
+# this is a more restrictive list
+ALLOWED_CHARACTERS = "A-Za-z0-9-+_=@$&?^|~."
+ARN_ALLOWED = f"^([{ALLOWED_CHARACTERS}*]+)/([{ALLOWED_CHARACTERS}*]+)$"
 
 
 #########################
@@ -34,7 +39,7 @@ class AuthenticationToken(BaseModel):
         default_factory=functools.partial(_datetime_factory, datetime.timedelta(days=1))
     )
     primary_namespace: str = "default"
-    role_bindings: Dict[str, List[str]] = {}
+    role_bindings: Dict[constr(regex=ARN_ALLOWED), List[str]] = {}
 
 
 ##########################
@@ -68,11 +73,6 @@ class CondaPackage(BaseModel):
 
     class Config:
         orm_mode = True
-
-
-# namespace and name cannot contain "*" ":" "#" " " "/"
-# this is a more restrictive list
-ALLOWED_CHARACTERS = "A-Za-z0-9-+_=@$&?^|~."
 
 
 class Namespace(BaseModel):
@@ -155,6 +155,7 @@ class CondaSpecificationPip(BaseModel):
 
     @validator("pip", each_item=True)
     def check_pip(cls, v):
+        from pkg_resources import Requirement
 
         allowed_pip_params = ["--index-url", "--extra-index-url", "--trusted-host"]
 
