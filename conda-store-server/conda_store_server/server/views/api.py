@@ -154,6 +154,34 @@ def api_get_permissions(
     }
 
 
+@router_api.post(
+    "/token/",
+    response_model=schema.APIPostToken,
+)
+def api_post_token(
+    request: Request,
+    token: Optional[schema.AuthenticationToken] = None,
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
+    entity=Depends(dependencies.get_entity),
+):
+    authenticated = entity is not None
+    entity_binding_permissions = auth.authorization.get_entity_bindings(
+        entity.role_bindings if authenticated else {}, authenticated=authenticated
+    )
+    primary_namespace = conda_store.default_namespace if not authenticated else entity.primary_namespace
+
+    token = schema.AuthenticationToken(
+        primary_namespace=primary_namespace,
+        role_bindings=entity_binding_permissions,
+    )
+    return {
+        "status": "ok",
+        "data": {"token": auth.authentication.encrypt_token(token)},
+    }
+
+
+
 @router_api.get(
     "/namespace/",
     response_model=schema.APIListNamespace,

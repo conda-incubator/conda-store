@@ -20,6 +20,7 @@
           pkgs.k9s
           pkgs.docker-compose
 
+          # conda-store-server
           pythonPackages.yarl
           pythonPackages.requests
           pythonPackages.pydantic
@@ -31,12 +32,15 @@
           pythonPackages.pyjwt
           pythonPackages.minio
           pythonPackages.filelock
+          pythonPackages.sqlalchemy
 
+          # conda-store
           pythonPackages.rich
           pythonPackages.click
           pythonPackages.aiohttp
           pythonPackages.ruamel-yaml
 
+          # dev
           pythonPackages.pytest
           pythonPackages.black
           pythonPackages.flake8

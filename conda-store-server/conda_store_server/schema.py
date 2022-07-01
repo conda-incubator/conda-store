@@ -346,6 +346,15 @@ class APIGetPermission(APIResponse):
     data: APIGetPermissionData
 
 
+# POST /api/v1/token
+class APIPostTokenData(BaseModel):
+    token: str
+
+
+class APIPostToken(APIResponse):
+    data: APIPostTokenData
+
+
 # GET /api/v1/namespace
 class APIListNamespace(APIPaginatedResponse):
     data: List[Namespace]

@@ -40,6 +40,9 @@ jobs:
         run: |
           python -m build --sdist
           twine check dist/*
+      - name: Unit Tests
+        run: |
+          pytest
       - name: Deploy docker-compose
         run: |
           docker-compose up -d

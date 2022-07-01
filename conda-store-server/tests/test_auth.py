@@ -4,9 +4,8 @@ import datetime
 from conda_store_server.server.auth import (
     AuthenticationBackend,
     RBACAuthorizationBackend,
-    Permissions,
 )
-from conda_store_server.schema import AuthenticationToken
+from conda_store_server.schema import AuthenticationToken, Permissions
 
 
 @pytest.mark.parametrize(
@@ -81,6 +80,12 @@ def test_expired_token():
         ),
         (
             {"example-namespace/example-name": {"developer", "viewer"}, },
+            "example-namespace/example-name",
+            {Permissions.ENVIRONMENT_DELETE},
+            False,
+        ),
+        (
+            {"example-namespace/example-name": {"developer", "admin"}, },
             "example-namespace/example-name",
             {Permissions.ENVIRONMENT_DELETE},
             True,

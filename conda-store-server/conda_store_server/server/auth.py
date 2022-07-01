@@ -152,6 +152,9 @@ class RBACAuthorizationBackend(LoggingConfigurable):
                 permissions = permissions | set(entity_permissions)
         return permissions
 
+    def is_subset_entity_permissions(self, entity_bindings, new_entiy_bindings, authenticated=False):
+        pass
+
     def authorize(
         self, entity_bindings, arn, required_permissions, authenticated=False
     ):
