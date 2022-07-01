@@ -169,7 +169,9 @@ def api_post_token(
     entity_binding_permissions = auth.authorization.get_entity_bindings(
         entity.role_bindings if authenticated else {}, authenticated=authenticated
     )
-    primary_namespace = conda_store.default_namespace if not authenticated else entity.primary_namespace
+    primary_namespace = (
+        conda_store.default_namespace if not authenticated else entity.primary_namespace
+    )
 
     token = schema.AuthenticationToken(
         primary_namespace=primary_namespace,
@@ -179,7 +181,6 @@ def api_post_token(
         "status": "ok",
         "data": {"token": auth.authentication.encrypt_token(token)},
     }
-
 
 
 @router_api.get(
