@@ -15,9 +15,7 @@ from conda_store_server import schema, orm
 from conda_store_server.server import dependencies
 
 
-ARN_ALLOWED_REGEX = re.compile(
-    f"^([{schema.ALLOWED_CHARACTERS}*]+)/([{schema.ALLOWED_CHARACTERS}*]+)$"
-)
+ARN_ALLOWED_REGEX = re.compile(schema.ARN_ALLOWED)
 
 
 class AuthenticationBackend(LoggingConfigurable):
@@ -91,7 +89,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
     )
 
     @staticmethod
-    def compile_arn_regex(arn):
+    def compile_arn_regex(arn: str) -> re.Pattern:
         """Take an arn of form "example-*/example-*" and compile to regular expression
 
         The expression "example-*/example-*" will match:
@@ -108,14 +106,37 @@ class RBACAuthorizationBackend(LoggingConfigurable):
         return re.compile(regex_arn)
 
     @staticmethod
-    def compile_arn_sql_like(arn):
+    def compile_arn_sql_like(arn: str) -> str:
         match = ARN_ALLOWED_REGEX.match(arn)
         if match is None:
             raise ValueError(f"invalid arn={arn}")
 
         return re.sub(r"\*", "%", match.group(1)), re.sub(r"\*", "%", match.group(2))
 
-    def get_entity_bindings(self, entity_bindings, authenticated=False):
+    @staticmethod
+    def is_arn_subset(arn_1: str, arn_2: str):
+        """Return true if arn_1 is a subset of arn_2
+
+        Conda-Store allows flexible arn statements such as "a*b*/c*"
+        with "*" being a wildcard seen in regexes. This makes the
+        calculation of if a arn is a subset of another non
+        trivial. This codes solves this problem.
+        """
+        arn_1_matches_arn_2 = (
+            re.fullmatch(
+                re.sub(r"\*", f"[{schema.ALLOWED_CHARACTERS}*]*", arn_1), arn_2
+            )
+            is not None
+        )
+        arn_2_matches_arn_1 = (
+            re.fullmatch(
+                re.sub(r"\*", f"[{schema.ALLOWED_CHARACTERS}*]*", arn_2), arn_1
+            )
+            is not None
+        )
+        return (arn_1_matches_arn_2 and arn_2_matches_arn_1) or arn_2_matches_arn_1
+
+    def get_entity_bindings(self, entity_bindings, authenticated: bool = False):
         if authenticated:
             return {
                 **self.authenticated_role_bindings,
@@ -133,7 +154,9 @@ class RBACAuthorizationBackend(LoggingConfigurable):
             permissions = permissions | self.role_mappings[role]
         return permissions
 
-    def get_entity_binding_permissions(self, entity_bindings, authenticated=False):
+    def get_entity_binding_permissions(
+        self, entity_bindings, authenticated: bool = False
+    ):
         entity_bindings = self.get_entity_bindings(
             entity_bindings=entity_bindings, authenticated=authenticated
         )
@@ -142,7 +165,17 @@ class RBACAuthorizationBackend(LoggingConfigurable):
             for entity_arn, entity_roles in entity_bindings.items()
         }
 
-    def get_entity_permissions(self, entity_bindings, arn, authenticated=False):
+    def get_entity_permissions(
+        self, entity_bindings, arn: str, authenticated: bool = False
+    ):
+        """Get set of permissions for given ARN given AUTHENTICATION
+        state and entity_bindings
+
+        ARN is a specific "<namespace>/<name>"
+        AUTHENTICATION is either True/False
+        ENTITY_BINDINGS is a mapping of ARN with regex support to ROLES
+        ROLES is a set of roles defined in `RBACAuthorizationBackend.role_mappings`
+        """
         entity_binding_permissions = self.get_entity_binding_permissions(
             entity_bindings=entity_bindings, authenticated=authenticated
         )
@@ -151,6 +184,34 @@ class RBACAuthorizationBackend(LoggingConfigurable):
             if self.compile_arn_regex(entity_arn).match(arn):
                 permissions = permissions | set(entity_permissions)
         return permissions
+
+    def is_subset_entity_permissions(
+        self, entity_bindings, new_entity_bindings, authenticated=False
+    ):
+        """Determine if new_entity_bindings is a strict subset of entity_bindings
+
+        This feature is required to allow authenticated entitys to
+        create new permissions that are a strict subset of its
+        permissions.
+        """
+        entity_binding_permissions = self.get_entity_binding_permissions(
+            entity_bindings=entity_bindings, authenticated=authenticated
+        )
+        new_entity_binding_permissions = self.get_entity_binding_permissions(
+            entity_bindings=new_entity_bindings, authenticated=authenticated
+        )
+        for (
+            new_entity_binding,
+            new_permissions,
+        ) in new_entity_binding_permissions.items():
+            _permissions = set()
+            for entity_binding, permissions in entity_binding_permissions.items():
+                if self.is_arn_subset(new_entity_binding, entity_binding):
+                    _permissions = _permissions | permissions
+
+            if not new_permissions <= _permissions:
+                return False
+        return True
 
     def authorize(
         self, entity_bindings, arn, required_permissions, authenticated=False

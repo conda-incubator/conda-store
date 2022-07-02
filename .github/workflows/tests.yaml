@@ -40,6 +40,9 @@ jobs:
         run: |
           python -m build --sdist
           twine check dist/*
+      - name: Unit Tests
+        run: |
+          pytest
       - name: Deploy docker-compose
         run: |
           docker-compose up -d
@@ -130,6 +133,7 @@ jobs:
           export CONDA_STORE_URL=http://localhost:5000/conda-store
           export CONDA_STORE_AUTH=none
           conda-store info
+          conda-store token
           conda-store list namespace
           conda-store list build
           conda-store list environment
@@ -142,6 +146,7 @@ jobs:
           export CONDA_STORE_PASSWORD=password
 
           conda-store info
+          conda-store token
           conda-store list build
           echo "waiting for build 1 to finish"
           conda-store wait 1
