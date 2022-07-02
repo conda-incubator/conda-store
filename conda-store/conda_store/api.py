@@ -1,6 +1,7 @@
 import os
 import math
-from typing import List
+import datetime
+from typing import List, Dict
 
 import yarl
 
@@ -66,8 +67,25 @@ class CondaStoreAPI:
         async with self.session.get(self.api_url / "permission") as response:
             return (await response.json())["data"]
 
-    async def create_token(self):
-        async with self.session.post(self.api_url / "token") as response:
+    async def create_token(
+        self,
+        primary_namespace: str = None,
+        role_bindings: Dict[str, List[str]] = None,
+        expiration: datetime.datetime = None,
+    ):
+        current_permissions = await self.get_permissions()
+        requested_permissions = {
+            "primary_namespace": primary_namespace
+            or current_permissions["primary_namespace"],
+            "role_bindings": role_bindings or current_permissions["entity_roles"],
+            "exp": expiration or current_permissions["expiration"],
+        }
+        async with self.session.post(
+            self.api_url / "token", json=requested_permissions
+        ) as response:
+            if response.status == 400:
+                raise CondaStoreAPIError((await response.json())["message"])
+
             return (await response.json())["data"]["token"]
 
     async def list_namespaces(self):

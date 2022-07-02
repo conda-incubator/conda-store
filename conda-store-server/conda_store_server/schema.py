@@ -339,8 +339,10 @@ class APIGetStatus(APIResponse):
 # GET /api/v1/permission
 class APIGetPermissionData(BaseModel):
     authenticated: bool
-    entity_permissions: Dict[str, List[str]]
     primary_namespace: str
+    entity_permissions: Dict[str, List[str]]
+    entity_roles: Dict[str, List[str]]
+    expiration: Optional[datetime.datetime]
 
 
 class APIGetPermission(APIResponse):

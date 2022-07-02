@@ -1,4 +1,5 @@
 from typing import List, Dict, Optional
+import datetime
 
 import pydantic
 import yaml
@@ -131,6 +132,10 @@ def api_get_permissions(
     entity=Depends(dependencies.get_entity),
 ):
     authenticated = entity is not None
+    entity_binding_roles = auth.authorization.get_entity_bindings(
+        entity.role_bindings if authenticated else {}, authenticated=authenticated
+    )
+
     entity_binding_permissions = auth.authorization.get_entity_binding_permissions(
         entity.role_bindings if authenticated else {}, authenticated=authenticated
     )
@@ -146,10 +151,12 @@ def api_get_permissions(
         "status": "ok",
         "data": {
             "authenticated": authenticated,
-            "entity_permissions": entity_binding_permissions,
             "primary_namespace": entity.primary_namespace
             if authenticated
             else conda_store.default_namespace,
+            "entity_permissions": entity_binding_permissions,
+            "entity_roles": entity_binding_roles,
+            "expiration": entity.exp if authenticated else None,
         },
     }
 
@@ -160,23 +167,52 @@ def api_get_permissions(
 )
 def api_post_token(
     request: Request,
-    token: Optional[schema.AuthenticationToken] = None,
+    primary_namespace: Optional[str] = Body(None),
+    expiration: Optional[datetime.datetime] = Body(None),
+    role_bindings: Optional[Dict[str, List[str]]] = Body(None),
     conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
     entity=Depends(dependencies.get_entity),
 ):
     authenticated = entity is not None
-    entity_binding_permissions = auth.authorization.get_entity_bindings(
+    current_role_bindings = auth.authorization.get_entity_bindings(
         entity.role_bindings if authenticated else {}, authenticated=authenticated
     )
-    primary_namespace = (
-        conda_store.default_namespace if not authenticated else entity.primary_namespace
+    current_namespace = (
+        entity.primary_namespace if authenticated else conda_store.default_namespace
+    )
+    current_expiration = (
+        entity.exp
+        if authenticated
+        else (
+            datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(days=1)
+        )
     )
 
+    new_namespace = primary_namespace or current_namespace
+    new_role_bindings = role_bindings or current_role_bindings
+    new_expiration = expiration or current_expiration
+
+    if not auth.authorization.is_subset_entity_permissions(
+        current_role_bindings, new_role_bindings, authenticated
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="Requested role_bindings are not a subset of current permissions",
+        )
+
+    if new_expiration > current_expiration:
+        raise HTTPException(
+            status_code=400,
+            detail="Requested expiration of token is greater than current permissions",
+        )
+
     token = schema.AuthenticationToken(
-        primary_namespace=primary_namespace,
-        role_bindings=entity_binding_permissions,
+        primary_namespace=new_namespace,
+        role_bindings=new_role_bindings,
+        exp=new_expiration,
     )
+
     return {
         "status": "ok",
         "data": {"token": auth.authentication.encrypt_token(token)},

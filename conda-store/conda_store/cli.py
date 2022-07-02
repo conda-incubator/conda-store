@@ -4,6 +4,7 @@ import tempfile
 import time
 import asyncio
 from typing import List
+import datetime
 
 from ruamel.yaml import YAML
 import click
@@ -93,6 +94,40 @@ async def get_permissions(ctx):
         )
 
     utils.output_table("Permissions", columns, rows)
+
+
+@cli.command(name="token")
+@click.option("--namespace", help="Primary namespace to assign to new token")
+@click.option("--expiration", type=int, help="Seconds from now for token to expire")
+@click.option(
+    "--permission",
+    help="Permission to assign to token in form <namespace>/<name>:<role1>,<role2>,...",
+    multiple=True,
+)
+@click.pass_context
+@utils.coro
+async def get_token(ctx, namespace: str, expiration: int, permission: List[str]):
+    role_bindings = {}
+    for p in permission:
+        namespace_name, roles = p.split(":")
+        roles = roles.split(",")
+        role_bindings[namespace_name] = roles
+
+    if expiration:
+        expiration = str(
+            datetime.datetime.now(tz=datetime.timezone.utc)
+            + datetime.timedelta(seconds=expiration)
+        )
+
+    async with ctx.obj["CONDA_STORE_API"] as conda_store:
+        print(
+            await conda_store.create_token(
+                primary_namespace=namespace,
+                expiration=expiration,
+                role_bindings=role_bindings,
+            ),
+            end="",
+        )
 
 
 @cli.command(name="download")
@@ -417,11 +452,3 @@ async def list_environment(
         )
     elif output == "json":
         utils.output_json(builds)
-
-
-@cli.command()
-@click.pass_context
-@utils.coro
-async def token(ctx):
-    async with ctx.obj["CONDA_STORE_API"] as conda_store:
-        print(await conda_store.create_token(), end="")
