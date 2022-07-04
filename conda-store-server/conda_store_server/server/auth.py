@@ -10,6 +10,7 @@ from traitlets import Dict, Unicode, Type, default, Bool, Union, Callable
 from fastapi import APIRouter, Request, Response, HTTPException, Depends
 from fastapi.responses import RedirectResponse
 from sqlalchemy import or_, and_
+import yarl
 
 from conda_store_server import schema, orm
 from conda_store_server.server import dependencies
@@ -585,12 +586,17 @@ class GenericOAuthAuthentication(Authentication):
 
     @staticmethod
     def oauth_route(auth_url, client_id, redirect_uri, scope=None, state=None):
-        r = f"{auth_url}?client_id={client_id}&redirect_uri={redirect_uri}&response_type=code"
+        url = yarl.URL(auth_url) % {
+            "client_id": client_id,
+            "redirect_uri": redirect_uri,
+            "response_type": "code",
+        }
+
         if scope is not None:
-            r += f"&scope={scope}"
+            url = url % {"scope": scope}
         if state is not None:
-            r += f"&state={state}"
-        return r
+            url = url % {"state": state}
+        return str(url)
 
     @property
     def routes(self):
