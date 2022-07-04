@@ -338,7 +338,7 @@ async def list_namespace(ctx, output: str):
         namespaces = await conda_store.list_namespaces()
 
     if output == "table":
-        utils.output_table("Builds", {"Id": "id", "Name": "name"}, namespaces)
+        utils.output_table("Namespaces", {"Id": "id", "Name": "name"}, namespaces)
     elif output == "json":
         utils.output_json(namespaces)
 
