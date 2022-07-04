@@ -44,5 +44,6 @@ c.JupyterHub.services = [
         'url': 'https://conda-store.localhost/conda-store/',
         'api_token': "this-is-a-jupyterhub-secret",
         'oauth_redirect_uri': '/conda-store/oauth_callback/',
+        'oauth_no_confirm': True, # allows no authorize yes/no button
     }
 ]
