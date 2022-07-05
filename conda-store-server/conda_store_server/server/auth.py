@@ -32,6 +32,12 @@ class AuthenticationBackend(LoggingConfigurable):
         config=True,
     )
 
+    predefined_tokens = Dict(
+        {},
+        help="Set of tokens with predefined permissions. The feature is helpful for service-accounts",
+        config=True,
+    )
+
     def encrypt_token(self, token: schema.AuthenticationToken):
         return jwt.encode(token.dict(), self.secret, algorithm=self.jwt_algorithm)
 
@@ -40,7 +46,11 @@ class AuthenticationBackend(LoggingConfigurable):
 
     def authenticate(self, token):
         try:
-            return schema.AuthenticationToken.parse_obj(self.decrypt_token(token))
+            if token in self.predefined_tokens:
+                authentication_token = self.predefined_tokens[token]
+            else:
+                authentication_token = self.decrypt_token(token)
+            return schema.AuthenticationToken.parse_obj(authentication_token)
         except Exception:
             return None
 

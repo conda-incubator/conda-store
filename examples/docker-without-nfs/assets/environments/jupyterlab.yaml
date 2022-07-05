@@ -1,0 +1,8 @@
+name: jupyterlab
+channels:
+ - conda-forge
+dependencies:
+ - jupyterhub
+ - jupyterlab
+ - nb_conda_store_kernels
+ - ipykernel

@@ -289,6 +289,12 @@ encrypting tokens.
 `AuthenticationBackend.jwt_algorithm` is the algorithm for encrypting
 the JSON Web Tokens.
 
+`AuthenticationBackend.predefined_tokens` is a set of tokens with
+predefined permission. This is useful for setting up service accounts
+in a similar manner to how things are done with jupyterhub. Format for
+the values is a dictionary with keys being the tokens and values being
+the `schema.AuthenticaitonToken` all fields are optional.
+
 ### `conda_store_server.server.auth.AuthorizationBackend`
 
 `AuthorizationBackend.role_mappings` is a dictionary that maps `roles`
