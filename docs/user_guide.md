@@ -73,7 +73,7 @@ conda-unpack
 
 ### Docker Registry
 
-Conda-Store acts as a docker registry which allows for interesting
+conda-store acts as a docker registry which allows for interesting
 ways to handle Conda environment. In addition this registry leverages
 [conda-docker](https://github.com/conda-incubator/conda-docker) which
 builds docker images without docker allowing for advanced caching,
@@ -108,9 +108,9 @@ docker run -it localhost:5000/<namespace>/<environment-name>:<build_key>
 
 #### On Demand Docker Image
 
-Conda-store has an additional feature which allow for specifying the
+conda-store has an additional feature which allow for specifying the
 packages within the docker image name itself without requiring an
-actual environment to be created on the Conda-Store UI side.
+actual environment to be created on the conda-store UI side.
 
 The following convention is used
 `<registry-url>:<registry-port>/conda-store-dynamic/`. After
@@ -120,15 +120,15 @@ for example `<=1.10` as `.lt.1.10`.
 
 As full example support we want python less than `3.8` and NumPy
 greater than `1.0`. This would be the following docker image
-name. `<registry-url>:<registry-port>/conda-store-dynamic/python.lt.3.8/numpy.gt.1.0`. Conda-store
+name. `<registry-url>:<registry-port>/conda-store-dynamic/python.lt.3.8/numpy.gt.1.0`. conda-store
 will then create the following environment and the docker image will
 download upon the docker image being built.
 
-## Conda Store UI
+## conda-store UI
 
 ### `/` Home Page 
 
-![Conda Store Homepage](_static/images/conda-store-authenticated.png)
+![conda-store Homepage](_static/images/conda-store-authenticated.png)
 
 The home page shows all of the available environments in the form
 `<namespace>/<environment-name>`. If you are authenticated there with
@@ -147,7 +147,7 @@ lockfile](https://github.com/conda-incubator/conda-lock),
 
 ### `/login/` Login
 
-![Conda Store Login](_static/images/conda-store-login-jupyterhub-oauth.png)
+![conda-store Login](_static/images/conda-store-login-jupyterhub-oauth.png)
 
 If you are unauthenticated there is a `login` button on the top
 navigation bar. This will direct you to the login page. The example
@@ -155,7 +155,7 @@ above shows what you will get with JupyterHub authentication.
 
 ### `/user/` User
 
-![Conda Store User](_static/images/conda-store-user.png)
+![conda-store User](_static/images/conda-store-user.png)
 
 Once a user has completed the authentication flow they will be
 directed to the user page. This page gives information about the
@@ -163,7 +163,7 @@ current authenticated user along with the permissions.
 
 ### `/create/` Create Environment
 
-![Conda Store Create Environment](_static/images/conda-store-create-environment.png)
+![conda-store Create Environment](_static/images/conda-store-create-environment.png)
 
 A user authenticated or unauthenticated has set permissions that allow
 the user to create environments in a given namespace. Currently the
@@ -174,7 +174,7 @@ issues with the format of the environment file.
 
 ### `/environment/<namespace>/<name>/` Environments
 
-![Conda Store Environment](_static/images/conda-store-environment.png)
+![conda-store Environment](_static/images/conda-store-environment.png)
 
 The environment page contains a lot of information for the
 developer. First we see the environment name and namespace along with
@@ -208,12 +208,12 @@ For each build several options are available to the user:
 
 ### `/build/<build_id>` builds
 
-![Conda Store Build](_static/images/conda-store-build-complete.png)
+![conda-store Build](_static/images/conda-store-build-complete.png)
 
 The build page gives all the information about a given build in
-Conda-Store. At the top we see high level build metadata.
+conda-store. At the top we see high level build metadata.
 
-Conda-Store downloads Conda channel data so that it fully understands
+conda-store downloads Conda channel data so that it fully understands
 the packages that exist within a given environment. A list is provided
 to the user of all packages within that environment. 
 
@@ -225,14 +225,14 @@ succeeded or failed.
 
 ### `/namespace/` manage namespaces
 
-![Conda Store Namespace](_static/images/conda-store-namespace.png)
+![conda-store Namespace](_static/images/conda-store-namespace.png)
 
 This namespace page allows a user with correct permissions to list,
 create, and delete namespaces. Note that the deletion of a namespace
 is destructive and deletes all environments and builds within that
 namespace.
 
-## Conda-Store cli
+## conda-store cli
 
 The conda-store client can be easily installed via pip and conda.
 
@@ -252,8 +252,8 @@ $ conda-store --help
 Usage: conda-store [OPTIONS] COMMAND [ARGS]...
 
 Options:
-  --conda-store-url TEXT     Conda-Store base url including prefix
-  --auth [none|token|basic]  Conda-Store authentication to use
+  --conda-store-url TEXT     conda-store base url including prefix
+  --auth [none|token|basic]  conda-store authentication to use
   --no-verify-ssl            Disable tls verification on API requests
   --help                     Show this message and exit.
 
@@ -269,7 +269,7 @@ Commands:
 ### `conda-store run`
 
 One of the motivating features of the `conda-store` cli is that you
-can directly execute Conda-Store environments that exist remotely.
+can directly execute conda-store environments that exist remotely.
 
 ```shell
 conda-store run devops/datascience -- python -m "print(1)"
@@ -277,8 +277,8 @@ conda-store run devops/datascience -- python -m "print(1)"
 
 ### `conda-store solve`
 
-Conda-Store is capable to remote solves of environment files. If
-requested Conda-Store can perform intelligent solves with caching.
+conda-store is capable to remote solves of environment files. If
+requested conda-store can perform intelligent solves with caching.
 
 ### `conda-store download`
 

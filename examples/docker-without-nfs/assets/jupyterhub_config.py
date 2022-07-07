@@ -21,7 +21,7 @@ class CondaStoreSpawner(SimpleLocalProcessSpawner):
         options = [f'<option value="{_["current_build_id"]}" {"selected" if i == 0 else ""}>{_["namespace"]["name"]}/{_["name"]}</option>' for i,_ in enumerate(environments)]
 
         return f'''
-Conda-Store environment must contain jupyterhub, jupyterlab, nb_conda_store_kernels, and jupyterlab
+conda-store environment must contain jupyterhub, jupyterlab, nb_conda_store_kernels, and jupyterlab
 
 Choose an environment:
 <select name="build_id" multiple="false">

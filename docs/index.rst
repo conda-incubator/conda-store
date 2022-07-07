@@ -1,13 +1,13 @@
-Conda-Store
+conda-store
 ===========
 
 End users think in terms of environments not packages. The core
 philosophy of conda-store is to serve identical conda environments in
-as many ways as possible to users and services. Conda-store was
+as many ways as possible to users and services. conda-store was
 developed due to a significant need in enterprise architectures.
 
 .. image:: _static/images/conda-store-authenticated.png
-  :alt: Conda Store Homepage
+  :alt: conda-store Homepage
 
 Use Cases
 ---------
@@ -22,7 +22,7 @@ the package satisfies their constraints. This process may take several
 days and at best will not be immediate. While developers need packages
 in their environments as soon as possible to do interesting new
 research. This situation often led to a lot of frustration on both
-sides for good reason. Conda-store aims to address this by allowing
+sides for good reason. conda-store aims to address this by allowing
 users to control a set of environments in their namespace while
 allowing IT to having all environments under their control.
 
@@ -36,7 +36,7 @@ notebook to run a given workflow. They will want to "submit" this
 notebook with the given environment and run it on a cron job. The only
 problem is that this creates a huge burden on IT. How is IT supposed
 to ensure that the environment that that notebook ran with is
-preserved indefinitely? Conda-store addresses this by building all
+preserved indefinitely? conda-store addresses this by building all
 environment separately(including updates). There is a unique key that
 identifies any given environment. Furthermore this environment is
 available in many different forms: yaml, lockfile, conda tarball, and
@@ -53,7 +53,7 @@ containers are used everywhere. The burden of creating images with
 given packages can be cumbersome. There are tools that make this
 easier e.g. `repo2docker <https://github.com/jupyterhub/repo2docker>`_
 however these project seem focused on bundling the data/repo with the
-image. Conda-store has a feature to build on demand environments based
+image. conda-store has a feature to build on demand environments based
 on the image name. For example the image name
 `localhost:5000/conda-store-dynamic/numpy/jupyterlab/scipy.gt.1.0`
 will create a docker image with `numpy`, `jupyterlab`, and `scipy >
@@ -64,7 +64,7 @@ working test that demonstrates this.
 Features
 --------
 
-Conda Store controls the environment lifecycle: management, builds,
+conda-store controls the environment lifecycle: management, builds,
 and serving of environments.
 
 It **manages** conda environments by:

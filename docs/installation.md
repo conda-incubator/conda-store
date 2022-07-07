@@ -2,7 +2,7 @@
 
 ## Kubernetes
 
-![Conda Store Kubernetes architecture diagram](_static/images/conda-store-installation-kubernetes.png)
+![conda-store Kubernetes architecture diagram](_static/images/conda-store-installation-kubernetes.png)
 
 The following will describe a local
 [Kubernetes](https://kubernetes.io/) installation via [minikube](https://minikube.sigs.k8s.io/docs/). The
@@ -12,7 +12,7 @@ files required are in `examples/kubernetes`
 minikube start --cpus 2 --memory 4096 --driver=docker
 ```
 
-Now we deploy the `conda-store` components. Note that Conda-Store is
+Now we deploy the `conda-store` components. Note that conda-store is
 compatible with any general s3 like provider and any general database
 via SQLAlchemy. Currently the docker image is build with support for
 PostgreSQL and SQLite. Consult the [SQLAlchemy
@@ -24,7 +24,7 @@ PostgreSQL deployments and use existing infrastructure. In the case of
 AWS this may mean using [Amazon RDS](https://aws.amazon.com/rds/) and
 [s3](https://aws.amazon.com/s3/). Consult your cloud provider for
 compatible services. In general if it is supported by SQLAlchemy and
-there is a s3 compatible object store Conda-Store will
+there is a s3 compatible object store conda-store will
 work. [kustomize](https://github.com/kubernetes-sigs/kustomize) is
 being used for the deployment which is part to the Kubernetes project
 itself.
@@ -37,7 +37,7 @@ Make sure to change all the usernames and passwords for the
 deployment.
 
 If your installation worked you should be able to port forward the
-Conda-Store web server.
+conda-store web server.
 
 ```shell
 kubectl port-forward service/conda-store-server 5000:5000
@@ -50,7 +50,7 @@ guide](./administration.md)
 
 A good test that conda-store is functioning properly is to apply the
 `jupyterlab-conda-store` pod as a quick test. It will cause
-Conda-Store to build an environment with JupyterLab and NumPy. This
+conda-store to build an environment with JupyterLab and NumPy. This
 pod is not needed for running conda-store.
 
 ```shell
@@ -78,7 +78,7 @@ Then visit via your web browser [https://conda-store.localhost/conda-store](http
 
 ## Local Automated systemd Install
 
-Not all environment are containerized and Conda-Store recognizes
+Not all environment are containerized and conda-store recognizes
 that. The goal of CONDA-STORE is to provide Conda environments in as
 many ways as possible so it SHOULD support non-contianerized
 environments. The example files required are in

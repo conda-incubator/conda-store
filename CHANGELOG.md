@@ -115,7 +115,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
  - `CondaStore.conda_...` options for managing channels and packages in specification #256
  - Ability to modify/validate specifications server side #252
- - Concurrency option for Conda-Store celery worker #250
+ - Concurrency option for conda-store celery worker #250
  - Flask webserver has a `CondaStore.behind_proxy` option to properly handle X-Forward- headers #249
  - Docker layer chaching to CI for docker image builds #234
 
@@ -210,7 +210,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
  - support for credentials supplied for object storage including IAM credentials #176
- - namespace UI to Conda-Store server #183
+ - namespace UI to conda-store server #183
  - create/read/delete methods for namespaces `/api/v1/namespace/` #181
  - distinct_on query parameter to list REST API methods #164
  - adding sorting query parameter to list REST API methods #162
@@ -250,7 +250,7 @@ notable things done in the past 3-6 months.
  - enabling rollbacks of environment builds [#93](https://github.com/Quansight/conda-store/pull/93)
  - adding `conda env export` for pinned YAML file [#92](https://github.com/Quansight/conda-store/pull/92)
  - celery integration for true task based builds [#90](https://github.com/Quansight/conda-store/pull/90)
- - Conda-Store configuration is configured via Traitlets [#87](https://github.com/Quansight/conda-store/pull/87)
+ - conda-store configuration is configured via Traitlets [#87](https://github.com/Quansight/conda-store/pull/87)
  - Prometheus metrics endpoint [#84](https://github.com/Quansight/conda-store/pull/84)
  - help button in top right hand corner [#83](https://github.com/Quansight/conda-store/pull/83)
  - support for internal and external url for s3 bucket [#81](https://github.com/Quansight/conda-store/pull/81)
