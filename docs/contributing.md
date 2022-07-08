@@ -1,5 +1,11 @@
 # Contributing
 
+## Naming
+
+When refering to `conda-store` it should always be written all
+lowercase with a dash in between. `conda-store` should also be
+lowercase when beginning a sentence.
+
 ## Development
 
 Install the following dependencies before developing on conda-store.
