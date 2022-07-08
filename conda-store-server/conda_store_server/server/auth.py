@@ -97,6 +97,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
             "filesystem/*": {"viewer"},
         },
         help="default permissions to apply to specific resources",
+        config=True,
     )
 
     @staticmethod
