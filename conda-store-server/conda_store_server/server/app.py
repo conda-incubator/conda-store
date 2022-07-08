@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse, JSONResponse
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi.templating import Jinja2Templates
-from traitlets import Bool, Unicode, Integer, Type, validate, Instance, default
+from traitlets import Bool, Unicode, Integer, Type, validate, Instance, default, Dict
 from traitlets.config import Application, catch_config_error
 
 from conda_store_server.server import auth, views
@@ -81,6 +81,12 @@ class CondaStoreServer(Application):
     templates = Instance(
         help="Initialized fastapi.templating.Jinja2Templates to use for html templates",
         klass=Jinja2Templates,
+        config=True,
+    )
+
+    template_vars = Dict(
+        {},
+        help="Extra variables to be passed into jinja templates for page rendering",
         config=True,
     )
 
@@ -158,6 +164,9 @@ class CondaStoreServer(Application):
         app.add_middleware(
             SessionMiddleware, secret_key=self.authentication.authentication.secret
         )
+
+        # ensure that template variables are inserted into templates
+        self.templates.env.globals.update(self.template_vars)
 
         @app.middleware("http")
         async def conda_store_middleware(request: Request, call_next):

@@ -4,6 +4,8 @@
 
 {% block content %}
 
+{{ banner | default("") | safe }}
+
 <form id="search-form">
     <div class="input-group mt-3 mb-3">
         <input id="search-text" type="text" class="form-control" placeholder="Search" aria-label="Search">
@@ -13,7 +15,13 @@
     </div>
 </form>
 
-<h2>Environments</h2>
+<h2 class="mt-3">
+    <a class="btn btn-outline-success" href="{{ url_for('ui_create_get_environment') }}" role="button">
+        <ion-icon style="line-height: 50%" name="add-outline"></ion-icon>
+    </a>
+    Environments
+</h2>
+
 {% for environment in environments %}
 <div class="card my-2">
     <div class="card-body">

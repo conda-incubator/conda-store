@@ -36,6 +36,7 @@
         <h3 class="card-title">Conda Packages
             <span class="badge badge-light">{{ build.packages | length }}</span>
         </h3>
+        <p>The following build has these packages</p>
     </div>
     <table class="table">
         <thead>
@@ -64,19 +65,21 @@
 <div class="card my-2">
     <div class="card-body">
         <h3 class="card-title">Conda Environment Artifacts</h3>
+        <p>The following build has several methods of running the given environment</p>
     </div>
     <ul class="list-group list-group-flush">
-        {% if build.has_yaml %}
-        <li class="list-group-item">YAML: <a href="{{ url_for('api_get_build_yaml', build_id=build.id) }}">environment.yaml</a></li>
+        <li class="list-group-item"><code>$ conda-store run {{ build.environment.namespace.name }}/{{ build.environment.name }}:{{ build.id }} -- python</code></li>
+            {% if build.has_yaml %}
+        <li class="list-group-item">Conda pinned <a href="{{ url_for('api_get_build_yaml', build_id=build.id) }}">environment.yaml</a></li>
         {% endif %}
         {% if build.has_lockfile %}
-        <li class="list-group-item">Lockfile: <a href="{{ url_for('api_get_build_lockfile', build_id=build.id) }}">conda-{{ platform }}.lock</a></li>
+        <li class="list-group-item"><a href="https://github.com/conda-incubator/conda-lock">Conda-Lock</a> lockfile: <a href="{{ url_for('api_get_build_lockfile', build_id=build.id) }}">conda-{{ platform }}.lock</a></li>
         {% endif %}
         {% if build.has_conda_pack %}
-        <li class="list-group-item">Archive: <a href="{{ url_for('api_get_build_archive', build_id=build.id) }}">environment.tar.gz</a></li>
+        <li class="list-group-item"><a href="https://github.com/conda/conda-pack">Conda-Pack</a> archive: <a href="{{ url_for('api_get_build_archive', build_id=build.id) }}">environment.tar.gz</a></li>
         {% endif %}
         {% if build.has_docker_manifest %}
-        <li class="list-group-item">Docker: {{ registry_external_url }}/{{ build.environment.namespace.name }}/{{ build.environment.name }}:{{ build.build_key }}</a></li>
+        <li class="list-group-item">Docker image registry url: {{ registry_external_url }}/{{ build.environment.namespace.name }}/{{ build.environment.name }}:{{ build.build_key }}</a></li>
         {% endif %}
     </ul>
 </div>

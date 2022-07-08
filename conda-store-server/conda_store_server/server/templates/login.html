@@ -4,6 +4,8 @@
 
 {% block content %}
 
+{{ banner | default("") | safe }}
+
 {% block login %}
 {{ login_html | safe }}
 {% endblock %}

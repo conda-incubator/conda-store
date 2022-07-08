@@ -435,6 +435,12 @@ reverse proxy such as Nginx, Traefik, Apache. Will use
 `X-Forward-...` headers to determine scheme. Do not set to true if not
 behind proxy since Flask will trust any `X-Forward-...` header.
 
+`CondaStoreServer.template` initialized
+`fastapi.templating.Jinja2Templates` to use for html templates.
+
+`CondaStoreServer.template_vars` extra variables to be passed into
+jinja templates for page rendering.
+
 ### `conda_store_server.worker.app.CondaStoreWorker`
 
 `CondaStoreWorker.log_level` is the level for all server
