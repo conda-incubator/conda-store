@@ -18,6 +18,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [0.4.6] - 2022-07-08
+
+### Added
+
+ - Added `c.CondaStoreServer.template_vars` for easy customization #347
+ - Consistent naming of `conda-store` throughout project #345
+ - Adding token endpoint #335
+
+### Fixed
+
+ - Bug with user being able to modify `c.RBACAuthorizationBackend.authenticated_role_bindings` #346
+
 ## [0.4.5] - 2022-06-29
 
 ### Added
