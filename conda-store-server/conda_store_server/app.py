@@ -163,7 +163,7 @@ class CondaStore(LoggingConfigurable):
     )
 
     redis_url = Unicode(
-        help="Redis connection url in form 'redis://:<password>@<hostname>:<port>/0'. Connection is used by Celery along with Conda-Store internally",
+        help="Redis connection url in form 'redis://:<password>@<hostname>:<port>/0'. Connection is used by Celery along with conda-store internally",
         config=True,
     )
 

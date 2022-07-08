@@ -30,7 +30,7 @@
    copy:
      content: |
        [Unit]
-       Description=Conda-Store Server
+       Description=conda-store Server
        Wants=network-online.target
        After=network-online.target
        AssertFileIsExecutable=/opt/conda/envs/conda-store/bin/conda-store-server
@@ -55,7 +55,7 @@
    copy:
      content: |
        [Unit]
-       Description=Conda-Store Worker
+       Description=conda-store Worker
        Wants=network-online.target
        After=network-online.target
        AssertFileIsExecutable=/opt/conda/envs/conda-store/bin/conda-store-worker
@@ -76,7 +76,7 @@
      mode: 0644
    register: _conda_store_worker_service
 
- - name: Ensure Conda-Store Server is enabled on boot
+ - name: Ensure conda-store Server is enabled on boot
    become: true
    systemd:
      daemon_reload: true
@@ -85,7 +85,7 @@
      state: restarted
    when: _conda_store_server_service.changed or _conda_store_config.changed
 
- - name: Ensure Conda-Store Worker is enabled on boot
+ - name: Ensure conda-store Worker is enabled on boot
    become: true
    systemd:
      daemon_reload: true

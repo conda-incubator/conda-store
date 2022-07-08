@@ -1,8 +1,14 @@
 # Contributing
 
+## Naming
+
+When refering to `conda-store` it should always be written all
+lowercase with a dash in between. `conda-store` should also be
+lowercase when beginning a sentence.
+
 ## Development
 
-Install the following dependencies before developing on Conda-Store.
+Install the following dependencies before developing on conda-store.
 
  - [docker](https://docs.docker.com/engine/install/)
  - [docker-compose](https://docs.docker.com/compose/install/)
@@ -43,7 +49,7 @@ docker-compose up --build
 The REST API is considered somewhat stable. If any changes are made to
 the API make sure the update the OpenAPI/Swagger specification in
 `docs/_static/openapi.json`. This may be downloaded from the `/docs`
-endpoint when running Conda-Store. Ensure that the
+endpoint when running conda-store. Ensure that the
 `c.CondaStoreServer.url_prefix` is set to `/` when generating the
 endpoints.
 
@@ -117,7 +123,7 @@ After the PyPi release a release on
 PR must be created that updates to the released version
 `<version>`.
 
-Conda-Store has two PyPi packages `conda-store-server` and `conda-store`.
+conda-store has two PyPi packages `conda-store-server` and `conda-store`.
 
  - update `recipies/meta.yaml` with the new version `{% set version = "<version>" %}`
  - update `recipies/meta.yaml` with the appropriate sha256 for each
@@ -132,15 +138,15 @@ rerender`. An example of this can be found in [PR
 
 ## Architecture
 
-Conda Store was designed with the idea of scalable enterprise
+conda-store was designed with the idea of scalable enterprise
 management of reproducible Conda environments.
 
-![Conda Store architecture diagram](_static/images/conda-store-architecture.png)
+![conda-store architecture diagram](_static/images/conda-store-architecture.png)
 
 ### Configuration
 
 [Traitlets](https://traitlets.readthedocs.io/en/stable/) is used for
-all configuration of Conda-Store. In the beginning command line
+all configuration of conda-store. In the beginning command line
 options were used but eventually we learned that there were too many
 options for the user. Traitlets provides a python configuration file
 that you can use to configure values of the applications. It is used
@@ -148,9 +154,9 @@ for both the server and worker. See
 [`tests/assets/conda_store_config.py`](https://github.com/Quansight/conda-store/blob/main/tests/assets/conda_store_config.py)
 for a full example.
 
-### Workers and Server
+### Workers and server
 
-Conda-Store can be broken into two components. The workers which have
+conda-store can be broken into two components. The workers which have
 the following responsibilities:
  - build Conda environments from Conda `environment.yaml` specifications
  - build Conda pack archives
@@ -188,13 +194,13 @@ database, Redis, and S3 compatible object storage. The S3 server is
 used to store all build artifacts for example logs, docker layers, and
 the [Conda-Pack](https://conda.github.io/conda-pack/) tarball. The
 PostgreSQL database is used for storing all states on environments and
-builds along with powering the Conda-Store web server UI, REST API,
+builds along with powering the conda-store web server UI, REST API,
 and Docker registry. Redis is used for keeping track of task state and
 results along with enabling locks and realtime streaming of logs.
 
 ### Terminology
 
-![Conda Store terminology](_static/images/conda-store-terminology.png)
+![conda-store terminology](_static/images/conda-store-terminology.png)
 
 `conda_environment = f(open("environment.yaml"), datatime.utcnow())`
 
@@ -246,7 +252,7 @@ is because in general you can add
 There are two spots that introduce issues to reproducibility. The
 first issue is tracking when an `environment.yaml` file has
 changes. This can be easily tracked by taking a sha256 of the file
-. This is what Conda-Store does but sorts the dependencies to make
+. This is what conda-store does but sorts the dependencies to make
 sure it has a way of not triggering a rebuild if the order of two
 packages changes in the dependencies list. In step (2) `repodata.json`
 is updated regularly. When Conda solves for a user's environment it
@@ -262,7 +268,7 @@ you are extending and using a form of OAuth2 use the
 `conda_store_server.server.auth.GenericOAuthAuthentication`. Similar
 to JupyterHub all configuration is modified via
 [Traitlets](https://traitlets.readthedocs.io/en/stable/). Below shows
-an example of setting us OAuth2 via JupyterHub for Conda-Store.
+an example of setting us OAuth2 via JupyterHub for conda-store.
 
 ```python
 c.CondaStoreServer.authentication_class = JupyterHubOAuthAuthentication
@@ -288,7 +294,7 @@ of roles meaning.
 
 ### Authorization Model
 
-Conda-Store implements role based authorization to supports a flexible
+conda-store implements role based authorization to supports a flexible
 authorization model. A user or service is either authenticated or
 not. There are a set of default permissions assigned to authenticated
 and unauthenticated users via Traitlets. These can all be modified in
@@ -315,7 +321,7 @@ c.RBACAuthorizationBackend.authenticated_role_bindings = {
 
 Once we have collected the role mappings that a given user has we then
 map `roles` to sets of permissions. Currently there are only a few
-permissions but Conda-Store is capable of adapting in the future.
+permissions but conda-store is capable of adapting in the future.
 
 ```python
 class Permissions(enum.Enum):
@@ -465,7 +471,7 @@ eralchemy -i "postgresql+psycopg2://admin:password@localhost:5432/conda-store" -
 
 ### Migrations
 
-Conda Store relies on [SQLAlchemy](https://www.sqlalchemy.org/) for ORM mapping, and on [Alembic](https://alembic.sqlalchemy.org/en/latest/) for DB migrations.
+conda-store relies on [SQLAlchemy](https://www.sqlalchemy.org/) for ORM mapping, and on [Alembic](https://alembic.sqlalchemy.org/en/latest/) for DB migrations.
 
 The procedure to modify the database is the following : 
 - First, modify [the ORM Model](https://github.com/Quansight/conda-store/blob/main/conda-store-server/conda_store_server/orm.py) according to the changes you want to make

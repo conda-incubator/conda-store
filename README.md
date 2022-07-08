@@ -1,4 +1,4 @@
-# Conda Store
+# conda-store
 
 <a href="https://conda-store.readthedocs.io/en/latest/">
   <img src="https://readthedocs.org/projects/conda-store/badge/?version=latest" alt="Documentation Status"/>
@@ -20,11 +20,11 @@
   <img src="https://img.shields.io/conda/vn/conda-forge/conda-store?color=green&label=conda-forge%7Cconda-store" alt="Conda"/>
 </a>
 
-![Conda-Store UI](docs/_static/images/conda-store-authenticated.png)
+![conda-store UI](docs/_static/images/conda-store-authenticated.png)
 
 End users think in terms of environments not packages. The core
-philosophy of Conda-Store is to serve identical Conda environments in
-as many ways as possible. Conda-Store controls the environment
+philosophy of conda-store is to serve identical Conda environments in
+as many ways as possible. conda-store controls the environment
 lifecycle: management, builds, and serving of environments.
 
 It **manages** Conda environments by:
@@ -39,7 +39,7 @@ environment builds.
 
 It **serves** Conda environments via a filesystem, lockfile, tarball,
 and a docker registry. Tarballs and Docker images can carry a lot of
-bandwidth which is why Conda-Store integrates optionally with `s3` to
+bandwidth which is why conda-store integrates optionally with `s3` to
 actually serve the blobs.
 
 ## Documentation
@@ -66,11 +66,11 @@ This design has several advantages:
  - because each `environment` update is a new separate build the
    environment can be archived and uniquely identified
 
-![Conda-Store terminology](docs/_static/images/conda-store-terminology.png)
+![conda-store terminology](docs/_static/images/conda-store-terminology.png)
 
 ## Philosophy
 
-We mentioned above that `Conda-Store` was influenced by
+We mentioned above that `conda-store` was influenced by
 [nix](https://nixos.org/). While Conda is not as pure as nix (when it
 comes to reproducible builds) we can achieve close to the same results
 with many of the great benefits. Motivation
@@ -95,7 +95,7 @@ caching, and rollbacks to previous environment states.
 
 ## License
 
-Conda-Store is [BSD-3 LICENSED](./LICENSE)
+conda-store is [BSD-3 LICENSED](./LICENSE)
 
 ## Contributing
 

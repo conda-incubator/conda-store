@@ -1,8 +1,8 @@
-# Conda Store
+# conda-store
 
 [![Documentation Status](https://readthedocs.org/projects/conda-store/badge/?version=latest)](https://conda-store.readthedocs.io/en/latest/?badge=latest)
 
-A client library for interacting with a Conda-Store server. See the
+A client library for interacting with a conda-store server. See the
 [documentation](https://conda-store.readthedocs.io/en/latest/) for
 more information. The client library provides a CLI for interacting
 with conda-store.
@@ -12,8 +12,8 @@ $ conda-store --help
 Usage: conda-store [OPTIONS] COMMAND [ARGS]...
 
 Options:
-  --conda-store-url TEXT     Conda-Store base url including prefix
-  --auth [none|token|basic]  Conda-Store authentication to use
+  --conda-store-url TEXT     conda-store base url including prefix
+  --auth [none|token|basic]  conda-store authentication to use
   --no-verify-ssl            Disable tls verification on API requests
   --help                     Show this message and exit.
 

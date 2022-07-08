@@ -1,7 +1,7 @@
 import recommonmark
 from recommonmark.transform import AutoStructify
 
-project = 'Conda-Store'
+project = 'conda-store'
 copyright = '2022, Quansight'
 author = 'Quansight'
 release = '0.4.5'

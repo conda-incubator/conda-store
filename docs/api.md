@@ -1,6 +1,6 @@
 # REST API
 
-Below is an interactive view of Conda-Store's OpenAPI specification.
+Below is an interactive view of conda-store's OpenAPI specification.
 
 <!-- client-rendered openapi UI copied from FastAPI -->
 

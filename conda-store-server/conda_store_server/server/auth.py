@@ -128,7 +128,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
     def is_arn_subset(arn_1: str, arn_2: str):
         """Return true if arn_1 is a subset of arn_2
 
-        Conda-Store allows flexible arn statements such as "a*b*/c*"
+        conda-store allows flexible arn statements such as "a*b*/c*"
         with "*" being a wildcard seen in regexes. This makes the
         calculation of if a arn is a subset of another non
         trivial. This codes solves this problem.

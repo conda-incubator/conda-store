@@ -135,7 +135,7 @@ class CondaStoreServer(Application):
             return url[:-1] if url.endswith("/") else url
 
         app = FastAPI(
-            title="Conda-Store",
+            title="conda-store",
             version=__version__,
             openapi_url=os.path.join(self.url_prefix, "openapi.json"),
             docs_url=os.path.join(self.url_prefix, "docs"),

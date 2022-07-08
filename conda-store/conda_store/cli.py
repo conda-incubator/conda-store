@@ -37,13 +37,13 @@ async def parse_build(conda_store_api: api.CondaStoreAPI, uri: str):
     "--conda-store-url",
     default="http://localhost:5000",
     envvar="CONDA_STORE_URL",
-    help="Conda-Store base url including prefix",
+    help="conda-store base url including prefix",
 )
 @click.option(
     "--auth",
     envvar="CONDA_STORE_AUTH",
     type=click.Choice(["none", "token", "basic"], case_sensitive=False),
-    help="Conda-Store authentication to use",
+    help="conda-store authentication to use",
     default="none",
 )
 @click.option(

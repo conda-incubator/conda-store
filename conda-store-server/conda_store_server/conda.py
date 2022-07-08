@@ -1,4 +1,4 @@
-"""Interface between Conda-Store and conda
+"""Interface between conda-store and conda
 
 This module provides all the functionality that is required for
 executing conda commands

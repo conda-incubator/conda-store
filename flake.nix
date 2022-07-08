@@ -1,5 +1,5 @@
 {
-  description = "Conda-Store";
+  description = "conda-store";
 
   inputs = {
     nixpkgs = { url = "github:nixos/nixpkgs/nixpkgs-unstable"; };

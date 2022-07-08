@@ -1,6 +1,6 @@
 c.LauncherShortcuts.shortcuts = {
     'conda-store': {
-        'title': 'Conda Store',
+        'title': 'conda-store',
         'target': 'http://conda-store.localhost/conda-store/',
     }
 }
