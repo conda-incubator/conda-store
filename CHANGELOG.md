@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  - Added `c.CondaStoreServer.template_vars` for easy customization #347
  - Consistent naming of `conda-store` throughout project #345
  - Adding token endpoint #335
+ - Adding token UI create button #348
 
 ### Fixed
 
