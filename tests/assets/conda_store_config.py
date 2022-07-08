@@ -51,6 +51,10 @@ c.CondaStoreServer.url_prefix = "/conda-store"
 #         auth settings
 # ==================================
 c.CondaStoreServer.authentication_class = DummyAuthentication
+c.CondaStoreServer.template_vars = {
+    "banner": '<div class="alert alert-danger" role="alert">This is a localhost server</div>',
+    "logo": "https://quansight.com/_next/image?url=https%3A%2F%2Fa.storyblok.com%2Ff%2F147759%2F1076x520%2Fe6cd6af012%2Fquansight-logo-no-tagline.png&w=3840&q=75",
+}
 
 # ==================================
 #         worker settings
