@@ -151,7 +151,9 @@ def list_builds(
     namespace: str = None,
     show_soft_deleted: bool = False,
 ):
-    query = db.query(orm.Build).join(orm.Build.environment).join(orm.Environment.namespace)
+    query = (
+        db.query(orm.Build).join(orm.Build.environment).join(orm.Environment.namespace)
+    )
 
     if status:
         query = query.filter(orm.Build.status == status)

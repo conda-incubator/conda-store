@@ -18,7 +18,7 @@ fileConfig(config.config_file_name)
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-from conda_store_server.orm import Base # noqa E402
+from conda_store_server.orm import Base  # noqa E402
 
 target_metadata = Base.metadata
 
@@ -62,7 +62,9 @@ def run_migrations_online():
     """
     alembic_config = config.get_section(config.config_ini_section)
     connectable = engine_from_config(
-        alembic_config, prefix="sqlalchemy.", poolclass=pool.NullPool,
+        alembic_config,
+        prefix="sqlalchemy.",
+        poolclass=pool.NullPool,
     )
 
     with connectable.connect() as connection:
