@@ -146,12 +146,26 @@ def list_builds(
     status: schema.BuildStatus = None,
     packages: List[str] = None,
     artifact: schema.BuildArtifactType = None,
+    environment_id: str = None,
+    name: str = None,
+    namespace: str = None,
     show_soft_deleted: bool = False,
 ):
-    query = db.query(orm.Build)
+    query = (
+        db.query(orm.Build).join(orm.Build.environment).join(orm.Environment.namespace)
+    )
 
     if status:
         query = query.filter(orm.Build.status == status)
+
+    if environment_id:
+        query = query.filter(orm.Build.environment_id == environment_id)
+
+    if name:
+        query = query.filter(orm.Environment.name == name)
+
+    if namespace:
+        query = query.filter(orm.Namespace.name == namespace)
 
     if not show_soft_deleted:
         query = query.filter(orm.Build.deleted_on == null())

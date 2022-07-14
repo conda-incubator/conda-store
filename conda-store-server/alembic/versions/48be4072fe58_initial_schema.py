@@ -71,7 +71,10 @@ def upgrade():
         sa.Column("version", sa.Unicode(length=64), nullable=False),
         sa.Column("summary", sa.Text(), nullable=True),
         sa.Column("description", sa.Text(), nullable=True),
-        sa.ForeignKeyConstraint(["channel_id"], ["conda_channel.id"],),
+        sa.ForeignKeyConstraint(
+            ["channel_id"],
+            ["conda_channel.id"],
+        ),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint(
             "channel_id",
@@ -92,7 +95,10 @@ def upgrade():
         sa.Column("current_build_id", sa.Integer(), nullable=True),
         sa.Column("deleted_on", sa.DateTime(), nullable=True),
         # sa.ForeignKeyConstraint(['current_build_id'], ['build.id'], use_alter=True),
-        sa.ForeignKeyConstraint(["namespace_id"], ["namespace.id"],),
+        sa.ForeignKeyConstraint(
+            ["namespace_id"],
+            ["namespace.id"],
+        ),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("namespace_id", "name", name="_namespace_name_uc"),
     )
@@ -104,7 +110,10 @@ def upgrade():
         sa.Column("scheduled_on", sa.DateTime(), nullable=True),
         sa.Column("started_on", sa.DateTime(), nullable=True),
         sa.Column("ended_on", sa.DateTime(), nullable=True),
-        sa.ForeignKeyConstraint(["specification_id"], ["specification.id"],),
+        sa.ForeignKeyConstraint(
+            ["specification_id"],
+            ["specification.id"],
+        ),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_table(
@@ -122,8 +131,14 @@ def upgrade():
         sa.Column("started_on", sa.DateTime(), nullable=True),
         sa.Column("ended_on", sa.DateTime(), nullable=True),
         sa.Column("deleted_on", sa.DateTime(), nullable=True),
-        sa.ForeignKeyConstraint(["environment_id"], ["environment.id"],),
-        sa.ForeignKeyConstraint(["specification_id"], ["specification.id"],),
+        sa.ForeignKeyConstraint(
+            ["environment_id"],
+            ["environment.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["specification_id"],
+            ["specification.id"],
+        ),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_foreign_key(
@@ -163,7 +178,10 @@ def upgrade():
             nullable=False,
         ),
         sa.Column("key", sa.Unicode(length=255), nullable=True),
-        sa.ForeignKeyConstraint(["build_id"], ["build.id"],),
+        sa.ForeignKeyConstraint(
+            ["build_id"],
+            ["build.id"],
+        ),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_table(

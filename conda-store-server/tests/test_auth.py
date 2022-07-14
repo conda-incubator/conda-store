@@ -160,53 +160,96 @@ def test_end_to_end_auth_flow():
     )
 
 
-@pytest.mark.parametrize("arn_1,arn_2,value", [
-    ("ab/cd", "a*b/c*d", True),
-    ("a1111b/c22222d", "a*b/c*d", True),
-    ("a1/cd", "a*b/c*d", False),
-    ("abc/ed", "a*b*c/e*d", True),
-    ("a111bc/ed", "a*b*c/e*d", True),
-    ("a111b2222c/e3333d", "a*b*c/e*d", True),
-    ("aaabbbcccc/eeddd", "a*b*c/e*d", True),
-    ("aaabbbcccc1/eeddd", "a*b*c/e*d", False),
-    ("aaabbbcccc1c/eeddd", "a*b*c/e*d", True),
-])
+@pytest.mark.parametrize(
+    "arn_1,arn_2,value",
+    [
+        ("ab/cd", "a*b/c*d", True),
+        ("a1111b/c22222d", "a*b/c*d", True),
+        ("a1/cd", "a*b/c*d", False),
+        ("abc/ed", "a*b*c/e*d", True),
+        ("a111bc/ed", "a*b*c/e*d", True),
+        ("a111b2222c/e3333d", "a*b*c/e*d", True),
+        ("aaabbbcccc/eeddd", "a*b*c/e*d", True),
+        ("aaabbbcccc1/eeddd", "a*b*c/e*d", False),
+        ("aaabbbcccc1c/eeddd", "a*b*c/e*d", True),
+    ],
+)
 def test_is_arn_subset(arn_1, arn_2, value):
     assert RBACAuthorizationBackend.is_arn_subset(arn_1, arn_2) == value
 
 
-@pytest.mark.parametrize("entity_bindings, new_entity_bindings, authenticated, value", [
-    # */* viewer is a subset of admin
-    ({"*/*": ["admin"]}, {"*/*": ["viewer"]}, False, True),
-    ({"*/*": ["admin"]}, {"*/*": ["viewer"]}, True, True),
-    # */* admin is not a subset of viewer
-    ({"*/*": ["viewer"]}, {"*/*": ["admin"]}, False, False),
-    ({"*/*": ["viewer"]}, {"*/*": ["admin"]}, True, False),
-    # a/b viewer is a subset of admin
-    ({"a/b": ["admin"]}, {"a/b": ["viewer"]}, False, True),
-    ({"a/b": ["admin"]}, {"a/b": ["viewer"]}, True, True),
-    # a/b admin is not a subset of viewer
-    ({"a/b": ["viewer"]}, {"a/b": ["admin"]}, False, False),
-    ({"a/b": ["viewer"]}, {"a/b": ["admin"]}, True, False),
-    # default/* vs. */*
-    ({"*/*": ["viewer"]}, {"default/*": ["viewer"]}, False, True),
-    ({"*/*": ["viewer"]}, {"default/*": ["viewer"]}, True, True),
-    # efault/* vs. d*/*
-    ({"d*/*": ["viewer"]}, {"efault/*": ["viewer"]}, False, False),
-    ({"d*/*": ["viewer"]}, {"efault/*": ["viewer"]}, True, False),
-    # multiple entities keys
-    ({"d*/*": ["viewer"], "de*/*": ["admin"]}, {"default/*": ["developer"]}, False, True),
-    ({"d*/*": ["viewer"], "de*/*": ["admin"]}, {"default/*": ["developer"]}, True, True),
-    # multiple entities keys
-    ({"d*/*": ["viewer"], "de*/*": ["admin"]}, {"dcefault/*": ["developer"]}, False, False),
-    ({"d*/*": ["viewer"], "de*/*": ["admin"]}, {"dcefault/*": ["developer"]}, True, False),
-    # multiple entities keys
-    ({"d*/*": ["viewer"]}, {"d*/*": ["viewer"], "dc*/*": ["viewer"]}, False, True),
-    ({"d*/*": ["viewer"]}, {"d*/*": ["viewer"], "dc*/*": ["viewer"]}, True, True),
-    # multiple entities keys
-    ({"d*/*": ["viewer"]}, {"d*/*": ["viewer"], "dc*/*": ["developer"]}, False, False),
-    ({"d*/*": ["viewer"]}, {"d*/*": ["viewer"], "dc*/*": ["developer"]}, True, False),
-])
-def test_is_subset_entity_permissions(entity_bindings, new_entity_bindings, authenticated, value):
+@pytest.mark.parametrize(
+    "entity_bindings, new_entity_bindings, authenticated, value",
+    [
+        # */* viewer is a subset of admin
+        ({"*/*": ["admin"]}, {"*/*": ["viewer"]}, False, True),
+        ({"*/*": ["admin"]}, {"*/*": ["viewer"]}, True, True),
+        # */* admin is not a subset of viewer
+        ({"*/*": ["viewer"]}, {"*/*": ["admin"]}, False, False),
+        ({"*/*": ["viewer"]}, {"*/*": ["admin"]}, True, False),
+        # a/b viewer is a subset of admin
+        ({"a/b": ["admin"]}, {"a/b": ["viewer"]}, False, True),
+        ({"a/b": ["admin"]}, {"a/b": ["viewer"]}, True, True),
+        # a/b admin is not a subset of viewer
+        ({"a/b": ["viewer"]}, {"a/b": ["admin"]}, False, False),
+        ({"a/b": ["viewer"]}, {"a/b": ["admin"]}, True, False),
+        # default/* vs. */*
+        ({"*/*": ["viewer"]}, {"default/*": ["viewer"]}, False, True),
+        ({"*/*": ["viewer"]}, {"default/*": ["viewer"]}, True, True),
+        # efault/* vs. d*/*
+        ({"d*/*": ["viewer"]}, {"efault/*": ["viewer"]}, False, False),
+        ({"d*/*": ["viewer"]}, {"efault/*": ["viewer"]}, True, False),
+        # multiple entities keys
+        (
+            {"d*/*": ["viewer"], "de*/*": ["admin"]},
+            {"default/*": ["developer"]},
+            False,
+            True,
+        ),
+        (
+            {"d*/*": ["viewer"], "de*/*": ["admin"]},
+            {"default/*": ["developer"]},
+            True,
+            True,
+        ),
+        # multiple entities keys
+        (
+            {"d*/*": ["viewer"], "de*/*": ["admin"]},
+            {"dcefault/*": ["developer"]},
+            False,
+            False,
+        ),
+        (
+            {"d*/*": ["viewer"], "de*/*": ["admin"]},
+            {"dcefault/*": ["developer"]},
+            True,
+            False,
+        ),
+        # multiple entities keys
+        ({"d*/*": ["viewer"]}, {"d*/*": ["viewer"], "dc*/*": ["viewer"]}, False, True),
+        ({"d*/*": ["viewer"]}, {"d*/*": ["viewer"], "dc*/*": ["viewer"]}, True, True),
+        # multiple entities keys
+        (
+            {"d*/*": ["viewer"]},
+            {"d*/*": ["viewer"], "dc*/*": ["developer"]},
+            False,
+            False,
+        ),
+        (
+            {"d*/*": ["viewer"]},
+            {"d*/*": ["viewer"], "dc*/*": ["developer"]},
+            True,
+            False,
+        ),
+    ],
+)
+def test_is_subset_entity_permissions(
+    entity_bindings, new_entity_bindings, authenticated, value
+):
     authorization = RBACAuthorizationBackend()
-    assert authorization.is_subset_entity_permissions(entity_bindings, new_entity_bindings, authenticated) == value
+    assert (
+        authorization.is_subset_entity_permissions(
+            entity_bindings, new_entity_bindings, authenticated
+        )
+        == value
+    )
