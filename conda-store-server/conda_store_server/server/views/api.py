@@ -545,6 +545,9 @@ def api_list_builds(
         exclude={"specification", "packages", "build_artifacts"},
         allowed_sort_bys={
             "id": orm.Build.id,
+            "started_on":orm.Build.started_on,
+            "scheduled_on":orm.Build.scheduled_on,
+            "ended_on":orm.Build.ended_on
         },
         default_sort_by=["id"],
     )
