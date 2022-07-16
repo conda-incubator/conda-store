@@ -41,6 +41,7 @@ def validate_environment_channels(
     conda_channel_alias: str,
     default_channels: List[str],
     allowed_channels: List[str],
+    default_allow_channels: bool,
 ) -> schema.Specification:
     if len(specification.channels) == 0:
         specification.channels = default_channels.copy()
@@ -50,14 +51,16 @@ def validate_environment_channels(
         for _ in specification.channels
     )
 
-    normalized_conda_allowed_channels = set(
-        conda.normalize_channel_name(conda_channel_alias, _) for _ in allowed_channels
-    )
+    if not default_allow_channels:
 
-    if not (normalized_conda_channels <= normalized_conda_allowed_channels):
-        raise ValueError(
-            f"Conda channels {normalized_conda_channels - normalized_conda_allowed_channels} not allowed in specification"
+        normalized_conda_allowed_channels = set(
+            conda.normalize_channel_name(conda_channel_alias, _) for _ in allowed_channels
         )
+
+        if not (normalized_conda_channels <= normalized_conda_allowed_channels):
+            raise ValueError(
+                f"Conda channels {normalized_conda_channels - normalized_conda_allowed_channels} not allowed in specification"
+            )
 
     return specification
 

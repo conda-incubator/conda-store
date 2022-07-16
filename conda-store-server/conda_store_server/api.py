@@ -274,6 +274,13 @@ def get_conda_channel(db, channel_name: str):
     )
 
 
+def add_conda_channel(db, channel_name: str):
+    channel = orm.CondaChannel(name=channel_name, last_update=None)
+    db.add(channel)
+    db.commit()
+    return channel
+
+
 def list_conda_packages(db, search: str = None, exact: bool = False, build: str = None):
     filters = []
     if search:
