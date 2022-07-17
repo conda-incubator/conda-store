@@ -22,3 +22,5 @@ RUN cd /opt/conda-store-server && \
 
 ENV PATH=/opt/conda/condabin:/opt/conda/envs/conda-store-server/bin:/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${PATH}
 ENV TZ=America/New_York
+
+USER 1000:1000

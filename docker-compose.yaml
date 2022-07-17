@@ -3,6 +3,7 @@ version: "3.8"
 services:
   conda-store-worker:
     build: conda-store-server
+    user: 1000:1000
     volumes:
       - ./tests/assets/environments:/opt/environments:ro
       - ./tests/assets/conda_store_config.py:/opt/conda_store/conda_store_config.py:ro
@@ -14,6 +15,7 @@ services:
 
   conda-store-server:
     build: conda-store-server
+    user: 1000:1000
     depends_on:
       postgres:
         condition: service_healthy

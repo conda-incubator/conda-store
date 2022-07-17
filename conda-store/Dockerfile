@@ -20,4 +20,6 @@ RUN cd /opt/conda-store && \
 RUN mkdir -p /opt/jupyterhub && \
     chown -R 1000:1000 /opt/jupyterhub
 
+USER 1000:1000
+
 WORKDIR /opt/jupyterhub
