@@ -115,10 +115,16 @@ repodata.json from. By default includes current architecture and
 `CondaStore.conda_default_channels` is a list of Conda channels that
 are by default added if channels within the specification is empty.
 
+`CondaStore.conda_default_allow_channels` Boolean to indicate if new
+channels are automatically allowed and added to the channels database.
+Otherwise, only channels listed in the `CondaStore.conda_allowed_channels`
+are allowed. Default True.
+
 `CondaStore.conda_allowed_channels` is a list of Conda channels that
 are allowed. This also tells conda-store which channels to prefetch
 the channel `repodata` and `channeldata` from. The default is `main` and
-`conda-forge`.
+`conda-forge`. This option has no effect if
+`CondaStore.conda_default_allow_channels` is set to True.
 
 `CondaStore.conda_default_packages` is a list of Conda packages that
 are included by default if none are specified within the specification
