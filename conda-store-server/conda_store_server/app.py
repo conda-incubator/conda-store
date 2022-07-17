@@ -98,8 +98,6 @@ class CondaStore(LoggingConfigurable):
         config=True,
     )
 
-    # TODO: Consider to instead implement this via a "magic" value for 'conda_allowed_channels',
-    #       e.g., an empty list.
     conda_default_allow_channels = Bool(
         True,
         help="Whether to allow additional channels in the conda-store default namespace",
