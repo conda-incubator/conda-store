@@ -302,7 +302,8 @@ def test_api_list_conda_channels_unauth(testclient):
     api_channels = set(_.name for _ in r.data)
     assert api_channels == {
         'https://conda.anaconda.org/main',
-        'https://conda.anaconda.org/conda-forge'
+        'https://repo.anaconda.com/pkgs/main',
+        'https://conda.anaconda.org/conda-forge',
     }
 
 
