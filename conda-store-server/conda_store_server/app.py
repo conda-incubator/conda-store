@@ -101,6 +101,7 @@ class CondaStore(LoggingConfigurable):
         [
             "main",
             "conda-forge",
+            "https://repo.anaconda.com/pkgs/main",
         ],
         help="Allowed conda channels to be used in conda environments",
         config=True,
