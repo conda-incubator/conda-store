@@ -54,7 +54,8 @@ def validate_environment_channels(
     if not default_allow_channels:
 
         normalized_conda_allowed_channels = set(
-            conda.normalize_channel_name(conda_channel_alias, _) for _ in allowed_channels
+            conda.normalize_channel_name(conda_channel_alias, _)
+            for _ in allowed_channels
         )
 
         if not (normalized_conda_channels <= normalized_conda_allowed_channels):
