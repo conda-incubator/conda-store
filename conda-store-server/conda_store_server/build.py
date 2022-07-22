@@ -42,7 +42,12 @@ def set_build_completed(conda_store, build, logs, packages):
 
         channel_id = api.get_conda_channel(conda_store.db, channel)
         if channel_id is None:
-            channel_id = api.add_conda_channel(conda_store.db, channel)
+            if conda_store.conda_default_allow_channels:
+                channel_id = api.add_conda_channel(conda_store.db, channel)
+            else:
+                raise ValueError(
+                    f"channel url={channel} not recognized in conda-store channel database"
+                )
         package["channel_id"] = channel_id.id
 
         _package = (
@@ -203,7 +208,12 @@ def solve_conda_environment(conda_store, solve):
 
             channel_id = api.get_conda_channel(conda_store.db, channel)
             if channel_id is None:
-                channel_id = api.add_conda_channel(conda_store.db, channel)
+                if conda_store.conda_default_allow_channels:
+                    channel_id = api.add_conda_channel(conda_store.db, channel)
+                else:
+                    raise ValueError(
+                        f"channel url={channel} not recognized in conda-store channel database"
+                    )
             package["channel_id"] = channel_id.id
 
             _package = (
