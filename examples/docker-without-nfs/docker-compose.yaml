@@ -29,6 +29,7 @@ services:
 
   conda-store-worker:
     build: ../../conda-store-server
+    user: 1000:1000
     volumes:
       - conda_store_data:/opt/conda-store/
       - ./assets/conda_store_config.py:/etc/conda-store/conda_store_config.py:ro
@@ -43,6 +44,7 @@ services:
 
   conda-store-server:
     build: ../../conda-store-server
+    user: 1000:1000
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.conda-store.rule=Host(`conda-store.localhost`) && PathPrefix(`/conda-store`)"
@@ -74,7 +76,7 @@ services:
       - "traefik.http.routers.jupyterhub.rule=Host(`conda-store.localhost`) && (Path(`/`) || PathPrefix(`/hub`) || PathPrefix(`/user`))"
       - "traefik.http.routers.jupyterhub.entrypoints=websecure"
       - "traefik.port=8000"
-    user: "1000:1000"
+    user: 1000:1000
     environment:
       CONDA_STORE_URL: https://conda-store.localhost/conda-store
       CONDA_STORE_AUTH: token
