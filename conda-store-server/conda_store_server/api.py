@@ -268,6 +268,12 @@ def list_conda_channels(db):
     return db.query(orm.CondaChannel).filter(*filters)
 
 
+def create_conda_channel(db, channel_name: str):
+    channel = orm.CondaChannel(name=channel_name, last_update=None)
+    db.add(channel)
+    return channel
+
+
 def get_conda_channel(db, channel_name: str):
     return (
         db.query(orm.CondaChannel).filter(orm.CondaChannel.name == channel_name).first()

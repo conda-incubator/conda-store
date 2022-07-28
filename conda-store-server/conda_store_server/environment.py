@@ -54,7 +54,9 @@ def validate_environment_channels(
         conda.normalize_channel_name(conda_channel_alias, _) for _ in allowed_channels
     )
 
-    if not (normalized_conda_channels <= normalized_conda_allowed_channels):
+    if len(allowed_channels) and not (
+        normalized_conda_channels <= normalized_conda_allowed_channels
+    ):
         raise ValueError(
             f"Conda channels {normalized_conda_channels - normalized_conda_allowed_channels} not allowed in specification"
         )
