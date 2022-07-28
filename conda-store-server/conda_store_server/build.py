@@ -40,12 +40,16 @@ def set_build_completed(conda_store, build, logs, packages):
             # ignore pypi package for now
             continue
 
-        channel_id = api.get_conda_channel(conda_store.db, channel)
-        if channel_id is None:
-            raise ValueError(
-                f"channel url={channel} not recognized in conda-store channel database"
-            )
-        package["channel_id"] = channel_id.id
+        channel_orm = api.get_conda_channel(conda_store.db, channel)
+        if channel_orm is None:
+            if len(conda_store.conda_allowed_channels) == 0:
+                channel_orm = api.create_conda_channel(conda_store.db, channel)
+                conda_store.db.commit()
+            else:
+                raise ValueError(
+                    f"channel url={channel} not recognized in conda-store channel database"
+                )
+        package["channel_id"] = channel_orm.id
 
         _package = (
             conda_store.db.query(orm.CondaPackage)
@@ -203,12 +207,16 @@ def solve_conda_environment(conda_store, solve):
                 # ignore pypi package for now
                 continue
 
-            channel_id = api.get_conda_channel(conda_store.db, channel)
-            if channel_id is None:
-                raise ValueError(
-                    f"channel url={channel} not recognized in conda-store channel database"
-                )
-            package["channel_id"] = channel_id.id
+            channel_orm = api.get_conda_channel(conda_store.db, channel)
+            if channel_orm is None:
+                if len(conda_store.conda_allowed_channels) == 0:
+                    channel_orm = api.create_conda_channel(conda_store.db, channel)
+                    conda_store.db.commit()
+                else:
+                    raise ValueError(
+                        f"channel url={channel} not recognized in conda-store channel database"
+                    )
+            package["channel_id"] = channel_orm.id
 
             _package = (
                 conda_store.db.query(orm.CondaPackage)

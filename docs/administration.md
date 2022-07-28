@@ -117,8 +117,9 @@ are by default added if channels within the specification is empty.
 
 `CondaStore.conda_allowed_channels` is a list of Conda channels that
 are allowed. This also tells conda-store which channels to prefetch
-the channel `repodata` and `channeldata` from. The default is `main` and
-`conda-forge`.
+the channel `repodata` and `channeldata` from. The default is `main`
+and `conda-forge`. If `conda_allowed_channels` is an empty list all
+Channels are accepted by users.
 
 `CondaStore.conda_default_packages` is a list of Conda packages that
 are included by default if none are specified within the specification
