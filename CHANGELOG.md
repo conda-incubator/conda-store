@@ -18,6 +18,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [0.4.7] - 2022-07-28
+
+### Added
+
+ - Adding additional query parameters environment_id, namespace, name in list api methods in build/environment #350
+ - Adding ability to sort based on start/schedule/ended for list builds  #352
+ - Adding repo.anaconda.com to default channels #354
+ - Empty list for conda_allowed_channels now will allow any channel #358
+
+### Fixed
+
+ - Changed docker images to no longer run as root by default #355
+
 ## [0.4.6] - 2022-07-08
 
 ### Added
