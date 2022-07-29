@@ -394,7 +394,7 @@ form.addEventListener('submit', loginHandler);
             request.state.entity = self.authentication.authenticate(token)
         elif request.headers.get("Authorization"):
             # auth bearer based authentication
-            token = request.headers.get("Authorization").split(" ")[1]
+            token = request.headers.get("Authorization")
             request.state.entity = self.authentication.authenticate(token)
         else:
             request.state.entity = None
