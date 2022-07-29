@@ -9,7 +9,7 @@ import datetime
 from ruamel.yaml import YAML
 import click
 
-from conda_store import api, runner, utils, exception
+from conda_store import api, runner, utils, exception, __version__
 
 
 async def parse_build(conda_store_api: api.CondaStoreAPI, uri: str):
@@ -26,8 +26,10 @@ async def parse_build(conda_store_api: api.CondaStoreAPI, uri: str):
         namespace, name = re.fullmatch("(.+)/(.*)", uri).groups()
         environment = await conda_store_api.get_environment(namespace, name)
         build_id = environment["current_build_id"]
-    if re.fullmatch(r"\d+", uri):  # build_id
+    elif re.fullmatch(r"\d+", uri):  # build_id
         build_id = int(uri)
+    else:
+        raise exception.CondaStoreError(f"unable to parse uri={uri}")
 
     return build_id
 
@@ -53,6 +55,7 @@ async def parse_build(conda_store_api: api.CondaStoreAPI, uri: str):
     default=False,
     help="Disable tls verification on API requests",
 )
+@click.version_option(__version__)
 @click.pass_context
 def cli(ctx, conda_store_url: str, auth: str, no_verify_ssl: bool):
     ctx.ensure_object(dict)
