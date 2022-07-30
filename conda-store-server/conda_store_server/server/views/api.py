@@ -397,7 +397,7 @@ def api_update_environment_build(
     conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
     build_id: int = Body(None, embed=True),
-    description: str = Body(None, embed=True)
+    description: str = Body(None, embed=True),
 ):
     auth.authorize_request(
         request, f"{namespace}/{name}", {Permissions.ENVIRONMENT_UPDATE}, require=True
@@ -406,7 +406,7 @@ def api_update_environment_build(
     try:
         if build_id is not None:
             conda_store.update_environment_build(namespace, name, build_id)
-            
+
         if description is not None:
             conda_store.update_environment_description(namespace, name, description)
 

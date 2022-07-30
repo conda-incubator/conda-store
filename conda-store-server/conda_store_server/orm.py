@@ -16,7 +16,7 @@ from sqlalchemy import (
     DateTime,
     UniqueConstraint,
     ForeignKey,
-    UnicodeText
+    UnicodeText,
 )
 from sqlalchemy.orm import sessionmaker, relationship, scoped_session, backref
 from sqlalchemy.ext.declarative import declarative_base
