@@ -132,6 +132,7 @@ jobs:
 
           export CONDA_STORE_URL=http://localhost:5000/conda-store
           export CONDA_STORE_AUTH=none
+          conda-store --version
           conda-store info
           conda-store token
           conda-store list namespace
@@ -145,6 +146,7 @@ jobs:
           export CONDA_STORE_USERNAME=username
           export CONDA_STORE_PASSWORD=password
 
+          conda-store --version
           conda-store info
           conda-store token
           conda-store list build
@@ -162,6 +164,7 @@ jobs:
           conda-store download 1 --artifact archive
           time conda-store run 1 -- python -c "print(1 + 3)"
           time conda-store run 1 -- python -c "print(1 + 4)"
+          ../tests/scripts/shebang.py
 
   build-docker-image:
     name: 'Build docker images'
