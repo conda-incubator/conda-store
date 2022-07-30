@@ -1,22 +1,17 @@
-import sys
-import re
-import pathlib
-import shlex
-
 from conda_store.cli import cli
 
 
 def detect_shebang():
     """Enable conda-store run within shebangs
 
-    Running `conda-store run ...` within shebangs enables environments
-    within shell scripts on OSX and Linux (sadly windows not supported
-    here since there is no concept of shebangs).
-
     Feature inspired by nix-shell shebangs see:
       - usage :: https://nixos.wiki/wiki/Nix-shell_shebang
       - implementation :: https://github.com/nixos/nix/blob/7a9ac91a43e1e05e9df9d1b9b4a2cf322d62bb1c/src/nix-build/nix-build.cc#L108-L130
     """
+    import sys
+    import re
+    import pathlib
+    import shlex
 
     filename = pathlib.Path(sys.argv[1]).resolve()
     args = ["conda-store", "run"]
