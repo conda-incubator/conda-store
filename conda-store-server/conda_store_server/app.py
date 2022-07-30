@@ -518,6 +518,18 @@ class CondaStore(LoggingConfigurable):
 
         tasks.task_update_environment_build.si(environment.id).apply_async()
 
+    def update_environment_description(self, namespace, name, description):
+        
+        environment = api.get_environment(self.db, namespace=namespace, name=name)
+        if environment is None:
+            raise utils.CondaStoreError(
+                f"environment namespace={namespace} name={name} does not exist"
+            )
+
+        environment.description = description
+        self.db.commit()
+
+
     def delete_namespace(self, namespace):
         namespace = api.get_namespace(self.db, name=namespace)
         if namespace is None:
