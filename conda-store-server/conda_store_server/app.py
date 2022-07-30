@@ -446,8 +446,12 @@ class CondaStore(LoggingConfigurable):
             environment = orm.Environment(
                 name=specification.name,
                 namespace_id=namespace.id,
+                description=specification.spec["description"],
             )
             self.db.add(environment)
+            self.db.commit()
+        else:
+            environment.description = specification.description
             self.db.commit()
 
         build = self.create_build(environment.id, specification.sha256)

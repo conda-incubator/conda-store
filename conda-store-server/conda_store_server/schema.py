@@ -179,6 +179,7 @@ class CondaSpecification(BaseModel):
     channels: List[str] = []
     dependencies: List[Union[str, CondaSpecificationPip]] = []
     prefix: Optional[str]
+    description: Optional[str] = ""
 
     @validator("dependencies", each_item=True)
     def check_dependencies(cls, v):
