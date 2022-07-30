@@ -16,6 +16,7 @@ from sqlalchemy import (
     DateTime,
     UniqueConstraint,
     ForeignKey,
+    UnicodeText
 )
 from sqlalchemy.orm import sessionmaker, relationship, scoped_session, backref
 from sqlalchemy.ext.declarative import declarative_base
@@ -275,6 +276,8 @@ class Environment(Base):
     )
 
     deleted_on = Column(DateTime, default=None)
+
+    description = Column(UnicodeText, default=None)
 
 
 class CondaChannel(Base):
