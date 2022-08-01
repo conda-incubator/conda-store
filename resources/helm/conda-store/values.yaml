@@ -1,0 +1,176 @@
+gateway:
+  replicas: 1
+
+  annotations: {}
+
+  resources: {}
+
+  prefix: /
+
+  loglevel: INFO
+
+  image:
+    name: quansight/conda-store-server
+    tag: "set-by-chartpress"
+    pullPolicy: IfNotPresent
+
+  imagePullSecrets: []
+
+  service:
+    annotations: {}
+
+  auth:
+    type: simple
+
+    simple:
+      password:
+
+    kerberos:
+      keytab:
+
+    jupyterhub:
+      apiToken:
+      apiUrl:
+
+    custom:
+      class:
+
+      config: {}
+
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 5
+    timeoutSeconds: 2
+    periodSeconds: 10
+    failureThreshold: 6
+  readinessProbe:
+    enabled: true
+    initialDelaySeconds: 5
+    timeoutSeconds: 2
+    periodSeconds: 10
+    failureThreshold: 3
+
+  nodeSelector: {}
+  affinity: {}
+  tolerations: []
+
+  extraConfig: {}
+
+  backend:
+    image:
+      name: quansight/conda-store
+      tag: "set-by-chartpress"
+      pullPolicy: IfNotPresent
+
+    namespace:
+
+    environment: {}
+
+    scheduler:
+      extraPodConfig: {}
+
+      extraContainerConfig: {}
+
+      cores:
+        request:
+        limit:
+
+      memory:
+        request:
+        limit:
+
+    worker:
+      extraPodConfig: {}
+
+      extraContainerConfig: {}
+
+      cores:
+        request:
+        limit:
+
+      memory:
+        request:
+        limit:
+
+      threads:
+
+controller:
+  enabled: true
+
+  annotations: {}
+
+  resources: {}
+
+  imagePullSecrets: []
+
+  loglevel: INFO
+
+  completedClusterMaxAge: 86400
+
+  completedClusterCleanupPeriod: 600
+
+  backoffBaseDelay: 0.1
+
+  backoffMaxDelay: 300
+
+  k8sApiRateLimit: 50
+
+  k8sApiRateLimitBurst: 100
+
+  image:
+    name: quansight/conda-store-server
+    tag: "set-by-chartpress"
+    pullPolicy: IfNotPresent
+
+  nodeSelector: {}
+  affinity: {}
+  tolerations: []
+
+traefik:
+  replicas: 1
+
+  annotations: {}
+
+  resources: {}
+
+  image:
+    name: traefik
+    tag: "2.6.3"
+    pullPolicy: IfNotPresent
+  imagePullSecrets: []
+
+  additionalArguments: []
+
+  loglevel: WARN
+
+  dashboard: false
+
+  service:
+    type: LoadBalancer
+    annotations: {}
+    spec: {}
+    ports:
+      web:
+        port: 80
+        nodePort:
+      tcp:
+        port: web
+        nodePort:
+
+  nodeSelector: {}
+  affinity: {}
+  tolerations: []
+
+rbac:
+  enabled: true
+
+  controller:
+    serviceAccountName:
+
+  gateway:
+    serviceAccountName:
+
+  traefik:
+    serviceAccountName:
+
+global: {}
