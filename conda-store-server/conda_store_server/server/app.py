@@ -160,6 +160,7 @@ class CondaStoreServer(Application):
             CORSMiddleware,
             allow_origins=["*"],
             allow_credentials=True,
+            allow_headers=["*"],
         )
         app.add_middleware(
             SessionMiddleware, secret_key=self.authentication.authentication.secret
