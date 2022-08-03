@@ -256,8 +256,8 @@ class CondaStore(LoggingConfigurable):
     )
 
     default_docker_base_image = Unicode(
-        "frolvlad/alpine-glibc:latest",
-        help="default base image used for the Dockerized environments",
+        "library/debian:sid-slim",
+        help="default base image used for the Dockerized environments. Make sure to have a proper glibc within image.",
         config=True,
     )
 
