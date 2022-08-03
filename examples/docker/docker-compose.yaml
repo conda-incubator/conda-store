@@ -27,6 +27,15 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
 
+  initializer:
+    image: alpine
+    restart: "no"
+    # hack to set perimssions on volume
+    entrypoint: |
+      /bin/sh -c "chown -R 1000:1000 /opt/conda-store"
+    volumes:
+      - conda_store_data:/opt/conda-store/
+
   conda-store-worker:
     build: ../../conda-store-server
     user: 1000:1000
@@ -34,6 +43,8 @@ services:
       - conda_store_data:/opt/conda-store/
       - ./assets/conda_store_config.py:/etc/conda-store/conda_store_config.py:ro
     depends_on:
+      initializer:
+        condition: service_completed_successfully
       conda-store-server:
         condition: service_healthy
     links:

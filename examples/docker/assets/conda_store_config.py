@@ -13,7 +13,7 @@ c.CondaStore.database_url = "postgresql+psycopg2://postgres:password@postgres/co
 c.CondaStore.upgrade_db = True
 c.CondaStore.redis_url = "redis://:password@redis:6379/0"
 c.CondaStore.default_uid = 1000
-c.CondaStore.default_gid = 100
+c.CondaStore.default_gid = 1000
 c.CondaStore.default_permissions = "775"
 c.CondaStore.conda_included_packages = [
     "ipykernel"
