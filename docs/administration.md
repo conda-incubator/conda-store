@@ -219,7 +219,7 @@ docker builds of Conda environments. This package at a minimum should
 have the [following packages
 installed](https://docs.anaconda.com/anaconda/install/linux/). Often
 times for non-graphic and non-gpu environments glibc is enough. Hence
-the default docker image `frolvlad/alpine-glibc:latest`.
+the default docker image `library/debian:sid-slim`.
 
 `CondaStore.serialize_builds` no longer build Conda environment in
 parallel. This is due to an issue in Conda/Mamba that when downloading

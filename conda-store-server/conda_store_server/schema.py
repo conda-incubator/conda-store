@@ -14,7 +14,7 @@ def _datetime_factory(offset: datetime.timedelta):
 
 # namespace and name cannot contain "*" ":" "#" " " "/"
 # this is a more restrictive list
-ALLOWED_CHARACTERS = "A-Za-z0-9-+_=@$&?^|~."
+ALLOWED_CHARACTERS = "A-Za-z0-9-+_@$&?^~.="
 ARN_ALLOWED = f"^([{ALLOWED_CHARACTERS}*]+)/([{ALLOWED_CHARACTERS}*]+)$"
 
 

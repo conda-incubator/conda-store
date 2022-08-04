@@ -50,8 +50,8 @@ def dynamic_conda_store_environment(conda_store, packages):
 
     # TODO: should really be doing checking on package names to
     # validate user input
-    packages = [replace_words(_, constraint_mapper) for _ in sorted(packages)]
-    environment_name = "|".join(packages)
+    package_specs = [replace_words(_, constraint_mapper) for _ in sorted(packages)]
+    environment_name = "-".join(packages)
     environment = api.get_environment(
         conda_store.db, environment_name, namespace="conda-store-dynamic"
     )
@@ -60,7 +60,7 @@ def dynamic_conda_store_environment(conda_store, packages):
         environment_specification = {
             "name": environment_name,
             "channels": ["conda-forge"],
-            "dependencies": packages,
+            "dependencies": package_specs,
         }
         conda_store.register_environment(
             environment_specification, namespace="conda-store-dynamic"
@@ -128,7 +128,7 @@ def v2():
     return _json_response({})
 
 
-@router_registry.get("/v2/<rest:path>")
+@router_registry.get("/v2/{rest:path}")
 def list_tags(
     rest: str,
     conda_store=Depends(dependencies.get_conda_store),
