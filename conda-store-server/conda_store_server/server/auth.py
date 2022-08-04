@@ -397,7 +397,7 @@ form.addEventListener('submit', loginHandler);
             parts = request.headers["Authorization"].split(" ", 1)
             if parts[0] == "Basic":
                 try:
-                    username, token = base64.b64decode(parts[1]).decode().split(':', 1)
+                    username, token = base64.b64decode(parts[1]).decode().split(":", 1)
                     request.state.entity = self.authentication.authenticate(token)
                 except Exception:
                     pass

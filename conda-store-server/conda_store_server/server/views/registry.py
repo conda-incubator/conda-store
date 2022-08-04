@@ -156,12 +156,14 @@ def list_tags(
     if entity is None:
         return docker_error_message(schema.DockerRegistryError.UNAUTHORIZED)
 
-    image = '/'.join(parts[:-2])
+    image = "/".join(parts[:-2])
 
     try:
         auth.authorize_request(
             request,
-            image if parts[0] != 'conda-store-dynamic' else 'conda-store-dynamic/python',
+            image
+            if parts[0] != "conda-store-dynamic"
+            else "conda-store-dynamic/python",
             {Permissions.ENVIRONMENT_READ},
             require=True,
         )
