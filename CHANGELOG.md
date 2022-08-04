@@ -18,6 +18,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [0.4.8] - 2022-08-04
+
+### Added
+
+ - Adding shebang support for conda-store (#362)
+
+### Fixed
+
+ - Fixed example demo for docker
+ - Fixing docker registry implementation in conda-store (#368)
+
+## Security
+
+ - Adding authentication behind docker registry (#369)
+
 ## [0.4.7] - 2022-07-28
 
 ### Added
