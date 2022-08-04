@@ -2,6 +2,7 @@ import re
 import secrets
 import datetime
 from typing import Optional
+import base64
 
 import jwt
 import requests
@@ -392,10 +393,16 @@ form.addEventListener('submit', loginHandler);
             # cookie based authentication
             token = request.cookies.get(self.cookie_name)
             request.state.entity = self.authentication.authenticate(token)
-        elif request.headers.get("Authorization"):
-            # auth bearer based authentication
-            token = request.headers.get("Authorization").split(" ")[1]
-            request.state.entity = self.authentication.authenticate(token)
+        elif "Authorization" in request.headers:
+            parts = request.headers["Authorization"].split(" ", 1)
+            if parts[0] == "Basic":
+                try:
+                    username, token = base64.b64decode(parts[1]).decode().split(":", 1)
+                    request.state.entity = self.authentication.authenticate(token)
+                except Exception:
+                    pass
+            elif parts[0] == "Bearer":
+                request.state.entity = self.authentication.authenticate(parts[1])
         else:
             request.state.entity = None
 

@@ -57,7 +57,7 @@ services:
     user: 1000:1000
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.conda-store.rule=Host(`conda-store.localhost`) && PathPrefix(`/conda-store`)"
+      - "traefik.http.routers.conda-store.rule=Host(`conda-store.localhost`) && (PathPrefix(`/conda-store`) || PathPrefix(`/v2`))"
       - "traefik.http.routers.conda-store.entrypoints=websecure"
       - "traefik.port=5000"
     depends_on:

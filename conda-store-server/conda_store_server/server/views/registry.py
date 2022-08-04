@@ -1,11 +1,12 @@
 import json
 import time
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request, HTTPException
 from fastapi.responses import RedirectResponse, Response
 
 from conda_store_server.server import dependencies
 from conda_store_server import schema, api, orm
+from conda_store_server.schema import Permissions
 
 
 router_registry = APIRouter(tags=["registry"])
@@ -20,7 +21,7 @@ def _json_response(data, status=200, mimetype="application/json"):
 
 
 def docker_error_message(docker_registry_error: schema.DockerRegistryError):
-    return _json_response(
+    response = _json_response(
         {
             "errors": [
                 {
@@ -32,6 +33,10 @@ def docker_error_message(docker_registry_error: schema.DockerRegistryError):
         },
         status=docker_registry_error.value["status"],
     )
+
+    if docker_registry_error == schema.DockerRegistryError.UNAUTHORIZED:
+        response.headers["Www-Authenticate"] = 'Basic realm="Registry Realm"'
+    return response
 
 
 def dynamic_conda_store_environment(conda_store, packages):
@@ -124,30 +129,56 @@ def get_docker_image_blob(conda_store, image, blobsum):
 
 
 @router_registry.get("/v2/")
-def v2():
+def v2(
+    request: Request,
+    entity=Depends(dependencies.get_entity),
+):
+    if entity is None:
+        return docker_error_message(schema.DockerRegistryError.UNAUTHORIZED)
+
     return _json_response({})
 
 
-@router_registry.get("/v2/{rest:path}")
+@router_registry.get(
+    "/v2/{rest:path}",
+)
 def list_tags(
     rest: str,
+    request: Request,
     conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
+    entity=Depends(dependencies.get_entity),
 ):
     parts = rest.split("/")
+    if len(parts) <= 3:
+        return docker_error_message(schema.DockerRegistryError.UNSUPPORTED)
+
+    if entity is None:
+        return docker_error_message(schema.DockerRegistryError.UNAUTHORIZED)
+
+    image = "/".join(parts[:-2])
+
+    try:
+        auth.authorize_request(
+            request,
+            image
+            if parts[0] != "conda-store-dynamic"
+            else "conda-store-dynamic/python",
+            {Permissions.ENVIRONMENT_READ},
+            require=True,
+        )
+    except HTTPException as e:
+        if e.status_code == 403:
+            return docker_error_message(schema.DockerRegistryError.DENIED)
 
     # /v2/<image>/tags/list
-    if len(parts) > 2 and parts[-2:] == ["tags", "list"]:
-        image = "/".join(parts[:-2])
+    if parts[-2:] == ["tags", "list"]:
         raise NotImplementedError()
     # /v2/<image>/manifests/<tag>
-    elif len(parts) > 2 and parts[-2] == "manifests":
-        image = "/".join(parts[:-2])
+    elif parts[-2] == "manifests":
         tag = parts[-1]
         return get_docker_image_manifest(conda_store, image, tag)
     # /v2/<image>/blobs/<blobsum>
-    elif len(parts) > 2 and parts[-2] == "blobs":
-        image = "/".join(parts[:-2])
+    elif parts[-2] == "blobs":
         blobsum = parts[-1].split(":")[1]
         return get_docker_image_blob(conda_store, image, blobsum)
-    else:
-        return docker_error_message(schema.DockerRegistryError.UNSUPPORTED)
