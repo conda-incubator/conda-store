@@ -17,7 +17,16 @@ from traitlets import (
 from traitlets.config import LoggingConfigurable
 from sqlalchemy.pool import NullPool
 
-from conda_store_server import orm, utils, storage, schema, api, conda, environment
+from conda_store_server import (
+    orm,
+    utils,
+    storage,
+    schema,
+    api,
+    conda,
+    environment,
+    registry,
+)
 
 
 def conda_store_validate_specification(
@@ -51,6 +60,13 @@ class CondaStore(LoggingConfigurable):
     storage_class = Type(
         default_value=storage.S3Storage,
         klass=storage.Storage,
+        allow_none=False,
+        config=True,
+    )
+
+    container_registry_class = Type(
+        default_value=registry.ContainerRegistry,
+        klass=registry.ContainerRegistry,
         allow_none=False,
         config=True,
     )
@@ -304,6 +320,15 @@ class CondaStore(LoggingConfigurable):
             return self._storage
         self._storage = self.storage_class(parent=self, log=self.log)
         return self._storage
+
+    @property
+    def container_registry(self):
+        if hasattr(self, "_container_registry"):
+            return self._container_registry
+        self._container_registry = self.container_registry_class(
+            parent=self, log=self.log
+        )
+        return self._container_registry
 
     @property
     def celery_app(self):

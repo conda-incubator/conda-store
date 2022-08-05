@@ -62,3 +62,19 @@ c.CondaStoreServer.template_vars = {
 c.CondaStoreWorker.log_level = logging.INFO
 c.CondaStoreWorker.watch_paths = ["/opt/environments"]
 c.CondaStoreWorker.concurrency = 4
+
+# ==================================
+#         registry settings
+# ==================================
+from python_docker.registry import Registry
+import os
+
+def _configure_docker_registry(registry_url: str):
+    return Registry(
+        "https://registry-1.docker.io",
+        username=os.environ.get('DOCKER_USERNAME'),
+        password=os.environ.get('DOCKER_PASSWORD'))
+
+c.ContainerRegistry.container_registries = {
+    'https://registry-1.docker.io': _configure_docker_registry
+}

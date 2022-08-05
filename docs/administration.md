@@ -456,6 +456,30 @@ single filename to watch.
 the number of threads on your given machine. If set will limit the
 number of concurrent celery tasks to the integer.
 
+### `conda_store_server.registry.ContainerRegistry`
+
+`ContainerRegistry.container_registries` dictionary of registries_url
+to upload built container images with callable function to configure
+registry instance with credentials. Example configuration shown
+bellow. Some registries are more complex to setup such as ECR, GCR,
+etc. `password` is often the token generated from the AWS, GCP, Azure,
+and Digital Ocean clients.
+
+```python
+from python_docker.registry import Registry
+import os
+
+def _configure_docker_registry(registry_url: str):
+    return Registry(
+        "https://registry-1.docker.io",
+        username=os.environ.get('DOCKER_USERNAME'),
+        password=os.environ.get('DOCKER_PASSWORD'))
+
+c.ContainerRegistry.container_registries = {
+    'https://registry-1.docker.io': _configure_docker_registry
+}
+```
+
 ## Frequently Asked Questions
 
 ### conda-store fails to build Conda environment and worker is spontaneously killed (9 SIGKILL)
