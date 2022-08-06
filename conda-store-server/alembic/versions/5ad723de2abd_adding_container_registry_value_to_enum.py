@@ -21,4 +21,5 @@ def upgrade():
 
 
 def downgrade():
-    pass  # TODO: harmless to have an extra enum type?
+    # harmless to keep extra enum around
+    pass
