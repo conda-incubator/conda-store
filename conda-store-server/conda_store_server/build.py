@@ -290,8 +290,11 @@ def build_conda_docker(conda_store, build):
     download_dir = info["pkgs_dirs"][0]
     precs = precs_from_environment_prefix(conda_prefix, download_dir, user_conda)
     records = fetch_precs(download_dir, precs)
+    base_image = conda_store.container_registry.pull_image(
+        conda_store.default_docker_base_image
+    )
     image = build_docker_environment_image(
-        base_image=conda_store.default_docker_base_image,
+        base_image=base_image,
         output_image=f"{build.specification.name}:{build.build_key}",
         records=records,
         default_prefix=info["env_vars"]["CONDA_ROOT"],
@@ -300,6 +303,12 @@ def build_conda_docker(conda_store, build):
         channels_remap=info.get("channels_remap", []),
         layering_strategy="layered",
     )
-    conda_store.container_registry.store_image(conda_store, build, image)
 
-    conda_store.container_registry.push_image(conda_store, image)
+    if (
+        schema.BuildArtifactType.BuildArtifactType.DOCKER_MANIFEST
+        in conda_store.build_artifacts
+    ):
+        conda_store.container_registry.store_image(conda_store, build, image)
+
+    if schema.BuildArtifactType.CONTAINER_REGISTRY in conda_store.build_artifacts:
+        conda_store.container_registry.push_image(conda_store, build, image)

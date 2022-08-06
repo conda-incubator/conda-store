@@ -33,6 +33,7 @@
           pythonPackages.minio
           pythonPackages.filelock
           pythonPackages.sqlalchemy
+          pythonPackages.psycopg2
 
           # conda-store
           pythonPackages.rich
@@ -46,6 +47,7 @@
           pythonPackages.flake8
           pythonPackages.build
           pythonPackages.setuptools
+          pythonPackages.alembic
         ];
 
         shellHook = ''

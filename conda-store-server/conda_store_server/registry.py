@@ -1,9 +1,10 @@
 import hashlib
 import gzip
+import urllib.parse
 
 from traitlets.config import LoggingConfigurable
 from traitlets import Dict
-from python_docker.registry import Image
+from python_docker.registry import Image, Registry
 
 from conda_store_server import schema, orm, utils
 
@@ -97,10 +98,66 @@ class ContainerRegistry(LoggingConfigurable):
                 f"built docker image: {image.name}:{image.tag} layers={len(image.layers)}"
             )
 
-    def push_image(self, conda_store, image: Image):
+    @staticmethod
+    def parse_image_uri(image_name: str):
+        """Must be in fully specified format [<scheme>://]<registry_url>/<image_name>:<tag_name>"""
+        if not image_name.startswith("http"):
+            image_name = f"https://{image_name}"
+
+        parsed_url = urllib.parse.urlparse(image_name)
+        registry_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
+        image_name, tag_name = parsed_url.path.split(":", 1)
+        image_name = image_name[1:]  # remove beginning "/"
+        return registry_url, image_name, tag_name
+
+    def pull_image(self, image_name: str) -> Image:
+        """Must be in fully specified format [<scheme>://]<registry_url>/<image_name>:<tag_name>
+
+        Docker is the only weird registry where you must use:
+          - `https://registry-1.docker.io`
+        """
+        registry_url, name, tag = self.parse_image_uri(image_name)
+
+        for url in self.container_registries:
+            if registry_url in url:
+                registry = self.container_registries[registry_url](url)
+                break
+        else:
+            self.log.warning(
+                f"registry {registry_url} not configured using registry without authentication"
+            )
+            registry = Registry(hostname=registry_url)
+
+        return registry.pull_image(name, tag)
+
+    def push_image(self, conda_store, build, image: Image):
         for registry_url, configure_registry in self.container_registries.items():
             self.log.info(f"beginning upload of image to registry {registry_url}")
             with utils.timer(self.log, f"uploading image to registry {registry_url}"):
                 registry = configure_registry(registry_url)
-                image.name = f'{registry.username}/{image.name.replace("/", "-")}'
+                image.name = f"{registry.username}/{build.environment.namespace.name}-{image.name}"
                 registry.push_image(image)
+
+                registry_build_artifact = orm.BuildArtifact(
+                    build_id=build.id,
+                    artifact_type=schema.BuildArtifactType.CONTAINER_REGISTRY,
+                    key=f"{registry_url}/{image.name}:{image.tag}",
+                )
+                conda_store.db.add(registry_build_artifact)
+                conda_store.db.commit()
+
+    def delete_image(self, image_name: str):
+        registry_url, name, tag = self.parse_image_uri(image_name)
+
+        for url in self.container_registries:
+            if registry_url in url:
+                registry = self.container_registries[registry_url](url)
+                break
+        else:
+            self.log.warning(
+                f"registry {registry_url} not configured using registry without authentication"
+            )
+            registry = Registry(hostname=registry_url)
+
+        self.log.info(f"deleting container image {image_name}")
+        registry.delete_image(name, tag)

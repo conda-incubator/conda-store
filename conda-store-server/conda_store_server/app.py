@@ -209,6 +209,7 @@ class CondaStore(LoggingConfigurable):
             schema.BuildArtifactType.YAML,
             schema.BuildArtifactType.CONDA_PACK,
             schema.BuildArtifactType.DOCKER_MANIFEST,
+            schema.BuildArtifactType.CONTAINER_REGISTRY,
         ],
         help="artifacts to build in conda-store. By default all of the artifacts",
         config=True,
@@ -219,6 +220,9 @@ class CondaStore(LoggingConfigurable):
             schema.BuildArtifactType.LOGS,
             schema.BuildArtifactType.LOCKFILE,
             schema.BuildArtifactType.YAML,
+            # no possible way to delete these artifacts
+            # in most container registries via api
+            schema.BuildArtifactType.CONTAINER_REGISTRY,
         ],
         help="artifacts to keep on build deletion",
         config=True,
@@ -272,7 +276,7 @@ class CondaStore(LoggingConfigurable):
     )
 
     default_docker_base_image = Unicode(
-        "library/debian:sid-slim",
+        "registry-1.docker.io/library/debian:sid-slim",
         help="default base image used for the Dockerized environments. Make sure to have a proper glibc within image.",
         config=True,
     )
@@ -505,7 +509,10 @@ class CondaStore(LoggingConfigurable):
             artifact_tasks.append(tasks.task_build_conda_env_export.si(build.id))
         if schema.BuildArtifactType.CONDA_PACK in self.build_artifacts:
             artifact_tasks.append(tasks.task_build_conda_pack.si(build.id))
-        if schema.BuildArtifactType.DOCKER_MANIFEST in self.build_artifacts:
+        if (
+            schema.BuildArtifactType.DOCKER_MANIFEST in self.build_artifacts
+            or schema.BuildArtifactType.CONTAINER_REGISTRY in self.build_artifacts
+        ):
             artifact_tasks.append(tasks.task_build_conda_docker.si(build.id))
 
         (
