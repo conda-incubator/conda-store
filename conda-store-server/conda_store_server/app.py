@@ -17,7 +17,16 @@ from traitlets import (
 from traitlets.config import LoggingConfigurable
 from sqlalchemy.pool import NullPool
 
-from conda_store_server import orm, utils, storage, schema, api, conda, environment
+from conda_store_server import (
+    orm,
+    utils,
+    storage,
+    schema,
+    api,
+    conda,
+    environment,
+    registry,
+)
 
 
 def conda_store_validate_specification(
@@ -51,6 +60,13 @@ class CondaStore(LoggingConfigurable):
     storage_class = Type(
         default_value=storage.S3Storage,
         klass=storage.Storage,
+        allow_none=False,
+        config=True,
+    )
+
+    container_registry_class = Type(
+        default_value=registry.ContainerRegistry,
+        klass=registry.ContainerRegistry,
         allow_none=False,
         config=True,
     )
@@ -193,6 +209,7 @@ class CondaStore(LoggingConfigurable):
             schema.BuildArtifactType.YAML,
             schema.BuildArtifactType.CONDA_PACK,
             schema.BuildArtifactType.DOCKER_MANIFEST,
+            schema.BuildArtifactType.CONTAINER_REGISTRY,
         ],
         help="artifacts to build in conda-store. By default all of the artifacts",
         config=True,
@@ -203,6 +220,9 @@ class CondaStore(LoggingConfigurable):
             schema.BuildArtifactType.LOGS,
             schema.BuildArtifactType.LOCKFILE,
             schema.BuildArtifactType.YAML,
+            # no possible way to delete these artifacts
+            # in most container registries via api
+            schema.BuildArtifactType.CONTAINER_REGISTRY,
         ],
         help="artifacts to keep on build deletion",
         config=True,
@@ -256,7 +276,7 @@ class CondaStore(LoggingConfigurable):
     )
 
     default_docker_base_image = Unicode(
-        "library/debian:sid-slim",
+        "registry-1.docker.io/library/debian:sid-slim",
         help="default base image used for the Dockerized environments. Make sure to have a proper glibc within image.",
         config=True,
     )
@@ -304,6 +324,15 @@ class CondaStore(LoggingConfigurable):
             return self._storage
         self._storage = self.storage_class(parent=self, log=self.log)
         return self._storage
+
+    @property
+    def container_registry(self):
+        if hasattr(self, "_container_registry"):
+            return self._container_registry
+        self._container_registry = self.container_registry_class(
+            parent=self, log=self.log
+        )
+        return self._container_registry
 
     @property
     def celery_app(self):
@@ -480,7 +509,10 @@ class CondaStore(LoggingConfigurable):
             artifact_tasks.append(tasks.task_build_conda_env_export.si(build.id))
         if schema.BuildArtifactType.CONDA_PACK in self.build_artifacts:
             artifact_tasks.append(tasks.task_build_conda_pack.si(build.id))
-        if schema.BuildArtifactType.DOCKER_MANIFEST in self.build_artifacts:
+        if (
+            schema.BuildArtifactType.DOCKER_MANIFEST in self.build_artifacts
+            or schema.BuildArtifactType.CONTAINER_REGISTRY in self.build_artifacts
+        ):
             artifact_tasks.append(tasks.task_build_conda_docker.si(build.id))
 
         (
