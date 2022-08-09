@@ -26,7 +26,7 @@
 <div class="card my-2">
     <div class="card-body">
         <h5 class="card-title">
-            <a href="{{ url_for('ui_get_environment', namespace=environment.namespace.name, environment_name=environment.name) }}">{{ environment.namespace.name }}/{{ environment.name }}</a>
+            <a href="{{ url_for('ui_get_environment', namespace=environment.namespace.name, environment_name=environment.name) }}">{{ environment.namespace.name }} / <span class="badge badge-info">{{ environment.name }}</span></a>
             <span class="badge badge-light">{{ (environment.current_build.size or 0) | filesizeformat(true) }}</span>
         </h5>
         {% if environment.current_build.has_yaml %}
