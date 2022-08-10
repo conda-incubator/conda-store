@@ -18,6 +18,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [0.4.9] - 2022-08-09
+
+### Added
+
+ - push/pull container images to/from additionall registries (#370)
+ - adding description associated with environments #363
+
 ## [0.4.8] - 2022-08-04
 
 ### Added

@@ -4,7 +4,7 @@ from recommonmark.transform import AutoStructify
 project = 'conda-store'
 copyright = '2022, Quansight'
 author = 'Quansight'
-release = '0.4.8'
+release = '0.4.9'
 
 extensions = [
     'recommonmark',
