@@ -161,7 +161,7 @@ class CondaStoreServer(Application):
             allow_origins=["*"],
             allow_credentials=True,
             allow_headers=["*"],
-            allow_methods=["*"]
+            allow_methods=["*"],
         )
         app.add_middleware(
             SessionMiddleware, secret_key=self.authentication.authentication.secret
