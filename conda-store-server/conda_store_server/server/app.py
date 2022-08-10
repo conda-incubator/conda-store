@@ -6,11 +6,13 @@ import uvicorn
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi.templating import Jinja2Templates
 from traitlets import Bool, Unicode, Integer, Type, validate, Instance, default, Dict
 from traitlets.config import Application, catch_config_error
 
+from conda_store_server import storage
 from conda_store_server.server import auth, views
 from conda_store_server.app import CondaStore
 from conda_store_server import __version__
@@ -133,6 +135,7 @@ class CondaStoreServer(Application):
             dbutil.upgrade(self.config.CondaStore.database_url)
 
         self.authentication = self.authentication_class(parent=self, log=self.log)
+
         # ensure checks on redis_url
         self.conda_store.redis_url
 
@@ -226,6 +229,14 @@ class CondaStoreServer(Application):
                 views.router_metrics,
                 prefix=trim_slash(self.url_prefix),
             )
+
+        if isinstance(self.conda_store.storage, storage.LocalStorage):
+            self.conda_store.storage.storage_url = f"{trim_slash(self.url_prefix)}/storage"
+            app.mount(
+                self.conda_store.storage.storage_url,
+                StaticFiles(directory=self.conda_store.storage.storage_path),
+                name="static")
+
 
         self.conda_store.ensure_namespace()
         self.conda_store.ensure_conda_channels()

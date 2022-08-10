@@ -1,0 +1,75 @@
+version: "3.8"
+
+volumes:
+  conda_store_data:
+
+services:
+  initializer:
+    image: alpine
+    restart: "no"
+    # hack to set perimssions on volume
+    entrypoint: |
+      /bin/sh -c "chown -R 1000:1000 /var/lib/conda-store/"
+    volumes:
+      - conda_store_data:/var/lib/conda-store/
+
+  conda-store-worker:
+    build: ../../conda-store-server
+    user: 1000:1000
+    volumes:
+      - conda_store_data:/var/lib/conda-store/
+      - ./conda_store_config.py:/opt/conda_store/conda_store_config.py:ro
+    depends_on:
+      initializer:
+        condition: service_completed_successfully
+      conda-store-server:
+        condition: service_healthy
+    platform: linux/amd64
+    command: ['conda-store-worker', '--config', '/opt/conda_store/conda_store_config.py']
+
+  conda-store-server:
+    build: ../../conda-store-server
+    user: 1000:1000
+    depends_on:
+      initializer:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - conda_store_data:/var/lib/conda-store/
+      - ./conda_store_config.py:/opt/conda_store/conda_store_config.py:ro
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:5000/conda-store/api/v1/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    platform: linux/amd64
+    command: ['conda-store-server', '--config', '/opt/conda_store/conda_store_config.py']
+    ports:
+      - "5000:5000"
+
+  postgres:
+    image: postgres:13
+    user: postgres
+    ports:
+      - 5432:5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: conda-store
+
+  redis:
+    image: bitnami/redis
+    healthcheck:
+      test: ["CMD", "redis-cli","ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    environment:
+      REDIS_PASSWORD: password

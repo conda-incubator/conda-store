@@ -323,6 +323,10 @@ class CondaStore(LoggingConfigurable):
         if hasattr(self, "_storage"):
             return self._storage
         self._storage = self.storage_class(parent=self, log=self.log)
+
+        if isinstance(self._storage, storage.LocalStorage):
+            os.makedirs(self._storage.storage_path, exist_ok=True)
+
         return self._storage
 
     @property
