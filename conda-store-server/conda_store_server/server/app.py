@@ -231,12 +231,14 @@ class CondaStoreServer(Application):
             )
 
         if isinstance(self.conda_store.storage, storage.LocalStorage):
-            self.conda_store.storage.storage_url = f"{trim_slash(self.url_prefix)}/storage"
+            self.conda_store.storage.storage_url = (
+                f"{trim_slash(self.url_prefix)}/storage"
+            )
             app.mount(
                 self.conda_store.storage.storage_url,
                 StaticFiles(directory=self.conda_store.storage.storage_path),
-                name="static")
-
+                name="static",
+            )
 
         self.conda_store.ensure_namespace()
         self.conda_store.ensure_conda_channels()
