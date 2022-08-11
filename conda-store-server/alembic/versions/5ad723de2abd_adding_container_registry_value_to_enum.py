@@ -43,11 +43,6 @@ def upgrade():
     with op.batch_alter_table("build_artifact") as batch_op:
         batch_op.alter_column("artifact_type", type_=new_type, existing_type=old_type)
 
-    # context = op.get_context()
-    # if context.get_impl().bind.dialect.name == "postgresql":
-    #     with context.autocommit_block():
-    #         op.execute("ALTER TYPE buildartifacttype ADD VALUE 'CONTAINER_REGISTRY'")
-
 
 def downgrade():
     # harmless to keep extra enum around
