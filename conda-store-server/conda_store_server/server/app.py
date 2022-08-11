@@ -23,6 +23,7 @@ import conda_store_server.server.dbutil as dbutil
 class CondaStoreServer(Application):
     aliases = {
         "config": "CondaStoreServer.config_file",
+        "standalone": "CondaStoreServer.standalone",
     }
 
     log_level = Integer(
@@ -122,6 +123,12 @@ class CondaStoreServer(Application):
 
     max_page_size = Integer(
         100, help="maximum number of items to return in a single page", config=True
+    )
+
+    standalone = Bool(
+        False,
+        help="Run application in standalone mode with workers running as subprocess",
+        config=True,
     )
 
     @catch_config_error
@@ -248,13 +255,26 @@ class CondaStoreServer(Application):
 
         from conda_store_server.worker import tasks  # noqa
 
-        uvicorn.run(
-            app,
-            host=self.address,
-            port=self.port,
-            reload=False,
-            debug=(self.log_level == logging.DEBUG),
-            workers=1,
-            proxy_headers=self.behind_proxy,
-            forwarded_allow_ips=("*" if self.behind_proxy else None),
-        )
+        # start worker if in standalone mode
+        if self.standalone:
+            import multiprocessing
+            multiprocessing.set_start_method('spawn')
+
+            from conda_store_server.worker.app import CondaStoreWorker
+            process = multiprocessing.Process(target=CondaStoreWorker.launch_instance)
+            process.start()
+
+        try:
+            uvicorn.run(
+                app,
+                host=self.address,
+                port=self.port,
+                reload=False,
+                debug=(self.log_level == logging.DEBUG),
+                workers=1,
+                proxy_headers=self.behind_proxy,
+                forwarded_allow_ips=("*" if self.behind_proxy else None),
+            )
+        finally:
+            if self.standalone:
+                process.join()

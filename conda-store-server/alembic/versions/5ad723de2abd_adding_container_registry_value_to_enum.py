@@ -6,6 +6,7 @@ Create Date: 2022-08-05 22:14:34.110642
 
 """
 from alembic import op
+import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
@@ -16,8 +17,36 @@ depends_on = None
 
 
 def upgrade():
-    with op.get_context().autocommit_block():
-        op.execute("ALTER TYPE buildartifacttype ADD VALUE 'CONTAINER_REGISTRY'")
+    old_type = sa.Enum(
+        "DIRECTORY",
+        "LOCKFILE",
+        "LOGS",
+        "YAML",
+        "CONDA_PACK",
+        "DOCKER_BLOB",
+        "DOCKER_MANIFEST",
+        name="buildartifacttype",
+    )
+
+    new_type = sa.Enum(
+        "DIRECTORY",
+        "LOCKFILE",
+        "LOGS",
+        "YAML",
+        "CONDA_PACK",
+        "DOCKER_BLOB",
+        "DOCKER_MANIFEST",
+        "CONTAINER_REGISTRY",
+        name="buildartifacttype",
+    )
+
+    with op.batch_alter_table("build_artifact") as batch_op:
+        batch_op.alter_column('artifact_type', type_=new_type, existing_type=old_type)
+
+    # context = op.get_context()
+    # if context.get_impl().bind.dialect.name == "postgresql":
+    #     with context.autocommit_block():
+    #         op.execute("ALTER TYPE buildartifacttype ADD VALUE 'CONTAINER_REGISTRY'")
 
 
 def downgrade():
