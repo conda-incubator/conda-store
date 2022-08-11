@@ -36,7 +36,7 @@ def upgrade():
         "namespace",
         sa.Column("id", sa.Integer(), nullable=False, primary_key=True),
         sa.Column("name", sa.Unicode(length=255), nullable=True, unique=True),
-        sa.Column("deleted_on", sa.DateTime(), nullable=True)
+        sa.Column("deleted_on", sa.DateTime(), nullable=True),
     )
 
     op.create_table(
@@ -66,7 +66,7 @@ def upgrade():
         sa.Column("timestamp", sa.BigInteger(), nullable=True),
         sa.Column("version", sa.Unicode(length=64), nullable=False),
         sa.Column("summary", sa.Text(), nullable=True),
-        sa.Column("description", sa.Text(), nullable=True)
+        sa.Column("description", sa.Text(), nullable=True),
     )
 
     op.create_table(
@@ -75,7 +75,7 @@ def upgrade():
         sa.Column("namespace_id", sa.Integer(), nullable=False),
         sa.Column("name", sa.Unicode(length=255), nullable=False),
         sa.Column("current_build_id", sa.Integer(), nullable=True),
-        sa.Column("deleted_on", sa.DateTime(), nullable=True)
+        sa.Column("deleted_on", sa.DateTime(), nullable=True),
     )
 
     op.create_table(
@@ -84,7 +84,7 @@ def upgrade():
         sa.Column("specification_id", sa.Integer(), nullable=False),
         sa.Column("scheduled_on", sa.DateTime(), nullable=True),
         sa.Column("started_on", sa.DateTime(), nullable=True),
-        sa.Column("ended_on", sa.DateTime(), nullable=True)
+        sa.Column("ended_on", sa.DateTime(), nullable=True),
     )
 
     op.create_table(
@@ -101,13 +101,13 @@ def upgrade():
         sa.Column("scheduled_on", sa.DateTime(), nullable=True),
         sa.Column("started_on", sa.DateTime(), nullable=True),
         sa.Column("ended_on", sa.DateTime(), nullable=True),
-        sa.Column("deleted_on", sa.DateTime(), nullable=True)
+        sa.Column("deleted_on", sa.DateTime(), nullable=True),
     )
 
     op.create_table(
         "solve_conda_package",
         sa.Column("solve_id", sa.Integer(), nullable=False, primary_key=True),
-        sa.Column("conda_package_id", sa.Integer(), nullable=False)
+        sa.Column("conda_package_id", sa.Integer(), nullable=False, primary_key=True),
     )
 
     op.create_table(
@@ -128,76 +128,97 @@ def upgrade():
             ),
             nullable=False,
         ),
-        sa.Column("key", sa.Unicode(length=255), nullable=True)
+        sa.Column("key", sa.Unicode(length=255), nullable=True),
     )
 
     op.create_table(
         "build_conda_package",
         sa.Column("build_id", sa.Integer(), nullable=False, primary_key=True),
-        sa.Column("conda_package_id", sa.Integer(), nullable=False)
+        sa.Column("conda_package_id", sa.Integer(), nullable=False, primary_key=True),
     )
 
-    with op.batch_alter_table("conda_package", table_args=[
-        sa.ForeignKeyConstraint(
-            ["channel_id"],
-            ["conda_channel.id"],
-        ),
-        sa.UniqueConstraint(
-            "channel_id",
-            "subdir",
-            "name",
-            "version",
-            "build",
-            "build_number",
-            "sha256",
-            name="_conda_package_uc",
-        ),
-    ]) as batch_op:
+    with op.batch_alter_table(
+        "conda_package",
+        table_args=[
+            sa.ForeignKeyConstraint(
+                ["channel_id"],
+                ["conda_channel.id"],
+            ),
+            sa.UniqueConstraint(
+                "channel_id",
+                "subdir",
+                "name",
+                "version",
+                "build",
+                "build_number",
+                "sha256",
+                name="_conda_package_uc",
+            ),
+        ],
+    ):
         pass
 
-    with op.batch_alter_table("environment", table_args=[
-            sa.ForeignKeyConstraint(['current_build_id'], ['build.id']),
+    with op.batch_alter_table(
+        "environment",
+        table_args=[
+            sa.ForeignKeyConstraint(["current_build_id"], ["build.id"]),
             sa.UniqueConstraint("namespace_id", "name", name="_namespace_name_uc"),
-            sa.ForeignKeyConstraint(["namespace_id"], ["namespace.id"])
-    ]) as batch_op:
+            sa.ForeignKeyConstraint(["namespace_id"], ["namespace.id"]),
+        ],
+    ):
         pass
 
-    with op.batch_alter_table("solve", table_args=[
-        sa.ForeignKeyConstraint(
-            ["specification_id"],
-            ["specification.id"],
-        ),
-    ]) as batch_op:
+    with op.batch_alter_table(
+        "solve",
+        table_args=[
+            sa.ForeignKeyConstraint(
+                ["specification_id"],
+                ["specification.id"],
+            ),
+        ],
+    ):
         pass
 
-    with op.batch_alter_table("build", table_args=[
-        sa.ForeignKeyConstraint(["environment_id"], ["environment.id"]),
-        sa.ForeignKeyConstraint(["specification_id"], ["specification.id"]),
-    ]) as batch_op:
+    with op.batch_alter_table(
+        "build",
+        table_args=[
+            sa.ForeignKeyConstraint(["environment_id"], ["environment.id"]),
+            sa.ForeignKeyConstraint(["specification_id"], ["specification.id"]),
+        ],
+    ):
         pass
 
-    with op.batch_alter_table("solve_conda_package", table_args=[
+    with op.batch_alter_table(
+        "solve_conda_package",
+        table_args=[
             sa.ForeignKeyConstraint(
                 ["conda_package_id"], ["conda_package.id"], ondelete="CASCADE"
             ),
             sa.ForeignKeyConstraint(["solve_id"], ["solve.id"], ondelete="CASCADE"),
-    ]) as batch_op:
+        ],
+    ):
         pass
 
-    with op.batch_alter_table("build_artifact", table_args=[
-        sa.ForeignKeyConstraint(
-            ["build_id"],
-            ["build.id"],
-        ),
-    ]) as batch_op:
+    with op.batch_alter_table(
+        "build_artifact",
+        table_args=[
+            sa.ForeignKeyConstraint(
+                ["build_id"],
+                ["build.id"],
+            ),
+        ],
+    ):
         pass
 
-    with op.batch_alter_table("build_conda_package", table_args=[
-        sa.ForeignKeyConstraint(["build_id"], ["build.id"], ondelete="CASCADE"),
-        sa.ForeignKeyConstraint(
-            ["conda_package_id"], ["conda_package.id"], ondelete="CASCADE"
-        ),
-    ]) as batch_op:
+    with op.batch_alter_table(
+        "build_conda_package",
+        table_args=[
+            sa.ForeignKeyConstraint(["build_id"], ["build.id"], ondelete="CASCADE"),
+            sa.ForeignKeyConstraint(
+                ["conda_package_id"], ["conda_package.id"], ondelete="CASCADE"
+            ),
+        ],
+    ):
         pass
 
 

@@ -258,9 +258,11 @@ class CondaStoreServer(Application):
         # start worker if in standalone mode
         if self.standalone:
             import multiprocessing
-            multiprocessing.set_start_method('spawn')
+
+            multiprocessing.set_start_method("spawn")
 
             from conda_store_server.worker.app import CondaStoreWorker
+
             process = multiprocessing.Process(target=CondaStoreWorker.launch_instance)
             process.start()
 
