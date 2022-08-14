@@ -305,7 +305,7 @@ def build_conda_docker(conda_store, build):
     )
 
     if (
-        schema.BuildArtifactType.BuildArtifactType.DOCKER_MANIFEST
+        schema.BuildArtifactType.DOCKER_MANIFEST
         in conda_store.build_artifacts
     ):
         conda_store.container_registry.store_image(conda_store, build, image)
