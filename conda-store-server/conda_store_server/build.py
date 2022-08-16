@@ -304,10 +304,7 @@ def build_conda_docker(conda_store, build):
         layering_strategy="layered",
     )
 
-    if (
-        schema.BuildArtifactType.DOCKER_MANIFEST
-        in conda_store.build_artifacts
-    ):
+    if schema.BuildArtifactType.DOCKER_MANIFEST in conda_store.build_artifacts:
         conda_store.container_registry.store_image(conda_store, build, image)
 
     if schema.BuildArtifactType.CONTAINER_REGISTRY in conda_store.build_artifacts:
