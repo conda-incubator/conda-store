@@ -1,0 +1,27 @@
+# This is configuration for chartpress, a CLI for Helm chart management.
+#
+# chartpress is used to test, package, and publish the conda-store Helm chart
+#
+# chartpress is used to:
+# - Build images for multiple CPU architectures
+# - Update Chart.yaml (version) and values.yaml (image tags)
+# - Package and publish Helm charts to a GitHub based Helm chart repository
+#
+# Configuration reference:
+# https://github.com/jupyterhub/chartpress#configuration
+#
+charts:
+  - name: conda-store
+    imagePrefix: quansight/
+    repo:
+      git: quansight/conda-store-helm-chart # Not yet published
+      published: https://quansight.github.io/conda-store-helm-chart # Not yet published
+    images:
+      conda-store:
+        imageName: quansight/conda-store
+        contextPath: ../../conda-store
+        valuesPath: {}
+      conda-store-server:
+        imageName: quansight/conda-store-server
+        contextPath: ../../conda-store-server
+        valuesPath: {}
