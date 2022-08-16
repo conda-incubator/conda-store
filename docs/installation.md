@@ -1,5 +1,12 @@
 # Installation
 
+## Linux
+
+```shell
+conda install conda-store-server>=0.4.10
+conda-store-server --standalone --config tests/assets/conda_store_standalone_config.py
+```
+
 ## Kubernetes
 
 ![conda-store Kubernetes architecture diagram](_static/images/conda-store-installation-kubernetes.png)

@@ -9,9 +9,7 @@ from conda_store_server.server.auth import DummyAuthentication
 c.CondaStore.storage_class = LocalStorage
 c.CondaStore.store_directory = "/var/lib/conda-store/"
 c.CondaStore.environment_directory = "/opt/conda-store/envs/"
-# c.CondaStore.database_url = "mysql+pymysql://admin:password@mysql/conda-store"
 c.CondaStore.database_url = "sqlite:///conda-store.sqlite"
-c.CondaStore.redis_url = "redis://:password@redis:6379/0"
 c.CondaStore.default_uid = 1000
 c.CondaStore.default_gid = 1000
 c.CondaStore.default_permissions = "775"

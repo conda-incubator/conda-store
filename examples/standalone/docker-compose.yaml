@@ -19,8 +19,6 @@ services:
     depends_on:
       initializer:
         condition: service_completed_successfully
-      redis:
-        condition: service_healthy
     volumes:
       - conda_store_data:/var/lib/conda-store/
       - ./conda_store_config.py:/opt/conda_store/conda_store_config.py:ro
@@ -33,13 +31,3 @@ services:
     command: ['conda-store-server', '--config', '/opt/conda_store/conda_store_config.py', '--standalone=true']
     ports:
       - "5000:5000"
-
-  redis:
-    image: bitnami/redis
-    healthcheck:
-      test: ["CMD", "redis-cli","ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    environment:
-      REDIS_PASSWORD: password

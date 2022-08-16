@@ -154,10 +154,9 @@ docs](https://docs.sqlalchemy.org/en/14/core/engines.html) for
 connecting to your specific database. conda-store will automatically
 create the tables if they do not already exist.
 
-`CondaStore.redis_url` is a required argument to a running Redis
-instance. This became a dependency as of release `0.4.1` due to the
-massive advantages of features that conda-store can provide with this
-dependency. See
+`CondaStore.redis_url` is an optional argument to a running Redis
+instance. This was removed as a dependency as of release `0.4.10` due
+to the need to have a simple deployment option for conda-store. See
 [documentation](https://github.com/redis/redis-py/#connecting-to-redis)
 for proper specification. This url is used by default for the Celery
 broker and results backend.
@@ -166,9 +165,10 @@ broker and results backend.
 celery. Celery supports a [wide range of
 brokers](https://docs.celeryproject.org/en/stable/getting-started/backends-and-brokers/index.html)
 each with different guarantees. By default the Redis based broker is
-used. It is production ready and has worked well in practice. The url
-must be provided in a format that celery understands. The default
-value is `CondaStore.redis_url`.
+used if a `CondaStore.redis_url` if provided otherwise defaults to
+sqlalchemy. It is production ready and has worked well in
+practice. The url must be provided in a format that celery
+understands. The default value is `CondaStore.redis_url`.
 
 `CondaStore.build_artifacts` is the list of artifacts for conda-store
 to build. By default it is all the artifacts that conda-store is
@@ -187,8 +187,10 @@ the given build.
 `CondaStore.celery_results_backend` is the backend to use for storing
 all results from celery task execution. conda-store currently does not
 leverage the backend results but it may be needed for future work
-using celery. The backend defaults to using the Redis backend. This
-choice works great in production. Please consult the [celery docs on
+using celery. The backend defaults to using the Redis backend if
+`CondaStore.redis_url` is specified otherwise uses the
+`CondaStore.database_url`. This choice works great in
+production. Please consult the [celery docs on
 backend](https://docs.celeryproject.org/en/stable/getting-started/backends-and-brokers/index.html).
 
 `CondaStore.default_namespace` is the default namespace for
