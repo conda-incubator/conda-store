@@ -8,6 +8,13 @@ lowercase when beginning a sentence.
 
 ## Development
 
+Significant effort has been put into simplifying the development and
+deployment process of `conda-store`. There is a docker based
+development workflow along with a non-containerized workflow if you
+are using Linux.
+
+### Containerized development
+
 Install the following dependencies before developing on conda-store.
 
  - [docker](https://docs.docker.com/engine/install/)
@@ -43,6 +50,27 @@ those changes in the deployment. Run.
 docker-compose down  # not always necessary
 docker-compose up --build
 ```
+
+### Linux development
+
+Install the following dependencies before developing on conda-store.
+
+ - [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html) 
+
+Install the development dependencies and activate the environment.
+
+```shell
+conda env create -f conda-store-server/environment-dev.yaml
+conda activate conda-store-server-dev
+```
+
+Running `conda-store`. `--standalone` mode launched celery as a
+subprocess of the web server.
+
+python -m conda_store_server.server --standalone tests/assets/conda_store_standalone_config.py
+```
+
+Visit [localhost:5000](http://localhost:5000/)
 
 ### Changes to API
 

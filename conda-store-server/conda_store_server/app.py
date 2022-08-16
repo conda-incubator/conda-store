@@ -1,7 +1,6 @@
 import os
 import datetime
 
-import redis
 from celery import Celery, group
 from traitlets import (
     Type,
@@ -180,18 +179,17 @@ class CondaStore(LoggingConfigurable):
     )
 
     redis_url = Unicode(
+        None,
         help="Redis connection url in form 'redis://:<password>@<hostname>:<port>/0'. Connection is used by Celery along with conda-store internally",
         config=True,
+        allow_none=True,
     )
-
-    @default("redis_url")
-    def _default_redis(self):
-        raise TraitError("c.CondaStore.redis_url Redis connection url is required")
 
     @validate("redis_url")
     def _check_redis(self, proposal):
         try:
-            self.redis.ping()
+            if self.redis_url is not None:
+                self.redis.ping()
         except Exception:
             raise TraitError(
                 f'c.CondaStore.redis_url unable to connect with Redis database at "{self.redis_url}"'
@@ -236,7 +234,9 @@ class CondaStore(LoggingConfigurable):
 
     @default("celery_broker_url")
     def _default_celery_broker_url(self):
-        return self.redis_url
+        if self.redis_url is not None:
+            return self.redis_url
+        return f"sqla+{self.database_url}"
 
     celery_results_backend = Unicode(
         help="backend to use for celery task results",
@@ -245,7 +245,9 @@ class CondaStore(LoggingConfigurable):
 
     @default("celery_results_backend")
     def _default_celery_results_backend(self):
-        return self.redis_url
+        if self.redis_url is not None:
+            return self.redis_url
+        return f"db+{self.database_url}"
 
     default_namespace = Unicode(
         "default", help="default namespace for conda-store", config=True
@@ -309,6 +311,8 @@ class CondaStore(LoggingConfigurable):
 
     @property
     def redis(self):
+        import redis
+
         if hasattr(self, "_redis"):
             return self._redis
         self._redis = redis.Redis.from_url(self.redis_url)
@@ -323,6 +327,10 @@ class CondaStore(LoggingConfigurable):
         if hasattr(self, "_storage"):
             return self._storage
         self._storage = self.storage_class(parent=self, log=self.log)
+
+        if isinstance(self._storage, storage.LocalStorage):
+            os.makedirs(self._storage.storage_path, exist_ok=True)
+
         return self._storage
 
     @property

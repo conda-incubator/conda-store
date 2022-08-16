@@ -6,11 +6,13 @@ import uvicorn
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi.templating import Jinja2Templates
 from traitlets import Bool, Unicode, Integer, Type, validate, Instance, default, Dict
 from traitlets.config import Application, catch_config_error
 
+from conda_store_server import storage
 from conda_store_server.server import auth, views
 from conda_store_server.app import CondaStore
 from conda_store_server import __version__
@@ -21,6 +23,7 @@ import conda_store_server.server.dbutil as dbutil
 class CondaStoreServer(Application):
     aliases = {
         "config": "CondaStoreServer.config_file",
+        "standalone": "CondaStoreServer.standalone",
     }
 
     log_level = Integer(
@@ -122,6 +125,12 @@ class CondaStoreServer(Application):
         100, help="maximum number of items to return in a single page", config=True
     )
 
+    standalone = Bool(
+        False,
+        help="Run application in standalone mode with workers running as subprocess",
+        config=True,
+    )
+
     @catch_config_error
     def initialize(self, *args, **kwargs):
         super().initialize(*args, **kwargs)
@@ -133,6 +142,7 @@ class CondaStoreServer(Application):
             dbutil.upgrade(self.config.CondaStore.database_url)
 
         self.authentication = self.authentication_class(parent=self, log=self.log)
+
         # ensure checks on redis_url
         self.conda_store.redis_url
 
@@ -227,6 +237,16 @@ class CondaStoreServer(Application):
                 prefix=trim_slash(self.url_prefix),
             )
 
+        if isinstance(self.conda_store.storage, storage.LocalStorage):
+            self.conda_store.storage.storage_url = (
+                f"{trim_slash(self.url_prefix)}/storage"
+            )
+            app.mount(
+                self.conda_store.storage.storage_url,
+                StaticFiles(directory=self.conda_store.storage.storage_path),
+                name="static",
+            )
+
         self.conda_store.ensure_namespace()
         self.conda_store.ensure_conda_channels()
 
@@ -235,13 +255,28 @@ class CondaStoreServer(Application):
 
         from conda_store_server.worker import tasks  # noqa
 
-        uvicorn.run(
-            app,
-            host=self.address,
-            port=self.port,
-            reload=False,
-            debug=(self.log_level == logging.DEBUG),
-            workers=1,
-            proxy_headers=self.behind_proxy,
-            forwarded_allow_ips=("*" if self.behind_proxy else None),
-        )
+        # start worker if in standalone mode
+        if self.standalone:
+            import multiprocessing
+
+            multiprocessing.set_start_method("spawn")
+
+            from conda_store_server.worker.app import CondaStoreWorker
+
+            process = multiprocessing.Process(target=CondaStoreWorker.launch_instance)
+            process.start()
+
+        try:
+            uvicorn.run(
+                app,
+                host=self.address,
+                port=self.port,
+                reload=False,
+                debug=(self.log_level == logging.DEBUG),
+                workers=1,
+                proxy_headers=self.behind_proxy,
+                forwarded_allow_ips=("*" if self.behind_proxy else None),
+            )
+        finally:
+            if self.standalone:
+                process.join()
