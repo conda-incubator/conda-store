@@ -26,6 +26,7 @@ dependencies:
   - itsdangerous
   - jinja2
   - python-multipart
+  - alembic
   # artifact storage
   - minio
   # CLI

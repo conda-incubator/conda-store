@@ -57,7 +57,7 @@ def conda_store_validate_specification(
 
 class CondaStore(LoggingConfigurable):
     storage_class = Type(
-        default_value=storage.S3Storage,
+        default_value=storage.LocalStorage,
         klass=storage.Storage,
         allow_none=False,
         config=True,

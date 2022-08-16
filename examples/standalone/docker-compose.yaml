@@ -21,13 +21,12 @@ services:
         condition: service_completed_successfully
     volumes:
       - conda_store_data:/var/lib/conda-store/
-      - ./conda_store_config.py:/opt/conda_store/conda_store_config.py:ro
     healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:5000/conda-store/api/v1/"]
+      test: ["CMD", "curl", "--fail", "http://localhost:5000/api/v1/"]
       interval: 10s
       timeout: 5s
       retries: 5
     platform: linux/amd64
-    command: ['conda-store-server', '--config', '/opt/conda_store/conda_store_config.py', '--standalone=true']
+    command: ['conda-store-server', '--standalone']
     ports:
       - "5000:5000"
