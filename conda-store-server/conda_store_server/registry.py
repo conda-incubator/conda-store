@@ -3,7 +3,7 @@ import gzip
 import urllib.parse
 
 from traitlets.config import LoggingConfigurable
-from traitlets import Dict
+from traitlets import Dict, Callable, default
 from python_docker.registry import Image, Registry
 
 from conda_store_server import schema, orm, utils
@@ -15,6 +15,30 @@ class ContainerRegistry(LoggingConfigurable):
         help="Registries url to upload built container images with callable function to configure registry instance with credentials",
         config=True,
     )
+
+    container_registry_image_name = Callable(
+        help="Image name to assign to docker image pushed for particular registry",
+        config=True,
+    )
+
+    @default("container_registry_image_name")
+    def _default_container_registry_image_name(self):
+        def _container_registry_image_name(registry: Registry, build: orm.Build):
+            return f"{registry.username}/{build.environment.namespace.name}-{build.environment.name}"
+
+        return _container_registry_image_name
+
+    container_registry_image_tag = Callable(
+        help="Image name and tag to assign to docker image pushed for particular registry",
+        config=True,
+    )
+
+    @default("container_registry_image_tag")
+    def _default_container_registry_image_tag(self):
+        def _container_registry_image_tag(registry: Registry, build: orm.Build):
+            return build.key
+
+        return _container_registry_image_tag
 
     def store_image(self, conda_store, build: orm.Build, image: Image):
         self.log.info("storing container image locally")
@@ -135,7 +159,8 @@ class ContainerRegistry(LoggingConfigurable):
             self.log.info(f"beginning upload of image to registry {registry_url}")
             with utils.timer(self.log, f"uploading image to registry {registry_url}"):
                 registry = configure_registry(registry_url)
-                image.name = f"{registry.username}/{build.environment.namespace.name}-{image.name}"
+                image.name = self.container_registry_image_name(registry, build)
+                image.tag = self.container_registry_image_tag(registry, build)
                 registry.push_image(image)
 
                 registry_build_artifact = orm.BuildArtifact(
