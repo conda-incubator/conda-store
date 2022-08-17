@@ -22,6 +22,36 @@
 
 ![conda-store UI](docs/_static/images/conda-store-authenticated.png)
 
+## Documentation
+
+All documentation can be found on Read the Docs including how to develop
+and contribute to the
+project. [conda-store.readthedocs.io](https://conda-store.readthedocs.io).
+
+## Installation
+
+`conda-store` has two packages a `conda-store` (the client) and
+`conda-store-server` (the server). Make sure that either `conda` or
+`mamba` are in your path.
+
+```shell
+conda install -c conda-forge conda-store-server conda-store
+```
+
+The `conda-store` server can be easily launched in standalone mode
+that carries no dependencies on databases, object storage, redis.
+
+```
+conda-store-server --standalone
+```
+
+Standalone mode runs all components together to simplify
+deployment. For more complex and scalable setups there are
+[installation examples for containerized and distributed
+environments](docs/installation.md).
+
+## Motivation
+
 End users think in terms of environments not packages. The core
 philosophy of conda-store is to serve identical Conda environments in
 as many ways as possible. conda-store controls the environment
@@ -41,12 +71,6 @@ It **serves** Conda environments via a filesystem, lockfile, tarball,
 and a docker registry. Tarballs and Docker images can carry a lot of
 bandwidth which is why conda-store integrates optionally with `s3` to
 actually serve the blobs.
-
-## Documentation
-
-All documentation can be found on Read the Docs including how to develop
-and contribute to the
-project. [conda-store.readthedocs.io](https://conda-store.readthedocs.io).
 
 ## Terminology
 
