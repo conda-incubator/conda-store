@@ -18,6 +18,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [0.4.10] - 2022-08-16
+
+### Added
+
+ - `conda-store-server --standalone` now runs conda-store-server without any service dependencies (#378, #376)
+ - Initial helm chart skeleton still work to be done to have official helm chart 
+
+### Fixed
+
+ - Bug in LocalStorage implmentation #376
+ - Bug in docker builds when pushed to container registries #377
+ - CORS endpoint error on login when using POST #375
+
 ## [0.4.9] - 2022-08-09
 
 ### Added
