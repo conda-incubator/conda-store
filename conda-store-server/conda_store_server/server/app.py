@@ -23,7 +23,17 @@ import conda_store_server.server.dbutil as dbutil
 class CondaStoreServer(Application):
     aliases = {
         "config": "CondaStoreServer.config_file",
-        "standalone": "CondaStoreServer.standalone",
+    }
+
+    flags = {
+        "standalone": (
+            {
+                "CondaStoreServer": {
+                    "standalone": True,
+                }
+            },
+            "Run conda-store-server in standalone mode with celery worker as a subprocess of webserver",
+        ),
     }
 
     log_level = Integer(
@@ -139,7 +149,7 @@ class CondaStoreServer(Application):
         self.conda_store = CondaStore(parent=self, log=self.log)
 
         if self.conda_store.upgrade_db:
-            dbutil.upgrade(self.config.CondaStore.database_url)
+            dbutil.upgrade(self.conda_store.database_url)
 
         self.authentication = self.authentication_class(parent=self, log=self.log)
 
