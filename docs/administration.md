@@ -486,6 +486,16 @@ c.ContainerRegistry.container_registries = {
 }
 ```
 
+`ContainerRegistry.container_registry_image_name` image name
+to assign to docker image pushed for particular registry via a
+callable function with arguments of registry and build.
+
+`ContainerRegistry.container_registry_image_tag` image tag
+to assign to docker image pushed for particular registry via a
+callable function with arguments of registry and build.
+
+
+
 ## Frequently Asked Questions
 
 ### conda-store fails to build Conda environment and worker is spontaneously killed (9 SIGKILL)

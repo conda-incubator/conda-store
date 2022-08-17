@@ -17,7 +17,7 @@ class ContainerRegistry(LoggingConfigurable):
     )
 
     container_registry_image_name = Callable(
-        help="Default image name to assign to docker image pushed for particular registry. ",
+        help="Image name to assign to docker image pushed for particular registry",
         config=True,
     )
 
@@ -29,7 +29,7 @@ class ContainerRegistry(LoggingConfigurable):
         return _container_registry_image_name
 
     container_registry_image_tag = Callable(
-        help="Default image name and tag to assign to docker image pushed for particular registry",
+        help="Image name and tag to assign to docker image pushed for particular registry",
         config=True,
     )
 
