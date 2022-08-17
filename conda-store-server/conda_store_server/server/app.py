@@ -9,7 +9,17 @@ from fastapi.responses import RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi.templating import Jinja2Templates
-from traitlets import Bool, Unicode, Integer, Type, validate, Instance, default, Dict
+from traitlets import (
+    Bool,
+    Unicode,
+    Integer,
+    Type,
+    validate,
+    Instance,
+    default,
+    Dict,
+    List,
+)
 from traitlets.config import Application, catch_config_error
 
 from conda_store_server import storage
@@ -103,6 +113,17 @@ class CondaStoreServer(Application):
         config=True,
     )
 
+    cors_allow_origins = List(
+        ["*"], help="list of allowed origins for CORS requests", config=True
+    )
+
+    cors_allow_origin_regex = Unicode(
+        None,
+        help="regex string to match against origins that should be permitted to make cross-origin requests",
+        config=True,
+        allow_none=True,
+    )
+
     @default("templates")
     def _default_templates(self):
         import conda_store_server.server
@@ -178,7 +199,8 @@ class CondaStoreServer(Application):
 
         app.add_middleware(
             CORSMiddleware,
-            allow_origins=["*"],
+            allow_origins=self.cors_allow_origins,
+            allow_origin_regex=self.cors_allow_origin_regex,
             allow_credentials=True,
             allow_headers=["*"],
             allow_methods=["*"],
