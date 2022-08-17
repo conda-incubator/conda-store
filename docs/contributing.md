@@ -507,10 +507,10 @@ The procedure to modify the database is the following :
 
 - in your command line, run the following : 
 ```sh
-cd conda-store-server
+cd conda-store-server/conda_store_server
 alembic revision --autogenerate -m "description of your changes" 
 ```
-- You should have a new file in `conda-store-server/alembic/versions/` . **Review it thoroughly**. It contains the [`alembic` operations](https://alembic.sqlalchemy.org/en/latest/ops.html) (`op`) to actually modify the database, either when upgrading (`upgrade` function) or downgrading (`downgrade`)
+- You should have a new file in `conda-store-server/conda_store_server/alembic/versions/` . **Review it thoroughly**. It contains the [`alembic` operations](https://alembic.sqlalchemy.org/en/latest/ops.html) (`op`) to actually modify the database, either when upgrading (`upgrade` function) or downgrading (`downgrade`)
 
 - You can migrate your data within these `upgrade`/`downgrade` functions, for example :
 ```python

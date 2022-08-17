@@ -18,6 +18,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [0.4.11] - 2022-08-17
+
+### Fixed
+
+ - including package_data #993
+
+
 ## [0.4.10] - 2022-08-16
 
 ### Added
