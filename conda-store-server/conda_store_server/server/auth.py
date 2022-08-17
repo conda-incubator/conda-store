@@ -13,7 +13,7 @@ from fastapi.responses import RedirectResponse
 from sqlalchemy import or_, and_
 import yarl
 
-from conda_store_server import schema, orm
+from conda_store_server import schema, orm, utils
 from conda_store_server.server import dependencies
 
 
@@ -574,10 +574,7 @@ class GenericOAuthAuthentication(Authentication):
         return _oauth_callback_url
 
     def get_oauth_callback_url(self, request: Request):
-        if callable(self.oauth_callback_url):
-            return self.oauth_callback_url(request)
-        else:
-            return self.oauth_callback_url
+        return utils.callable_or_value(self.oauth_callback_url, request)
 
     login_html = Unicode(
         """

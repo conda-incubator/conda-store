@@ -291,7 +291,7 @@ def build_conda_docker(conda_store, build):
     precs = precs_from_environment_prefix(conda_prefix, download_dir, user_conda)
     records = fetch_precs(download_dir, precs)
     base_image = conda_store.container_registry.pull_image(
-        conda_store.default_docker_base_image
+        utils.callable_or_value(conda_store.default_docker_base_image, build)
     )
     image = build_docker_environment_image(
         base_image=base_image,

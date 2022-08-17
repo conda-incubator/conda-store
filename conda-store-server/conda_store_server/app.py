@@ -12,6 +12,7 @@ from traitlets import (
     Bool,
     validate,
     TraitError,
+    Union,
 )
 from traitlets.config import LoggingConfigurable
 from sqlalchemy.pool import NullPool
@@ -277,11 +278,18 @@ class CondaStore(LoggingConfigurable):
         config=True,
     )
 
-    default_docker_base_image = Unicode(
-        "registry-1.docker.io/library/debian:sid-slim",
-        help="default base image used for the Dockerized environments. Make sure to have a proper glibc within image.",
+    default_docker_base_image = Union(
+        [Unicode(), Callable()],
+        help="default base image used for the Dockerized environments. Make sure to have a proper glibc within image (highly discourage alpine/musl based images). Can also be callable function which takes the `orm.Build` object as input which has access to all attributes about the build such as install packages, requested packages, name, namespace, etc",
         config=True,
     )
+
+    @default("default_docker_base_image")
+    def _default_docker_base_image(self):
+        def _docker_base_image(build: orm.Build):
+            return "registry-1.docker.io/library/debian:sid-slim"
+
+        return _docker_base_image
 
     validate_specification = Callable(
         conda_store_validate_specification,
