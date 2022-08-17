@@ -9,8 +9,8 @@ from alembic.config import Config
 
 _here = os.path.abspath(os.path.dirname(__file__))
 
-ALEMBIC_INI_TEMPLATE_PATH = os.path.join(_here, "templates/alembic.ini")
-ALEMBIC_DIR = os.path.join(_here, "../../alembic")
+ALEMBIC_INI_TEMPLATE_PATH = os.path.join(_here, "alembic.ini")
+ALEMBIC_DIR = os.path.join(_here, "alembic")
 
 
 def write_alembic_ini(alembic_ini, db_url):

@@ -17,7 +17,7 @@ from conda_store_server.server import auth, views
 from conda_store_server.app import CondaStore
 from conda_store_server import __version__
 
-import conda_store_server.server.dbutil as dbutil
+import conda_store_server.dbutil as dbutil
 
 
 class CondaStoreServer(Application):
