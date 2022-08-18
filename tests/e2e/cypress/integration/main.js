@@ -36,7 +36,7 @@ describe('First Test', () => {
     // should redirect to home page
 
     // visit environment
-    cy.get('h5.card-title > a').contains('filesystem/python-flask-env').click()
+    cy.get('h5.card-title > a').contains('filesystem / python-flask-env').click()
     cy.url().should('include', 'environment')
 
     // visit build
