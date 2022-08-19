@@ -146,6 +146,8 @@ class Environment(BaseModel):
     current_build_id: int
     current_build: Optional[Build]
 
+    description: str
+
     class Config:
         orm_mode = True
 
