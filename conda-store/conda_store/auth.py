@@ -20,6 +20,7 @@ async def basic_authentication(
 ):
     session = aiohttp.ClientSession(
         connector=aiohttp.TCPConnector(ssl=None if verify_ssl else False),
+        cookie_jar=aiohttp.CookieJar(treat_as_secure_origin=conda_store_url),
     )
 
     response = await session.post(

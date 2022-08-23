@@ -394,7 +394,7 @@ form.addEventListener('submit', loginHandler);
             self.authentication.encrypt_token(authentication_token),
             httponly=True,
             samesite="none",
-            secure=(request.url.scheme == "https"),
+            secure=True,
             # set cookie to expire at same time as jwt
             max_age=(authentication_token.exp - datetime.datetime.utcnow()).seconds,
         )
