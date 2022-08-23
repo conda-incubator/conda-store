@@ -34,6 +34,14 @@ docker-compose up --build
     Notice the `architecture: amd64` whithin the docker-compose.yaml files.
 ```
 
+```eval_rst
+.. warning ::
+    If you're developing on a Mac and run into issues that complain about `tcp 0.0.0.0:5000: bind: address already in use` you might need to deactivate the `Airplay Receiver` service from the `Sharing` section in Control Center.  
+    Have a look at this [discussion on Apple.com](https://developer.apple.com/forums/thread/682332)
+    for more details.
+```
+
+
 The following resources will be available:
   - conda-store web server running at [http://localhost:5000](http://localhost:5000)
   - [MinIO](https://min.io/) s3 running at [http://localhost:9000](http://localhost:9000) with username `admin` and password `password`
