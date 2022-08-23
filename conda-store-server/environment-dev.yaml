@@ -1,6 +1,7 @@
 name: conda-store-server-dev
 channels:
   - conda-forge
+  - Microsoft
 dependencies:
   # conda builds
   - conda
@@ -40,3 +41,4 @@ dependencies:
   - sphinx
   - recommonmark
   - pydata-sphinx-theme
+  - playwright

@@ -51,39 +51,13 @@ jobs:
           wait-for-it localhost:5432 # postgresql
           wait-for-it localhost:9000 # minio
           wait-for-it localhost:5000 # conda-store-server
-
-      ### CYPRESS TESTS
-      - name: Setup Node
-        uses: actions/setup-node@v2
-        with:
-          node-version: '14'
-      - name: npm version
+      - name: Playwright install browser
         run: |
-          npm --version
-      - name: Install Cypress dependencies
-        run: |
-          sudo apt-get -y update
-          sudo apt-get install -y \
-               libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev \
-               libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
-      - name: Cypress run
-        uses: cypress-io/github-action@v2
-        env:
-          CYPRESS_BASE_URL: http://localhost:5000/
-        with:
-          working-directory: tests/e2e/
-      - name: Save Cypress screenshots and videos
-        if: always()
-        uses: actions/upload-artifact@v2
-        with:
-          name: e2e-cypress
-          path: |
-            ./tests/e2e/cypress/screenshots/
-            ./tests/e2e/cypress/videos/
+          playwright install
       - name: Run integration tests
         run: |
           cd ..
-          pytest tests -v
+          pytest --video on tests -v
 
   test-conda-store:
     name: 'Test conda-store'
