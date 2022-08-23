@@ -54,12 +54,18 @@ jobs:
       - name: Playwright install browser
         run: |
           playwright install
+      - name: Run Playwright tests
+        run: |
+          pytest --video on tests/test_playwright.py
+      - uses: actions/upload-artifact@v2
+        if: ${{ always() }}
+        with:
+          name: playwright-tests
+          path: test-results
       - name: Run integration tests
         run: |
           cd ..
           pytest tests/test_api.py tests/test_metrics.py
-      - name: Run Playwright tests
-          pytest --video on tests/test_playwright.py
 
   test-conda-store:
     name: 'Test conda-store'
