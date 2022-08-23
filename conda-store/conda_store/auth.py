@@ -10,7 +10,7 @@ async def none_authentication(verify_ssl: bool = True):
 
 async def token_authentication(api_token: str, verify_ssl: bool = True):
     return aiohttp.ClientSession(
-        headers={"Authorization": f"token {api_token}"},
+        headers={"Authorization": f"Bearer {api_token}"},
         connector=aiohttp.TCPConnector(ssl=None if verify_ssl else False),
     )
 
@@ -22,12 +22,12 @@ async def basic_authentication(
         connector=aiohttp.TCPConnector(ssl=None if verify_ssl else False),
     )
 
-    await session.post(
+    response = await session.post(
         yarl.URL(conda_store_url) / "login",
         json={
             "username": username,
             "password": password,
         },
     )
-
+    response.raise_for_status()
     return session

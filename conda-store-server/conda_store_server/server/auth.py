@@ -394,7 +394,7 @@ form.addEventListener('submit', loginHandler);
             self.authentication.encrypt_token(authentication_token),
             httponly=True,
             samesite="none",
-            secure=True,
+            secure=(request.url.scheme == "https"),
             # set cookie to expire at same time as jwt
             max_age=(authentication_token.exp - datetime.datetime.utcnow()).seconds,
         )
@@ -415,14 +415,16 @@ form.addEventListener('submit', loginHandler);
             request.state.entity = self.authentication.authenticate(token)
         elif "Authorization" in request.headers:
             parts = request.headers["Authorization"].split(" ", 1)
-            if parts[0] == "Basic":
+            if parts[0].lower() == "basic":
                 try:
                     username, token = base64.b64decode(parts[1]).decode().split(":", 1)
                     request.state.entity = self.authentication.authenticate(token)
                 except Exception:
                     pass
-            elif parts[0] == "Bearer":
+            elif parts[0].lower() == "bearer":
                 request.state.entity = self.authentication.authenticate(parts[1])
+            else:
+                request.state.entity = None
         else:
             request.state.entity = None
 
