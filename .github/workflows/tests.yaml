@@ -57,7 +57,9 @@ jobs:
       - name: Run integration tests
         run: |
           cd ..
-          pytest --video on tests -v
+          pytest tests/test_api.py tests/test_metrics.py
+      - name: Run Playwright tests
+          pytest --video on tests/test_playwright.py
 
   test-conda-store:
     name: 'Test conda-store'

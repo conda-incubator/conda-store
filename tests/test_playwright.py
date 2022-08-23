@@ -1,6 +1,8 @@
+import pytest
 from playwright.sync_api import Page
 
 
+@pytest.mark.playwright
 def test_integration(page: Page):
     # Go to http://localhost:5000/conda-store/
     page.goto("http://localhost:5000/conda-store/")
@@ -37,5 +39,5 @@ def test_integration(page: Page):
     # expect(page).to_have_url("http://localhost:5000/conda-store/?search=python")
 
     # Click text=filesystem/python-flask-env
-    page.locator("text=filesystem/python-flask-env").click()
+    page.locator("text=filesystem / python-flask-env").click()
     # expect(page).to_have_url("http://localhost:5000/conda-store/environment/filesystem/python-flask-env/")
