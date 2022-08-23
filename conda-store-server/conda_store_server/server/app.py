@@ -114,11 +114,11 @@ class CondaStoreServer(Application):
     )
 
     cors_allow_origins = List(
-        ["*"], help="list of allowed origins for CORS requests", config=True
+        [], help="list of allowed origins for CORS requests", config=True
     )
 
     cors_allow_origin_regex = Unicode(
-        None,
+        ".*",
         help="regex string to match against origins that should be permitted to make cross-origin requests",
         config=True,
         allow_none=True,

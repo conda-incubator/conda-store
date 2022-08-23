@@ -41,9 +41,6 @@ c.CondaStoreServer.port = 5000
 # This MUST start with `/`
 c.CondaStoreServer.url_prefix = "/conda-store"
 c.CondaStoreServer.behind_proxy = True
-c.CondaStoreServer.cors_allow_origins = []
-c.CondaStoreServer.cors_allow_origin_regex = ".*"
-
 
 # ==================================
 #         auth settings
