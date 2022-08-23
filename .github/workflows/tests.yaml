@@ -56,7 +56,10 @@ jobs:
           playwright install
       - name: Run Playwright tests
         run: |
+          cd ..
           pytest --video on tests/test_playwright.py
+          pwd
+          ls -la
       - uses: actions/upload-artifact@v2
         if: ${{ always() }}
         with:
