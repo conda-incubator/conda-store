@@ -3,12 +3,30 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-<h2>Environments</h2>
+
+{{ banner | default("") | safe }}
+
+<form id="search-form">
+    <div class="input-group mt-3 mb-3">
+        <input id="search-text" type="text" class="form-control" placeholder="Search" aria-label="Search">
+        <div class="input-group-append">
+            <button class="btn btn-outline-secondary" type="submit">Search</button>
+        </div>
+    </div>
+</form>
+
+<h2 class="mt-3">
+    <a class="btn btn-outline-success" href="{{ url_for('ui_create_get_environment') }}" role="button">
+        <ion-icon style="line-height: 50%" name="add-outline"></ion-icon>
+    </a>
+    Environments
+</h2>
+
 {% for environment in environments %}
 <div class="card my-2">
     <div class="card-body">
         <h5 class="card-title">
-            <a href="{{ url_for('ui_get_environment', namespace=environment.namespace.name, environment_name=environment.name) }}">{{ environment.namespace.name }}/{{ environment.name }}</a>
+            <a href="{{ url_for('ui_get_environment', namespace=environment.namespace.name, environment_name=environment.name) }}">{{ environment.namespace.name }} / <span class="badge badge-info">{{ environment.name }}</span></a>
             <span class="badge badge-light">{{ (environment.current_build.size or 0) | filesizeformat(true) }}</span>
         </h5>
         {% if environment.current_build.has_yaml %}
@@ -37,5 +55,13 @@
      document.execCommand("copy");
      document.body.removeChild(tempInput);
  }
+
+ function searchHandler(event) {
+     event.preventDefault();
+     let search = document.querySelector("#search-text");
+     window.location.href = `?search=${search.value}`;
+ }
+ let form = document.querySelector("#search-form");
+ form.addEventListener("submit", searchHandler);
 </script>
 {% endblock %}

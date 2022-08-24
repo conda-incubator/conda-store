@@ -287,6 +287,8 @@ class Environment(Base):
 
     deleted_on = Column(DateTime, default=None)
 
+    description = Column(UnicodeText, default=None)
+
 
 class CondaChannel(Base):
     __tablename__ = "conda_channel"
@@ -607,11 +609,6 @@ class CondaStoreConfiguration(Base):
 
 def new_session_factory(url="sqlite:///:memory:", reset=False, **kwargs):
     engine = create_engine(url, **kwargs)
-
-    if reset:
-        Base.metadata.drop_all(engine)
-
-    Base.metadata.create_all(engine)
 
     session_factory = scoped_session(sessionmaker(bind=engine))
     return session_factory

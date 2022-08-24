@@ -1,5 +1,7 @@
+from typing import Optional
+
 from fastapi import APIRouter, Request, Depends
-from fastapi.responses import RedirectResponse, PlainTextResponse
+from fastapi.responses import RedirectResponse
 import yaml
 
 from conda_store_server import api
@@ -44,6 +46,7 @@ def ui_create_get_environment(
 @router_ui.get("/")
 def ui_list_environments(
     request: Request,
+    search: Optional[str] = None,
     templates=Depends(dependencies.get_templates),
     conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
@@ -51,7 +54,8 @@ def ui_list_environments(
     entity=Depends(dependencies.get_entity),
 ):
     orm_environments = auth.filter_environments(
-        entity, api.list_environments(conda_store.db, show_soft_deleted=False)
+        entity,
+        api.list_environments(conda_store.db, search=search, show_soft_deleted=False),
     )
 
     context = {
@@ -227,58 +231,3 @@ def ui_get_user(
         "entity_binding_permissions": entity_binding_permissions,
     }
     return templates.TemplateResponse("user.html", context)
-
-
-@router_ui.get("/build/{build_id}/logs/")
-def api_get_build_logs(
-    build_id: int,
-    request: Request,
-    conda_store=Depends(dependencies.get_conda_store),
-    auth=Depends(dependencies.get_auth),
-):
-    build = api.get_build(conda_store.db, build_id)
-    auth.authorize_request(
-        request,
-        f"{build.environment.namespace.name}/{build.environment.name}",
-        {Permissions.ENVIRONMENT_READ},
-        require=True,
-    )
-
-    return RedirectResponse(conda_store.storage.get_url(build.log_key))
-
-
-@router_ui.get("/build/{build_id}/lockfile/", response_class=PlainTextResponse)
-def api_get_build_lockfile(
-    build_id: int,
-    request: Request,
-    conda_store=Depends(dependencies.get_conda_store),
-    auth=Depends(dependencies.get_auth),
-):
-    build = api.get_build(conda_store.db, build_id)
-    auth.authorize_request(
-        request,
-        f"{build.environment.namespace.name}/{build.environment.name}",
-        {Permissions.ENVIRONMENT_READ},
-        require=True,
-    )
-
-    lockfile = api.get_build_lockfile(conda_store.db, build_id)
-    return lockfile
-
-
-@router_ui.get("/build/{build_id}/archive/")
-def api_get_build_archive(
-    build_id: int,
-    request: Request,
-    conda_store=Depends(dependencies.get_conda_store),
-    auth=Depends(dependencies.get_auth),
-):
-    build = api.get_build(conda_store.db, build_id)
-    auth.authorize_request(
-        request,
-        f"{build.environment.namespace.name}/{build.environment.name}",
-        {Permissions.ENVIRONMENT_READ},
-        require=True,
-    )
-
-    return RedirectResponse(conda_store.storage.get_url(build.conda_pack_key))

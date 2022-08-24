@@ -1,7 +1,6 @@
 import os
 import datetime
 
-import redis
 from celery import Celery, group
 from traitlets import (
     Type,
@@ -13,11 +12,21 @@ from traitlets import (
     Bool,
     validate,
     TraitError,
+    Union,
 )
 from traitlets.config import LoggingConfigurable
 from sqlalchemy.pool import NullPool
 
-from conda_store_server import orm, utils, storage, schema, api, conda, environment
+from conda_store_server import (
+    orm,
+    utils,
+    storage,
+    schema,
+    api,
+    conda,
+    environment,
+    registry,
+)
 
 
 def conda_store_validate_specification(
@@ -49,8 +58,15 @@ def conda_store_validate_specification(
 
 class CondaStore(LoggingConfigurable):
     storage_class = Type(
-        default_value=storage.S3Storage,
+        default_value=storage.LocalStorage,
         klass=storage.Storage,
+        allow_none=False,
+        config=True,
+    )
+
+    container_registry_class = Type(
+        default_value=registry.ContainerRegistry,
+        klass=registry.ContainerRegistry,
         allow_none=False,
         config=True,
     )
@@ -101,8 +117,9 @@ class CondaStore(LoggingConfigurable):
         [
             "main",
             "conda-forge",
+            "https://repo.anaconda.com/pkgs/main",
         ],
-        help="Allowed conda channels to be used in conda environments",
+        help="Allowed conda channels to be used in conda environments. If set to empty list all channels are accepted. Defaults to main and conda-forge",
         config=True,
     )
 
@@ -154,19 +171,26 @@ class CondaStore(LoggingConfigurable):
         config=True,
     )
 
-    redis_url = Unicode(
-        help="Redis connection url in form 'redis://:<password>@<hostname>:<port>/0'. Connection is used by Celery along with Conda-Store internally",
+    upgrade_db = Bool(
+        True,
+        help="""Upgrade the database automatically on start.
+        Only safe if database is regularly backed up.
+        """,
         config=True,
     )
 
-    @default("redis_url")
-    def _default_redis(self):
-        raise TraitError("c.CondaStore.redis_url Redis connection url is required")
+    redis_url = Unicode(
+        None,
+        help="Redis connection url in form 'redis://:<password>@<hostname>:<port>/0'. Connection is used by Celery along with conda-store internally",
+        config=True,
+        allow_none=True,
+    )
 
     @validate("redis_url")
     def _check_redis(self, proposal):
         try:
-            self.redis.ping()
+            if self.redis_url is not None:
+                self.redis.ping()
         except Exception:
             raise TraitError(
                 f'c.CondaStore.redis_url unable to connect with Redis database at "{self.redis_url}"'
@@ -184,6 +208,7 @@ class CondaStore(LoggingConfigurable):
             schema.BuildArtifactType.YAML,
             schema.BuildArtifactType.CONDA_PACK,
             schema.BuildArtifactType.DOCKER_MANIFEST,
+            schema.BuildArtifactType.CONTAINER_REGISTRY,
         ],
         help="artifacts to build in conda-store. By default all of the artifacts",
         config=True,
@@ -194,6 +219,9 @@ class CondaStore(LoggingConfigurable):
             schema.BuildArtifactType.LOGS,
             schema.BuildArtifactType.LOCKFILE,
             schema.BuildArtifactType.YAML,
+            # no possible way to delete these artifacts
+            # in most container registries via api
+            schema.BuildArtifactType.CONTAINER_REGISTRY,
         ],
         help="artifacts to keep on build deletion",
         config=True,
@@ -207,7 +235,9 @@ class CondaStore(LoggingConfigurable):
 
     @default("celery_broker_url")
     def _default_celery_broker_url(self):
-        return self.redis_url
+        if self.redis_url is not None:
+            return self.redis_url
+        return f"sqla+{self.database_url}"
 
     celery_results_backend = Unicode(
         help="backend to use for celery task results",
@@ -216,7 +246,9 @@ class CondaStore(LoggingConfigurable):
 
     @default("celery_results_backend")
     def _default_celery_results_backend(self):
-        return self.redis_url
+        if self.redis_url is not None:
+            return self.redis_url
+        return f"db+{self.database_url}"
 
     default_namespace = Unicode(
         "default", help="default namespace for conda-store", config=True
@@ -246,11 +278,18 @@ class CondaStore(LoggingConfigurable):
         config=True,
     )
 
-    default_docker_base_image = Unicode(
-        "frolvlad/alpine-glibc:latest",
-        help="default base image used for the Dockerized environments",
+    default_docker_base_image = Union(
+        [Unicode(), Callable()],
+        help="default base image used for the Dockerized environments. Make sure to have a proper glibc within image (highly discourage alpine/musl based images). Can also be callable function which takes the `orm.Build` object as input which has access to all attributes about the build such as install packages, requested packages, name, namespace, etc",
         config=True,
     )
+
+    @default("default_docker_base_image")
+    def _default_docker_base_image(self):
+        def _docker_base_image(build: orm.Build):
+            return "registry-1.docker.io/library/debian:sid-slim"
+
+        return _docker_base_image
 
     validate_specification = Callable(
         conda_store_validate_specification,
@@ -280,6 +319,8 @@ class CondaStore(LoggingConfigurable):
 
     @property
     def redis(self):
+        import redis
+
         if hasattr(self, "_redis"):
             return self._redis
         self._redis = redis.Redis.from_url(self.redis_url)
@@ -294,7 +335,20 @@ class CondaStore(LoggingConfigurable):
         if hasattr(self, "_storage"):
             return self._storage
         self._storage = self.storage_class(parent=self, log=self.log)
+
+        if isinstance(self._storage, storage.LocalStorage):
+            os.makedirs(self._storage.storage_path, exist_ok=True)
+
         return self._storage
+
+    @property
+    def container_registry(self):
+        if hasattr(self, "_container_registry"):
+            return self._container_registry
+        self._container_registry = self.container_registry_class(
+            parent=self, log=self.log
+        )
+        return self._container_registry
 
     @property
     def celery_app(self):
@@ -323,17 +377,6 @@ class CondaStore(LoggingConfigurable):
                 "kwargs": {},
             },
         }
-
-        if self.celery_results_backend.startswith("sqla"):
-            # https://github.com/celery/celery/issues/4653#issuecomment-400029147
-            # race condition in table construction in celery
-            # despite issue being closed still causes first task to fail
-            # in celery if tables not created
-            from celery.backends.database import SessionManager
-
-            session = SessionManager()
-            engine = session.get_engine(self._celery_app.backend.url)
-            session.prepare_models(engine)
 
         return self._celery_app
 
@@ -448,8 +491,12 @@ class CondaStore(LoggingConfigurable):
             environment = orm.Environment(
                 name=specification.name,
                 namespace_id=namespace.id,
+                description=specification.spec["description"],
             )
             self.db.add(environment)
+            self.db.commit()
+        else:
+            environment.description = specification.spec["description"]
             self.db.commit()
 
         build = self.create_build(environment.id, specification.sha256)
@@ -478,7 +525,10 @@ class CondaStore(LoggingConfigurable):
             artifact_tasks.append(tasks.task_build_conda_env_export.si(build.id))
         if schema.BuildArtifactType.CONDA_PACK in self.build_artifacts:
             artifact_tasks.append(tasks.task_build_conda_pack.si(build.id))
-        if schema.BuildArtifactType.DOCKER_MANIFEST in self.build_artifacts:
+        if (
+            schema.BuildArtifactType.DOCKER_MANIFEST in self.build_artifacts
+            or schema.BuildArtifactType.CONTAINER_REGISTRY in self.build_artifacts
+        ):
             artifact_tasks.append(tasks.task_build_conda_docker.si(build.id))
 
         (
@@ -519,6 +569,17 @@ class CondaStore(LoggingConfigurable):
         from conda_store_server.worker import tasks
 
         tasks.task_update_environment_build.si(environment.id).apply_async()
+
+    def update_environment_description(self, namespace, name, description):
+
+        environment = api.get_environment(self.db, namespace=namespace, name=name)
+        if environment is None:
+            raise utils.CondaStoreError(
+                f"environment namespace={namespace} name={name} does not exist"
+            )
+
+        environment.description = description
+        self.db.commit()
 
     def delete_namespace(self, namespace):
         namespace = api.get_namespace(self.db, name=namespace)

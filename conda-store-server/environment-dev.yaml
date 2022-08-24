@@ -4,7 +4,7 @@ channels:
 dependencies:
   # conda builds
   - conda
-  - conda-docker
+  - conda-docker >= 0.1.2
   - conda-pack
   - conda-lock >=1.0.5
   # web server
@@ -26,6 +26,7 @@ dependencies:
   - itsdangerous
   - jinja2
   - python-multipart
+  - alembic
   # artifact storage
   - minio
   # CLI

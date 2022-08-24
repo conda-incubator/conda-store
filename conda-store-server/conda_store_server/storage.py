@@ -199,17 +199,17 @@ class LocalStorage(Storage):
     )
 
     def fset(self, db, build_id, key, filename, content_type=None, artifact_type=None):
-        filename = os.path.join(self.storage_path, key)
-        os.makedirs(os.path.dirname(filename), exist_ok=True)
+        destination_filename = os.path.abspath(os.path.join(self.storage_path, key))
+        os.makedirs(os.path.dirname(destination_filename), exist_ok=True)
 
-        shutil.copyfile(filename, os.path.join(self.storage_path, key))
+        shutil.copyfile(filename, destination_filename)
         super().fset(db, build_id, key, filename, artifact_type)
 
     def set(self, db, build_id, key, value, content_type=None, artifact_type=None):
-        filename = os.path.join(self.storage_path, key)
-        os.makedirs(os.path.dirname(filename), exist_ok=True)
+        destination_filename = os.path.join(self.storage_path, key)
+        os.makedirs(os.path.dirname(destination_filename), exist_ok=True)
 
-        with open(filename, "wb") as f:
+        with open(destination_filename, "wb") as f:
             f.write(value)
         super().set(db, build_id, key, value, artifact_type)
 

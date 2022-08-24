@@ -2,6 +2,7 @@ import re
 import secrets
 import datetime
 from typing import Optional
+import base64
 
 import jwt
 import requests
@@ -10,14 +11,13 @@ from traitlets import Dict, Unicode, Type, default, Bool, Union, Callable
 from fastapi import APIRouter, Request, Response, HTTPException, Depends
 from fastapi.responses import RedirectResponse
 from sqlalchemy import or_, and_
+import yarl
 
-from conda_store_server import schema, orm
+from conda_store_server import schema, orm, utils
 from conda_store_server.server import dependencies
 
 
-ARN_ALLOWED_REGEX = re.compile(
-    f"^([{schema.ALLOWED_CHARACTERS}*]+)/([{schema.ALLOWED_CHARACTERS}*]+)$"
-)
+ARN_ALLOWED_REGEX = re.compile(schema.ARN_ALLOWED)
 
 
 class AuthenticationBackend(LoggingConfigurable):
@@ -33,6 +33,12 @@ class AuthenticationBackend(LoggingConfigurable):
         config=True,
     )
 
+    predefined_tokens = Dict(
+        {},
+        help="Set of tokens with predefined permissions. The feature is helpful for service-accounts",
+        config=True,
+    )
+
     def encrypt_token(self, token: schema.AuthenticationToken):
         return jwt.encode(token.dict(), self.secret, algorithm=self.jwt_algorithm)
 
@@ -41,7 +47,11 @@ class AuthenticationBackend(LoggingConfigurable):
 
     def authenticate(self, token):
         try:
-            return schema.AuthenticationToken.parse_obj(self.decrypt_token(token))
+            if token in self.predefined_tokens:
+                authentication_token = self.predefined_tokens[token]
+            else:
+                authentication_token = self.decrypt_token(token)
+            return schema.AuthenticationToken.parse_obj(authentication_token)
         except Exception:
             return None
 
@@ -88,10 +98,11 @@ class RBACAuthorizationBackend(LoggingConfigurable):
             "filesystem/*": {"viewer"},
         },
         help="default permissions to apply to specific resources",
+        config=True,
     )
 
     @staticmethod
-    def compile_arn_regex(arn):
+    def compile_arn_regex(arn: str) -> re.Pattern:
         """Take an arn of form "example-*/example-*" and compile to regular expression
 
         The expression "example-*/example-*" will match:
@@ -108,14 +119,37 @@ class RBACAuthorizationBackend(LoggingConfigurable):
         return re.compile(regex_arn)
 
     @staticmethod
-    def compile_arn_sql_like(arn):
+    def compile_arn_sql_like(arn: str) -> str:
         match = ARN_ALLOWED_REGEX.match(arn)
         if match is None:
             raise ValueError(f"invalid arn={arn}")
 
         return re.sub(r"\*", "%", match.group(1)), re.sub(r"\*", "%", match.group(2))
 
-    def get_entity_bindings(self, entity_bindings, authenticated=False):
+    @staticmethod
+    def is_arn_subset(arn_1: str, arn_2: str):
+        """Return true if arn_1 is a subset of arn_2
+
+        conda-store allows flexible arn statements such as "a*b*/c*"
+        with "*" being a wildcard seen in regexes. This makes the
+        calculation of if a arn is a subset of another non
+        trivial. This codes solves this problem.
+        """
+        arn_1_matches_arn_2 = (
+            re.fullmatch(
+                re.sub(r"\*", f"[{schema.ALLOWED_CHARACTERS}*]*", arn_1), arn_2
+            )
+            is not None
+        )
+        arn_2_matches_arn_1 = (
+            re.fullmatch(
+                re.sub(r"\*", f"[{schema.ALLOWED_CHARACTERS}*]*", arn_2), arn_1
+            )
+            is not None
+        )
+        return (arn_1_matches_arn_2 and arn_2_matches_arn_1) or arn_2_matches_arn_1
+
+    def get_entity_bindings(self, entity_bindings, authenticated: bool = False):
         if authenticated:
             return {
                 **self.authenticated_role_bindings,
@@ -133,7 +167,9 @@ class RBACAuthorizationBackend(LoggingConfigurable):
             permissions = permissions | self.role_mappings[role]
         return permissions
 
-    def get_entity_binding_permissions(self, entity_bindings, authenticated=False):
+    def get_entity_binding_permissions(
+        self, entity_bindings, authenticated: bool = False
+    ):
         entity_bindings = self.get_entity_bindings(
             entity_bindings=entity_bindings, authenticated=authenticated
         )
@@ -142,7 +178,17 @@ class RBACAuthorizationBackend(LoggingConfigurable):
             for entity_arn, entity_roles in entity_bindings.items()
         }
 
-    def get_entity_permissions(self, entity_bindings, arn, authenticated=False):
+    def get_entity_permissions(
+        self, entity_bindings, arn: str, authenticated: bool = False
+    ):
+        """Get set of permissions for given ARN given AUTHENTICATION
+        state and entity_bindings
+
+        ARN is a specific "<namespace>/<name>"
+        AUTHENTICATION is either True/False
+        ENTITY_BINDINGS is a mapping of ARN with regex support to ROLES
+        ROLES is a set of roles defined in `RBACAuthorizationBackend.role_mappings`
+        """
         entity_binding_permissions = self.get_entity_binding_permissions(
             entity_bindings=entity_bindings, authenticated=authenticated
         )
@@ -151,6 +197,34 @@ class RBACAuthorizationBackend(LoggingConfigurable):
             if self.compile_arn_regex(entity_arn).match(arn):
                 permissions = permissions | set(entity_permissions)
         return permissions
+
+    def is_subset_entity_permissions(
+        self, entity_bindings, new_entity_bindings, authenticated=False
+    ):
+        """Determine if new_entity_bindings is a strict subset of entity_bindings
+
+        This feature is required to allow authenticated entitys to
+        create new permissions that are a strict subset of its
+        permissions.
+        """
+        entity_binding_permissions = self.get_entity_binding_permissions(
+            entity_bindings=entity_bindings, authenticated=authenticated
+        )
+        new_entity_binding_permissions = self.get_entity_binding_permissions(
+            entity_bindings=new_entity_bindings, authenticated=authenticated
+        )
+        for (
+            new_entity_binding,
+            new_permissions,
+        ) in new_entity_binding_permissions.items():
+            _permissions = set()
+            for entity_binding, permissions in entity_binding_permissions.items():
+                if self.is_arn_subset(new_entity_binding, entity_binding):
+                    _permissions = _permissions | permissions
+
+            if not new_permissions <= _permissions:
+                return False
+        return True
 
     def authorize(
         self, entity_bindings, arn, required_permissions, authenticated=False
@@ -225,7 +299,7 @@ async function loginHandler(event) {
     });
 
     if (response.ok) {
-        window.location = "{{ url_for('ui_get_user') }}";
+        window.location = "{{ url_for('ui_list_environments') }}";
     } else {
         let data = await response.json();
         bannerMessage(`<div class="alert alert-danger col">${data.message}</div>`);
@@ -288,7 +362,7 @@ form.addEventListener('submit', loginHandler);
         next: Optional[str] = None,
         templates=Depends(dependencies.get_templates),
     ):
-        redirect_url = next or request.url_for("ui_get_user")
+        redirect_url = next or request.url_for("ui_list_environments")
         response = RedirectResponse(redirect_url, status_code=303)
         authentication_token = await self.authenticate(request)
         if authentication_token is None:
@@ -319,10 +393,16 @@ form.addEventListener('submit', loginHandler);
             # cookie based authentication
             token = request.cookies.get(self.cookie_name)
             request.state.entity = self.authentication.authenticate(token)
-        elif request.headers.get("Authorization"):
-            # auth bearer based authentication
-            token = request.headers.get("Authorization").split(" ")[1]
-            request.state.entity = self.authentication.authenticate(token)
+        elif "Authorization" in request.headers:
+            parts = request.headers["Authorization"].split(" ", 1)
+            if parts[0] == "Basic":
+                try:
+                    username, token = base64.b64decode(parts[1]).decode().split(":", 1)
+                    request.state.entity = self.authentication.authenticate(token)
+                except Exception:
+                    pass
+            elif parts[0] == "Bearer":
+                request.state.entity = self.authentication.authenticate(parts[1])
         else:
             request.state.entity = None
 
@@ -494,10 +574,7 @@ class GenericOAuthAuthentication(Authentication):
         return _oauth_callback_url
 
     def get_oauth_callback_url(self, request: Request):
-        if callable(self.oauth_callback_url):
-            return self.oauth_callback_url(request)
-        else:
-            return self.oauth_callback_url
+        return utils.callable_or_value(self.oauth_callback_url, request)
 
     login_html = Unicode(
         """
@@ -524,12 +601,17 @@ class GenericOAuthAuthentication(Authentication):
 
     @staticmethod
     def oauth_route(auth_url, client_id, redirect_uri, scope=None, state=None):
-        r = f"{auth_url}?client_id={client_id}&redirect_uri={redirect_uri}&response_type=code"
+        url = yarl.URL(auth_url) % {
+            "client_id": client_id,
+            "redirect_uri": redirect_uri,
+            "response_type": "code",
+        }
+
         if scope is not None:
-            r += f"&scope={scope}"
+            url = url % {"scope": scope}
         if state is not None:
-            r += f"&state={state}"
-        return r
+            url = url % {"state": state}
+        return str(url)
 
     @property
     def routes(self):

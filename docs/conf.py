@@ -2,9 +2,9 @@ import recommonmark
 from recommonmark.transform import AutoStructify
 
 project = 'conda-store'
-copyright = '2021, Chris Ostrouchov'
-author = 'Chris Ostrouchov'
-release = '0.1.0'
+copyright = '2022, Quansight'
+author = 'Quansight'
+release = '0.4.11'
 
 extensions = [
     'recommonmark',

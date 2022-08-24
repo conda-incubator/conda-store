@@ -4,7 +4,7 @@ channels:
 dependencies:
   # conda environment builds
   - conda
-  - conda-docker
+  - conda-docker >= 0.1.2
   - conda-pack
   - conda-lock >=1.0.5
   # web server
@@ -12,6 +12,7 @@ dependencies:
   - flower
   - redis-py
   - sqlalchemy
+  - alembic
   - psycopg2
   - pymysql
   - requests

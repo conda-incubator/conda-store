@@ -13,6 +13,17 @@ class CondaStoreWorker(Application):
         "config": "CondaStoreWorker.config_file",
     }
 
+    flags = {
+        "standalone": (
+            {
+                "CondaStoreServer": {
+                    "standalone": True,
+                }
+            },
+            "Run conda-store-server in standalone mode with celery worker as a subprocess of webserver",
+        ),
+    }
+
     log_level = Integer(
         logging.INFO,
         help="log level to use",
@@ -65,6 +76,7 @@ class CondaStoreWorker(Application):
         self.load_config_file(self.config_file)
 
         self.conda_store = CondaStore(parent=self, log=self.log)
+
         # ensure checks on redis_url
         self.conda_store.redis_url
 

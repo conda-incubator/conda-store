@@ -29,14 +29,24 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
 
+  initializer:
+    image: alpine
+    restart: "no"
+    # hack to set perimssions on volume
+    entrypoint: |
+      /bin/sh -c "chown -R 1000:1000 /opt/conda-store"
+    volumes:
+      - conda_store_data:/opt/conda-store/
+
   conda-store-worker:
     build: ../../conda-store-server
+    user: 1000:1000
     volumes:
       - conda_store_data:/opt/conda-store/
       - ./assets/conda_store_config.py:/etc/conda-store/conda_store_config.py:ro
     depends_on:
-      redis:
-        condition: service_healthy
+      initializer:
+        condition: service_completed_successfully
       conda-store-server:
         condition: service_healthy
     links:
@@ -46,9 +56,10 @@ services:
 
   conda-store-server:
     build: ../../conda-store-server
+    user: 1000:1000
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.conda-store.rule=Host(`conda-store.localhost`) && PathPrefix(`/conda-store`)"
+      - "traefik.http.routers.conda-store.rule=Host(`conda-store.localhost`) && (PathPrefix(`/conda-store`) || PathPrefix(`/v2`))"
       - "traefik.http.routers.conda-store.entrypoints=websecure"
       - "traefik.port=5000"
     depends_on:
@@ -88,7 +99,7 @@ services:
       - "traefik.http.routers.jupyterhub.rule=Host(`conda-store.localhost`) && (Path(`/`) || PathPrefix(`/hub`) || PathPrefix(`/user`))"
       - "traefik.http.routers.jupyterhub.entrypoints=websecure"
       - "traefik.port=8000"
-    user: "1000:1000"
+    user: 1000:1000
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:8000/hub/api/"]
       interval: 10s
@@ -101,7 +112,7 @@ services:
       - ./assets/jupyter_notebook_config.py:/etc/jupyter/jupyter_notebook_config.py:ro
       - ./assets/jupyterhub_config.py:/opt/jupyterhub/jupyterhub_config.py:ro
     platform: linux/amd64
-    command: ['/opt/conda/envs/conda-store/bin/jupyterhub', '--config', '/opt/jupyterhub/jupyterhub_config.py']
+    command: ['/opt/conda/envs/conda-store/bin/jupyterhub', '--config', '/opt/jupyterhub/jupyterhub_config.py', '--debug']
     ports:
       - "8000:8000"
 
@@ -134,6 +145,7 @@ services:
       timeout: 5s
       retries: 5
     environment:
+      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: conda-store
 

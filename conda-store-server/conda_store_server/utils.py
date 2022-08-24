@@ -72,3 +72,9 @@ def recursive_sort(v):
 def datastructure_hash(v):
     json_blob = json.dumps(recursive_sort(v))
     return hashlib.sha256(json_blob.encode("utf-8")).hexdigest()
+
+
+def callable_or_value(v, *args, **kwargs):
+    if callable(v):
+        return v(*args, **kwargs)
+    return v

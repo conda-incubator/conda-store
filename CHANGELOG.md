@@ -18,6 +18,113 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [0.4.11] - 2022-08-17
+
+### Fixed
+
+ - including package_data #379
+
+
+## [0.4.10] - 2022-08-16
+
+### Added
+
+ - `conda-store-server --standalone` now runs conda-store-server without any service dependencies (#378, #376)
+ - Initial helm chart skeleton still work to be done to have official helm chart 
+
+### Fixed
+
+ - Bug in LocalStorage implmentation #376
+ - Bug in docker builds when pushed to container registries #377
+ - CORS endpoint error on login when using POST #375
+
+## [0.4.9] - 2022-08-09
+
+### Added
+
+ - push/pull container images to/from additionall registries (#370)
+ - adding description associated with environments #363
+
+## [0.4.8] - 2022-08-04
+
+### Added
+
+ - Adding shebang support for conda-store (#362)
+
+### Fixed
+
+ - Fixed example demo for docker
+ - Fixing docker registry implementation in conda-store (#368)
+
+## Security
+
+ - Adding authentication behind docker registry (#369)
+
+## [0.4.7] - 2022-07-28
+
+### Added
+
+ - Adding additional query parameters environment_id, namespace, name in list api methods in build/environment #350
+ - Adding ability to sort based on start/schedule/ended for list builds  #352
+ - Adding repo.anaconda.com to default channels #354
+ - Empty list for conda_allowed_channels now will allow any channel #358
+
+### Fixed
+
+ - Changed docker images to no longer run as root by default #355
+
+## [0.4.6] - 2022-07-08
+
+### Added
+
+ - Added `c.CondaStoreServer.template_vars` for easy customization #347
+ - Consistent naming of `conda-store` throughout project #345
+ - Adding token endpoint #335
+ - Adding token UI create button #348
+
+### Fixed
+
+ - Bug with user being able to modify `c.RBACAuthorizationBackend.authenticated_role_bindings` #346
+
+## [0.4.5] - 2022-06-29
+
+### Added
+
+ - Adding cli command `solve` to call remote conda solve api (#329)
+ - New filters for build and environment api calls status, artifact, package (#329)
+ - Adding Alembic migration integration (#314)
+
+## [0.4.4] - 2022-06-25
+
+### Added
+
+ - `wait` option in cli for waiting on artifacts and builds (#328)
+ - `list build` command (#328)
+ - tests for client conda-store (#328)
+
+### Fixed
+
+ - issue with caching option in run command (#328)
+
+### Changed
+
+ - api now exposes the build_artifacts field on `api/v1/build/<build-id>/`
+
+## [0.4.2] - 2022-06-24
+
+### Fixed
+
+ - fixed release process using build toolchain
+
+## [0.4.1] - 2022-06-24
+
+### Added
+
+ - Command line client for conda-store (#327)
+ - Adding searchbar for UI (#326)
+ - OpenAPI specification in documentation
+ - Added namespace query parameter to `/api/v1/environment/?namespace=` (#324)
+
 ## [0.4.0] - 2022-05-04
 
 ### Changed
@@ -76,7 +183,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
  - `CondaStore.conda_...` options for managing channels and packages in specification #256
  - Ability to modify/validate specifications server side #252
- - Concurrency option for Conda-Store celery worker #250
+ - Concurrency option for conda-store celery worker #250
  - Flask webserver has a `CondaStore.behind_proxy` option to properly handle X-Forward- headers #249
  - Docker layer chaching to CI for docker image builds #234
 
@@ -171,7 +278,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
  - support for credentials supplied for object storage including IAM credentials #176
- - namespace UI to Conda-Store server #183
+ - namespace UI to conda-store server #183
  - create/read/delete methods for namespaces `/api/v1/namespace/` #181
  - distinct_on query parameter to list REST API methods #164
  - adding sorting query parameter to list REST API methods #162
@@ -211,7 +318,7 @@ notable things done in the past 3-6 months.
  - enabling rollbacks of environment builds [#93](https://github.com/Quansight/conda-store/pull/93)
  - adding `conda env export` for pinned YAML file [#92](https://github.com/Quansight/conda-store/pull/92)
  - celery integration for true task based builds [#90](https://github.com/Quansight/conda-store/pull/90)
- - Conda-Store configuration is configured via Traitlets [#87](https://github.com/Quansight/conda-store/pull/87)
+ - conda-store configuration is configured via Traitlets [#87](https://github.com/Quansight/conda-store/pull/87)
  - Prometheus metrics endpoint [#84](https://github.com/Quansight/conda-store/pull/84)
  - help button in top right hand corner [#83](https://github.com/Quansight/conda-store/pull/83)
  - support for internal and external url for s3 bucket [#81](https://github.com/Quansight/conda-store/pull/81)

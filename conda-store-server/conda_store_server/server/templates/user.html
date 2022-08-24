@@ -16,6 +16,15 @@
 
 <div class="card m-2">
     <div class="card-body">
+        <form id="create-token" class="m-2">
+            <button type="submit" class="btn btn-outline-success my-2 my-sm-0 mr-2">Create token</button>
+        </form>
+        <div id="new-token"></div>
+    </div>
+</div>
+
+<div class="card m-2">
+    <div class="card-body">
         <h5 class="card-title">Namespace</h5>
         <p>Your current default namespace is <span class="badge badge-light">{{ username }}</span>. The ability to create and manage namespace are controlled by permissions shown below.</p>
         <a class="btn btn-outline-success my-2 my-sm-0 mr-2 text-center" href="{{ url_for('ui_list_namespaces') }}" role="button">
@@ -27,7 +36,7 @@
 <div class="card m-2">
     <div class="card-body">
         <h5 class="card-title">Permissions</h5>
-        <p>Below are your current permissions within the Conda-Store application. The "*" will match any string of characters e.g. "na*ce" will match "namespace". This allows Conda-Store to have flexible and powerful authorization. For further information on authorization see the <a href="https://conda-store.readthedocs.io/en/latest/contributing.html#authorization-model">docs</a></p>
+        <p>Below are your current permissions within the conda-store application. The "*" will match any string of characters e.g. "na*ce" will match "namespace". This allows conda-store to have flexible and powerful authorization. For further information on authorization see the <a href="https://conda-store.readthedocs.io/en/latest/contributing.html#authorization-model">docs</a></p>
         <table class="table table-hover">
             <thead>
                 <tr>
@@ -52,6 +61,36 @@
         </table>
     </div>
 </div>
+
+<script>
+ function setClipboard(value) {
+     var tempInput = document.createElement("input");
+     tempInput.style = "position: absolute; left: -1000px; top: -1000px";
+     tempInput.value = value;
+     document.body.appendChild(tempInput);
+     tempInput.select();
+     document.execCommand("copy");
+     document.body.removeChild(tempInput);
+ }
+
+ async function createTokenHandler(event) {
+     event.preventDefault();
+
+     let url = "{{ url_for('api_post_token') }}";
+     let response = await fetch(url, {method: 'POST'});
+     let tokenDiv = document.querySelector('#new-token');
+
+     if (response.ok) {
+         let data = await response.json();
+         tokenDiv.innerHTML = `<div onclick="setClipboard('${data.data.token}')"><div><code>${data.data.token}</code></div><div><button type="button" class="btn btn-primary"><ion-icon name="copy-outline"></ion-icon> copy</button></div></div>`;
+     } else {
+         tokenDiv.innerHTML = '<span class="text-danger">Error creating token</span>';
+     }
+ }
+
+ let tokenForm = document.querySelector('#create-token');
+ tokenForm.addEventListener('submit', (event) => createTokenHandler(event));
+</script>
 {% endblock %}
 
 {% endblock %}

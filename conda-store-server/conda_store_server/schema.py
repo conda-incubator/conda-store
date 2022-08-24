@@ -3,7 +3,6 @@ import datetime
 import enum
 from typing import List, Optional, Union, Dict, Any
 import functools
-from pkg_resources import Requirement
 
 from pydantic import BaseModel, Field, constr, validator
 
@@ -11,6 +10,12 @@ from pydantic import BaseModel, Field, constr, validator
 def _datetime_factory(offset: datetime.timedelta):
     """utcnow datetime + timezone as string"""
     return datetime.datetime.utcnow() + offset
+
+
+# namespace and name cannot contain "*" ":" "#" " " "/"
+# this is a more restrictive list
+ALLOWED_CHARACTERS = "A-Za-z0-9-+_@$&?^~.="
+ARN_ALLOWED = f"^([{ALLOWED_CHARACTERS}*]+)/([{ALLOWED_CHARACTERS}*]+)$"
 
 
 #########################
@@ -34,7 +39,7 @@ class AuthenticationToken(BaseModel):
         default_factory=functools.partial(_datetime_factory, datetime.timedelta(days=1))
     )
     primary_namespace: str = "default"
-    role_bindings: Dict[str, List[str]] = {}
+    role_bindings: Dict[constr(regex=ARN_ALLOWED), List[str]] = {}
 
 
 ##########################
@@ -82,11 +87,6 @@ class CondaPackage(BaseModel):
         orm_mode = True
 
 
-# namespace and name cannot contain "*" ":" "#" " " "/"
-# this is a more restrictive list
-ALLOWED_CHARACTERS = "A-Za-z0-9-+_=@$&?^|~."
-
-
 class Namespace(BaseModel):
     id: int
     name: constr(regex=f"^[{ALLOWED_CHARACTERS}]+$")  # noqa: F722
@@ -114,6 +114,7 @@ class BuildArtifactType(enum.Enum):
     CONDA_PACK = "CONDA_PACK"
     DOCKER_BLOB = "DOCKER_BLOB"
     DOCKER_MANIFEST = "DOCKER_MANIFEST"
+    CONTAINER_REGISTRY = "CONTAINER_REGISTRY"
 
 
 class BuildStatus(enum.Enum):
@@ -121,6 +122,16 @@ class BuildStatus(enum.Enum):
     BUILDING = "BUILDING"
     COMPLETED = "COMPLETED"
     FAILED = "FAILED"
+
+
+class BuildArtifact(BaseModel):
+    id: int
+    artifact_type: BuildArtifactType
+    key: str
+
+    class Config:
+        orm_mode = True
+        use_enum_values = True
 
 
 class Build(BaseModel):
@@ -133,6 +144,7 @@ class Build(BaseModel):
     scheduled_on: datetime.datetime
     started_on: Optional[datetime.datetime]
     ended_on: Optional[datetime.datetime]
+    build_artifacts: Optional[List[BuildArtifact]]
 
     class Config:
         orm_mode = True
@@ -146,6 +158,8 @@ class Environment(BaseModel):
     current_build_id: int
     current_build: Optional[Build]
 
+    description: str
+
     class Config:
         orm_mode = True
 
@@ -156,6 +170,7 @@ class CondaSpecificationPip(BaseModel):
 
     @validator("pip", each_item=True)
     def check_pip(cls, v):
+        from pkg_resources import Requirement
 
         allowed_pip_params = ["--index-url", "--extra-index-url", "--trusted-host"]
 
@@ -179,6 +194,7 @@ class CondaSpecification(BaseModel):
     channels: List[str] = []
     dependencies: List[Union[str, CondaSpecificationPip]] = []
     prefix: Optional[str]
+    description: Optional[str] = ""
 
     @validator("dependencies", each_item=True)
     def check_dependencies(cls, v):
@@ -339,12 +355,23 @@ class APIGetStatus(APIResponse):
 # GET /api/v1/permission
 class APIGetPermissionData(BaseModel):
     authenticated: bool
-    entity_permissions: Dict[str, List[str]]
     primary_namespace: str
+    entity_permissions: Dict[str, List[str]]
+    entity_roles: Dict[str, List[str]]
+    expiration: Optional[datetime.datetime]
 
 
 class APIGetPermission(APIResponse):
     data: APIGetPermissionData
+
+
+# POST /api/v1/token
+class APIPostTokenData(BaseModel):
+    token: str
+
+
+class APIPostToken(APIResponse):
+    data: APIPostTokenData
 
 
 # GET /api/v1/namespace

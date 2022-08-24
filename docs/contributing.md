@@ -1,8 +1,21 @@
 # Contributing
 
+## Naming
+
+When refering to `conda-store` it should always be written all
+lowercase with a dash in between. `conda-store` should also be
+lowercase when beginning a sentence.
+
 ## Development
 
-Install the following dependencies before developing on Conda-Store.
+Significant effort has been put into simplifying the development and
+deployment process of `conda-store`. There is a docker based
+development workflow along with a non-containerized workflow if you
+are using Linux.
+
+### Containerized development
+
+Install the following dependencies before developing on conda-store.
 
  - [docker](https://docs.docker.com/engine/install/)
  - [docker-compose](https://docs.docker.com/compose/install/)
@@ -21,10 +34,19 @@ docker-compose up --build
     Notice the `architecture: amd64` whithin the docker-compose.yaml files.
 ```
 
+```eval_rst
+.. warning ::
+    If you're developing on a Mac and run into issues that complain about `tcp 0.0.0.0:5000: bind: address already in use` you might need to deactivate the `Airplay Receiver` service from the `Sharing` section in Control Center.  
+    Have a look at this [discussion on Apple.com](https://developer.apple.com/forums/thread/682332)
+    for more details.
+```
+
+
 The following resources will be available:
   - conda-store web server running at [http://localhost:5000](http://localhost:5000)
   - [MinIO](https://min.io/) s3 running at [http://localhost:9000](http://localhost:9000) with username `admin` and password `password`
   - [PostgreSQL](https://www.postgresql.org/) running at [localhost:5432](localhost:5432) with username `admin` and password `password` database `conda-store`
+  - [Redis](https://www.redis.com/) running at [localhost:6379](localhost:6379) with password `password`
   - [JupyterHub](https://jupyter.org/hub) running at [http://localhost:8000](http://localhost:8000) with any username and password `test`
 
 On a fast machine this deployment should only take 10 or so seconds
@@ -36,6 +58,36 @@ those changes in the deployment. Run.
 docker-compose down  # not always necessary
 docker-compose up --build
 ```
+
+### Linux development
+
+Install the following dependencies before developing on conda-store.
+
+ - [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html) 
+
+Install the development dependencies and activate the environment.
+
+```shell
+conda env create -f conda-store-server/environment-dev.yaml
+conda activate conda-store-server-dev
+```
+
+Running `conda-store`. `--standalone` mode launched celery as a
+subprocess of the web server.
+
+python -m conda_store_server.server --standalone tests/assets/conda_store_standalone_config.py
+```
+
+Visit [localhost:5000](http://localhost:5000/)
+
+### Changes to API
+
+The REST API is considered somewhat stable. If any changes are made to
+the API make sure the update the OpenAPI/Swagger specification in
+`docs/_static/openapi.json`. This may be downloaded from the `/docs`
+endpoint when running conda-store. Ensure that the
+`c.CondaStoreServer.url_prefix` is set to `/` when generating the
+endpoints.
 
 ## Documentation
 
@@ -107,7 +159,7 @@ After the PyPi release a release on
 PR must be created that updates to the released version
 `<version>`.
 
-Conda-Store has two PyPi packages `conda-store-server` and `conda-store`.
+conda-store has two PyPi packages `conda-store-server` and `conda-store`.
 
  - update `recipies/meta.yaml` with the new version `{% set version = "<version>" %}`
  - update `recipies/meta.yaml` with the appropriate sha256 for each
@@ -120,166 +172,17 @@ the feedstock with the following comment `@conda-forge-admin please
 rerender`. An example of this can be found in [PR
 #2](https://github.com/conda-forge/conda-store-feedstock/pull/2)
 
-## REST API
-
-### Status
-
- - `GET /api/v1/` :: get status of conda-store
-
-### Permissions
-
- - `GET /api/v1/permission/` :: get the permissions for the currently entity. Does not require authentication and returns the permissions and authentication status for entity.
-
-### Namespace
-
- - `GET /api/v1/namespace/?page=<int>&size=<int>&sort_by=<str>&order=<str>` :: list namespaces
-   - allowed `sort_by` values: `name` for the name of the namespace
-
- - `GET /api/v1/namespace/<namespace>/` :: get namespace
-
- - `POST /api/v1/namespace/<namespace>/` :: create namespace
-
- - `DELETE /api/v1/namespace/<namespace>/` :: delete namespace
-
-### Environments
-
- - `GET /api/v1/environment/?search=<str>&page=<int>&size=<int>&sort_by=<str>&order=<str>` :: list environments
-   - allowed `sort_by` values : `namespace` for namespace name, `name` for environment name
-
- - `GET /api/v1/environment/<namespace>/<name>/` :: get environment
-
- - `PUT /api/v1/environment/<namespace>/<name>/` :: update environment to given build id
-
- - `DELETE /api/v1/environment/<namespace>/<name>/` :: delete the environment along with all artifacts and builds
-
-### Specifications
-
- - `POST /api/v1/environment/` :: create given environment
-    - JSON message with optional namespace (will use `CondaStore.default_namespace` if not specified) and a specification string that's a valid environment.yaml for Conda, like so:
-    ```
-    {
-      "namespace": "some_namespace",
-      "specification": "name: some_environment_name\ndependencies:\n  - python=3.10.2=h543edf9_0_cpython\n"
-    }
-    ```
-
-### Builds
-
- - `GET /api/v1/build/?page=<int>&size=<int>&sort_by=<str>&order=<str>` :: list builds
-   - allowed `sort_by` values : `id` to sort by build id
-
- - `GET /api/v1/build/<build_id>/` :: get build
-
- - `PUT /api/v1/build/<build_id>/` :: trigger new build of given build specification
-
- - `DELETE /api/v1/build/<build_id>/` :: delete given build along with all artifacts that are not in `c.CondaStore.build_artifacts_kept_on_deletion`
-
- - `GET /api/v1/build/<build_id>/logs/` :: get build logs
-
- - `GET /api/v1/build/<build_id>/yaml/` :: export environment.yml specification for the given build
-
- - `GET /api/v1/build/<build_id>/packages/?search=<str>&build=<str>&page=<int>&size=<int>&sort_by=<str>&order=<str>` :: list packages within build
-   - allowed `sort_by` values : `channel` to sort by channel name, `name` to sort by package name
-   - `build` string to search within `build` for example strings include
-     `py27_0` etc which can be useful for filtering specific versions of
-     packages.
-   - `search` will search within the package names for a match. The search is fuzzy by default. To get the packages with the exact given name, add the parameter `exact=1`.
-
-### Conda Channels
-
- - `GET /api/v1/channel/?page=<int>&size=<int>` :: list channels
-
-### Conda Packages
-
- - `GET /api/v1/package/?search=<str>&build=<str>&page=<int>&size=<int>?sort_by=<str>?order=<str>&distinct_on=<str>` :: list packages
-   - allowed `sort_by` values : `channel` to sort by channel name, `name` to sort by package name
-   - allowed `distinct_on` values : `channel` to be distinct on channel name, `name` to be distinct on package name, `version` to be distinct on version.
-   - `build` string to search within `build` for example strings include
-     `py27_0` etc which can be useful for filtering specific versions of
-     packages.
-   - `search` will search within the package names for a match. The search is fuzzy by default. To get the packages with the exact given name, add the parameter `exact=1`.
-
-### REST API query format
-
-For several paginated results the following query parameters are accepted.
-
- - `page` page numbers indexing start at 1
- - `size` the number of results to return in each page. The max size
-   is determined by the
-   [Traitlets](https://traitlets.readthedocs.io/en/stable/) parameter
-   `c.CondaStoreServer.max_page_size` with default of 100.
- - `sort_by` (can be multiple order_by parameters) indicating a multi-column
-   ordering. Each route has a list of allowed sorting keys:
-   for example `namespace`, `name`, `channel`. All paginated routes support
-   this and have a default specific to the given resource.
- - `distinct_on` (can be multiple distinct_on parameters) indicating a
-   multi-column distinct on. Each route has a list of allowed distinct
-   keys.
- - `order` is either `desc` descending or `asc` ascending with a
-   default of `asc`. Only one order parameter is accepted.
-
-If a query requests a page that does not exist a data response of an
-empty list is returned.
-
-### REST API Response Format
-
-Several Standard Error Codes are returned
- - 200 :: response was processed normally
- - 400 :: indicates a bad request that is invalid
- - 401 :: indicates that request was unauthenticated indicates that authentication is required
- - 403 :: indicates that request was not authorized to access resource
- - 404 :: indicates that request for resource was not found
- - 500 :: hopefully you don't see this error. If you do this is a bug
-
-Response Format for Errors.
-
-```json
-{
-   "status": "error",
-   "message": "<reason for error>"
-}
-```
-
-Response Format for Success. Several of these response parts are
-optional. A route may optionally return a `message` that may be
-displayed to the user.
-
-If the route is paginated it will return a `page`, `size`, and `count`
-key.
-
-```
-{
-   "status": "ok",
-   "message": "<message>",
-   "data": [...],
-   "page": <int>,
-   "size": <int>,
-   "count": <int>,
-}
-```
-
-If the route is not paginated the `page`, `size`, and `count` keys will
-not be returned.
-
-```
-{
-   "status": "ok",
-   "message": "<message>",
-   "data": {},
-}
-```
-
 ## Architecture
 
-Conda Store was designed with the idea of scalable enterprise
+conda-store was designed with the idea of scalable enterprise
 management of reproducible Conda environments.
 
-![Conda Store architecture diagram](_static/images/conda-store-architecture.png)
+![conda-store architecture diagram](_static/images/conda-store-architecture.png)
 
 ### Configuration
 
 [Traitlets](https://traitlets.readthedocs.io/en/stable/) is used for
-all configuration of Conda-Store. In the beginning command line
+all configuration of conda-store. In the beginning command line
 options were used but eventually we learned that there were too many
 options for the user. Traitlets provides a python configuration file
 that you can use to configure values of the applications. It is used
@@ -287,9 +190,9 @@ for both the server and worker. See
 [`tests/assets/conda_store_config.py`](https://github.com/Quansight/conda-store/blob/main/tests/assets/conda_store_config.py)
 for a full example.
 
-### Workers and Server
+### Workers and server
 
-Conda-Store can be broken into two components. The workers which have
+conda-store can be broken into two components. The workers which have
 the following responsibilities:
  - build Conda environments from Conda `environment.yaml` specifications
  - build Conda pack archives
@@ -327,13 +230,13 @@ database, Redis, and S3 compatible object storage. The S3 server is
 used to store all build artifacts for example logs, docker layers, and
 the [Conda-Pack](https://conda.github.io/conda-pack/) tarball. The
 PostgreSQL database is used for storing all states on environments and
-builds along with powering the Conda-Store web server UI, REST API,
+builds along with powering the conda-store web server UI, REST API,
 and Docker registry. Redis is used for keeping track of task state and
 results along with enabling locks and realtime streaming of logs.
 
 ### Terminology
 
-![Conda Store terminology](_static/images/conda-store-terminology.png)
+![conda-store terminology](_static/images/conda-store-terminology.png)
 
 `conda_environment = f(open("environment.yaml"), datatime.utcnow())`
 
@@ -385,7 +288,7 @@ is because in general you can add
 There are two spots that introduce issues to reproducibility. The
 first issue is tracking when an `environment.yaml` file has
 changes. This can be easily tracked by taking a sha256 of the file
-. This is what Conda-Store does but sorts the dependencies to make
+. This is what conda-store does but sorts the dependencies to make
 sure it has a way of not triggering a rebuild if the order of two
 packages changes in the dependencies list. In step (2) `repodata.json`
 is updated regularly. When Conda solves for a user's environment it
@@ -401,7 +304,7 @@ you are extending and using a form of OAuth2 use the
 `conda_store_server.server.auth.GenericOAuthAuthentication`. Similar
 to JupyterHub all configuration is modified via
 [Traitlets](https://traitlets.readthedocs.io/en/stable/). Below shows
-an example of setting us OAuth2 via JupyterHub for Conda-Store.
+an example of setting us OAuth2 via JupyterHub for conda-store.
 
 ```python
 c.CondaStoreServer.authentication_class = JupyterHubOAuthAuthentication
@@ -427,7 +330,7 @@ of roles meaning.
 
 ### Authorization Model
 
-Conda-Store implements role based authorization to supports a flexible
+conda-store implements role based authorization to supports a flexible
 authorization model. A user or service is either authenticated or
 not. There are a set of default permissions assigned to authenticated
 and unauthenticated users via Traitlets. These can all be modified in
@@ -454,7 +357,7 @@ c.RBACAuthorizationBackend.authenticated_role_bindings = {
 
 Once we have collected the role mappings that a given user has we then
 map `roles` to sets of permissions. Currently there are only a few
-permissions but Conda-Store is capable of adapting in the future.
+permissions but conda-store is capable of adapting in the future.
 
 ```python
 class Permissions(enum.Enum):
@@ -571,7 +474,9 @@ build::update, build::delete}`. The delete environment action requires
 `build::delete` permissions which the user has thus the action is
 permitted.
 
-### Database Model
+## Database
+
+### Model
 
 At a high level the database model can be described in the image
 bellow.
@@ -599,3 +504,63 @@ eralchemy -i "postgresql+psycopg2://admin:password@localhost:5432/conda-store" -
 ```
 
 ![entity relationship diagram](_static/images/conda-store-entity-relationship-diagram.png)
+
+### Migrations
+
+conda-store relies on [SQLAlchemy](https://www.sqlalchemy.org/) for ORM mapping, and on [Alembic](https://alembic.sqlalchemy.org/en/latest/) for DB migrations.
+
+The procedure to modify the database is the following : 
+- First, modify [the ORM Model](https://github.com/Quansight/conda-store/blob/main/conda-store-server/conda_store_server/orm.py) according to the changes you want to make
+- edit the file `conda-store-server/alembic.ini` and replace the value for entry `sqlalchemy.url` to match the connection URL of your database.
+
+- in your command line, run the following : 
+```sh
+cd conda-store-server/conda_store_server
+alembic revision --autogenerate -m "description of your changes" 
+```
+- You should have a new file in `conda-store-server/conda_store_server/alembic/versions/` . **Review it thoroughly**. It contains the [`alembic` operations](https://alembic.sqlalchemy.org/en/latest/ops.html) (`op`) to actually modify the database, either when upgrading (`upgrade` function) or downgrading (`downgrade`)
+
+- You can migrate your data within these `upgrade`/`downgrade` functions, for example :
+```python
+from alembic import op
+
+# revision identifiers, used by Alembic.
+revision = 'abcdef01234567'
+down_revision = '987654321f0edc'
+branch_labels = None
+depends_on = None
+
+def upgrade():
+    
+    # operations to modify the database structure 
+    # ...
+    op.create_table(
+        'new_table',
+        Column('id', INTEGER, primary_key=True),
+        Column('field1', VARCHAR(50), nullable=False),
+        Column('field2', INTEGER),
+        Column('timestamp', TIMESTAMP, server_default=func.now())
+    )
+    # ...
+
+    op.execute('''INSERT INTO new_table (field1, field2) 
+                  SELECT field1, field2 
+                  FROM old_table''')
+    
+    # other operations to modify the database structure 
+    # ...
+
+
+def downgrade():
+    
+    op.drop_table('new_table')
+
+```
+
+
+- Once you're sure about the changes generated, you can apply them by running :
+```sh
+alembic upgrade head
+```
+
+- Check your database : your changes should be reflected. If not, refer to [Alembic's documentation](https://alembic.sqlalchemy.org/en/latest/).

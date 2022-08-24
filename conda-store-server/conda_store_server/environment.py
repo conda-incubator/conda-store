@@ -3,8 +3,6 @@ from typing import List
 
 import yaml
 import pydantic
-from conda.models.match_spec import MatchSpec
-from pkg_resources import Requirement
 
 from conda_store_server import schema, conda
 
@@ -56,7 +54,9 @@ def validate_environment_channels(
         conda.normalize_channel_name(conda_channel_alias, _) for _ in allowed_channels
     )
 
-    if not (normalized_conda_channels <= normalized_conda_allowed_channels):
+    if len(allowed_channels) and not (
+        normalized_conda_channels <= normalized_conda_allowed_channels
+    ):
         raise ValueError(
             f"Conda channels {normalized_conda_channels - normalized_conda_allowed_channels} not allowed in specification"
         )
@@ -71,6 +71,8 @@ def validate_environment_conda_packages(
     required_packages: List[str],
 ) -> schema.Specification:
     def _package_names(dependencies):
+        from conda.models.match_spec import MatchSpec
+
         return {MatchSpec(_).name: _ for _ in dependencies if isinstance(_, str)}
 
     if len(specification.dependencies) == 0:
@@ -101,6 +103,8 @@ def validate_environment_pypi_packages(
     required_packages: List[str],
 ) -> schema.Specification:
     def _package_names(packages):
+        from pkg_resources import Requirement
+
         result = {}
         for p in packages:
             if isinstance(p, str):

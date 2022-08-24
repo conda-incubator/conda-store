@@ -1,5 +1,5 @@
 {
-  description = "Conda-Store";
+  description = "conda-store";
 
   inputs = {
     nixpkgs = { url = "github:nixos/nixpkgs/nixpkgs-unstable"; };
@@ -20,6 +20,7 @@
           pkgs.k9s
           pkgs.docker-compose
 
+          # conda-store-server
           pythonPackages.yarl
           pythonPackages.requests
           pythonPackages.pydantic
@@ -31,11 +32,30 @@
           pythonPackages.pyjwt
           pythonPackages.minio
           pythonPackages.filelock
+          pythonPackages.sqlalchemy
+          pythonPackages.psycopg2
 
+          # conda-store
+          pythonPackages.rich
+          pythonPackages.click
+          pythonPackages.aiohttp
+          pythonPackages.ruamel-yaml
+
+          # dev
           pythonPackages.pytest
           pythonPackages.black
           pythonPackages.flake8
+          pythonPackages.build
+          pythonPackages.setuptools
+          pythonPackages.alembic
         ];
+
+        shellHook = ''
+          export CONDA_STORE_URL=http://localhost:5000/conda-store
+          export CONDA_STORE_AUTH=basic
+          export CONDA_STORE_USERNAME=username
+          export CONDA_STORE_PASSWORD=password
+        '';
       };
   };
 }

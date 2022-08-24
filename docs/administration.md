@@ -11,13 +11,13 @@
 
 ## Performance
 
-There are several parts of Conda-Store to consider for performance. We
+There are several parts of conda-store to consider for performance. We
 have tried to list them in order of performance impact that may be
 seen. 
 
 ### Worker Storage
 
-When Conda-Store builds a given environment it has to locally install
+When conda-store builds a given environment it has to locally install
 the environment in the directory specified in the
 [Traitlets](https://traitlets.readthedocs.io/en/stable/using_traitlets.html)
 configuration `CondaStore.store_directroy`. Conda environments consist
@@ -51,16 +51,16 @@ plenty fast Internet.
 
 ### S3 Storage
 
-All build artifacts from Conda-Store are stored in object storage that
+All build artifacts from conda-store are stored in object storage that
 behaves S3 like. S3 traditionally has great performance if you use the
 cloud provider implementation.
 
 ## Configuration
 
-Conda-Store is configured via
+conda-store is configured via
 [Traitlets](https://traitlets.readthedocs.io/en/stable/). Originally
 this configuration was done via command line options but as the
-options grew this seems untenable. Conda-Store server and worker can
+options grew this seems untenable. conda-store server and worker can
 be launched via configuration easily.
 
 ```shell
@@ -71,17 +71,17 @@ conda-store-server --config <path-to-conda-store-config.py>
 conda-store-worker --config <path-to-conda-store-config.py>
 ```
 
-Below we outline the options for Conda-Store.
+Below we outline the options for conda-store.
 
 ### `conda_store_server.app.CondaStore`
 
 `CondaStore.storage_class` configures the storage backend to use for
 storing build artifacts from
-Conda-Store. [S3](https://en.wikipedia.org/wiki/Amazon_S3) storage is
+conda-store. [S3](https://en.wikipedia.org/wiki/Amazon_S3) storage is
 the default. File based storage is also supported but not nearly as
 well tested.
 
-`CondaStore.store_directory` is the directory used for Conda-Store to
+`CondaStore.store_directory` is the directory used for conda-store to
 build the environments. 
 
 `CondaStore.build_directory` template used to form the directory for
@@ -116,9 +116,10 @@ repodata.json from. By default includes current architecture and
 are by default added if channels within the specification is empty.
 
 `CondaStore.conda_allowed_channels` is a list of Conda channels that
-are allowed. This also tells Conda-Store which channels to prefetch
-the channel `repodata` and `channeldata` from. The default is `main` and
-`conda-forge`.
+are allowed. This also tells conda-store which channels to prefetch
+the channel `repodata` and `channeldata` from. The default is `main`
+and `conda-forge`. If `conda_allowed_channels` is an empty list all
+Channels are accepted by users.
 
 `CondaStore.conda_default_packages` is a list of Conda packages that
 are included by default if none are specified within the specification
@@ -150,13 +151,12 @@ added.
 database. Behind the scenes [SQLAlchemy](https://www.sqlalchemy.org/)
 is used for the connection so [consult their
 docs](https://docs.sqlalchemy.org/en/14/core/engines.html) for
-connecting to your specific database. Conda-Store will automatically
+connecting to your specific database. conda-store will automatically
 create the tables if they do not already exist.
 
-`CondaStore.redis_url` is a required argument to a running Redis
-instance. This became a dependency as of release `0.4.1` due to the
-massive advantages of features that Conda-Store can provide with this
-dependency. See
+`CondaStore.redis_url` is an optional argument to a running Redis
+instance. This was removed as a dependency as of release `0.4.10` due
+to the need to have a simple deployment option for conda-store. See
 [documentation](https://github.com/redis/redis-py/#connecting-to-redis)
 for proper specification. This url is used by default for the Celery
 broker and results backend.
@@ -165,12 +165,13 @@ broker and results backend.
 celery. Celery supports a [wide range of
 brokers](https://docs.celeryproject.org/en/stable/getting-started/backends-and-brokers/index.html)
 each with different guarantees. By default the Redis based broker is
-used. It is production ready and has worked well in practice. The url
-must be provided in a format that celery understands. The default
-value is `CondaStore.redis_url`.
+used if a `CondaStore.redis_url` if provided otherwise defaults to
+sqlalchemy. It is production ready and has worked well in
+practice. The url must be provided in a format that celery
+understands. The default value is `CondaStore.redis_url`.
 
-`CondaStore.build_artifacts` is the list of artifacts for Conda-Store
-to build. By default it is all the artifacts that Conda-Store is
+`CondaStore.build_artifacts` is the list of artifacts for conda-store
+to build. By default it is all the artifacts that conda-store is
 capable of building. These are the
 [lockfile](https://github.com/conda-incubator/conda-lock),
 [YAML](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#create-env-file-manually),
@@ -184,14 +185,16 @@ want to keep around the logs etc. of a build and the Conda solve for
 the given build.
 
 `CondaStore.celery_results_backend` is the backend to use for storing
-all results from celery task execution. Conda-Store currently does not
+all results from celery task execution. conda-store currently does not
 leverage the backend results but it may be needed for future work
-using celery. The backend defaults to using the Redis backend. This
-choice works great in production. Please consult the [celery docs on
+using celery. The backend defaults to using the Redis backend if
+`CondaStore.redis_url` is specified otherwise uses the
+`CondaStore.database_url`. This choice works great in
+production. Please consult the [celery docs on
 backend](https://docs.celeryproject.org/en/stable/getting-started/backends-and-brokers/index.html).
 
 `CondaStore.default_namespace` is the default namespace for
-Conda-Store to use. All environments are built behind a given
+conda-store to use. All environments are built behind a given
 namespace.
 
 `CondaStore.filesystem_namespace` is the namespace to use for
@@ -213,12 +216,16 @@ assign to all files and directories in a given built environment. This
 setting is useful if you want to protect environments from
 modification from certain users and groups.
 
-`CondaStore.default_docker_base_image` is the base image to use for
-docker builds of Conda environments. This package at a minimum should
-have the [following packages
+`CondaStore.default_docker_base_image` default base image used for the
+Dockerized environments. Make sure to have a proper glibc within image
+(highly discourage alpine/musl based images). Can also be callable
+function which takes the `orm.Build` object as input which has access
+to all attributes about the build such as installed packages, requested
+packages, name, namespace, etc. This package at a minimum should have
+the [following packages
 installed](https://docs.anaconda.com/anaconda/install/linux/). Often
 times for non-graphic and non-gpu environments glibc is enough. Hence
-the default docker image `frolvlad/alpine-glibc:latest`.
+the default docker image `library/debian:sid-slim`.
 
 `CondaStore.serialize_builds` no longer build Conda environment in
 parallel. This is due to an issue in Conda/Mamba that when downloading
@@ -228,11 +235,11 @@ is True until this bug is fixed.
 
 ### `conda_store_server.storage.S3Storage`
 
-Conda-Store uses [minio-py](https://github.com/minio/minio-py) as a
+conda-store uses [minio-py](https://github.com/minio/minio-py) as a
 client to connect to S3 "like" object stores.
 
-`S3Storage.internal_endpoint` is the internal endpoint for Conda-Store
-reaching out to s3 bucket. This is the url that Conda-Store use for
+`S3Storage.internal_endpoint` is the internal endpoint for conda-store
+reaching out to s3 bucket. This is the url that conda-store use for
 get/set s3 blobs. For AWS S3 use the endpoint `s3.amazonaws.com`.
 
 `S3Storage.external_endpoint` is the external s3 endpoint for users to
@@ -251,12 +258,12 @@ the S3 bucket.
 
 `S3Storage.internal_secure` Boolean to indicate if connecting via
 `http` (False) or `https` (True) internally. The internal connection
-is the url that will be exclusively used by Conda-Store and not shared
+is the url that will be exclusively used by conda-store and not shared
 with users.
 
 `S3Storage.external_secure` Boolean to indicate if connecting via
 `http` (False) or `https` (True) internally. The external connection
-is the url that will be served to users of Conda-Store.
+is the url that will be served to users of conda-store.
 
 `S3Storage.credentials` provider to use to get credentials for s3
 access. see examples
@@ -288,6 +295,12 @@ encrypting tokens.
 
 `AuthenticationBackend.jwt_algorithm` is the algorithm for encrypting
 the JSON Web Tokens.
+
+`AuthenticationBackend.predefined_tokens` is a set of tokens with
+predefined permission. This is useful for setting up service accounts
+in a similar manner to how things are done with jupyterhub. Format for
+the values is a dictionary with keys being the tokens and values being
+the `schema.AuthenticaitonToken` all fields are optional.
 
 ### `conda_store_server.server.auth.AuthorizationBackend`
 
@@ -404,7 +417,7 @@ metrics endpoints. Default True.
 `CondaStoreServer.address` is the address for the server to bind
 to. The default is all IP addresses `0.0.0.0`.
 
-`CondaStoreServer.port` is the port for Conda-Store server to
+`CondaStoreServer.port` is the port for conda-store server to
 use. Default is `5000`.
 
 `CondaStoreServer.registry_external_url` is the external hostname and
@@ -429,13 +442,19 @@ reverse proxy such as Nginx, Traefik, Apache. Will use
 `X-Forward-...` headers to determine scheme. Do not set to true if not
 behind proxy since Flask will trust any `X-Forward-...` header.
 
+`CondaStoreServer.template` initialized
+`fastapi.templating.Jinja2Templates` to use for html templates.
+
+`CondaStoreServer.template_vars` extra variables to be passed into
+jinja templates for page rendering.
+
 ### `conda_store_server.worker.app.CondaStoreWorker`
 
 `CondaStoreWorker.log_level` is the level for all server
 logging. Default is `INFO`. Common options are `DEBUG`, `INFO`,
 `WARNING`, and `ERROR`.
 
-`CondaStoreWorker.watch_paths` is a list of paths for Conda-Store to
+`CondaStoreWorker.watch_paths` is a list of paths for conda-store to
 watch for changes to directories of `environment.yaml` files or a
 single filename to watch.
 
@@ -443,9 +462,43 @@ single filename to watch.
 the number of threads on your given machine. If set will limit the
 number of concurrent celery tasks to the integer.
 
+### `conda_store_server.registry.ContainerRegistry`
+
+`ContainerRegistry.container_registries` dictionary of registries_url
+to upload built container images with callable function to configure
+registry instance with credentials. Example configuration shown
+bellow. Some registries are more complex to setup such as ECR, GCR,
+etc. `password` is often the token generated from the AWS, GCP, Azure,
+and Digital Ocean clients.
+
+```python
+from python_docker.registry import Registry
+import os
+
+def _configure_docker_registry(registry_url: str):
+    return Registry(
+        "https://registry-1.docker.io",
+        username=os.environ.get('DOCKER_USERNAME'),
+        password=os.environ.get('DOCKER_PASSWORD'))
+
+c.ContainerRegistry.container_registries = {
+    'https://registry-1.docker.io': _configure_docker_registry
+}
+```
+
+`ContainerRegistry.container_registry_image_name` image name
+to assign to docker image pushed for particular registry via a
+callable function with arguments of registry and build.
+
+`ContainerRegistry.container_registry_image_tag` image tag
+to assign to docker image pushed for particular registry via a
+callable function with arguments of registry and build.
+
+
+
 ## Frequently Asked Questions
 
-### Conda-Store fails to build Conda environment and worker is spontaneously killed (9 SIGKILL)
+### conda-store fails to build Conda environment and worker is spontaneously killed (9 SIGKILL)
 
 The following error most likely indicates that you have not allocated
 enough memory to `conda-store-workers` for solving and building the

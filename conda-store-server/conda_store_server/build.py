@@ -1,6 +1,4 @@
 import datetime
-import gzip
-import hashlib
 import os
 import stat
 import subprocess
@@ -62,12 +60,16 @@ def set_build_completed(conda_store, build, logs, packages):
             # ignore pypi package for now
             continue
 
-        channel_id = api.get_conda_channel(conda_store.db, channel)
-        if channel_id is None:
-            raise ValueError(
-                f"channel url={channel} not recognized in conda-store channel database"
-            )
-        package["channel_id"] = channel_id.id
+        channel_orm = api.get_conda_channel(conda_store.db, channel)
+        if channel_orm is None:
+            if len(conda_store.conda_allowed_channels) == 0:
+                channel_orm = api.create_conda_channel(conda_store.db, channel)
+                conda_store.db.commit()
+            else:
+                raise ValueError(
+                    f"channel url={channel} not recognized in conda-store channel database"
+                )
+        package["channel_id"] = channel_orm.id
 
 
         # Retrieve the package from the DB if it already exists
@@ -249,12 +251,16 @@ def solve_conda_environment(conda_store, solve):
                 # ignore pypi package for now
                 continue
 
-            channel_id = api.get_conda_channel(conda_store.db, channel)
-            if channel_id is None:
-                raise ValueError(
-                    f"channel url={channel} not recognized in conda-store channel database"
-                )
-            package["channel_id"] = channel_id.id
+            channel_orm = api.get_conda_channel(conda_store.db, channel)
+            if channel_orm is None:
+                if len(conda_store.conda_allowed_channels) == 0:
+                    channel_orm = api.create_conda_channel(conda_store.db, channel)
+                    conda_store.db.commit()
+                else:
+                    raise ValueError(
+                        f"channel url={channel} not recognized in conda-store channel database"
+                    )
+            package["channel_id"] = channel_orm.id
 
             _package = (
                 conda_store.db.query(orm.CondaPackage)
@@ -330,8 +336,11 @@ def build_conda_docker(conda_store, build):
     download_dir = info["pkgs_dirs"][0]
     precs = precs_from_environment_prefix(conda_prefix, download_dir, user_conda)
     records = fetch_precs(download_dir, precs)
+    base_image = conda_store.container_registry.pull_image(
+        utils.callable_or_value(conda_store.default_docker_base_image, build)
+    )
     image = build_docker_environment_image(
-        base_image=conda_store.default_docker_base_image,
+        base_image=base_image,
         output_image=f"{build.specification.name}:{build.build_key}",
         records=records,
         default_prefix=info["env_vars"]["CONDA_ROOT"],
@@ -341,78 +350,8 @@ def build_conda_docker(conda_store, build):
         layering_strategy="layered",
     )
 
-    # https://docs.docker.com/registry/spec/manifest-v2-2/#example-image-manifest
-    docker_manifest = schema.DockerManifest.construct()
-    docker_config = schema.DockerConfig.construct(
-        config=schema.DockerConfigConfig(),
-        container_config=schema.DockerConfigConfig(),
-        rootfs=schema.DockerConfigRootFS(),
-    )
+    if schema.BuildArtifactType.DOCKER_MANIFEST in conda_store.build_artifacts:
+        conda_store.container_registry.store_image(conda_store, build, image)
 
-    for layer in image.layers:
-        # https://github.com/google/nixery/pull/64#issuecomment-541019077
-        # docker manifest expects compressed hash while configuration file
-        # expects uncompressed hash -- good luck finding this detail in docs :)
-        content_uncompressed_hash = hashlib.sha256(layer.content).hexdigest()
-        content_compressed = gzip.compress(layer.content)
-        content_compressed_hash = hashlib.sha256(content_compressed).hexdigest()
-        conda_store.storage.set(
-            conda_store.db,
-            build.id,
-            build.docker_blob_key(content_compressed_hash),
-            content_compressed,
-            content_type="application/gzip",
-            artifact_type=schema.BuildArtifactType.DOCKER_BLOB,
-        )
-
-        docker_layer = schema.DockerManifestLayer(
-            size=len(content_compressed), digest=f"sha256:{content_compressed_hash}"
-        )
-        docker_manifest.layers.append(docker_layer)
-
-        docker_config_history = schema.DockerConfigHistory()
-        docker_config.history.append(docker_config_history)
-
-        docker_config.rootfs.diff_ids.append(f"sha256:{content_uncompressed_hash}")
-
-    docker_config_content = docker_config.json().encode("utf-8")
-    docker_config_hash = hashlib.sha256(docker_config_content).hexdigest()
-    docker_manifest.config = schema.DockerManifestConfig(
-        size=len(docker_config_content), digest=f"sha256:{docker_config_hash}"
-    )
-    docker_manifest_content = docker_manifest.json().encode("utf-8")
-    docker_manifest_hash = hashlib.sha256(docker_manifest_content).hexdigest()
-
-    conda_store.storage.set(
-        conda_store.db,
-        build.id,
-        build.docker_blob_key(docker_config_hash),
-        docker_config_content,
-        content_type="application/vnd.docker.container.image.v1+json",
-        artifact_type=schema.BuildArtifactType.DOCKER_BLOB,
-    )
-
-    # docker likes to have a sha256 key version of the manifest this
-    # is sort of hack to avoid having to figure out which sha256
-    # refers to which manifest.
-    conda_store.storage.set(
-        conda_store.db,
-        build.id,
-        f"docker/manifest/sha256:{docker_manifest_hash}",
-        docker_manifest_content,
-        content_type="application/vnd.docker.distribution.manifest.v2+json",
-        artifact_type=schema.BuildArtifactType.DOCKER_BLOB,
-    )
-
-    conda_store.storage.set(
-        conda_store.db,
-        build.id,
-        build.docker_manifest_key,
-        docker_manifest_content,
-        content_type="application/vnd.docker.distribution.manifest.v2+json",
-        artifact_type=schema.BuildArtifactType.DOCKER_MANIFEST,
-    )
-
-    conda_store.log.info(
-        f"built docker image: {image.name}:{image.tag} layers={len(image.layers)}"
-    )
+    if schema.BuildArtifactType.CONTAINER_REGISTRY in conda_store.build_artifacts:
+        conda_store.container_registry.push_image(conda_store, build, image)

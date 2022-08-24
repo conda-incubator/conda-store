@@ -1,4 +1,4 @@
-# Conda Store Server
+# conda-store server
 
 [![Documentation Status](https://readthedocs.org/projects/conda-store/badge/?version=latest)](https://conda-store.readthedocs.io/en/latest/?badge=latest)
 

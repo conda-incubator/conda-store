@@ -1,9 +1,10 @@
 from typing import List, Dict, Optional
+import datetime
 
 import pydantic
 import yaml
 from fastapi import APIRouter, Request, Depends, HTTPException, Query, Body
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, PlainTextResponse
 
 from conda_store_server import api, orm, schema, utils, __version__
 from conda_store_server.server import dependencies
@@ -131,6 +132,10 @@ def api_get_permissions(
     entity=Depends(dependencies.get_entity),
 ):
     authenticated = entity is not None
+    entity_binding_roles = auth.authorization.get_entity_bindings(
+        entity.role_bindings if authenticated else {}, authenticated=authenticated
+    )
+
     entity_binding_permissions = auth.authorization.get_entity_binding_permissions(
         entity.role_bindings if authenticated else {}, authenticated=authenticated
     )
@@ -146,11 +151,71 @@ def api_get_permissions(
         "status": "ok",
         "data": {
             "authenticated": authenticated,
-            "entity_permissions": entity_binding_permissions,
             "primary_namespace": entity.primary_namespace
             if authenticated
             else conda_store.default_namespace,
+            "entity_permissions": entity_binding_permissions,
+            "entity_roles": entity_binding_roles,
+            "expiration": entity.exp if authenticated else None,
         },
+    }
+
+
+@router_api.post(
+    "/token/",
+    response_model=schema.APIPostToken,
+)
+def api_post_token(
+    request: Request,
+    primary_namespace: Optional[str] = Body(None),
+    expiration: Optional[datetime.datetime] = Body(None),
+    role_bindings: Optional[Dict[str, List[str]]] = Body(None),
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
+    entity=Depends(dependencies.get_entity),
+):
+    authenticated = entity is not None
+    current_role_bindings = auth.authorization.get_entity_bindings(
+        entity.role_bindings if authenticated else {}, authenticated=authenticated
+    )
+    current_namespace = (
+        entity.primary_namespace if authenticated else conda_store.default_namespace
+    )
+    current_expiration = (
+        entity.exp
+        if authenticated
+        else (
+            datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(days=1)
+        )
+    )
+
+    new_namespace = primary_namespace or current_namespace
+    new_role_bindings = role_bindings or current_role_bindings
+    new_expiration = expiration or current_expiration
+
+    if not auth.authorization.is_subset_entity_permissions(
+        current_role_bindings, new_role_bindings, authenticated
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="Requested role_bindings are not a subset of current permissions",
+        )
+
+    if new_expiration > current_expiration:
+        raise HTTPException(
+            status_code=400,
+            detail="Requested expiration of token is greater than current permissions",
+        )
+
+    token = schema.AuthenticationToken(
+        primary_namespace=new_namespace,
+        role_bindings=new_role_bindings,
+        exp=new_expiration,
+    )
+
+    return {
+        "status": "ok",
+        "data": {"token": auth.authentication.encrypt_token(token)},
     }
 
 
@@ -253,6 +318,11 @@ def api_delete_namespace(
 )
 def api_list_environments(
     search: Optional[str] = None,
+    namespace: Optional[str] = None,
+    name: Optional[str] = None,
+    status: Optional[schema.BuildStatus] = None,
+    packages: Optional[List[str]] = Query([]),
+    artifact: Optional[schema.BuildArtifactType] = None,
     conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
     entity=Depends(dependencies.get_entity),
@@ -260,7 +330,16 @@ def api_list_environments(
 ):
     orm_environments = auth.filter_environments(
         entity,
-        api.list_environments(conda_store.db, search=search, show_soft_deleted=False),
+        api.list_environments(
+            conda_store.db,
+            search=search,
+            namespace=namespace,
+            name=name,
+            status=status,
+            packages=packages,
+            artifact=artifact,
+            show_soft_deleted=False,
+        ),
     )
     return paginated_api_response(
         orm_environments,
@@ -317,14 +396,20 @@ def api_update_environment_build(
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
-    build_id: int = Body(..., embed=True),
+    build_id: int = Body(None, embed=True),
+    description: str = Body(None, embed=True),
 ):
     auth.authorize_request(
         request, f"{namespace}/{name}", {Permissions.ENVIRONMENT_UPDATE}, require=True
     )
 
     try:
-        conda_store.update_environment_build(namespace, name, build_id)
+        if build_id is not None:
+            conda_store.update_environment_build(namespace, name, build_id)
+
+        if description is not None:
+            conda_store.update_environment_description(namespace, name, description)
+
     except utils.CondaStoreError as e:
         raise HTTPException(status_code=400, detail=e.message)
 
@@ -435,21 +520,40 @@ def api_post_specification(
 
 @router_api.get("/build/", response_model=schema.APIListBuild)
 def api_list_builds(
+    status: Optional[schema.BuildStatus] = None,
+    packages: Optional[List[str]] = Query([]),
+    artifact: Optional[schema.BuildArtifactType] = None,
+    environment_id: Optional[int] = None,
+    name: Optional[str] = None,
+    namespace: Optional[str] = None,
     conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
     entity=Depends(dependencies.get_entity),
     paginated_args=Depends(get_paginated_args),
 ):
     orm_builds = auth.filter_builds(
-        entity, api.list_builds(conda_store.db, show_soft_deleted=True)
+        entity,
+        api.list_builds(
+            conda_store.db,
+            status=status,
+            packages=packages,
+            artifact=artifact,
+            environment_id=environment_id,
+            name=name,
+            namespace=namespace,
+            show_soft_deleted=True,
+        ),
     )
     return paginated_api_response(
         orm_builds,
         paginated_args,
         schema.Build,
-        exclude={"specification", "packages"},
+        exclude={"specification", "packages", "build_artifacts"},
         allowed_sort_bys={
             "id": orm.Build.id,
+            "started_on": orm.Build.started_on,
+            "scheduled_on": orm.Build.scheduled_on,
+            "ended_on": orm.Build.ended_on,
         },
         default_sort_by=["id"],
     )
@@ -676,3 +780,40 @@ def api_get_build_yaml(
         require=True,
     )
     return RedirectResponse(conda_store.storage.get_url(build.conda_env_export_key))
+
+
+@router_api.get("/build/{build_id}/lockfile/", response_class=PlainTextResponse)
+def api_get_build_lockfile(
+    build_id: int,
+    request: Request,
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
+):
+    build = api.get_build(conda_store.db, build_id)
+    auth.authorize_request(
+        request,
+        f"{build.environment.namespace.name}/{build.environment.name}",
+        {Permissions.ENVIRONMENT_READ},
+        require=True,
+    )
+
+    lockfile = api.get_build_lockfile(conda_store.db, build_id)
+    return lockfile
+
+
+@router_api.get("/build/{build_id}/archive/")
+def api_get_build_archive(
+    build_id: int,
+    request: Request,
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
+):
+    build = api.get_build(conda_store.db, build_id)
+    auth.authorize_request(
+        request,
+        f"{build.environment.namespace.name}/{build.environment.name}",
+        {Permissions.ENVIRONMENT_READ},
+        require=True,
+    )
+
+    return RedirectResponse(conda_store.storage.get_url(build.conda_pack_key))
