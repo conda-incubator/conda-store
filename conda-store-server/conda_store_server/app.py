@@ -26,6 +26,7 @@ from conda_store_server import (
     conda,
     environment,
     registry,
+    build,
 )
 
 
@@ -159,12 +160,6 @@ class CondaStore(LoggingConfigurable):
         config=True,
     )
 
-    conda_max_solve_time = Integer(
-        5 * 60,  # 5 minute
-        help="Maximum time in seconds to allow for solving a given conda environment",
-        config=True,
-    )
-
     database_url = Unicode(
         "sqlite:///conda-store.sqlite",
         help="url for the database. e.g. 'sqlite:///conda-store.sqlite' tables will be automatically created if they do not exist",
@@ -202,13 +197,25 @@ class CondaStore(LoggingConfigurable):
         config=True,
     )
 
+    builders = List(
+        [
+            build.SolveBuilder,
+            build.FilesystemBuilder,
+            build.YAMLBuilder,
+            build.CondaPackBuilder,
+            build.ContainerBuilder,
+        ],
+        help="Builders to register with conda-store. Based on dependencies between buidlers they will be scheduled in the correct order",
+        config=True,
+    )
+
     build_artifacts = List(
         [
-            schema.BuildArtifactType.LOCKFILE,
-            schema.BuildArtifactType.YAML,
-            schema.BuildArtifactType.CONDA_PACK,
-            schema.BuildArtifactType.DOCKER_MANIFEST,
-            schema.BuildArtifactType.CONTAINER_REGISTRY,
+            "LOCKFILE",
+            "YAML",
+            "CONDA_PACK",
+            "DOCKER_MANIFEST",
+            "CONTAINER_REGISTRY",
         ],
         help="artifacts to build in conda-store. By default all of the artifacts",
         config=True,
@@ -216,12 +223,12 @@ class CondaStore(LoggingConfigurable):
 
     build_artifacts_kept_on_deletion = List(
         [
-            schema.BuildArtifactType.LOGS,
-            schema.BuildArtifactType.LOCKFILE,
-            schema.BuildArtifactType.YAML,
+            "LOGS",
+            "LOCKFILE",
+            "YAML",
             # no possible way to delete these artifacts
             # in most container registries via api
-            schema.BuildArtifactType.CONTAINER_REGISTRY,
+            "CONTAINER_REGISTRY",
         ],
         help="artifacts to keep on build deletion",
         config=True,
@@ -259,37 +266,6 @@ class CondaStore(LoggingConfigurable):
         help="namespace to use for environments picked up via `CondaStoreWorker.watch_paths` on the filesystem",
         config=True,
     )
-
-    default_uid = Integer(
-        os.getuid(),
-        help="default uid to assign to built environments",
-        config=True,
-    )
-
-    default_gid = Integer(
-        os.getgid(),
-        help="default gid to assign to built environments",
-        config=True,
-    )
-
-    default_permissions = Unicode(
-        "775",
-        help="default file permissions to assign to built environments",
-        config=True,
-    )
-
-    default_docker_base_image = Union(
-        [Unicode(), Callable()],
-        help="default base image used for the Dockerized environments. Make sure to have a proper glibc within image (highly discourage alpine/musl based images). Can also be callable function which takes the `orm.Build` object as input which has access to all attributes about the build such as install packages, requested packages, name, namespace, etc",
-        config=True,
-    )
-
-    @default("default_docker_base_image")
-    def _default_docker_base_image(self):
-        def _docker_base_image(build: orm.Build):
-            return "registry-1.docker.io/library/debian:sid-slim"
-
-        return _docker_base_image
 
     validate_specification = Callable(
         conda_store_validate_specification,

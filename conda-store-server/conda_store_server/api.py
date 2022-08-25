@@ -240,13 +240,18 @@ def list_build_artifacts(
     db,
     build_id: int = None,
     key: str = None,
-    excluded_artifact_types: List[schema.BuildArtifactType] = None,
+    included_artifact_types: List[str] = None,
+    excluded_artifact_types: List[str] = None,
 ):
     filters = []
     if build_id:
         filters.append(orm.BuildArtifact.build_id == build_id)
     if key:
         filters.append(orm.BuildArtifact.key == key)
+    if included_artifact_types:
+        filters.append(
+            orm.BuildArtifact.artifact_type.in_(included_artifact_types)
+        )
     if excluded_artifact_types:
         filters.append(
             func.not_(orm.BuildArtifact.artifact_type.in_(excluded_artifact_types))

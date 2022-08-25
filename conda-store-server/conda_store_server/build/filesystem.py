@@ -1,14 +1,62 @@
 import datetime
 import os
-import stat
 import subprocess
 import tempfile
+import shutil
 import traceback
+import stat
 
 import filelock
 import yaml
+from traitlets import Integer, Unicode
 
-from conda_store_server import api, conda, orm, utils, schema
+from conda_store_server import schema, api, orm, utils, conda
+from conda_store_server.build.base import CondaStoreBuilder
+from conda_store_server.build.solve import SolveBuilder
+
+
+class FileSystemBuilder(CondaStoreBuilder):
+    build_artifacts = [
+        "DIRECTORY",
+        "LOGS",
+    ]
+
+    depends_on = [
+        SolveBuilder,
+    ]
+
+    default_uid = Integer(
+        os.getuid(),
+        help="default uid to assign to built environments",
+        config=True,
+    )
+
+    default_gid = Integer(
+        os.getgid(),
+        help="default gid to assign to built environments",
+        config=True,
+    )
+
+    default_permissions = Unicode(
+        "775",
+        help="default file permissions to assign to built environments",
+        config=True,
+    )
+
+    def build_artifact(self, conda_store: "CondaStore", artifact_type: str, build_id: str):
+        build = api.get_build(conda_store.db, build_id)
+        if artifact_type == "DIRECTORY":
+            build_conda_environment(conda_store, build)
+
+    def delete_artifact(self, conda_store: "CondaStore", artifact_type: str, build_id: str):
+        conda_prefix = build_artifact.build.build_path(conda_store)
+        # be REALLY sure this is a directory within store directory
+        if conda_prefix.startswith(conda_store.store_directory) and os.path.isdir(
+            conda_prefix
+        ):
+            shutil.rmtree(conda_prefix)
+            conda_store.db.delete(build_artifact)
+
 
 
 def set_build_started(conda_store, build):
@@ -187,125 +235,3 @@ def build_conda_environment(conda_store, build):
         conda_store.log.exception(e)
         set_build_failed(conda_store, build, traceback.format_exc().encode("utf-8"))
         raise e
-
-
-def solve_conda_environment(conda_store, solve):
-    from conda_store_server.conda import conda_lock
-
-    try:
-        solve.started_on = datetime.datetime.utcnow()
-        conda_store.db.commit()
-
-        specification = schema.CondaSpecification.parse_obj(solve.specification.spec)
-        packages = conda_lock(specification, conda_store.conda_command)
-
-        for package in packages["conda"]:
-            channel = package["channel_id"]
-            if channel == "https://conda.anaconda.org/pypi":
-                # ignore pypi package for now
-                continue
-
-            channel_orm = api.get_conda_channel(conda_store.db, channel)
-            if channel_orm is None:
-                if len(conda_store.conda_allowed_channels) == 0:
-                    channel_orm = api.create_conda_channel(conda_store.db, channel)
-                    conda_store.db.commit()
-                else:
-                    raise ValueError(
-                        f"channel url={channel} not recognized in conda-store channel database"
-                    )
-            package["channel_id"] = channel_orm.id
-
-            _package = (
-                conda_store.db.query(orm.CondaPackage)
-                .filter(orm.CondaPackage.md5 == package["md5"])
-                .filter(orm.CondaPackage.channel_id == package["channel_id"])
-                .first()
-            )
-
-            if _package is None:
-                _package = orm.CondaPackage(**package)
-                conda_store.db.add(_package)
-            solve.packages.append(_package)
-        solve.ended_on = datetime.datetime.utcnow()
-        conda_store.db.commit()
-    except Exception as e:
-        print("Task failed!!!!!!!!!!!", str(e))
-        raise e
-
-
-def build_conda_env_export(conda_store, build):
-    conda_prefix = build.build_path(conda_store)
-
-    output = subprocess.check_output(
-        [conda_store.conda_command, "env", "export", "-p", conda_prefix]
-    )
-
-    parsed = yaml.safe_load(output)
-    if "dependencies" not in parsed:
-        raise ValueError(f"conda env export` did not produce valid YAML:\n{output}")
-
-    conda_store.storage.set(
-        conda_store.db,
-        build.id,
-        build.conda_env_export_key,
-        output,
-        content_type="text/yaml",
-        artifact_type=schema.BuildArtifactType.YAML,
-    )
-
-
-def build_conda_pack(conda_store, build):
-    conda_prefix = build.build_path(conda_store)
-
-    conda_store.log.info(f"packaging archive of conda environment={conda_prefix}")
-    with tempfile.TemporaryDirectory() as tmpdir:
-        output_filename = os.path.join(tmpdir, "environment.tar.gz")
-        conda.conda_pack(prefix=conda_prefix, output=output_filename)
-        conda_store.storage.fset(
-            conda_store.db,
-            build.id,
-            build.conda_pack_key,
-            output_filename,
-            content_type="application/gzip",
-            artifact_type=schema.BuildArtifactType.CONDA_PACK,
-        )
-
-
-def build_conda_docker(conda_store, build):
-    from conda_docker.conda import (
-        build_docker_environment_image,
-        find_user_conda,
-        conda_info,
-        precs_from_environment_prefix,
-        fetch_precs,
-    )
-
-    conda_prefix = build.build_path(conda_store)
-
-    conda_store.log.info(f"creating docker archive of conda environment={conda_prefix}")
-
-    user_conda = find_user_conda()
-    info = conda_info(user_conda)
-    download_dir = info["pkgs_dirs"][0]
-    precs = precs_from_environment_prefix(conda_prefix, download_dir, user_conda)
-    records = fetch_precs(download_dir, precs)
-    base_image = conda_store.container_registry.pull_image(
-        utils.callable_or_value(conda_store.default_docker_base_image, build)
-    )
-    image = build_docker_environment_image(
-        base_image=base_image,
-        output_image=f"{build.specification.name}:{build.build_key}",
-        records=records,
-        default_prefix=info["env_vars"]["CONDA_ROOT"],
-        download_dir=download_dir,
-        user_conda=user_conda,
-        channels_remap=info.get("channels_remap", []),
-        layering_strategy="layered",
-    )
-
-    if schema.BuildArtifactType.DOCKER_MANIFEST in conda_store.build_artifacts:
-        conda_store.container_registry.store_image(conda_store, build, image)
-
-    if schema.BuildArtifactType.CONTAINER_REGISTRY in conda_store.build_artifacts:
-        conda_store.container_registry.push_image(conda_store, build, image)

@@ -246,7 +246,7 @@ class BuildArtifact(Base):
     build_id = Column(Integer, ForeignKey("build.id"))
     build = relationship(Build, back_populates="build_artifacts")
 
-    artifact_type = Column(Enum(schema.BuildArtifactType), nullable=False)
+    artifact_type = Column(Unicode(255), nullable=False)
 
     key = Column(Unicode(255))
 
