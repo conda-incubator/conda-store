@@ -17,6 +17,7 @@ from sqlalchemy import (
     DateTime,
     UniqueConstraint,
     ForeignKey,
+    UnicodeText,
     or_,
     and_
 )
