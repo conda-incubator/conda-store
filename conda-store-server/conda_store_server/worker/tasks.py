@@ -113,14 +113,12 @@ def task_update_conda_channels(self):
 
 @current_app.task(base=WorkerTask, name="task_update_conda_channel", bind=True)
 def task_update_conda_channel(self, channel_name):
-    
     conda_store = self.worker.conda_store
 
     task_key = f"lock_{self.name}_{channel_name}"
 
     is_locked = False
-    lock = redis.Redis(host=self.worker.redis_host, 
-                        port=self.worker.redis_port).lock(task_key)
+    lock = conda_store.redis.lock(task_key)
     try:
         is_locked = lock.acquire(blocking=False)
         if is_locked:

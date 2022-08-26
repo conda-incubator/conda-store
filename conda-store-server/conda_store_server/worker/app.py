@@ -41,18 +41,6 @@ class CondaStoreWorker(Application):
         allow_none=True,
     )
 
-    redis_host = Unicode(
-        "", 
-        help="Redis endpoint",
-        config=True
-    )
-
-    redis_port = Integer(
-        "", 
-        help="Redis port, usually 6379 ",
-        config=True
-    )
-
     config_file = Unicode(
         help="config file to load for conda-store",
         config=True,
