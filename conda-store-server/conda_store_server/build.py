@@ -71,7 +71,6 @@ def set_build_completed(conda_store, build, logs, packages):
                 )
         package["channel_id"] = channel_orm.id
 
-
         # Retrieve the package from the DB if it already exists
         _package = (
             conda_store.db.query(orm.CondaPackage)
@@ -105,7 +104,6 @@ def set_build_completed(conda_store, build, logs, packages):
 
         build.package_builds.append(_package_build)
         conda_store.db.commit()
-
 
     conda_store.storage.set(
         conda_store.db,
@@ -141,6 +139,7 @@ def set_build_completed(conda_store, build, logs, packages):
 
 
 def build_environment(conda_command, environment_filename, conda_prefix):
+
     return subprocess.check_output(
         [
             conda_command,

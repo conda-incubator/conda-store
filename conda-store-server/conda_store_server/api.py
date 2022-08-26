@@ -205,11 +205,11 @@ def get_build_packages(
             filters.append(orm.CondaPackage.name.contains(search, autoescape=True))
     if build:
         filters.append(orm.CondaPackageBuild.build.contains(build, autoescape=True))
-    
+
     return (
         db.query(orm.CondaPackage)
-         .join(orm.Build.package_builds)
-         .join(orm.CondaPackage, orm.CondaChannel)
+        .join(orm.Build.package_builds)
+        .join(orm.CondaPackage, orm.CondaChannel)
         .filter(*filters)
     )
 

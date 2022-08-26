@@ -19,7 +19,7 @@ from sqlalchemy import (
     ForeignKey,
     UnicodeText,
     or_,
-    and_
+    and_,
 )
 from sqlalchemy.orm import sessionmaker, relationship, scoped_session, backref
 from sqlalchemy.ext.declarative import declarative_base
@@ -76,6 +76,7 @@ class Specification(Base):
     builds = relationship("Build", back_populates="specification")
     solves = relationship("Solve", back_populates="specification")
 
+
 solve_conda_package_build = Table(
     "solve_conda_package_build",
     Base.metadata,
@@ -101,7 +102,9 @@ class Solve(Base):
     started_on = Column(DateTime, default=None)
     ended_on = Column(DateTime, default=None)
 
-    package_builds = relationship("CondaPackageBuild", secondary=solve_conda_package_build)
+    package_builds = relationship(
+        "CondaPackageBuild", secondary=solve_conda_package_build
+    )
 
 
 build_conda_package = Table(
@@ -307,7 +310,7 @@ class CondaChannel(Base):
         print(f"repodata downloaded ", flush=True)
 
         # store the file locally for debug later
-        #with open(f"/Users/pierrot/downloads/{self.name.split('/')[-1]}_{datetime.datetime.now()}.json", "w") as f:
+        # with open(f"/Users/pierrot/downloads/{self.name.split('/')[-1]}_{datetime.datetime.now()}.json", "w") as f:
         #    f.write(json.dumps(repodata, indent=4, sort_keys=True))
 
         if not repodata:
@@ -317,8 +320,8 @@ class CondaChannel(Base):
         for architecture in repodata["architectures"]:
             print(f"architecture  : {architecture} ", flush=True)
 
-            #rdb.set_trace()
-            '''
+            # rdb.set_trace()
+            """
             Context :
                For each architecture, we need to add all the packages (`conda_package`), 
                and all their builds (`conda_package_build`), with their relationship.
@@ -339,54 +342,58 @@ class CondaChannel(Base):
                Second step : we insert all the new conda_package_builds rows
 
                These steps are detailled below.
-            '''
+            """
 
-            # package_data contains all the data for the iterated architecture. 
+            # package_data contains all the data for the iterated architecture.
             # Each dict represents a conda_package_build and also contains
             # thge data of the conda_package
             packages_data = list(
                 repodata["architectures"][architecture]["packages"].values()
             )
-            
+
             # First, we retrieve all the pairs "package name - pacakge version"
             # in the DB. This represents all the existing packages.
-            existing_packages_keys = [ 
+            existing_packages_keys = [
                 f"{_[0]}-{_[1]}-{self.id}"
-                for _ in db.query(CondaPackage.name, CondaPackage.version) 
-                .filter(CondaPackage.channel_id == self.id) 
-                .all() ]
-            
+                for _ in db.query(CondaPackage.name, CondaPackage.version)
+                .filter(CondaPackage.channel_id == self.id)
+                .all()
+            ]
+
             # Then, we filter packages_data to keep only the new packages.
 
             # `packages` associates a key representing the package like "{name}-{version}-{channel_id}"
             # to a dict representing a new package to insert.
             # By using a dict with such key, we avoid potential duplicates from within the repodata.
             packages = {}
-            
+
             for p_build in packages_data:
 
                 package_key = f'{p_build["name"]}-{p_build["version"]}-{self.id}'
 
                 # Filtering out : if the key already exists in existing_packages_keys,
                 # then the package is already if DB, we don't add it.
-                if package_key not in packages and package_key not in existing_packages_keys:    
-                
+                if (
+                    package_key not in packages
+                    and package_key not in existing_packages_keys
+                ):
+
                     new_package_dict = {
-                            "channel_id":self.id,
-                            "license":p_build.get("license"),
-                            "license_family":p_build.get("license_family"),
-                            "name":p_build["name"],
-                            "version":p_build["version"],
-                            "summary":repodata.get("packages", {})
-                                                .get(p_build["name"], {})
-                                                .get("summary"),
-                            "description":repodata.get("packages", {})
-                                            .get(p_build["name"], {})
-                                            .get("description"),
+                        "channel_id": self.id,
+                        "license": p_build.get("license"),
+                        "license_family": p_build.get("license_family"),
+                        "name": p_build["name"],
+                        "version": p_build["version"],
+                        "summary": repodata.get("packages", {})
+                        .get(p_build["name"], {})
+                        .get("summary"),
+                        "description": repodata.get("packages", {})
+                        .get(p_build["name"], {})
+                        .get("description"),
                     }
 
-                    packages[ package_key ] = new_package_dict
-                
+                    packages[package_key] = new_package_dict
+
             print(f"packages to insert : {len(packages)} ", flush=True)
 
             try:
@@ -396,10 +403,8 @@ class CondaChannel(Base):
                 print(f"{e}", flush=True)
                 db.rollback()
                 raise e
-                
-            print("insert packages done", flush=True) 
 
-
+            print("insert packages done", flush=True)
 
             print(f"retrieving existing sha256  : ", flush=True)
             existing_sha256 = {
@@ -419,12 +424,13 @@ class CondaChannel(Base):
             # Also, we exclude pacakge_builds for which the sha256 is already in the DB
             packages_builds = {}
             for pb in packages_data:
-                if pb['sha256'] not in existing_sha256:
-                    packages_builds[ pb['sha256'] ] = pb
+                if pb["sha256"] not in existing_sha256:
+                    packages_builds[pb["sha256"]] = pb
 
             packages_builds = packages_builds.values()
-            print(f"package builds after filtering : {len(packages_builds)} ", flush=True)
-
+            print(
+                f"package builds after filtering : {len(packages_builds)} ", flush=True
+            )
 
             # This associates a tuple like "(name,version)" representing a package
             # to all its builds
@@ -433,7 +439,14 @@ class CondaChannel(Base):
             for p_build in packages_builds:
 
                 has_null = False
-                non_null_keys = ['build', 'build_number', 'depends', 'md5', 'sha256', 'size']
+                non_null_keys = [
+                    "build",
+                    "build_number",
+                    "depends",
+                    "md5",
+                    "sha256",
+                    "size",
+                ]
                 for k in non_null_keys:
                     if p_build[k] is None:
                         has_null = True
@@ -441,54 +454,69 @@ class CondaChannel(Base):
                 if has_null:
                     continue
 
-                if p_build['depends'] == []:
-                    p_build['depends'] = ""
+                if p_build["depends"] == []:
+                    p_build["depends"] = ""
 
-                package_key = (p_build["name"],p_build["version"])
+                package_key = (p_build["name"], p_build["version"])
 
                 new_package_build_dict = {
-                    "build":p_build["build"],
-                    "build_number":p_build["build_number"],
-                    "constrains":p_build.get("constrains"),
-                    "depends":p_build["depends"],
-                    "md5":p_build["md5"],
-                    "sha256":p_build["sha256"],
-                    "size":p_build["size"],
-                    "subdir":p_build.get("subdir"),
-                    "timestamp":p_build.get("timestamp"),
+                    "build": p_build["build"],
+                    "build_number": p_build["build_number"],
+                    "constrains": p_build.get("constrains"),
+                    "depends": p_build["depends"],
+                    "md5": p_build["md5"],
+                    "sha256": p_build["sha256"],
+                    "size": p_build["size"],
+                    "subdir": p_build.get("subdir"),
+                    "timestamp": p_build.get("timestamp"),
                 }
 
                 if package_key not in package_builds:
-                    package_builds[ package_key ] = []
-                
-                package_builds[ package_key ].append(new_package_build_dict)
+                    package_builds[package_key] = []
+
+                package_builds[package_key].append(new_package_build_dict)
             print("CondaPackageBuild objects created", flush=True)
-    
+
             batch_size = 1000
             all_package_keys = list(package_builds.keys())
-            for i in range(0,len(all_package_keys), batch_size): 
-                #rdb.set_trace()
-                print(f"handling subset at index {i} (batch size {batch_size}", flush=True)
-                subset_keys = all_package_keys[i:i+batch_size]
-                
-                # retrieve the parent packages for the subset 
+            for i in range(0, len(all_package_keys), batch_size):
+                # rdb.set_trace()
+                print(
+                    f"handling subset at index {i} (batch size {batch_size}", flush=True
+                )
+                subset_keys = all_package_keys[i : i + batch_size]
+
+                # retrieve the parent packages for the subset
                 print(f"retrieve the parent packages for the subset ", flush=True)
                 statements = []
                 for p_name, p_version in subset_keys:
-                    statements.append(  and_( CondaPackage.name == p_name, CondaPackage.version == p_version ) )
-                all_parent_packages = db.query(CondaPackage).filter(or_(*statements)).all()
-                all_parent_packages = { (_.name, _.version):_ for _ in  all_parent_packages }
-                print(f"parent packages retrieved : {len(all_parent_packages)} ", flush=True)
+                    statements.append(
+                        and_(
+                            CondaPackage.name == p_name,
+                            CondaPackage.version == p_version,
+                        )
+                    )
+                all_parent_packages = (
+                    db.query(CondaPackage).filter(or_(*statements)).all()
+                )
+                all_parent_packages = {
+                    (_.name, _.version): _ for _ in all_parent_packages
+                }
+                print(
+                    f"parent packages retrieved : {len(all_parent_packages)} ",
+                    flush=True,
+                )
 
                 for p_name, p_version in subset_keys:
                     for p_build_dict in package_builds[(p_name, p_version)]:
-                        p_build_dict['package_id'] = all_parent_packages[(p_name, p_version)].id
-                        
+                        p_build_dict["package_id"] = all_parent_packages[
+                            (p_name, p_version)
+                        ].id
 
                 print("ready to bulk save", flush=True)
 
             try:
-                
+
                 flatten = []
                 for (p_name, p_version) in package_builds:
                     flatten += package_builds[(p_name, p_version)]
@@ -499,17 +527,14 @@ class CondaChannel(Base):
             except Exception as e:
                 print(f"{e}", flush=True)
                 rdb.set_trace()
-                
+
                 raise e
 
-
             print(f"DONE for architecture  : {architecture}", flush=True)
-
 
         self.last_update = datetime.datetime.utcnow()
         db.commit()
         print(f"update packages DONE ")
-
 
 
 class CondaPackage(Base):

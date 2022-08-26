@@ -20,6 +20,7 @@ from conda_store_server.build import (
 from celery.execute import send_task
 import redis
 
+
 @worker_ready.connect
 def at_start(sender, **k):
     with sender.app.connection():
@@ -63,7 +64,8 @@ def task_update_storage_metrics(self):
         conda_store.db, conda_store.store_directory
     )
 
-''' Former version of task_update_conda_channels
+
+""" Former version of task_update_conda_channels
 @TODO : remove once the new design is validated by Chris
 
 @current_app.task(base=WorkerTask, name="task_update_conda_channels", bind=True)
@@ -81,9 +83,9 @@ def task_update_conda_channels(self):
         # let one of them finish and the other try again at a later
         # time
         self.retry(exc=exc, countdown=random.randrange(15, 30))
-'''
+"""
 
-'''
+"""
 Pierre - May 29th 2022
 This is a different version of task_update_conda_channels.
 It's designed to run one task per channel, with a lock to avoid triggering twice a task for a given channel.
@@ -100,7 +102,8 @@ https://stackoverflow.com/questions/12003221/celery-task-schedule-ensuring-a-tas
 Alternatively, instead of redis, there's a way to lock using django's cache :
 https://docs.celeryq.dev/en/latest/tutorials/task-cookbook.html#ensuring-a-task-is-only-executed-one-at-a-time
 
-'''
+"""
+
 
 @current_app.task(base=WorkerTask, name="task_update_conda_channels", bind=True)
 def task_update_conda_channels(self):
@@ -122,16 +125,17 @@ def task_update_conda_channel(self, channel_name):
     try:
         is_locked = lock.acquire(blocking=False)
         if is_locked:
-           channel = api.get_conda_channel(conda_store.db, channel_name  )
-           conda_store.log.debug(f"updating packages for channel {channel.name}")
-           channel.update_packages(conda_store.db, subdirs=conda_store.conda_platforms) 
+            channel = api.get_conda_channel(conda_store.db, channel_name)
+            conda_store.log.debug(f"updating packages for channel {channel.name}")
+            channel.update_packages(conda_store.db, subdirs=conda_store.conda_platforms)
 
         else:
-            conda_store.log.debug(f"skipping updating packages for channel {channel_name} - already in progress")    
+            conda_store.log.debug(
+                f"skipping updating packages for channel {channel_name} - already in progress"
+            )
     finally:
         if is_locked:
             lock.release()
-            
 
 
 @current_app.task(base=WorkerTask, name="task_solve_conda_environment", bind=True)
