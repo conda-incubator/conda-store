@@ -1,11 +1,9 @@
 import shutil
 import os
-import random
 
 from celery import Task, current_app
 from celery.signals import worker_ready
 import yaml
-from sqlalchemy.exc import IntegrityError
 
 from conda_store_server.worker.app import CondaStoreWorker
 from conda_store_server import api, environment, utils, schema
@@ -18,7 +16,6 @@ from conda_store_server.build import (
 )
 
 from celery.execute import send_task
-import redis
 
 
 @worker_ready.connect
@@ -94,7 +91,7 @@ Only caveat : it requires redis. I need to talk with Chris about this.
 The reason behind having the task running only once at a time is
 to avoid integrity exceptions when running channel.update_packages.
 
-Sources : 
+Sources :
 Lock : http://loose-bits.com/2010/10/distributed-task-locking-in-celery.html
 Redis : https://pypi.org/project/redis/
 https://stackoverflow.com/questions/12003221/celery-task-schedule-ensuring-a-task-is-only-executed-one-at-a-time
@@ -136,13 +133,6 @@ def task_update_conda_channel(self, channel_name):
     finally:
         if is_locked:
             lock.release()
-
-
-@current_app.task(base=WorkerTask, name="task_solve_conda_environment", bind=True)
-def task_solve_conda_environment(self, solve_id):
-    conda_store = self.worker.conda_store
-    solve = api.get_solve(conda_store.db, solve_id)
-    solve_conda_environment(conda_store, solve)
 
 
 @current_app.task(base=WorkerTask, name="task_solve_conda_environment", bind=True)

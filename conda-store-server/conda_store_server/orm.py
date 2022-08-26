@@ -1,9 +1,6 @@
-import itertools
 import os
 import datetime
 import shutil
-import itertools
-import math
 
 from sqlalchemy import (
     Table,
@@ -25,8 +22,6 @@ from sqlalchemy.orm import sessionmaker, relationship, scoped_session, backref
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import create_engine
-from sqlalchemy.exc import IntegrityError
-
 
 from conda_store_server import utils, schema
 from conda_store_server.environment import validate_environment
@@ -35,7 +30,7 @@ from conda_store_server.conda import download_repodata
 # for debug only
 # @TODO remove
 from celery.contrib import rdb
-import json
+
 
 Base = declarative_base()
 
@@ -305,9 +300,9 @@ class CondaChannel(Base):
     def update_packages(self, db, subdirs=None):
         print(f"update packages {self.name} ", flush=True)
 
-        print(f"Downloading repodata ...  ", flush=True)
+        print("Downloading repodata ...  ", flush=True)
         repodata = download_repodata(self.name, self.last_update, subdirs=subdirs)
-        print(f"repodata downloaded ", flush=True)
+        print("repodata downloaded ", flush=True)
 
         # store the file locally for debug later
         # with open(f"/Users/pierrot/downloads/{self.name.split('/')[-1]}_{datetime.datetime.now()}.json", "w") as f:
@@ -323,21 +318,21 @@ class CondaChannel(Base):
             # rdb.set_trace()
             """
             Context :
-               For each architecture, we need to add all the packages (`conda_package`), 
+               For each architecture, we need to add all the packages (`conda_package`),
                and all their builds (`conda_package_build`), with their relationship.
-               As of May 2022, based on the default channels `main` and `conda-forge`, 
+               As of May 2022, based on the default channels `main` and `conda-forge`,
                there are 136K packages and 367K conda_package_build
-            
+
             Trick :
                To insert these data fast, we need to get rid of the overhead induced
                by the ORM layer, and use session.bulk_insert_mappings.
-             
-            Caveat : 
-               bulk insertion is handy, but we need to avoid breaking integrity constraint, 
-               This implies that we need to bulk_insert only new data, filtering out 
+
+            Caveat :
+               bulk insertion is handy, but we need to avoid breaking integrity constraint,
+               This implies that we need to bulk_insert only new data, filtering out
                the data already in the DB
-             
-            Algorithm : 
+
+            Algorithm :
                First step :  we insert all the new conda_package rows
                Second step : we insert all the new conda_package_builds rows
 
@@ -406,7 +401,7 @@ class CondaChannel(Base):
 
             print("insert packages done", flush=True)
 
-            print(f"retrieving existing sha256  : ", flush=True)
+            print("retrieving existing sha256  : ", flush=True)
             existing_sha256 = {
                 _[0]
                 for _ in db.query(CondaPackageBuild.sha256)
@@ -415,7 +410,7 @@ class CondaChannel(Base):
                 .filter(CondaPackageBuild.subdir == architecture)
                 .all()
             }
-            print(f"retrieved existing sha256  : ", flush=True)
+            print("retrieved existing sha256  : ", flush=True)
             print(f"package data before filtering  : {len(packages_data)} ", flush=True)
 
             # We store the package builds in a dict indexed by their sha256
@@ -487,7 +482,7 @@ class CondaChannel(Base):
                 subset_keys = all_package_keys[i : i + batch_size]
 
                 # retrieve the parent packages for the subset
-                print(f"retrieve the parent packages for the subset ", flush=True)
+                print("retrieve the parent packages for the subset ", flush=True)
                 statements = []
                 for p_name, p_version in subset_keys:
                     statements.append(
@@ -534,7 +529,7 @@ class CondaChannel(Base):
 
         self.last_update = datetime.datetime.utcnow()
         db.commit()
-        print(f"update packages DONE ")
+        print("update packages DONE ")
 
 
 class CondaPackage(Base):
