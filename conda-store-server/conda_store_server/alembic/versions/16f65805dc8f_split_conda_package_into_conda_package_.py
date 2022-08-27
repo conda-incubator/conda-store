@@ -73,10 +73,18 @@ def upgrade():
     )
 
     # Add Foreign Key channel_id on conda_package_build
-    op.add_column('conda_package_build', sa.Column('channel_id', sa.Integer(), nullable=True))
-    op.drop_constraint('_conda_package_build_uc', 'conda_package_build', type_='unique')
-    op.create_unique_constraint('_conda_package_build_uc', 'conda_package_build', ['channel_id', 'package_id', 'subdir', 'build', 'build_number', 'sha256'])
-    op.create_foreign_key(None, 'conda_package_build', 'conda_channel', ['channel_id'], ['id'])
+    op.add_column(
+        "conda_package_build", sa.Column("channel_id", sa.Integer(), nullable=True)
+    )
+    op.drop_constraint("_conda_package_build_uc", "conda_package_build", type_="unique")
+    op.create_unique_constraint(
+        "_conda_package_build_uc",
+        "conda_package_build",
+        ["channel_id", "package_id", "subdir", "build", "build_number", "sha256"],
+    )
+    op.create_foreign_key(
+        None, "conda_package_build", "conda_channel", ["channel_id"], ["id"]
+    )
 
     # migrate here before drop
 

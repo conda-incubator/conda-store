@@ -457,7 +457,7 @@ class CondaChannel(Base):
                 new_package_build_dict = {
                     "build": p_build["build"],
                     "build_number": p_build["build_number"],
-                    "channel_id":self.id,
+                    "channel_id": self.id,
                     "constrains": p_build.get("constrains"),
                     "depends": p_build["depends"],
                     "md5": p_build["md5"],
@@ -585,11 +585,11 @@ class CondaPackageBuild(Base):
     package_id = Column(Integer, ForeignKey("conda_package.id"))
     package = relationship(CondaPackage, back_populates="builds")
 
-    '''
+    """
     Some package builds have the exact same data from different channels.
     Thus, when adding a channel, populating CondaPackageBuild can encounter
     duplicate keys errors. That's why we need to distinguish them by channel_id.
-    '''
+    """
     channel_id = Column(Integer, ForeignKey("conda_channel.id"))
     channel = relationship(CondaChannel)
 
