@@ -89,7 +89,8 @@ def list_environments(
 
     if packages:
         query = (
-            query.join(orm.Build.packages)
+            query.join(orm.Build.package_builds)
+            .join(orm.CondaPackageBuild.package)
             .filter(orm.CondaPackage.name.in_(packages))
             .group_by(orm.Namespace.name, orm.Environment.name, orm.Environment.id)
             .having(func.count() == len(packages))
@@ -216,10 +217,9 @@ def get_build_packages(
 
 def get_build_lockfile(db, build_id: int):
     build = db.query(orm.Build).filter(orm.Build.id == build_id).first()
-    packages = [pb.package for pb in build.package_builds]
     packages = [
-        f"{row.channel.name}/{row.subdir}/{row.name}-{row.version}-{row.build}.tar.bz2#{row.md5}"
-        for row in packages
+        f"{row.package.channel.name}/{row.subdir}/{row.package.name}-{row.package.version}-{row.build}.tar.bz2#{row.md5}"
+        for row in build.package_builds
     ]
     return """#platform: {0}
 @EXPLICIT
