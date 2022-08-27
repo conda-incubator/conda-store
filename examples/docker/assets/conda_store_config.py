@@ -59,8 +59,6 @@ c.JupyterHubOAuthAuthentication.tls_verify = False
 c.CondaStoreWorker.log_level = logging.INFO
 c.CondaStoreWorker.watch_paths = ["/opt/conda-store/environments/"]
 c.CondaStoreWorker.concurrency = 4
-c.CondaStoreWorker.redis_host="redis"
-c.CondaStoreWorker.redis_port=6379
 
 
 
