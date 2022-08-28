@@ -90,31 +90,37 @@ def upgrade():
 
     conn = op.get_bind()
     # Step 1 : populate conda_package_build with the data from conda_package
-    conn.execute("""
+    conn.execute(
+        """
                 INSERT INTO conda_package_build (md5, constrains, sha256, build_number, timestamp, size, build, subdir, depends, package_id, channel_id)
                 SELECT md5, constrains, sha256, build_number, timestamp, size, build, subdir, depends, id, channel_id 
                 FROM conda_package;
-            """)
+            """
+    )
 
     # Step 2 : migrate the packages of builds, to point to conda_package_build data
     # instead of conda_package
-    conn.execute("""
+    conn.execute(
+        """
                 INSERT INTO build_conda_package_build (build_id, conda_package_build_id) 
                 SELECT bcp.build_id, cpb.id
                 FROM build_conda_package bcp
                 LEFT JOIN conda_package cp ON bcp.conda_package_id = cp.id 
                 LEFT JOIN conda_package_build cpb ON cp.sha256 = cpb.sha256 AND cp.channel_id = cpb.channel_id;
-            """)
+            """
+    )
 
-    # Step 3 : same logic with the solves 
-    conn.execute("""
+    # Step 3 : same logic with the solves
+    conn.execute(
+        """
                 INSERT INTO solve_conda_package_build (solve_id, conda_package_build_id) 
                 SELECT scp.solve_id, cpb.id
                 FROM solve_conda_package scp
                 LEFT JOIN conda_package cp ON scp.conda_package_id = cp.id 
                 LEFT JOIN conda_package_build cpb ON cp.sha256 = cpb.sha256 AND cp.channel_id = cpb.channel_id;
-            """)
-    
+            """
+    )
+
     op.drop_table("solve_conda_package")
     op.drop_table("build_conda_package")
 
