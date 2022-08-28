@@ -17,7 +17,7 @@ depends_on = None
 
 
 def upgrade():
-    
+
     # To migrate the data from conda_package, we'll use a temporary table.
     # We'll populate conda_package_tmp with the right data, then delete
     # conda_package and rename conda_package_tmp into conda_package
@@ -33,7 +33,6 @@ def upgrade():
         sa.Column("description", sa.Text(), nullable=True),
     )
 
-    
     # Creates table conda_package_build
     op.create_table(
         "conda_package_build",
@@ -63,7 +62,7 @@ def upgrade():
             name="_conda_package_build_uc",
         ),
     )
-    
+
     # Creates index on build field
     op.create_index(
         op.f("ix_conda_package_build_build"),
@@ -96,7 +95,6 @@ def upgrade():
         sa.PrimaryKeyConstraint("solve_id", "conda_package_build_id"),
     )
 
-    
     op.drop_constraint("_conda_package_build_uc", "conda_package_build", type_="unique")
     op.create_unique_constraint(
         "_conda_package_build_uc",
@@ -107,15 +105,15 @@ def upgrade():
         None, "conda_package_build", "conda_channel", ["channel_id"], ["id"]
     )
 
-    
-    # Migration starts here  
-    
-    # Step 1 : 
+    # Migration starts here
+
+    # Step 1 :
     # We insert in conda_package_tmp its right data.
     # We need to make a group by and use MAX() on the non-grouped fields, because
     # For a given (channel_id, name, version), the description or the license might be different.
     # Sometimes, the difference is just a dash in the license name : "Apache 2" -> "Apache-2"
-    op.execute('''
+    op.execute(
+        """
     INSERT INTO conda_package_tmp (channel_id, license, license_family, name, version, summary, description)
         (
              SELECT channel_id, MAX(license), MAX(license_family), name, version, MAX(summary), MAX(description)
@@ -123,28 +121,28 @@ def upgrade():
             GROUP BY channel_id, name, version
         )
 
-    ''')
-    
-    
+    """
+    )
+
     # Step 2 : populate conda_package_build with the data from conda_package
     # We make a join on conda_package_tmp because we want the new package id (conda_package_tmp.id)
     # and not the former one (conda_package.id)
     op.execute(
         """
                 INSERT INTO conda_package_build (md5, constrains, sha256, build_number, timestamp, size, build, subdir, depends, package_id, channel_id)
-                SELECT cp.md5, 
-                    cp.constrains, 
-                    cp.sha256, 
-                    cp.build_number, 
-                    cp.timestamp, 
-                    cp.size, 
-                    cp.build, 
-                    cp.subdir, 
-                    cp.depends, 
-                    tmp.id, 
-                    cp.channel_id 
+                SELECT cp.md5,
+                    cp.constrains,
+                    cp.sha256,
+                    cp.build_number,
+                    cp.timestamp,
+                    cp.size,
+                    cp.build,
+                    cp.subdir,
+                    cp.depends,
+                    tmp.id,
+                    cp.channel_id
                 FROM conda_package cp
-                LEFT JOIN conda_package_tmp tmp 
+                LEFT JOIN conda_package_tmp tmp
                     ON cp.channel_id = tmp.channel_id
                     AND cp.name = tmp.name
                     AND cp.version = tmp.version;
@@ -155,10 +153,10 @@ def upgrade():
     # instead of conda_package.
     op.execute(
         """
-                INSERT INTO build_conda_package_build (build_id, conda_package_build_id) 
+                INSERT INTO build_conda_package_build (build_id, conda_package_build_id)
                 SELECT bcp.build_id, cpb.id
                 FROM build_conda_package bcp
-                LEFT JOIN conda_package cp ON bcp.conda_package_id = cp.id 
+                LEFT JOIN conda_package cp ON bcp.conda_package_id = cp.id
                 LEFT JOIN conda_package_build cpb ON cp.sha256 = cpb.sha256 AND cp.channel_id = cpb.channel_id;
             """
     )
@@ -166,10 +164,10 @@ def upgrade():
     # Step 4 : same logic with the solves
     op.execute(
         """
-                INSERT INTO solve_conda_package_build (solve_id, conda_package_build_id) 
+                INSERT INTO solve_conda_package_build (solve_id, conda_package_build_id)
                 SELECT scp.solve_id, cpb.id
                 FROM solve_conda_package scp
-                LEFT JOIN conda_package cp ON scp.conda_package_id = cp.id 
+                LEFT JOIN conda_package cp ON scp.conda_package_id = cp.id
                 LEFT JOIN conda_package_build cpb ON cp.sha256 = cpb.sha256 AND cp.channel_id = cpb.channel_id;
             """
     )
@@ -187,7 +185,7 @@ def upgrade():
     op.create_unique_constraint(
         "_conda_package_uc", "conda_package", ["channel_id", "name", "version"]
     )
-    
+
     op.create_index(
         op.f("ix_conda_package_channel_id"),
         "conda_package",
@@ -203,7 +201,6 @@ def upgrade():
     op.create_foreign_key(
         None, "conda_package", "conda_channel", ["channel_id"], ["id"]
     )
-
 
     op.create_unique_constraint(
         "_namespace_name_uc", "environment", ["namespace_id", "name"]
