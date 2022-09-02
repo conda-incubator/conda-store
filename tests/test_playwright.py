@@ -44,10 +44,14 @@ def test_integration(page: Page):
     page.locator("text=filesystem / python-flask-env").click()
     # expect(page).to_have_url("http://localhost:5000/conda-store/environment/filesystem/python-flask-env/")
 
+    page.locator("a", has_text="Build").click()
+
     # polling for build to complete
     for i in range(10):
-        if page.locator("#build-status", has_text="COMPLETED"):
+        locator = page.locator('#build-status:has-text("COMPLETED")')
+        if locator.count() == 1:
             break
+        page.reload()
         time.sleep(10)
     else:
         raise Exception("Error waiting for build to complete when polling")
