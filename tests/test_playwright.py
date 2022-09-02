@@ -8,7 +8,7 @@ from playwright.sync_api import Page
 def test_integration(page: Page):
     # Go to http://localhost:5000/conda-store/
     page.goto("http://localhost:5000/conda-store/", wait_until="domcontentloaded")
-    page.screenshot(path="screenshots/conda-store-unauthenticated.png")
+    page.screenshot(path="test-results/conda-store-unauthenticated.png")
 
     # Click text=Login
     page.locator("text=Login").click()
@@ -31,7 +31,7 @@ def test_integration(page: Page):
     with page.expect_navigation():
         page.locator("button:has-text(\"Sign In\")").click()
 
-    page.screenshot(path="screenshots/conda-store-authenticated.png")
+    page.screenshot(path="test-results/conda-store-authenticated.png")
 
     # Click [placeholder="Search"]
     page.locator("[placeholder=\"Search\"]").click()
@@ -59,6 +59,6 @@ def test_integration(page: Page):
     else:
         raise Exception("Error waiting for build to complete when polling")
 
-    page.screenshot(path="screenshots/conda-store-build-complete.png")
+    page.screenshot(path="test-results/conda-store-build-complete.png")
 
     page.goto("http://localhost:5000/conda-store/")
