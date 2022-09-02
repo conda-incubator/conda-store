@@ -42,7 +42,6 @@ c.CondaStoreServer.port = 5000
 c.CondaStoreServer.url_prefix = "/conda-store"
 c.CondaStoreServer.behind_proxy = True
 
-
 # ==================================
 #         auth settings
 # ==================================
