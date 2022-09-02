@@ -7,7 +7,8 @@ from playwright.sync_api import Page
 @pytest.mark.playwright
 def test_integration(page: Page):
     # Go to http://localhost:5000/conda-store/
-    page.goto("http://localhost:5000/conda-store/")
+    page.goto("http://localhost:5000/conda-store/", wait_until="domcontentloaded")
+    page.screenshot(path="screenshots/conda-store-unauthenticated.png")
 
     # Click text=Login
     page.locator("text=Login").click()
@@ -29,6 +30,8 @@ def test_integration(page: Page):
     # with page.expect_navigation(url="http://localhost:5000/conda-store/"):
     with page.expect_navigation():
         page.locator("button:has-text(\"Sign In\")").click()
+
+    page.screenshot(path="screenshots/conda-store-authenticated.png")
 
     # Click [placeholder="Search"]
     page.locator("[placeholder=\"Search\"]").click()
@@ -55,5 +58,7 @@ def test_integration(page: Page):
         time.sleep(10)
     else:
         raise Exception("Error waiting for build to complete when polling")
+
+    page.screenshot(path="screenshots/conda-store-build-complete.png")
 
     page.goto("http://localhost:5000/conda-store/")
