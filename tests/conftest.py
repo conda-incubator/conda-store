@@ -12,6 +12,12 @@ CONDA_STORE_USERNAME = os.environ.get('CONDA_STORE_USERNAME', "username")
 CONDA_STORE_PASSWORD = os.environ.get('CONDA_STORE_PASSWORD', "password")
 
 
+def pytest_configure(config):
+    config.addinivalue_line(
+        "markers", "playwright"
+    )
+
+
 class CondaStoreSession(Session):
     def __init__(self, prefix_url: str):
         self.prefix_url = prefix_url
