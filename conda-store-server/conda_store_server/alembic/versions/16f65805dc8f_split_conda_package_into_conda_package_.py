@@ -124,13 +124,15 @@ def upgrade():
     """
     )
 
+    
     # Step 2 : populate conda_package_build with the data from conda_package
     # We make a join on conda_package_tmp because we want the new package id (conda_package_tmp.id)
     # and not the former one (conda_package.id)
     op.execute(
         """
                 INSERT INTO conda_package_build (md5, constrains, sha256, build_number, timestamp, size, build, subdir, depends, package_id, channel_id)
-                SELECT cp.md5,
+                SELECT DISTINCT ON(channel_id, subdir, build, build_number, sha256)
+                    cp.md5,
                     cp.constrains,
                     cp.sha256,
                     cp.build_number,
@@ -145,9 +147,11 @@ def upgrade():
                 LEFT JOIN conda_package_tmp tmp
                     ON cp.channel_id = tmp.channel_id
                     AND cp.name = tmp.name
-                    AND cp.version = tmp.version;
+                    AND cp.version = tmp.version
+                ORDER BY channel_id, subdir, build, build_number, sha256;
             """
     )
+    
 
     # Step 3 : migrate the packages of builds, to point to conda_package_build data
     # instead of conda_package.
