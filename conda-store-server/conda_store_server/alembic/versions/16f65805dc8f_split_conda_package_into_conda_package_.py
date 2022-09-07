@@ -172,7 +172,7 @@ def upgrade():
             """
     )
 
-    # Data are not migrated, let's clean up
+    # Data are now migrated, let's clean up
 
     op.drop_table("solve_conda_package")
     op.drop_table("build_conda_package")
