@@ -62,7 +62,6 @@ def task_update_storage_metrics(self):
     )
 
 
-
 """
 Pierre - May 29th 2022
 This is a different version of task_update_conda_channels.
@@ -78,6 +77,7 @@ Redis : https://pypi.org/project/redis/
 https://stackoverflow.com/questions/12003221/celery-task-schedule-ensuring-a-task-is-only-executed-one-at-a-time
 
 """
+
 
 @current_app.task(base=WorkerTask, name="task_update_conda_channels", bind=True)
 def task_update_conda_channels(self):

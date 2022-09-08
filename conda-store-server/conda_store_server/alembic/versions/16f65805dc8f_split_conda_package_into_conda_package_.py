@@ -7,7 +7,6 @@ Create Date: 2022-08-24 12:01:48.461989
 """
 import sqlalchemy as sa
 from alembic import op
-from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "16f65805dc8f"
@@ -102,7 +101,11 @@ def upgrade():
         ["channel_id", "package_id", "subdir", "build", "build_number", "sha256"],
     )
     op.create_foreign_key(
-        "conda_package_build_channel_id_fkey", "conda_package_build", "conda_channel", ["channel_id"], ["id"]
+        "conda_package_build_channel_id_fkey",
+        "conda_package_build",
+        "conda_channel",
+        ["channel_id"],
+        ["id"],
     )
 
     # Migration starts here
@@ -124,7 +127,6 @@ def upgrade():
     """
     )
 
-    
     # Step 2 : populate conda_package_build with the data from conda_package
     # We make a join on conda_package_tmp because we want the new package id (conda_package_tmp.id)
     # and not the former one (conda_package.id)
@@ -151,7 +153,6 @@ def upgrade():
                 ORDER BY channel_id, subdir, build, build_number, sha256;
             """
     )
-    
 
     # Step 3 : migrate the packages of builds, to point to conda_package_build data
     # instead of conda_package.
@@ -183,9 +184,19 @@ def upgrade():
     op.drop_table("conda_package")
     op.rename_table("conda_package_tmp", "conda_package")
 
-    op.create_foreign_key("build_specification_id_fkey", "build", "specification", ["specification_id"], ["id"])
-    op.create_foreign_key("build_environment_id_fkey", "build", "environment", ["environment_id"], ["id"])
-    op.create_foreign_key("build_artifact_build_id_fkey", "build_artifact", "build", ["build_id"], ["id"])
+    op.create_foreign_key(
+        "build_specification_id_fkey",
+        "build",
+        "specification",
+        ["specification_id"],
+        ["id"],
+    )
+    op.create_foreign_key(
+        "build_environment_id_fkey", "build", "environment", ["environment_id"], ["id"]
+    )
+    op.create_foreign_key(
+        "build_artifact_build_id_fkey", "build_artifact", "build", ["build_id"], ["id"]
+    )
     op.create_unique_constraint(
         "_conda_package_uc", "conda_package", ["channel_id", "name", "version"]
     )
@@ -203,33 +214,56 @@ def upgrade():
         op.f("ix_conda_package_version"), "conda_package", ["version"], unique=False
     )
     op.create_foreign_key(
-        "conda_package_channel_id_fkey", "conda_package", "conda_channel", ["channel_id"], ["id"]
+        "conda_package_channel_id_fkey",
+        "conda_package",
+        "conda_channel",
+        ["channel_id"],
+        ["id"],
     )
 
     op.create_unique_constraint(
         "_namespace_name_uc", "environment", ["namespace_id", "name"]
     )
-    op.create_foreign_key("environment_namespace_id_fkey", "environment", "namespace", ["namespace_id"], ["id"])
-    op.create_foreign_key("environment_current_build_id_fkey", "environment", "build", ["current_build_id"], ["id"])
-    op.create_foreign_key("solve_specification_id_fkey", "solve", "specification", ["specification_id"], ["id"])
+    op.create_foreign_key(
+        "environment_namespace_id_fkey",
+        "environment",
+        "namespace",
+        ["namespace_id"],
+        ["id"],
+    )
+    op.create_foreign_key(
+        "environment_current_build_id_fkey",
+        "environment",
+        "build",
+        ["current_build_id"],
+        ["id"],
+    )
+    op.create_foreign_key(
+        "solve_specification_id_fkey",
+        "solve",
+        "specification",
+        ["specification_id"],
+        ["id"],
+    )
     # ### end Alembic commands ###
 
 
 def downgrade():
-    
-    
+
     op.drop_constraint("solve_specification_id_fkey", "solve", type_="foreignkey")
-    op.drop_constraint("environment_current_build_id_fkey", "environment", type_="foreignkey")
-    op.drop_constraint("environment_namespace_id_fkey", "environment", type_="foreignkey")
+    op.drop_constraint(
+        "environment_current_build_id_fkey", "environment", type_="foreignkey"
+    )
+    op.drop_constraint(
+        "environment_namespace_id_fkey", "environment", type_="foreignkey"
+    )
     op.drop_constraint("_namespace_name_uc", "environment", type_="unique")
 
-
-    
-    # To migrate the data from conda_package and conda_package_build back into 
+    # To migrate the data from conda_package and conda_package_build back into
     # one table for both, we'll use a temporary table.
     # We'll populate conda_package_tmp with the right data, then delete
     # conda_package and conda_package_build, and then rename conda_package_tmp into conda_package
-    
+
     op.create_table(
         "conda_package_tmp",
         sa.Column("id", sa.Integer(), nullable=False, primary_key=True),
@@ -272,7 +306,6 @@ def downgrade():
     ):
         pass
 
-
     op.create_table(
         "build_conda_package",
         sa.Column("build_id", sa.INTEGER(), autoincrement=False, nullable=False),
@@ -294,31 +327,29 @@ def downgrade():
         ),
     )
 
-    
-
     # Downgrade migration starts here
 
     # Step 1 :
     # We insert in conda_package_tmp its right data.
-    
+
     op.execute(
         """INSERT INTO conda_package_tmp (channel_id, build,build_number,constrains,depends, license, license_family,
-								md5, name, sha256, size,subdir, timestamp, version, summary, description)
-            SELECT  cp.channel_id, 
+                                            md5, name, sha256, size,subdir, timestamp, version, summary, description)
+            SELECT  cp.channel_id,
                     cpb.build,
                     cpb.build_number,
                     cpb.constrains,
-                    cpb.depends, 
-                    cp.license, 
+                    cpb.depends,
+                    cp.license,
                     cp.license_family,
-                    cpb.md5, 
-                    cp.name, 
+                    cpb.md5,
+                    cp.name,
                     cpb.sha256,
                     cpb.size,
-                    cpb.subdir, 
-                    cpb.timestamp, 
-                    cp.version, 
-                    cp.summary, 
+                    cpb.subdir,
+                    cpb.timestamp,
+                    cp.version,
+                    cp.summary,
                     cp.description
             FROM conda_package cp
             LEFT JOIN conda_package_build cpb ON cpb.package_id = cp.id;
@@ -329,7 +360,7 @@ def downgrade():
     # instead of conda_package.
     op.execute(
         """
-                INSERT INTO build_conda_package (build_id, conda_package_id) 
+                INSERT INTO build_conda_package (build_id, conda_package_id)
                 SELECT bcpb.build_id,
                        cpt.id
                 FROM build_conda_package_build bcpb
@@ -339,7 +370,7 @@ def downgrade():
             """
     )
 
-    # Step 3 : same logic with the solves 
+    # Step 3 : same logic with the solves
     op.execute(
         """
                 INSERT INTO solve_conda_package (solve_id, conda_package_id)
@@ -352,11 +383,11 @@ def downgrade():
             """
     )
 
-
-    op.drop_constraint("build_artifact_build_id_fkey", "build_artifact", type_="foreignkey")
+    op.drop_constraint(
+        "build_artifact_build_id_fkey", "build_artifact", type_="foreignkey"
+    )
     op.drop_constraint("build_environment_id_fkey", "build", type_="foreignkey")
     op.drop_constraint("build_specification_id_fkey", "build", type_="foreignkey")
-
 
     op.drop_table("solve_conda_package_build")
     op.drop_table("build_conda_package_build")

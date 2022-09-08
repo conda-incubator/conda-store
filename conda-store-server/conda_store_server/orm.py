@@ -313,7 +313,6 @@ class CondaChannel(Base):
         for architecture in repodata["architectures"]:
             logger.info(f"architecture  : {architecture} ")
 
-            
             """
             Context :
                For each architecture, we need to add all the packages (`conda_package`),
@@ -421,9 +420,7 @@ class CondaChannel(Base):
                     packages_builds[pb["sha256"]] = pb
 
             packages_builds = packages_builds.values()
-            logger.info(
-                f"package builds after filtering : {len(packages_builds)} "
-            )
+            logger.info(f"package builds after filtering : {len(packages_builds)} ")
 
             # This associates a tuple like "(name,version)" representing a package
             # to all its builds
@@ -474,10 +471,8 @@ class CondaChannel(Base):
             batch_size = 1000
             all_package_keys = list(package_builds.keys())
             for i in range(0, len(all_package_keys), batch_size):
-                
-                logger.info(
-                    f"handling subset at index {i} (batch size {batch_size}"
-                )
+
+                logger.info(f"handling subset at index {i} (batch size {batch_size}")
                 subset_keys = all_package_keys[i : i + batch_size]
 
                 # retrieve the parent packages for the subset
@@ -496,9 +491,7 @@ class CondaChannel(Base):
                 all_parent_packages = {
                     (_.name, _.version): _ for _ in all_parent_packages
                 }
-                logger.info(
-                    f"parent packages retrieved : {len(all_parent_packages)} "
-                )
+                logger.info(f"parent packages retrieved : {len(all_parent_packages)} ")
 
                 for p_name, p_version in subset_keys:
                     for p_build_dict in package_builds[(p_name, p_version)]:
