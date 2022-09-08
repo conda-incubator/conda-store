@@ -26,11 +26,9 @@ from sqlalchemy import create_engine
 from conda_store_server import utils, schema
 from conda_store_server.environment import validate_environment
 from conda_store_server.conda import download_repodata
+import logging
 
-# for debug only
-# @TODO remove
-from celery.contrib import rdb
-
+logger = logging.getLogger("orm")
 
 Base = declarative_base()
 
@@ -298,11 +296,11 @@ class CondaChannel(Base):
 
     # @TODO replace these prints by logs
     def update_packages(self, db, subdirs=None):
-        print(f"update packages {self.name} ", flush=True)
+        logger.info(f"update packages {self.name} ")
 
-        print("Downloading repodata ...  ", flush=True)
+        logger.info("Downloading repodata ...  ")
         repodata = download_repodata(self.name, self.last_update, subdirs=subdirs)
-        print("repodata downloaded ", flush=True)
+        logger.info("repodata downloaded ")
 
         # store the file locally for debug later
         # with open(f"/Users/pierrot/downloads/{self.name.split('/')[-1]}_{datetime.datetime.now()}.json", "w") as f:
@@ -313,9 +311,9 @@ class CondaChannel(Base):
             return
 
         for architecture in repodata["architectures"]:
-            print(f"architecture  : {architecture} ", flush=True)
+            logger.info(f"architecture  : {architecture} ")
 
-            # rdb.set_trace()
+            
             """
             Context :
                For each architecture, we need to add all the packages (`conda_package`),
@@ -389,19 +387,19 @@ class CondaChannel(Base):
 
                     packages[package_key] = new_package_dict
 
-            print(f"packages to insert : {len(packages)} ", flush=True)
+            logger.info(f"packages to insert : {len(packages)} ")
 
             try:
                 db.bulk_insert_mappings(CondaPackage, packages.values())
                 db.commit()
             except Exception as e:
-                print(f"{e}", flush=True)
+                print(f"{e}")
                 db.rollback()
                 raise e
 
-            print("insert packages done", flush=True)
+            logger.info("insert packages done")
 
-            print("retrieving existing sha256  : ", flush=True)
+            logger.info("retrieving existing sha256  : ")
             existing_sha256 = {
                 _[0]
                 for _ in db.query(CondaPackageBuild.sha256)
@@ -410,8 +408,8 @@ class CondaChannel(Base):
                 .filter(CondaPackageBuild.subdir == architecture)
                 .all()
             }
-            print("retrieved existing sha256  : ", flush=True)
-            print(f"package data before filtering  : {len(packages_data)} ", flush=True)
+            logger.info("retrieved existing sha256  : ")
+            logger.info(f"package data before filtering  : {len(packages_data)} ")
 
             # We store the package builds in a dict indexed by their sha256
             # Later, we keep only the values.
@@ -423,14 +421,14 @@ class CondaChannel(Base):
                     packages_builds[pb["sha256"]] = pb
 
             packages_builds = packages_builds.values()
-            print(
-                f"package builds after filtering : {len(packages_builds)} ", flush=True
+            logger.info(
+                f"package builds after filtering : {len(packages_builds)} "
             )
 
             # This associates a tuple like "(name,version)" representing a package
             # to all its builds
             package_builds = {}
-            print("Creating CondaPackageBuild objects", flush=True)
+            logger.info("Creating CondaPackageBuild objects")
             for p_build in packages_builds:
 
                 has_null = False
@@ -471,19 +469,19 @@ class CondaChannel(Base):
                     package_builds[package_key] = []
 
                 package_builds[package_key].append(new_package_build_dict)
-            print("CondaPackageBuild objects created", flush=True)
+            logger.info("CondaPackageBuild objects created")
 
             batch_size = 1000
             all_package_keys = list(package_builds.keys())
             for i in range(0, len(all_package_keys), batch_size):
-                # rdb.set_trace()
-                print(
-                    f"handling subset at index {i} (batch size {batch_size}", flush=True
+                
+                logger.info(
+                    f"handling subset at index {i} (batch size {batch_size}"
                 )
                 subset_keys = all_package_keys[i : i + batch_size]
 
                 # retrieve the parent packages for the subset
-                print("retrieve the parent packages for the subset ", flush=True)
+                logger.info("retrieve the parent packages for the subset ")
                 statements = []
                 for p_name, p_version in subset_keys:
                     statements.append(
@@ -498,9 +496,8 @@ class CondaChannel(Base):
                 all_parent_packages = {
                     (_.name, _.version): _ for _ in all_parent_packages
                 }
-                print(
-                    f"parent packages retrieved : {len(all_parent_packages)} ",
-                    flush=True,
+                logger.info(
+                    f"parent packages retrieved : {len(all_parent_packages)} "
                 )
 
                 for p_name, p_version in subset_keys:
@@ -509,7 +506,7 @@ class CondaChannel(Base):
                             (p_name, p_version)
                         ].id
 
-                print("ready to bulk save", flush=True)
+                logger.info("ready to bulk save")
 
             try:
 
@@ -519,18 +516,17 @@ class CondaChannel(Base):
 
                 db.bulk_insert_mappings(CondaPackageBuild, flatten)
                 db.commit()
-                print("bulk saved", flush=True)
+                logger.info("bulk saved")
             except Exception as e:
-                print(f"{e}", flush=True)
-                rdb.set_trace()
+                logger.error(f"{e}")
 
                 raise e
 
-            print(f"DONE for architecture  : {architecture}", flush=True)
+            logger.info(f"DONE for architecture  : {architecture}")
 
         self.last_update = datetime.datetime.utcnow()
         db.commit()
-        print("update packages DONE ")
+        logger.info("update packages DONE ")
 
 
 class CondaPackage(Base):

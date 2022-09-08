@@ -62,31 +62,12 @@ def task_update_storage_metrics(self):
     )
 
 
-""" Former version of task_update_conda_channels
-@TODO : remove once the new design is validated by Chris
-
-@current_app.task(base=WorkerTask, name="task_update_conda_channels", bind=True)
-def task_update_conda_channels(self):
-    conda_store = self.worker.conda_store
-    try:
-        conda_store.ensure_conda_channels()
-
-        for channel in api.list_conda_channels(conda_store.db):
-            channel.update_packages(conda_store.db, subdirs=conda_store.conda_platforms)
-    except IntegrityError as exc:
-        # there is a persistent error on startup that when the conda
-        # channels are out of data and two tasks try to add the same
-        # packages it runs into integrity errors the solution is to
-        # let one of them finish and the other try again at a later
-        # time
-        self.retry(exc=exc, countdown=random.randrange(15, 30))
-"""
 
 """
 Pierre - May 29th 2022
 This is a different version of task_update_conda_channels.
 It's designed to run one task per channel, with a lock to avoid triggering twice a task for a given channel.
-Only caveat : it requires redis. I need to talk with Chris about this.
+The lock is handled by Redis.
 
 The reason behind having the task running only once at a time is
 to avoid integrity exceptions when running channel.update_packages.
@@ -96,11 +77,7 @@ Lock : http://loose-bits.com/2010/10/distributed-task-locking-in-celery.html
 Redis : https://pypi.org/project/redis/
 https://stackoverflow.com/questions/12003221/celery-task-schedule-ensuring-a-task-is-only-executed-one-at-a-time
 
-Alternatively, instead of redis, there's a way to lock using django's cache :
-https://docs.celeryq.dev/en/latest/tutorials/task-cookbook.html#ensuring-a-task-is-only-executed-one-at-a-time
-
 """
-
 
 @current_app.task(base=WorkerTask, name="task_update_conda_channels", bind=True)
 def task_update_conda_channels(self):
