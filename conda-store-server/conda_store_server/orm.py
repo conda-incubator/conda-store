@@ -160,11 +160,8 @@ class Build(Base):
         store_directory = os.path.abspath(conda_store.store_directory)
         namespace = self.environment.namespace.name
         name = self.specification.name
-        return os.path.join(
-            conda_store.environment_directory.format(
-                store_directory=store_directory, namespace=namespace, name=name
-            ),
-            self.specification.name,
+        return conda_store.environment_directory.format(
+            store_directory=store_directory, namespace=namespace, name=name
         )
 
     @property
