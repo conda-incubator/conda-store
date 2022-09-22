@@ -84,7 +84,7 @@ class CondaStore(LoggingConfigurable):
     )
 
     environment_directory = Unicode(
-        "{store_directory}/{namespace}/envs",
+        "{store_directory}/{namespace}/envs/{name}",
         help="Template used to form the directory for symlinking conda environment builds. Available keys: store_directory, namespace, name. The default will put all environments in the same namespace within the same directory.",
         config=True,
     )
