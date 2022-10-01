@@ -8,7 +8,7 @@ from conda_store_server.server.auth import DummyAuthentication
 # ==================================
 c.CondaStore.storage_class = S3Storage
 c.CondaStore.store_directory = "/var/lib/conda-store/"
-c.CondaStore.environment_directory = "/opt/conda-store/envs/"
+c.CondaStore.environment_directory = "/opt/conda-store/envs/{namespace}-{name}"
 # c.CondaStore.database_url = "mysql+pymysql://admin:password@mysql/conda-store"
 c.CondaStore.database_url = "postgresql+psycopg2://postgres:password@postgres/conda-store"
 c.CondaStore.redis_url = "redis://:password@redis:6379/0"

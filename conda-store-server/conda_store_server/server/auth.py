@@ -9,7 +9,8 @@ import requests
 from traitlets.config import LoggingConfigurable
 from traitlets import Dict, Unicode, Type, default, Bool, Union, Callable
 from fastapi import APIRouter, Request, Response, HTTPException, Depends
-from fastapi.responses import RedirectResponse
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import RedirectResponse, JSONResponse, HTMLResponse
 from sqlalchemy import or_, and_
 import yarl
 
@@ -298,10 +299,11 @@ async function loginHandler(event) {
         headers: {'Content-Type': "application/json"},
     });
 
+    let data = await response.json();
+
     if (response.ok) {
-        window.location = "{{ url_for('ui_list_environments') }}";
+        window.location = data.data.redirect_url;
     } else {
-        let data = await response.json();
         bannerMessage(`<div class="alert alert-danger col">${data.message}</div>`);
     }
 }
@@ -348,11 +350,25 @@ form.addEventListener('submit', loginHandler);
         )
 
     def get_login_method(
-        self, request: Request, templates=Depends(dependencies.get_templates)
+        self,
+        request: Request,
+        next: Optional[str] = None,
+        templates=Depends(dependencies.get_templates),
     ):
+        request.session["next"] = next
         return templates.TemplateResponse(
             "login.html",
             {"request": request, "login_html": self.get_login_html(request, templates)},
+        )
+
+    async def _post_login_method_response(self, redirect_url):
+        return JSONResponse(
+            content=jsonable_encoder(
+                {
+                    "status": "ok",
+                    "data": {"redirect_url": redirect_url},
+                }
+            )
         )
 
     async def post_login_method(
@@ -362,14 +378,17 @@ form.addEventListener('submit', loginHandler);
         next: Optional[str] = None,
         templates=Depends(dependencies.get_templates),
     ):
-        redirect_url = next or request.url_for("ui_list_environments")
-        response = RedirectResponse(redirect_url, status_code=303)
         authentication_token = await self.authenticate(request)
         if authentication_token is None:
             raise HTTPException(
                 status_code=403, detail="Invalid authentication credentials"
             )
 
+        request.session["next"] = next or request.session.get("next")
+        redirect_url = request.session.pop("next") or request.url_for(
+            "ui_list_environments"
+        )
+        response = await self._post_login_method_response(redirect_url)
         response.set_cookie(
             self.cookie_name,
             self.authentication.encrypt_token(authentication_token),
@@ -395,14 +414,16 @@ form.addEventListener('submit', loginHandler);
             request.state.entity = self.authentication.authenticate(token)
         elif "Authorization" in request.headers:
             parts = request.headers["Authorization"].split(" ", 1)
-            if parts[0] == "Basic":
+            if parts[0].lower() == "basic":
                 try:
                     username, token = base64.b64decode(parts[1]).decode().split(":", 1)
                     request.state.entity = self.authentication.authenticate(token)
                 except Exception:
                     pass
-            elif parts[0] == "Bearer":
+            elif parts[0].lower() == "bearer":
                 request.state.entity = self.authentication.authenticate(parts[1])
+            else:
+                request.state.entity = None
         else:
             request.state.entity = None
 
@@ -576,18 +597,14 @@ class GenericOAuthAuthentication(Authentication):
     def get_oauth_callback_url(self, request: Request):
         return utils.callable_or_value(self.oauth_callback_url, request)
 
-    login_html = Unicode(
-        """
-<div id="login" class="text-center">
-    <h1 class="h3 mb-3 fw-normal">Please sign in via OAuth</h1>
-    <a class="w-100 btn btn-lg btn-primary" href="{authorization_url}">Sign in with OAuth</a>
-</div>
-        """,
-        help="html form to use for login",
-        config=True,
-    )
+    def get_login_method(
+        self,
+        request: Request,
+        next: Optional[str] = None,
+        templates=Depends(dependencies.get_templates),
+    ):
+        request.session["next"] = next
 
-    def get_login_html(self, request: Request, templates):
         state = secrets.token_urlsafe()
         request.session["oauth_state"] = state
         authorization_url = self.oauth_route(
@@ -597,7 +614,7 @@ class GenericOAuthAuthentication(Authentication):
             scope=self.access_scope,
             state=state,
         )
-        return self.login_html.format(authorization_url=authorization_url)
+        return RedirectResponse(authorization_url)
 
     @staticmethod
     def oauth_route(auth_url, client_id, redirect_uri, scope=None, state=None):
@@ -612,6 +629,16 @@ class GenericOAuthAuthentication(Authentication):
         if state is not None:
             url = url % {"state": state}
         return str(url)
+
+    async def _post_login_method_response(self, redirect_url):
+        return HTMLResponse(
+            content=f"""
+<script>
+  window.location = "{redirect_url}";
+</script>
+        """,
+            status_code=200,
+        )
 
     @property
     def routes(self):

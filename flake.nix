@@ -2,7 +2,7 @@
   description = "conda-store";
 
   inputs = {
-    nixpkgs = { url = "github:nixos/nixpkgs/nixpkgs-unstable"; };
+    nixpkgs = { url = "github:yrd/nixpkgs/dc5c9bca2e95424dd391c05515723f2bbf37104e"; };
   };
 
   outputs = inputs@{ self, nixpkgs, ... }: {
@@ -11,6 +11,49 @@
         pkgs = import nixpkgs { system = "x86_64-linux"; };
 
         pythonPackages = pkgs.python3Packages;
+
+        pytest-base-url = pkgs.poetry2nix.mkPoetryApplication rec {
+          projectDir = pkgs.fetchFromGitHub {
+            owner = "pytest-dev";
+            repo = "pytest-base-url";
+            rev = "v2.0.0";
+            sha256 = "0fbf5hv8ifyg4acdjclwv86gra1clsd10xmcld1vyycd6mx4pamz";
+          };
+          python = pythonPackages.python;
+        };
+
+        # built by poetry, so lots of library conflicts here
+        pytest-burl-path = "${pytest-base-url}/${pythonPackages.python.sitePackages}";
+
+        pytest-playwright = pythonPackages.buildPythonPackage rec {
+          version = "0.3.0";
+          pname = "pytest-playwright";
+          disabled = pythonPackages.pythonOlder "3.7";
+
+          src = pkgs.fetchFromGitHub {
+            owner = "microsoft";
+            repo = "playwright-pytest";
+            rev = "v${version}";
+            sha256 = "1m2g9gv2h2gj9qnnjsw453fjsqjaydc6mvpg2q14jj01nk2x0z3w";
+          };
+
+          postPatch = ''
+            substituteInPlace setup.py \
+                --replace 'playwright>=1.18' 'playwright' \
+                --replace 'setup_requires=["setuptools_scm"],' ""
+            # Replace the functionality of setuptools-scm
+            echo 'version = "${version}"' > _repo_version.py
+            export PYTHONPATH="''${PYTHONPATH}:${pytest-burl-path}"
+          '';
+
+          dontUsePythonCatchConflicts = true;
+
+          propagatedBuildInputs = [
+            pythonPackages.playwright
+            pythonPackages.pytest
+            pythonPackages.python-slugify
+          ];
+        };
       in pkgs.mkShell {
         buildInputs = [
           pkgs.vale
@@ -42,7 +85,7 @@
           pythonPackages.ruamel-yaml
 
           # dev
-          pythonPackages.pytest
+          pytest-playwright
           pythonPackages.black
           pythonPackages.flake8
           pythonPackages.build
@@ -55,6 +98,9 @@
           export CONDA_STORE_AUTH=basic
           export CONDA_STORE_USERNAME=username
           export CONDA_STORE_PASSWORD=password
+
+          export PYTHONPATH="''${PYTHONPATH}:${pytest-burl-path}"
+          export PLAYWRIGHT_BROWSERS_PATH=${pkgs.playwright.browsers-linux}
         '';
       };
   };

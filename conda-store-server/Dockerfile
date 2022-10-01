@@ -27,7 +27,9 @@ RUN chown -R 1000:1000 /opt/conda/pkgs && \
     mkdir -p /var/lib/conda-store && \
     chown 1000:1000 /var/lib/conda-store && \
     mkdir -p /opt/conda-store/envs && \
-    chown 1000:1000 /opt/conda-store/envs
+    chown 1000:1000 /opt/conda-store/envs && \
+    mkdir /.cache && \
+    chown 1000:1000 /.cache
 
 USER 1000:1000
 

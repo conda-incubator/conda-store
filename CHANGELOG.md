@@ -18,6 +18,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [0.4.12] - 2022-09-21
+
+### Fixed
+
+ - environment description is optional
+
+### Added
+
+ - Make symlink path configurable for builds on filesystem #388
+ - Redirect on login and cookie handling #381
+ - Visually split the namespace with bootstrap bit #374
+ - Make image name and tag configurable for uploads to registries #380
+
 ## [0.4.11] - 2022-08-17
 
 ### Fixed

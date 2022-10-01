@@ -10,7 +10,7 @@ dependencies:
   - yarn
   # conda-store client dependencies
   - yarl
-  - aiohttp
+  - aiohttp>=3.8.1
   - rich
   - click
   - ruamel.yaml
