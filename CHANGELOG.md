@@ -18,6 +18,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [Unreleased]
+
+### Added
+- Alembic migration script to split `conda_package` into two tables (see below) and migrate data.
+
+### Changed
+- The conda packages are now stored in two tables : `conda_package` and `conda_package_build` :
+  -  `conda_package` contains the data about each version of a package.
+  -  `conda_package_build` contains the data about each build of a package version.
+
+- The ORM, database diagrams, and documentation have been updated accordingly.
+- Updating conda store channels and packages-related API endpoints are now faster.
+- API endpoint `api/v1/build/[BUILD_ID]/packages` only returns data about the package versions, and doesn't return data about the builds anymore (build number, sha256 ...)
+- API endpoint `api/v1/packages` returns data about the packages, without duplication for each build.
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+
 ## [0.4.12] - 2022-09-21
 
 ### Fixed
