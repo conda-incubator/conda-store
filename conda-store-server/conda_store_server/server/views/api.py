@@ -822,7 +822,7 @@ def api_get_build_archive(
 @router_api.get("/build/{build_id}/docker/")
 def api_get_build_docker_image_url(
     build_id: int,
-    request: Request, 
+    request: Request,
     conda_store=Depends(dependencies.get_conda_store),
     server=Depends(dependencies.get_server),
     auth=Depends(dependencies.get_auth),
@@ -836,8 +836,7 @@ def api_get_build_docker_image_url(
     )
 
     if build.has_docker_manifest:
-        
-        url = f'{server.registry_external_url}/{build.environment.namespace.name}/{build.environment.name}:{build.build_key}'
+        url = f"{server.registry_external_url}/{build.environment.namespace.name}/{build.environment.name}:{build.build_key}"
         return PlainTextResponse(url)
 
     else:
