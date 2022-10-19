@@ -107,10 +107,8 @@ def task_update_conda_channel(self, channel_name):
         "=": "_",
     }
     channel_name_sanitized = channel_name
-    [
-        channel_name_sanitized := channel_name_sanitized.replace(k, v)
-        for k, v in sanitizing.items()
-    ]
+    for k, v in sanitizing.items():
+        channel_name_sanitized = channel_name_sanitized.replace(k, v)
 
     task_key = f"lock_{self.name}_{channel_name_sanitized}"
 
