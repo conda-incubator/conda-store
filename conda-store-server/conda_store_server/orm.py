@@ -291,7 +291,6 @@ class CondaChannel(Base):
     name = Column(Unicode(255), unique=True, nullable=False)
     last_update = Column(DateTime)
 
-    # @TODO replace these prints by logs
     def update_packages(self, db, subdirs=None):
         logger.info(f"update packages {self.name} ")
 
@@ -299,8 +298,8 @@ class CondaChannel(Base):
         repodata = download_repodata(self.name, self.last_update, subdirs=subdirs)
         logger.info("repodata downloaded ")
 
-        # store the file locally for debug later
-        # with open(f"/Users/pierrot/downloads/{self.name.split('/')[-1]}_{datetime.datetime.now()}.json", "w") as f:
+        # Hint : you can store the file locally for later debug
+        # with open(f"~/{self.name.split('/')[-1]}_{datetime.datetime.now()}.json", "w") as f:
         #    f.write(json.dumps(repodata, indent=4, sort_keys=True))
 
         if not repodata:

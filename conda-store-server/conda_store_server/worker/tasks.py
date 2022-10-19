@@ -16,6 +16,7 @@ from conda_store_server.build import (
 )
 
 from celery.execute import send_task
+from filelock import FileLock
 
 
 @worker_ready.connect
@@ -66,7 +67,9 @@ def task_update_storage_metrics(self):
 Pierre - May 29th 2022
 This is a different version of task_update_conda_channels.
 It's designed to run one task per channel, with a lock to avoid triggering twice a task for a given channel.
-The lock is handled by Redis.
+Two scenarios :
+- either you're using Redis (that should be the case if you have multiple celery workers) : then the lock is handled by Redis.
+- either you don't (that's fine if you're using a single celery worker) : then the lock is a Filelock
 
 The reason behind having the task running only once at a time is
 to avoid integrity exceptions when running channel.update_packages.
@@ -90,16 +93,41 @@ def task_update_conda_channels(self):
 
 @current_app.task(base=WorkerTask, name="task_update_conda_channel", bind=True)
 def task_update_conda_channel(self, channel_name):
+
     conda_store = self.worker.conda_store
 
-    task_key = f"lock_{self.name}_{channel_name}"
+    # sanitize the channel name as it's an URL, and it's used for the lock.
+    sanitizing = {
+        "https": "",
+        "http": "",
+        ":": "",
+        "/": "_",
+        "?": "",
+        "&": "_",
+        "=": "_",
+    }
+    channel_name_sanitized = channel_name
+    [
+        channel_name_sanitized := channel_name_sanitized.replace(k, v)
+        for k, v in sanitizing.items()
+    ]
+
+    task_key = f"lock_{self.name}_{channel_name_sanitized}"
 
     is_locked = False
-    lock = conda_store.redis.lock(task_key)
+
+    if conda_store.redis_url is not None:
+        lock = conda_store.redis.lock(task_key, timeout=60 * 15)  # timeout 15min
+    else:
+        lockfile_path = os.path.join(f"/tmp/task_lock_{task_key}")
+        lock = FileLock(lockfile_path, timeout=60 * 15)
+
     try:
         is_locked = lock.acquire(blocking=False)
+
         if is_locked:
             channel = api.get_conda_channel(conda_store.db, channel_name)
+
             conda_store.log.debug(f"updating packages for channel {channel.name}")
             channel.update_packages(conda_store.db, subdirs=conda_store.conda_platforms)
 
@@ -107,6 +135,14 @@ def task_update_conda_channel(self, channel_name):
             conda_store.log.debug(
                 f"skipping updating packages for channel {channel_name} - already in progress"
             )
+
+    except TimeoutError:
+        if conda_store.redis_url is None:
+            conda_store.log.warning(
+                f"Timeout when acquiring lock with key {task_key} - We assume the task is already being run"
+            )
+            is_locked = False
+
     finally:
         if is_locked:
             lock.release()
