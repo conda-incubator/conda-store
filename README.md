@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./docs/_static/images/conda-store-logo-vertical-lockup.png" alt="conda-store logo" width="40%">
+  <img src="./docs/_static/images/conda-store-logo-vertical-lockup.svg" alt="conda-store logo" width="30%">
   <p>
   Data science environments, for collaboration.
 
@@ -8,26 +8,29 @@
 </div>
 
 ---
+<div align="center">
 
-<a href="https://conda-store.readthedocs.io/en/latest/">
-  <img src="https://readthedocs.org/projects/conda-store/badge/?version=latest" alt="Documentation Status"/>
-</a>
+  <a href="https://conda-store.readthedocs.io/en/latest/">
+    <img src="https://readthedocs.org/projects/conda-store/badge/?version=latest" alt="Documentation Status"/>
+  </a>
 
-<a href="https://pypi.org/project/conda-store-server/">
-  <img src="https://img.shields.io/pypi/v/conda-store-server?label=pypi|conda-store-server" alt="PyPi"/>
-</a>
+  <a href="https://pypi.org/project/conda-store-server/">
+    <img src="https://img.shields.io/pypi/v/conda-store-server?label=pypi|conda-store-server" alt="PyPi"/>
+  </a>
 
-<a href="https://pypi.org/project/conda-store/">
-  <img src="https://img.shields.io/pypi/v/conda-store-server?label=pypi|conda-store" alt="PyPi"/>
-</a>
+  <a href="https://pypi.org/project/conda-store/">
+    <img src="https://img.shields.io/pypi/v/conda-store-server?label=pypi|conda-store" alt="PyPi"/>
+  </a>
 
-<a href="https://anaconda.org/conda-forge/conda-store-server">
-  <img src="https://img.shields.io/conda/vn/conda-forge/conda-store-server?color=green&label=conda-forge%7Cconda-store-server" alt="Conda"/>
-</a>
+  <a href="https://anaconda.org/conda-forge/conda-store-server">
+    <img src="https://img.shields.io/conda/vn/conda-forge/conda-store-server?color=green&label=conda-forge%7Cconda-store-server" alt="Conda"/>
+  </a>
 
-<a href="https://anaconda.org/conda-forge/conda-store">
-  <img src="https://img.shields.io/conda/vn/conda-forge/conda-store?color=green&label=conda-forge%7Cconda-store" alt="Conda"/>
-</a>
+  <a href="https://anaconda.org/conda-forge/conda-store">
+    <img src="https://img.shields.io/conda/vn/conda-forge/conda-store?color=green&label=conda-forge%7Cconda-store" alt="Conda"/>
+  </a>
+
+</div>
 
 ---
 
