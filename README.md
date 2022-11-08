@@ -1,4 +1,13 @@
-# conda-store
+<div align="center">
+  <img src="./docs/_static/images/conda-store-logo-vertical-lockup.png" alt="conda-store logo" width="40%">
+  <p>
+  Data science environments, for collaboration.
+
+  Flexible. Reproducible. Governable.
+  </p>
+</div>
+
+---
 
 <a href="https://conda-store.readthedocs.io/en/latest/">
   <img src="https://readthedocs.org/projects/conda-store/badge/?version=latest" alt="Documentation Status"/>
@@ -20,109 +29,38 @@
   <img src="https://img.shields.io/conda/vn/conda-forge/conda-store?color=green&label=conda-forge%7Cconda-store" alt="Conda"/>
 </a>
 
-![conda-store UI](docs/_static/images/conda-store-authenticated.png)
+---
 
-## Documentation
+conda-store provides the familiarity and flexibility of conda environments, without compromising reliability for collaborative settings.
 
-All documentation can be found on Read the Docs including how to develop
-and contribute to the
-project. [conda-store.readthedocs.io](https://conda-store.readthedocs.io).
+conda-store is built to work for all team members from individual data scientists to administrators, while making sure your team follows best practices throughout the environment life cycle: from initial environment creation, to using environments in a production machine.
 
-## Installation
+## Key features
 
-`conda-store` has two packages a `conda-store` (the client) and
-`conda-store-server` (the server). Make sure that either `conda` or
-`mamba` are in your path.
+* **Flexiblity**:
+  * Users can create and update environments with the Graphical UI or a YAML editor.
+  * The environments are automatically version-controlled and all versions are readily available.
+* **Reproduciblity**:
+  * User can share environments quickly through the auto-generated artifacts including a lockfile, docker image, YAML file, and tarball.
+  * conda-store pins exact versions of all packages and their dependencies in all the auto-generated artifacts.
+* **Goverance**:
+  * Users have access to admin-approved packages and channels for their work, and can request new ones when needed.
+  * Admins can insert or require certain packages and versions for organization-level compatibility.
+  * Admins can manage users' access-levels using "Namespaces", and allow users to share environments across (and only with) their team.
 
-```shell
-conda install -c conda-forge conda-store-server conda-store
-```
+## Get started
 
-The `conda-store` server can be easily launched in standalone mode
-that carries no dependencies on databases, object storage, redis.
+Learn more, including how to install, use, and contribute to conda-store in our documentation at [**conda.store**](https://conda.store/).
 
-```
-conda-store-server --standalone
-```
+## Related repositories
 
-Standalone mode runs all components together to simplify
-deployment. For more complex and scalable setups there are
-[installation examples for containerized and distributed
-environments](docs/installation.md).
+- We are working on a new UI for conda-store at: [`Quansight/conda-store-ui`](https://github.com/Quansight/conda-store-ui), and
+- a JupyterLab extension at: [`Quansight/jupyterlab-conda-store`](https://github.com/Quansight/jupyterlab-conda-store).
 
-## Motivation
+## Code of Conduct
 
-End users think in terms of environments not packages. The core
-philosophy of conda-store is to serve identical Conda environments in
-as many ways as possible. conda-store controls the environment
-lifecycle: management, builds, and serving of environments.
-
-It **manages** Conda environments by:
- - watching specific files or directories for changes in environment filename specifications 
- - provides a REST API for managing environments (which a JupyterLab plugin is being actively developed for)
- - provides a command line utility for interacting with conda-store `conda-store env [create, list]`
- - provides a web UI to take advantage of many of conda-store's advanced capabilities
-
-It **builds** Conda specifications in a scalable manner using `N`
-workers communicating via Celery to keep track of queued
-environment builds.
-
-It **serves** Conda environments via a filesystem, lockfile, tarball,
-and a docker registry. Tarballs and Docker images can carry a lot of
-bandwidth which is why conda-store integrates optionally with `s3` to
-actually serve the blobs.
-
-## Terminology
-
- - A `namespace` is a way of scoping environments
-
- - An `environment` is a `namespace` and `name` pointing to a particular `build`
-
- - A `specification` is a Conda environment `yaml` declaration with fields `name`,
-   `channels`, and `dependencies` as detailed
-   [here](https://docs.conda.io/projects/conda-build/en/latest/resources/package-spec.html)
-   
- - A `build` is a build (`conda env create -f <specification>`) of a
-   particular `specification` at a point in time for a given `namespace`
-
-This design has several advantages:
- - `environments` can be "rolled back" to a given `build` - not necessarily the latest
- - because each `environment` update is a new separate build the
-   environment can be archived and uniquely identified
-
-![conda-store terminology](docs/_static/images/conda-store-terminology.png)
-
-## Philosophy
-
-We mentioned above that `conda-store` was influenced by
-[nix](https://nixos.org/). While Conda is not as pure as nix (when it
-comes to reproducible builds) we can achieve close to the same results
-with many of the great benefits. Motivation
-from this work came from the following projects in no particular
-order: [lorri](https://github.com/target/lorri), [nix layered docker
-images](https://grahamc.com/blog/nix-and-layered-docker-images),
-[nix](https://nixos.org/), [nixery](https://nixery.dev/). 
-
-1. specifications are idempotent, created once, and never updated
-   (this means there is no `conda install` or `conda env update`). In
-   fact there is only one Conda command `conda env create -f
-   <specification>`.
-2. specifications are named
-   `<sha256-hash-of-spec>-<environment-name>`, ensuring every Conda
-   environment is unique.
-3. a Conda environment for example `<environment-name>` is symlinked to a
-   specific Conda specification
-   `<sha256-hash-of-spec>-<environment-name>`.
-
-The benefits of this approach are versioning of environments, heavy
-caching, and rollbacks to previous environment states. 
+To guarantee a welcoming and friendly community, we require all community members to follow our [Code of Conduct](https://github.com/Quansight/.github/blob/master/CODE_OF_CONDUCT.md).
 
 ## License
 
-conda-store is [BSD-3 LICENSED](./LICENSE)
-
-## Contributing
-
-Our [documentation has all the information needed for
-contributing](https://conda-store.readthedocs.io/en/latest/contributing.html). We
-welcome all contributions.
+conda-store is developed under the [BSD-3 LICENSED](./LICENSE).
