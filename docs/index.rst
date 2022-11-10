@@ -16,7 +16,7 @@ conda-store
    api
 
 .. image:: _static/images/conda-store-logo-vertical-lockup.png
-    :alt: conda-store logo mark
+    :alt: conda-store logo
     :scale: 50%
     :align: center
     :class: dark-light p-2
@@ -28,38 +28,60 @@ conda-store
 
 ----
 
-conda-store is a tool for managing data science environments, in collaborative settings.
-It provides flexible yet reproducible environments, while enforcing best practices for your team.
+.. rst-class:: center
 
-The conda packaging system works for individual users, but it can be tricky to reliably reproduce environments to share them with colleagues.
-On the other hand, Docker containers can ensure reproducibility, but aren't friendly to individual users who may need new packages or versions for daily work.
-We created conda-store to resolve this.
+conda-store is an open source tool for managing data science environments in collaborative teams.
+It provides flexible, yet reproducible, environments while enforcing best practices throughout your environment's life cycle.
 
 .. panels::
     :container: container-lg pb-3
     :column: col-lg-4 col-md-4 col-sm-6 col-xs-12 p-2
 
-    **Flexible**
+    **🧶  Flexible**
     ^^^^^^^^^^^^^^
 
-    Create and update environments with the Graphical UI or a YAML editor.
+    .. rst-class:: left
 
-    Environments are automatically version-controlled and all versions are readily available.
+    Create and update environments quickly using a graphical UI or a YAML editor.
+
+    .. rst-class:: left
+
+    All environments are automatically version-controlled, and available for use.
 
     ---
-    **Reproducible**
+    **💫  Reproducible**
     ^^^^^^^^^^^^^^^^^^
 
-    Share environments quickly through the auto-generated artifacts including a lockfile, docker image, YAML file, and tarball.
+    .. rst-class:: left
 
-    Exact versions of all packages and their dependencies are pinned in all the auto-generated artifacts.
+    Share environments effortlessly through the auto-generated artifacts: lockfile, docker image, YAML file, or tarball.
+
+    .. rst-class:: left
+
+    Exact versions of all packages and their dependencies are pinned in these artifacts.
 
     ---
-    **Goveranance**
+    **⚖️  Goveranance**
     ^^^^^^^^^^^^^
+
+    .. rst-class:: left
 
     Access admin-approved packages and channels, and request new ones when needed.
 
-    Admins can insert or require certain packages and versions for organization-level compatibility.
+    .. rst-class:: left
 
-    Admins can manage users' access-levels using "Namespaces", and allow users to share environments across (and only with) their team.
+    Admins have role-based access management, to allow users to share environments across (and only with) their team.
+
+.. rst-class:: center
+
+The conda packaging system works well for individual users, but it can get tricky to reproduce environments reliably to share with colleagues. On the other hand, Docker containers can ensure reproducibility, but aren't friendly to individual users who may need new packages or versions for daily work. conda-store resolve this friction, and provides a balance of both the familiarity of conda and the robustness of containers.
+
+
+.. rst-class:: border
+
+.. figure:: _static/images/conda-store-ui.gif
+    :alt: conda-store video
+    :align: center
+    :class: dark-light p-2
+
+    Preview of a new graphical user interface for conda-store, which will also be available as a JupyterLab extension!

@@ -23,6 +23,13 @@ html_theme_options = {
         "text": "conda-store",
     },
     "show_prev_next": True,
+    "icon_links": [
+        {
+            "name": "GitHub",
+            "url": "https://github.com/Quansight/conda-store",
+            "icon": "fa-brands fa-github",
+        }
+   ],
 }
 html_sidebars = {
   "index": [],

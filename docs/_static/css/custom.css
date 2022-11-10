@@ -1,7 +1,32 @@
-.center {
-    text-align: center;
+html[data-theme="light"] {
+    --pst-color-primary: #40af2fff;
+}
+
+html[data-theme="dark"] {
+    --pst-color-primary: #40af2fff;
 }
 
 .hide h1 {
     display:none;
+}
+
+.center {
+    text-align: center;
+}
+
+.border {
+    border-style: solid;
+    border-width: thin;
+}
+
+.left {
+    text-align: left;
+}
+
+.bd-footer {
+    text-align: center;
+}
+
+.footer-item {
+    display: inline-block;
 }
