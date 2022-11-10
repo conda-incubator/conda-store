@@ -40,5 +40,6 @@ dependencies:
   - flake8
   - sphinx
   - recommonmark
+  - sphinx-panels
   - pydata-sphinx-theme
   - playwright
