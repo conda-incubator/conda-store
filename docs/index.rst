@@ -74,7 +74,7 @@ It provides flexible, yet reproducible, environments while enforcing best practi
 
 .. rst-class:: center
 
-The conda packaging system works well for individual users, but it can get tricky to reproduce environments reliably to share with colleagues. On the other hand, Docker containers can ensure reproducibility, but aren't friendly to individual users who may need new packages or versions for daily work. conda-store resolve this friction, and provides a balance of both the familiarity of conda and the robustness of containers.
+The conda packaging system works well for individual users, but it can get tricky to reproduce environments reliably to share with colleagues. On the other hand, Docker containers can ensure reproducibility, but aren't friendly to individual users who may need new packages or versions for daily work. conda-store resolves this friction, and provides a balance of both the familiarity of conda and the robustness of containers.
 
 
 .. rst-class:: border
