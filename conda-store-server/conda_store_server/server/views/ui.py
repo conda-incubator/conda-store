@@ -68,6 +68,30 @@ def ui_list_environments(
     return templates.TemplateResponse("home.html", context)
 
 
+@router_ui.get("/coatl")
+def ui_list_environments(
+    request: Request,
+    search: Optional[str] = None,
+    templates=Depends(dependencies.get_templates),
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
+    server=Depends(dependencies.get_server),
+    entity=Depends(dependencies.get_entity),
+):
+    orm_environments = auth.filter_environments(
+        entity,
+        api.list_environments(conda_store.db, search=search, show_soft_deleted=False),
+    )
+
+    context = {
+        "request": request,
+        "environments": orm_environments.all(),
+        "registry_external_url": server.registry_external_url,
+        "entity": entity,
+    }
+
+    return templates.TemplateResponse("coatl.html", context)
+
 @router_ui.get("/namespace/")
 def ui_list_namespaces(
     request: Request,

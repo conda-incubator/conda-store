@@ -209,6 +209,10 @@ class CondaStoreServer(Application):
             SessionMiddleware, secret_key=self.authentication.authentication.secret
         )
 
+        root = os.path.dirname(os.path.abspath(__file__))
+        static = os.path.join(root, "static")
+        app.mount("/static", StaticFiles(directory=static), name="static")
+
         # ensure that template variables are inserted into templates
         self.templates.env.globals.update(self.template_vars)
 

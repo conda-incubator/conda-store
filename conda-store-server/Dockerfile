@@ -23,8 +23,7 @@ RUN cd /opt/conda-store-server && \
 ENV PATH=/opt/conda/condabin:/opt/conda/envs/conda-store-server/bin:/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${PATH}
 ENV TZ=America/New_York
 
-RUN chown -R 1000:1000 /opt/conda/pkgs && \
-    mkdir -p /var/lib/conda-store && \
+RUN mkdir -p /var/lib/conda-store && \
     chown 1000:1000 /var/lib/conda-store && \
     mkdir -p /opt/conda-store/envs && \
     chown 1000:1000 /opt/conda-store/envs && \
