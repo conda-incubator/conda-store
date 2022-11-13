@@ -1,0 +1,16 @@
+/*!***********************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[3].use[1]!./style/index.css ***!
+  \***********************************************************************************************/
+@import url(https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap);
+/*!***************************************************************************************************!*\
+  !*** css ./node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[3].use[1]!./style/index.css (1) ***!
+  \***************************************************************************************************/
+body {
+    margin: 0;
+    overflow-x: hidden;
+}
+#app {
+    height: 100vh;
+}
+
+/*# sourceMappingURL=conda-store-ui.css.map*/
