@@ -26,18 +26,18 @@ To deploy `conda-store` run the following command
 docker-compose up --build
 ```
 
-.. important ::
-    Many of the conda-store docker images are built/tested for amd64(x86-64)
-    there will be a performance impact when building and running on
-    arm architectures. Otherwise this workflow has been shown to run and build on OSX.
-    Notice the `architecture: amd64` whithin the docker-compose.yaml files.
-```
+:::{important}
+Many of the conda-store docker images are built/tested for amd64(x86-64)
+there will be a performance impact when building and running on
+arm architectures. Otherwise this workflow has been shown to run and build on OSX.
+Notice the `architecture: amd64` whithin the docker-compose.yaml files.
+:::
 
-.. warning ::
-    If you're developing on a Mac and run into issues that complain about `tcp 0.0.0.0:5000: bind: address already in use` you might need to deactivate the `Airplay Receiver` service from the `Sharing` section in Control Center.
-    Have a look at this [discussion on Apple.com](https://developer.apple.com/forums/thread/682332)
-    for more details.
-```
+:::{warning}
+If you're developing on a Mac and run into issues that complain about `tcp 0.0.0.0:5000: bind: address already in use` you might need to deactivate the `Airplay Receiver` service from the `Sharing` section in Control Center.
+Have a look at this [discussion on Apple.com](https://developer.apple.com/forums/thread/682332)
+for more details.
+:::
 
 
 The following resources will be available:
