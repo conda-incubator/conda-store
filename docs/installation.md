@@ -69,7 +69,7 @@ If you instead mount a
 volume to the container `conda-store-worker` like nfs or
 [Amazon EFS](https://aws.amazon.com/efs/). You can mount the environments
 built via conda-store and use environments this way. Note that NFS can
-be significantly slower when it comes to creating environments (see [performance docs](./administration.md#Performance)).
+be significantly slower when it comes to creating environments (see [performance docs](./administration.md#performance)).
 
 ## Docker
 
@@ -89,7 +89,7 @@ Not all environment are containerized and conda-store recognizes
 that. The goal of CONDA-STORE is to provide Conda environments in as
 many ways as possible so it SHOULD support non-contianerized
 environments. The example files required are in
-`examples/ubuntu2004`. 
+`examples/ubuntu2004`.
 
 This example is not fully complete in that it does not install
 `conda-store` and get it running due to the [conda-forge
