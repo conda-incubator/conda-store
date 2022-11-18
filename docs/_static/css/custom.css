@@ -1,3 +1,5 @@
+/* Set conda-store theme as primary color */
+
 html[data-theme="light"] {
     --pst-color-primary: #40af2fff;
 }
@@ -9,6 +11,8 @@ html[data-theme="dark"] {
 .hide h1 {
     display:none;
 }
+
+/* Special classes to use inline with sphinx */
 
 .center {
     text-align: center;
@@ -23,10 +27,27 @@ html[data-theme="dark"] {
     text-align: left;
 }
 
+/* Center align footer elements */
+
 .bd-footer {
     text-align: center;
 }
 
 .footer-item {
     display: inline-block;
+}
+
+/* Color fixes for Swagger UI and dark mode. Ref: gh#410 */
+
+html[data-theme="dark"] .fa-magnifying-glass:before {
+    color: var(--pst-color-text-muted);
+}
+
+html[data-theme="dark"] .swagger-ui {
+    filter: invert(100%) hue-rotate(180deg);
+}
+
+.swagger-ui pre {
+    border: none;
+    background-color: transparent;
 }
