@@ -1,14 +1,12 @@
-import recommonmark
-from recommonmark.transform import AutoStructify
-
 project = 'conda-store'
 copyright = '2022, Quansight'
 author = 'Quansight'
 release = '0.4.12'
 
 extensions = [
-    'recommonmark',
+    'myst_parser',
     'sphinx_panels',
+    'sphinx_copybutton'
 ]
 
 templates_path = ['_templates']
@@ -32,11 +30,10 @@ html_theme_options = {
    ],
 }
 html_sidebars = {
-  "index": [],
+  "**": [],
 }
 
-def setup(app):
-    app.add_config_value('recommonmark_config', {
-        'enable_eval_rst': True,
-    }, True)
-    app.add_transform(AutoStructify)
+# MyST-parser configurations
+
+myst_heading_anchors = 3
+myst_enable_extensions = ["colon_fence"]
