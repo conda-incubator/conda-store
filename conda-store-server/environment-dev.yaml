@@ -39,7 +39,8 @@ dependencies:
   - black ==22.3.0
   - flake8
   - sphinx
-  - recommonmark
+  - myst-parser
   - sphinx-panels
+  - sphinx-copybutton
   - pydata-sphinx-theme
   - playwright
