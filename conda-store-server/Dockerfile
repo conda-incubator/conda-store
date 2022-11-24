@@ -24,6 +24,8 @@ ENV PATH=/opt/conda/condabin:/opt/conda/envs/conda-store-server/bin:/opt/conda/b
 ENV TZ=America/New_York
 
 RUN chown -R 1000:1000 /opt/conda/pkgs && \
+    mkdir -p /opt/conda-store/conda-store && \
+    chown 1000:1000 /opt/conda-store/conda-store && \
     mkdir -p /var/lib/conda-store && \
     chown 1000:1000 /var/lib/conda-store && \
     mkdir -p /opt/conda-store/envs && \
