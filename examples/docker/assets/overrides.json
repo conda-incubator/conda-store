@@ -1,0 +1,8 @@
+{
+  "jupyterlab-conda-store:plugin": {
+    "apiUrl": "https://conda-store.localhost/conda-store/",
+    "authMethod": "cookie",
+    "loginUrl": "http://conda-store.localhost/conda-store/login?next=",
+    "authToken": ""
+  }
+}
