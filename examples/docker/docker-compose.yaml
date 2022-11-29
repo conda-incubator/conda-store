@@ -34,7 +34,7 @@ services:
     restart: "no"
     # hack to set perimssions on volume
     entrypoint: |
-      /bin/sh -c "chown -R 1000:1000 /opt/conda-store"
+      /bin/sh -c "mkdir -p /opt/conda-store/conda-store && chown -R 1000:1000 /opt/conda-store/conda-store"
     volumes:
       - conda_store_data:/opt/conda-store/
 
@@ -107,10 +107,14 @@ services:
       retries: 5
     links:
       - "traefik:conda-store.localhost"
+    depends_on:
+      initializer:
+        condition: service_completed_successfully
     volumes:
       - conda_store_data:/opt/conda-store
       - ./assets/jupyter_notebook_config.py:/etc/jupyter/jupyter_notebook_config.py:ro
       - ./assets/jupyterhub_config.py:/opt/jupyterhub/jupyterhub_config.py:ro
+      - ./assets/overrides.json:/opt/conda/envs/conda-store/share/jupyter/lab/settings/overrides.json:ro
     platform: linux/amd64
     command: ['/opt/conda/envs/conda-store/bin/jupyterhub', '--config', '/opt/jupyterhub/jupyterhub_config.py', '--debug']
     ports:

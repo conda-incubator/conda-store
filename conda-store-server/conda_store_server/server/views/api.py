@@ -816,3 +816,30 @@ def api_get_build_archive(
     )
 
     return RedirectResponse(conda_store.storage.get_url(build.conda_pack_key))
+
+
+@router_api.get("/build/{build_id}/docker/")
+def api_get_build_docker_image_url(
+    build_id: int,
+    request: Request,
+    conda_store=Depends(dependencies.get_conda_store),
+    server=Depends(dependencies.get_server),
+    auth=Depends(dependencies.get_auth),
+):
+    build = api.get_build(conda_store.db, build_id)
+    auth.authorize_request(
+        request,
+        f"{build.environment.namespace.name}/{build.environment.name}",
+        {Permissions.ENVIRONMENT_READ},
+        require=True,
+    )
+
+    if build.has_docker_manifest:
+        url = f"{server.registry_external_url}/{build.environment.namespace.name}/{build.environment.name}:{build.build_key}"
+        return PlainTextResponse(url)
+
+    else:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Build {build_id} doesn't have a docker manifest",
+        )

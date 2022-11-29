@@ -26,27 +26,25 @@ To deploy `conda-store` run the following command
 docker-compose up --build
 ```
 
-```eval_rst
-.. important ::
-    Many of the conda-store docker images are built/tested for amd64(x86-64)
-    there will be a performance impact when building and running on
-    arm architectures. Otherwise this workflow has been shown to run and build on OSX.
-    Notice the `architecture: amd64` whithin the docker-compose.yaml files.
-```
+:::{important}
+Many of the conda-store docker images are built/tested for amd64(x86-64)
+there will be a performance impact when building and running on
+arm architectures. Otherwise this workflow has been shown to run and build on OSX.
+Notice the `architecture: amd64` whithin the docker-compose.yaml files.
+:::
 
-```eval_rst
-.. warning ::
-    If you're developing on a Mac and run into issues that complain about `tcp 0.0.0.0:5000: bind: address already in use` you might need to deactivate the `Airplay Receiver` service from the `Sharing` section in Control Center.  
-    Have a look at this [discussion on Apple.com](https://developer.apple.com/forums/thread/682332)
-    for more details.
-```
+:::{warning}
+If you're developing on a Mac and run into issues that complain about `tcp 0.0.0.0:5000: bind: address already in use` you might need to deactivate the `Airplay Receiver` service from the `Sharing` section in Control Center.
+Have a look at this [discussion on Apple.com](https://developer.apple.com/forums/thread/682332)
+for more details.
+:::
 
 
 The following resources will be available:
   - conda-store web server running at [http://localhost:5000](http://localhost:5000)
   - [MinIO](https://min.io/) s3 running at [http://localhost:9000](http://localhost:9000) with username `admin` and password `password`
-  - [PostgreSQL](https://www.postgresql.org/) running at [localhost:5432](localhost:5432) with username `admin` and password `password` database `conda-store`
-  - [Redis](https://www.redis.com/) running at [localhost:6379](localhost:6379) with password `password`
+  - [PostgreSQL](https://www.postgresql.org/) running at [localhost:5432](http://localhost:5432) with username `admin` and password `password` database `conda-store`
+  - [Redis](https://www.redis.com/) running at [localhost:6379](http://localhost:6379) with password `password`
   - [JupyterHub](https://jupyter.org/hub) running at [http://localhost:8000](http://localhost:8000) with any username and password `test`
 
 On a fast machine this deployment should only take 10 or so seconds
@@ -63,7 +61,7 @@ docker-compose up --build
 
 Install the following dependencies before developing on conda-store.
 
- - [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html) 
+ - [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html)
 
 Install the development dependencies and activate the environment.
 
@@ -510,14 +508,14 @@ eralchemy -i "postgresql+psycopg2://admin:password@localhost:5432/conda-store"  
 
 conda-store relies on [SQLAlchemy](https://www.sqlalchemy.org/) for ORM mapping, and on [Alembic](https://alembic.sqlalchemy.org/en/latest/) for DB migrations.
 
-The procedure to modify the database is the following : 
+The procedure to modify the database is the following :
 - First, modify [the ORM Model](https://github.com/Quansight/conda-store/blob/main/conda-store-server/conda_store_server/orm.py) according to the changes you want to make
 - edit the file `conda-store-server/alembic.ini` and replace the value for entry `sqlalchemy.url` to match the connection URL of your database.
 
-- in your command line, run the following : 
+- in your command line, run the following :
 ```sh
 cd conda-store-server/conda_store_server
-alembic revision --autogenerate -m "description of your changes" 
+alembic revision --autogenerate -m "description of your changes"
 ```
 - You should have a new file in `conda-store-server/conda_store_server/alembic/versions/` . **Review it thoroughly**. It contains the [`alembic` operations](https://alembic.sqlalchemy.org/en/latest/ops.html) (`op`) to actually modify the database, either when upgrading (`upgrade` function) or downgrading (`downgrade`)
 
@@ -532,8 +530,8 @@ branch_labels = None
 depends_on = None
 
 def upgrade():
-    
-    # operations to modify the database structure 
+
+    # operations to modify the database structure
     # ...
     op.create_table(
         'new_table',
@@ -544,16 +542,16 @@ def upgrade():
     )
     # ...
 
-    op.execute('''INSERT INTO new_table (field1, field2) 
-                  SELECT field1, field2 
+    op.execute('''INSERT INTO new_table (field1, field2)
+                  SELECT field1, field2
                   FROM old_table''')
-    
-    # other operations to modify the database structure 
+
+    # other operations to modify the database structure
     # ...
 
 
 def downgrade():
-    
+
     op.drop_table('new_table')
 
 ```
