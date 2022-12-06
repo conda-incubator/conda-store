@@ -2,13 +2,13 @@ import datetime
 import os
 import stat
 import subprocess
+import pathlib
 import tempfile
 import traceback
 
 import filelock
 import yaml
-
-from conda_store_server import api, conda, orm, utils, schema
+from conda_store_server import api, conda, orm, schema, utils
 
 
 def set_build_started(conda_store, build):
@@ -110,6 +110,28 @@ def build_environment(conda_command, environment_filename, conda_prefix):
     )
 
 
+def build_lock_environment(lock_filename, conda_prefix):
+    return subprocess.check_output(
+        ["conda-lock", "install", "--prefix", conda_prefix, lock_filename],
+        stderr=subprocess.STDOUT,
+        encoding="utf-8",
+    )
+
+
+def solve_lock_environment(conda_command, environment_filename, lock_filename):
+    from conda_lock.conda_lock import run_lock
+    from conda_store_server.conda import conda_platform
+
+    run_lock(
+        environment_files=[pathlib.Path(environment_filename)],
+        platforms=[conda_platform()],
+        lockfile_path=pathlib.Path(lock_filename),
+        conda_exe=conda_command,
+    )
+
+    return
+
+
 def build_conda_environment(conda_store, build):
     """Build a conda environment with set uid/gid/and permissions and
     symlink the build to a named environment
@@ -123,29 +145,33 @@ def build_conda_environment(conda_store, build):
     environment_prefix = build.environment_path(conda_store)
     os.makedirs(os.path.dirname(environment_prefix), exist_ok=True)
 
-    conda_store.log.info(f"building conda environment={conda_prefix}")
-
     try:
         with utils.timer(conda_store.log, f"building {conda_prefix}"):
             with tempfile.TemporaryDirectory() as tmpdir:
                 tmp_environment_filename = os.path.join(tmpdir, "environment.yaml")
+                tmp_lock_filename = os.path.join(tmpdir, "conda-lock.yml")
+
                 with open(tmp_environment_filename, "w") as f:
                     yaml.dump(build.specification.spec, f)
-                    if conda_store.serialize_builds:
-                        with filelock.FileLock(
-                            os.path.join(tempfile.tempdir, "conda-store.lock")
-                        ):
-                            output = build_environment(
-                                conda_store.conda_command,
-                                tmp_environment_filename,
-                                conda_prefix,
-                            )
-                    else:
-                        output = build_environment(
-                            conda_store.conda_command,
-                            tmp_environment_filename,
+
+                solve_lock_environment(
+                    conda_store.conda_command,
+                    tmp_environment_filename,
+                    tmp_lock_filename,
+                )
+                if conda_store.serialize_builds:
+                    with filelock.FileLock(
+                        os.path.join(tempfile.tempdir, "conda-store.lock")
+                    ):
+                        output = build_lock_environment(
+                            tmp_lock_filename,
                             conda_prefix,
                         )
+                else:
+                    output = build_lock_environment(
+                        tmp_lock_filename,
+                        conda_prefix,
+                    )
 
         utils.symlink(conda_prefix, environment_prefix)
 
@@ -275,10 +301,10 @@ def build_conda_pack(conda_store, build):
 def build_conda_docker(conda_store, build):
     from conda_docker.conda import (
         build_docker_environment_image,
-        find_user_conda,
         conda_info,
-        precs_from_environment_prefix,
         fetch_precs,
+        find_user_conda,
+        precs_from_environment_prefix,
     )
 
     conda_prefix = build.build_path(conda_store)
