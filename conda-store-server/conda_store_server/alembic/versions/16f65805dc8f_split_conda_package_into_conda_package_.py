@@ -94,19 +94,19 @@ def upgrade():
         sa.PrimaryKeyConstraint("solve_id", "conda_package_build_id"),
     )
 
-    op.drop_constraint("_conda_package_build_uc", "conda_package_build", type_="unique")
-    op.create_unique_constraint(
-        "_conda_package_build_uc",
-        "conda_package_build",
-        ["channel_id", "package_id", "subdir", "build", "build_number", "sha256"],
-    )
-    op.create_foreign_key(
-        "conda_package_build_channel_id_fkey",
-        "conda_package_build",
-        "conda_channel",
-        ["channel_id"],
-        ["id"],
-    )
+    with op.batch_alter_table("conda_package_build") as batch_op: 
+        batch_op.drop_constraint("_conda_package_build_uc", type_="unique")
+
+        batch_op.create_unique_constraint(
+            "_conda_package_build_uc",
+            ["channel_id", "package_id", "subdir", "build", "build_number", "sha256"],
+        )
+        batch_op.create_foreign_key(
+            "conda_package_build_channel_id_fkey",
+            "conda_channel",
+            ["channel_id"],
+            ["id"],
+        )
 
     # Migration starts here
 
@@ -118,41 +118,76 @@ def upgrade():
     op.execute(
         """
     INSERT INTO conda_package_tmp (channel_id, license, license_family, name, version, summary, description)
-        (
-             SELECT channel_id, MAX(license), MAX(license_family), name, version, MAX(summary), MAX(description)
+            SELECT channel_id, MAX(license), MAX(license_family), name, version, MAX(summary), MAX(description)
             FROM conda_package
             GROUP BY channel_id, name, version
-        )
-
+        
     """
     )
+
+    
 
     # Step 2 : populate conda_package_build with the data from conda_package
     # We make a join on conda_package_tmp because we want the new package id (conda_package_tmp.id)
     # and not the former one (conda_package.id)
-    op.execute(
-        """
-                INSERT INTO conda_package_build (md5, constrains, sha256, build_number, timestamp, size, build, subdir, depends, package_id, channel_id)
-                SELECT DISTINCT ON(channel_id, subdir, build, build_number, sha256)
-                    cp.md5,
-                    cp.constrains,
-                    cp.sha256,
-                    cp.build_number,
-                    cp.timestamp,
-                    cp.size,
-                    cp.build,
-                    cp.subdir,
-                    cp.depends,
-                    tmp.id,
-                    cp.channel_id
-                FROM conda_package cp
-                LEFT JOIN conda_package_tmp tmp
-                    ON cp.channel_id = tmp.channel_id
-                    AND cp.name = tmp.name
-                    AND cp.version = tmp.version
-                ORDER BY channel_id, subdir, build, build_number, sha256;
+
+    # Due to the specific nature of Postgres' group by, we need to run a different query for it.
+    # The problem is that we cannot do a `GROUP BY cp.channel_id, subdir, build, build_number, sha256``
+    # because there's no (simple) way to aggregate properly on the JSON fields to would ensure the data coherence.
+    if op.get_bind().engine.name == 'postgresql':
+
+        op.execute(
             """
-    )
+                INSERT INTO conda_package_build (md5, constrains, sha256, build_number, timestamp, size, build, subdir, depends, package_id, channel_id)
+                    SELECT DISTINCT ON(channel_id, subdir, build, build_number, sha256)
+                        cp.md5,
+                        cp.constrains,
+                        cp.sha256,
+                        cp.build_number,
+                        cp.timestamp,
+                        cp.size,
+                        cp.build,
+                        cp.subdir,
+                        cp.depends,
+                        tmp.id,
+                        cp.channel_id
+                    FROM conda_package cp
+                    LEFT JOIN conda_package_tmp tmp
+                        ON cp.channel_id = tmp.channel_id
+                        AND cp.name = tmp.name
+                        AND cp.version = tmp.version
+                    ORDER BY channel_id, subdir, build, build_number, sha256;
+             
+                """
+        )
+        
+
+    else:
+
+        op.execute(
+            """
+                INSERT INTO conda_package_build (md5, constrains, sha256, build_number, timestamp, size, build, subdir, depends, package_id, channel_id)
+                    SELECT  cp.md5,
+                            cp.constrains,
+                            cp.sha256,
+                            cp.build_number,
+                            cp.timestamp,
+                            cp.size,
+                            cp.build,
+                            cp.subdir,
+                            cp.depends,
+                            tmp.id,
+                            cp.channel_id
+                    FROM conda_package cp
+                    LEFT JOIN conda_package_tmp tmp
+                        ON cp.channel_id = tmp.channel_id
+                        AND cp.name = tmp.name
+                        AND cp.version = tmp.version
+                    GROUP BY cp.channel_id, subdir, build, build_number, sha256
+                    ORDER BY cp.channel_id, subdir, build, build_number, sha256;           
+                """
+        )
+
 
     # Step 3 : migrate the packages of builds, to point to conda_package_build data
     # instead of conda_package.
@@ -184,67 +219,70 @@ def upgrade():
     op.drop_table("conda_package")
     op.rename_table("conda_package_tmp", "conda_package")
 
-    op.create_foreign_key(
-        "build_specification_id_fkey",
-        "build",
-        "specification",
-        ["specification_id"],
-        ["id"],
-    )
-    op.create_foreign_key(
-        "build_environment_id_fkey", "build", "environment", ["environment_id"], ["id"]
-    )
-    op.create_foreign_key(
-        "build_artifact_build_id_fkey", "build_artifact", "build", ["build_id"], ["id"]
-    )
-    op.create_unique_constraint(
-        "_conda_package_uc", "conda_package", ["channel_id", "name", "version"]
-    )
+    with op.batch_alter_table("build") as batch_op: 
+        batch_op.create_foreign_key(
+            "build_specification_id_fkey",
+            "specification",
+            ["specification_id"],
+            ["id"],
+        )
+        batch_op.create_foreign_key(
+            "build_environment_id_fkey", "environment", ["environment_id"], ["id"]
+        )
 
-    op.create_index(
-        op.f("ix_conda_package_channel_id"),
-        "conda_package",
-        ["channel_id"],
-        unique=False,
-    )
-    op.create_index(
-        op.f("ix_conda_package_name"), "conda_package", ["name"], unique=False
-    )
-    op.create_index(
-        op.f("ix_conda_package_version"), "conda_package", ["version"], unique=False
-    )
-    op.create_foreign_key(
-        "conda_package_channel_id_fkey",
-        "conda_package",
-        "conda_channel",
-        ["channel_id"],
-        ["id"],
-    )
+    with op.batch_alter_table("build_artifact") as batch_op: 
+        batch_op.create_foreign_key(
+            "build_artifact_build_id_fkey", "build", ["build_id"], ["id"]
+        )
 
-    op.create_unique_constraint(
-        "_namespace_name_uc", "environment", ["namespace_id", "name"]
-    )
-    op.create_foreign_key(
-        "environment_namespace_id_fkey",
-        "environment",
-        "namespace",
-        ["namespace_id"],
-        ["id"],
-    )
-    op.create_foreign_key(
-        "environment_current_build_id_fkey",
-        "environment",
-        "build",
-        ["current_build_id"],
-        ["id"],
-    )
-    op.create_foreign_key(
-        "solve_specification_id_fkey",
-        "solve",
-        "specification",
-        ["specification_id"],
-        ["id"],
-    )
+    with op.batch_alter_table("conda_package") as batch_op:     
+        batch_op.create_unique_constraint(
+            "_conda_package_uc", ["channel_id", "name", "version"]
+        )
+
+
+        batch_op.create_index(
+            op.f("ix_conda_package_channel_id"),
+                 ["channel_id"],
+                unique=False,
+        )
+        batch_op.create_index(
+            op.f("ix_conda_package_name"), ["name"], unique=False
+        )
+        batch_op.create_index(
+            op.f("ix_conda_package_version"), ["version"], unique=False
+        )
+        batch_op.create_foreign_key(
+            "conda_package_channel_id_fkey",
+                        "conda_channel",
+            ["channel_id"],
+            ["id"],
+        )
+
+    with op.batch_alter_table("environment") as batch_op:     
+        batch_op.create_unique_constraint(
+            "_namespace_name_uc", ["namespace_id", "name"]
+        )
+        batch_op.create_foreign_key(
+            "environment_namespace_id_fkey",
+            "namespace",
+            ["namespace_id"],
+            ["id"],
+        )
+        batch_op.create_foreign_key(
+            "environment_current_build_id_fkey",
+            "build",
+            ["current_build_id"],
+            ["id"],
+        )
+
+    with op.batch_alter_table("solve") as batch_op: 
+        batch_op.create_foreign_key(
+            "solve_specification_id_fkey",
+            "specification",
+            ["specification_id"],
+            ["id"],
+        )
     # ### end Alembic commands ###
 
 
