@@ -288,14 +288,17 @@ def upgrade():
 
 def downgrade():
 
-    op.drop_constraint("solve_specification_id_fkey", "solve", type_="foreignkey")
-    op.drop_constraint(
-        "environment_current_build_id_fkey", "environment", type_="foreignkey"
-    )
-    op.drop_constraint(
-        "environment_namespace_id_fkey", "environment", type_="foreignkey"
-    )
-    op.drop_constraint("_namespace_name_uc", "environment", type_="unique")
+    with op.batch_alter_table("solve") as batch_op:     
+        batch_op.drop_constraint("solve_specification_id_fkey", type_="foreignkey")
+
+    with op.batch_alter_table("environment") as batch_op:     
+        batch_op.drop_constraint(
+            "environment_current_build_id_fkey", type_="foreignkey"
+        )
+        batch_op.drop_constraint(
+            "environment_namespace_id_fkey", type_="foreignkey"
+        )
+        batch_op.drop_constraint("_namespace_name_uc", type_="unique")
 
     # To migrate the data from conda_package and conda_package_build back into
     # one table for both, we'll use a temporary table.
@@ -421,11 +424,15 @@ def downgrade():
             """
     )
 
-    op.drop_constraint(
-        "build_artifact_build_id_fkey", "build_artifact", type_="foreignkey"
-    )
-    op.drop_constraint("build_environment_id_fkey", "build", type_="foreignkey")
-    op.drop_constraint("build_specification_id_fkey", "build", type_="foreignkey")
+
+    with op.batch_alter_table("build_artifact") as batch_op:     
+        batch_op.drop_constraint(
+            "build_artifact_build_id_fkey", type_="foreignkey"
+        )
+    
+    with op.batch_alter_table("build") as batch_op:     
+        batch_op.drop_constraint("build_environment_id_fkey", type_="foreignkey")
+        batch_op.drop_constraint("build_specification_id_fkey", type_="foreignkey")
 
     op.drop_table("solve_conda_package_build")
     op.drop_table("build_conda_package_build")
