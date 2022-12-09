@@ -129,8 +129,9 @@ def upgrade():
     # and not the former one (conda_package.id)
 
     # Due to the specific nature of Postgres' group by, we need to run a different query for it.
-    # The problem is that we cannot do a `GROUP BY cp.channel_id, subdir, build, build_number, sha256``
-    # because there's no (simple) way to aggregate properly on the JSON fields to would ensure the data coherence.
+    # The problem is that doing a `GROUP BY cp.channel_id, subdir, build, build_number, sha256`,
+    # implies aggregating on the other fields, and there's no (simple) way 
+    # to aggregate properly on the JSON fields like `constraints`.
     if op.get_bind().engine.name == "postgresql":
 
         op.execute(
