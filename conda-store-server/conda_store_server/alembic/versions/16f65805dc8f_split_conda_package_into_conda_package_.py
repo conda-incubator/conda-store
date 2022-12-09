@@ -94,7 +94,7 @@ def upgrade():
         sa.PrimaryKeyConstraint("solve_id", "conda_package_build_id"),
     )
 
-    with op.batch_alter_table("conda_package_build") as batch_op: 
+    with op.batch_alter_table("conda_package_build") as batch_op:
         batch_op.drop_constraint("_conda_package_build_uc", type_="unique")
 
         batch_op.create_unique_constraint(
@@ -121,11 +121,8 @@ def upgrade():
             SELECT channel_id, MAX(license), MAX(license_family), name, version, MAX(summary), MAX(description)
             FROM conda_package
             GROUP BY channel_id, name, version
-        
     """
     )
-
-    
 
     # Step 2 : populate conda_package_build with the data from conda_package
     # We make a join on conda_package_tmp because we want the new package id (conda_package_tmp.id)
@@ -134,7 +131,7 @@ def upgrade():
     # Due to the specific nature of Postgres' group by, we need to run a different query for it.
     # The problem is that we cannot do a `GROUP BY cp.channel_id, subdir, build, build_number, sha256``
     # because there's no (simple) way to aggregate properly on the JSON fields to would ensure the data coherence.
-    if op.get_bind().engine.name == 'postgresql':
+    if op.get_bind().engine.name == "postgresql":
 
         op.execute(
             """
@@ -157,10 +154,8 @@ def upgrade():
                         AND cp.name = tmp.name
                         AND cp.version = tmp.version
                     ORDER BY channel_id, subdir, build, build_number, sha256;
-             
                 """
         )
-        
 
     else:
 
@@ -184,10 +179,9 @@ def upgrade():
                         AND cp.name = tmp.name
                         AND cp.version = tmp.version
                     GROUP BY cp.channel_id, subdir, build, build_number, sha256
-                    ORDER BY cp.channel_id, subdir, build, build_number, sha256;           
+                    ORDER BY cp.channel_id, subdir, build, build_number, sha256;
                 """
         )
-
 
     # Step 3 : migrate the packages of builds, to point to conda_package_build data
     # instead of conda_package.
@@ -219,7 +213,7 @@ def upgrade():
     op.drop_table("conda_package")
     op.rename_table("conda_package_tmp", "conda_package")
 
-    with op.batch_alter_table("build") as batch_op: 
+    with op.batch_alter_table("build") as batch_op:
         batch_op.create_foreign_key(
             "build_specification_id_fkey",
             "specification",
@@ -230,36 +224,33 @@ def upgrade():
             "build_environment_id_fkey", "environment", ["environment_id"], ["id"]
         )
 
-    with op.batch_alter_table("build_artifact") as batch_op: 
+    with op.batch_alter_table("build_artifact") as batch_op:
         batch_op.create_foreign_key(
             "build_artifact_build_id_fkey", "build", ["build_id"], ["id"]
         )
 
-    with op.batch_alter_table("conda_package") as batch_op:     
+    with op.batch_alter_table("conda_package") as batch_op:
         batch_op.create_unique_constraint(
             "_conda_package_uc", ["channel_id", "name", "version"]
         )
 
-
         batch_op.create_index(
             op.f("ix_conda_package_channel_id"),
-                 ["channel_id"],
-                unique=False,
+            ["channel_id"],
+            unique=False,
         )
-        batch_op.create_index(
-            op.f("ix_conda_package_name"), ["name"], unique=False
-        )
+        batch_op.create_index(op.f("ix_conda_package_name"), ["name"], unique=False)
         batch_op.create_index(
             op.f("ix_conda_package_version"), ["version"], unique=False
         )
         batch_op.create_foreign_key(
             "conda_package_channel_id_fkey",
-                        "conda_channel",
+            "conda_channel",
             ["channel_id"],
             ["id"],
         )
 
-    with op.batch_alter_table("environment") as batch_op:     
+    with op.batch_alter_table("environment") as batch_op:
         batch_op.create_unique_constraint(
             "_namespace_name_uc", ["namespace_id", "name"]
         )
@@ -276,7 +267,7 @@ def upgrade():
             ["id"],
         )
 
-    with op.batch_alter_table("solve") as batch_op: 
+    with op.batch_alter_table("solve") as batch_op:
         batch_op.create_foreign_key(
             "solve_specification_id_fkey",
             "specification",
@@ -288,16 +279,14 @@ def upgrade():
 
 def downgrade():
 
-    with op.batch_alter_table("solve") as batch_op:     
+    with op.batch_alter_table("solve") as batch_op:
         batch_op.drop_constraint("solve_specification_id_fkey", type_="foreignkey")
 
-    with op.batch_alter_table("environment") as batch_op:     
+    with op.batch_alter_table("environment") as batch_op:
         batch_op.drop_constraint(
             "environment_current_build_id_fkey", type_="foreignkey"
         )
-        batch_op.drop_constraint(
-            "environment_namespace_id_fkey", type_="foreignkey"
-        )
+        batch_op.drop_constraint("environment_namespace_id_fkey", type_="foreignkey")
         batch_op.drop_constraint("_namespace_name_uc", type_="unique")
 
     # To migrate the data from conda_package and conda_package_build back into
@@ -424,13 +413,10 @@ def downgrade():
             """
     )
 
+    with op.batch_alter_table("build_artifact") as batch_op:
+        batch_op.drop_constraint("build_artifact_build_id_fkey", type_="foreignkey")
 
-    with op.batch_alter_table("build_artifact") as batch_op:     
-        batch_op.drop_constraint(
-            "build_artifact_build_id_fkey", type_="foreignkey"
-        )
-    
-    with op.batch_alter_table("build") as batch_op:     
+    with op.batch_alter_table("build") as batch_op:
         batch_op.drop_constraint("build_environment_id_fkey", type_="foreignkey")
         batch_op.drop_constraint("build_specification_id_fkey", type_="foreignkey")
 
