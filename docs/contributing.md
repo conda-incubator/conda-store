@@ -497,8 +497,9 @@ by [celery](https://docs.celeryproject.org/en/stable/).
 
 ```shell
 pip install eralchemy  # not available on conda-forge
-eralchemy -i "postgresql+psycopg2://admin:password@localhost:5432/conda-store" -o output.png \
-    --exclude-tables celery_tasksetmeta celery_taskmeta kombu_queue kombu_message
+eralchemy -i "postgresql+psycopg2://admin:password@localhost:5432/conda-store"  \
+    -x celery_tasksetmeta celery_taskmeta kombu_queue kombu_message alembic_version \
+    -o output.png
 ```
 
 ![entity relationship diagram](_static/images/conda-store-entity-relationship-diagram.png)

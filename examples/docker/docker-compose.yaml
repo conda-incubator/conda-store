@@ -2,6 +2,8 @@ version: "3.8"
 
 volumes:
   conda_store_data:
+  redis:
+    driver: local
 
 services:
   traefik:
@@ -78,6 +80,17 @@ services:
     command: ['conda-store-server', '--config', '/etc/conda-store/conda_store_config.py']
     ports:
       - "5000:5000"
+
+  redis:
+    image: redis:6.2-alpine
+    restart: always
+    ports:
+      - '6379:6379'
+    command: redis-server --save 20 1 --loglevel debug
+    healthcheck:
+      test: ["CMD", "redis-cli","ping"]
+    volumes: 
+      - redis:/etc/redis
 
   jupyterhub:
     build: ../../conda-store

@@ -61,12 +61,19 @@ class CondaChannel(BaseModel):
         orm_mode = True
 
 
+class CondaPackageBuild(BaseModel):
+    id: int
+    build: str
+    sha256: str
+
+    class Config:
+        orm_mode = True
+
+
 class CondaPackage(BaseModel):
     id: int
     channel: CondaChannel
-    build: str
     license: Optional[str]
-    sha256: str
     name: str
     version: str
     summary: Optional[str]
