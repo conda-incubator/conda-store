@@ -5,8 +5,10 @@ import subprocess
 import pathlib
 import tempfile
 import traceback
+import conda_store_server
 
 import filelock
+import requests
 import yaml
 from conda_store_server import api, conda, orm, schema, utils
 
@@ -117,6 +119,54 @@ def build_lock_environment(lock_filename, conda_prefix):
         encoding="utf-8",
     )
 
+def fetch_and_extract_packages(conda_store, lock_filename):
+    """Fetch links from a conda-locked build recipe and then
+    gets a filelock on the required folder.
+    """
+    import tarfile
+
+    prefix = pathlib.Path('/opt/conda/pkgs/')
+
+    try:
+        prefix.exists()
+    except:
+        conda_store.log.error(f'The conda prefix {prefix} does not exist.')
+
+    spec = dict() 
+
+    with open(pathlib.Path(lock_filename)) as f:
+        spec = yaml.safe_load(f)
+
+    for p in spec["package"]:
+        url = p["url"]
+
+        filename = url.split('/')[-1:][0]
+        filepath = prefix.joinpath(filename)
+        lockfile = filelock.FileLock(f'{filepath.__str__()}.lock')
+
+        with lockfile:
+
+            if filepath.exists():
+               break
+
+            else:
+                conda_store.log.info(f"Downloading {filename} | PATH: {filepath}")
+                res = requests.get(url)
+
+                with open(filepath, 'wb') as pkg:
+                    pkg.write(res.raw.read())
+                    conda_store.log.info(f"Finished Download: {filepath}")
+
+                if '.tar' in filepath.__str__():
+                    tf = tarfile.open(filepath)
+                    folderpath = filepath.with_suffix('')
+                    folderpath.mkdir(parents=True, exist_ok=False)
+                    tf.extractall(folderpath)
+                    tf.close()
+                    conda_store.log.info(f"Extracted | PATH: {folderpath}")   	
+            
+    return
+
 
 def solve_lock_environment(conda_command, environment_filename, lock_filename):
     from conda_lock.conda_lock import run_lock
@@ -159,6 +209,9 @@ def build_conda_environment(conda_store, build):
                     tmp_environment_filename,
                     tmp_lock_filename,
                 )
+
+                fetch_environment_packages(conda_store, conda_prefix, tmp_lock_filename)
+
                 if conda_store.serialize_builds:
                     with filelock.FileLock(
                         os.path.join(tempfile.tempdir, "conda-store.lock")
