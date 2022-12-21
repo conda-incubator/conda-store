@@ -33,6 +33,13 @@ def conda_list(prefix, executable: str = "conda"):
     return json.loads(subprocess.check_output(args))
 
 
+def conda_root_package_dir() -> pathlib.Path:
+    args = ["conda", "info", "--json"]
+    conf = json.loads(subprocess.check_output(args))
+    prefix: pathlib.Path = pathlib.Path(conf["pkgs_dirs"][0])
+    return prefix
+
+
 def conda_pack(prefix, output, ignore_missing_files=True):
     from conda_pack import pack
 

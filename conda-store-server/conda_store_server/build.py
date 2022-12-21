@@ -5,7 +5,6 @@ import subprocess
 import pathlib
 import tempfile
 import traceback
-import conda_store_server
 
 import filelock
 import requests
@@ -119,53 +118,101 @@ def build_lock_environment(lock_filename, conda_prefix):
         encoding="utf-8",
     )
 
+
+def generate_extracted_folderpath(
+    filepath: pathlib.Path, filename: pathlib.Path, extension: str
+) -> pathlib.Path:
+    """Given a compressed file, generate a foldername for it
+    and return the full folderpath for it."""
+    filesuff = filename.suffixes
+    file_extension = "".join(filesuff[filesuff.index(extension) :])
+    return pathlib.Path(str(filepath).replace(file_extension, ""))
+
+
 def fetch_and_extract_packages(conda_store, lock_filename):
     """Fetch links from a conda-locked build recipe and then
     gets a filelock on the required folder.
     """
+    import libarchive
     import tarfile
+    import shutil
+    from conda_store_server.conda import conda_root_package_dir
 
-    prefix = pathlib.Path('/opt/conda/pkgs/')
+    extensions = {".tar": "r:", ".tar.gz": "r:gz", ".tar.bz2": "r:bz2"}
+
+    prefix = conda_root_package_dir()
 
     try:
         prefix.exists()
-    except:
-        conda_store.log.error(f'The conda prefix {prefix} does not exist.')
+    except FileNotFoundError as e:
+        conda_store.log.error(
+            f"The conda prefix {prefix} does not exist. Traceback: {e}"
+        )
 
-    spec = dict() 
+    spec = dict()
 
     with open(pathlib.Path(lock_filename)) as f:
         spec = yaml.safe_load(f)
 
+    packages_searched = 1
+
     for p in spec["package"]:
-        url = p["url"]
+        if p["manager"] != "conda":
+            # ignore non-conda managed packages for now
+            pass
 
-        filename = url.split('/')[-1:][0]
-        filepath = prefix.joinpath(filename)
-        lockfile = filelock.FileLock(f'{filepath.__str__()}.lock')
+        else:
+            url = p["url"]
 
-        with lockfile:
+            filename = pathlib.Path(url.split("/")[-1:][0])
+            filepath = prefix.joinpath(filename)
+            lockfile = filelock.FileLock(f"{filepath.__str__()}.lock")
 
-            if filepath.exists():
-               break
+            with lockfile:
 
-            else:
-                conda_store.log.info(f"Downloading {filename} | PATH: {filepath}")
-                res = requests.get(url)
+                if filepath.exists():
+                    conda_store.log.info(f"SKIPPING {filename} | FILE EXISTS")
+                    packages_searched += 1
 
-                with open(filepath, 'wb') as pkg:
-                    pkg.write(res.raw.read())
-                    conda_store.log.info(f"Finished Download: {filepath}")
+                else:
+                    conda_store.log.info(
+                        f"DOWNLOAD {filename} | {packages_searched} of {len(spec['package'])}"
+                    )
+                    res = requests.get(url, stream=True)
 
-                if '.tar' in filepath.__str__():
-                    tf = tarfile.open(filepath)
-                    folderpath = filepath.with_suffix('')
-                    folderpath.mkdir(parents=True, exist_ok=False)
-                    tf.extractall(folderpath)
-                    tf.close()
-                    conda_store.log.info(f"Extracted | PATH: {folderpath}")   	
-            
-    return
+                    with open(filepath, "wb") as tarball:
+                        shutil.copyfileobj(res.raw, tarball)
+                        packages_searched += 1
+
+                    if ".tar" in filepath.__str__():
+                        filesuff = filename.suffixes
+                        file_extension = "".join(filesuff[filesuff.index(".tar") :])
+
+                        folderpath = pathlib.Path(
+                            str(filepath).replace(file_extension, "")
+                        )
+                        folderpath.mkdir(parents=True, exist_ok=False)
+
+                        conda_store.log.info(f"EXTRACT {filename} | PATH: {folderpath}")
+                        with tarfile.open(filepath, extensions[file_extension]) as tf:
+                            tf.extractall(folderpath)
+
+                    if str(filepath).endswith(".conda"):
+                        folderpath = generate_extracted_folderpath(
+                            filepath, filename, ".conda"
+                        )
+                        folderpath.mkdir(parents=True, exist_ok=False)
+                        conda_store.log.info(f"EXTRACT {filename} | PATH: {folderpath}")
+                        os.chdir(folderpath)
+                        libarchive.extract_file(filepath)
+                        for zip in filepath.glob("*.zst"):
+                            if str(zip).startswith("pkg"):
+                                libarchive.extract_file(zip)
+                                zip.unlink()
+                            if str(zip).startswith("info"):
+                                libarchive.extract_file(zip)
+                                zip.unlink()
+                return
 
 
 def solve_lock_environment(conda_command, environment_filename, lock_filename):
@@ -210,7 +257,7 @@ def build_conda_environment(conda_store, build):
                     tmp_lock_filename,
                 )
 
-                fetch_environment_packages(conda_store, conda_prefix, tmp_lock_filename)
+                fetch_and_extract_packages(conda_store, tmp_lock_filename)
 
                 if conda_store.serialize_builds:
                     with filelock.FileLock(
