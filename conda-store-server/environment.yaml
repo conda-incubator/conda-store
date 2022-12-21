@@ -7,6 +7,8 @@ dependencies:
   - conda-docker >= 0.1.2
   - conda-pack
   - conda-lock >=1.0.5
+  - poetry
+  - python-libarchive-c
   # web server
   - celery
   - flower
@@ -29,4 +31,3 @@ dependencies:
   - python-multipart
   # artifact storage
   - minio
-  - poetry
