@@ -61,7 +61,7 @@ It provides flexible, yet reproducible, environments while enforcing best practi
     Exact versions of all packages and their dependencies are pinned in these artifacts.
 
     ---
-    **⚖️  Goveranance**
+    **⚖️  Governance**
     ^^^^^^^^^^^^^
 
     .. rst-class:: left
