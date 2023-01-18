@@ -192,6 +192,12 @@ def conda_prefix_packages(prefix):
     prefix_data.load()
 
     for record in prefix_data.iter_records():
+
+        if record.size:
+            size = record.size
+        else:
+            size = None
+
         package = {
             "build": record.build,
             "build_number": record.build_number,
@@ -206,7 +212,7 @@ def conda_prefix_packages(prefix):
                 open(record.package_tarball_full_path, "rb").read()
             ).hexdigest(),
             "name": record.name,
-            "size": record.size,
+            "size": size,
             "subdir": record.subdir,
             "timestamp": record.timestamp,
             "version": record.version,
