@@ -9,7 +9,7 @@ import tarfile
 import shutil
 import logging
 
-from typing import Tuple
+from typing import Tuple, Dict, Union
 
 import filelock
 import requests
@@ -245,6 +245,31 @@ def solve_lock_environment(conda_command, environment_filename, lock_filename):
     return
 
 
+def parse_conda_environment_variables(
+        conda_prefix: pathlib.Path, environment_variables: Dict[str, Union[str, int]]
+):
+    """Takes an input of the conda prefix and the recipe used to build the environment,
+    and then checks if there are variables present. If they are, then activate them on environment activation."""
+
+    for item in ("activate", "deactivate"):
+        folderpath = conda_prefix.joinpath("etc", "conda", f"{item}.d")
+        folderpath.mkdir(parents=True, exist_ok=False)
+        env_vars_file = folderpath.joinpath("env_vars.sh")
+        env_vars_file.touch()
+
+        with open(env_vars_file, "w") as f:
+            f.write("#!/bin/bash\n")
+
+            if item == "activate":
+                for key in environment_variables:
+                    f.write(f"export {key}={environment_variables[key]}\n")
+
+            elif item == "deactivate":
+                for key in environment_variables.keys():
+                    f.write(f"unset {key}\n")
+    return
+
+
 def build_conda_environment(conda_store, build):
     """Build a conda environment with set uid/gid/and permissions and
     symlink the build to a named environment
@@ -297,6 +322,12 @@ def build_conda_environment(conda_store, build):
                     output = build_lock_environment(
                         tmp_lock_filename,
                         conda_prefix,
+                    )
+
+                if "variables" in build.specification.spec.keys():
+                    parse_conda_environment_variables(
+                        pathlib.Path(conda_prefix),
+                        build.specification.spec["variables"],
                     )
 
         utils.symlink(conda_prefix, environment_prefix)
