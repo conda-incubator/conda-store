@@ -246,7 +246,7 @@ def solve_lock_environment(conda_command, environment_filename, lock_filename):
 
 
 def parse_conda_environment_variables(
-    conda_prefix: pathlib.Path, environment_variables: Dict[str, Union[str, int]]
+    conda_prefix: pathlib.Path, environment_variables: Dict[str, int]
 ):
     """Takes an input of the conda prefix and the recipe used to build the environment,
     and then checks if there are variables present. If they are, then activate them on environment activation."""

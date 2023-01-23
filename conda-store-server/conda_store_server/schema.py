@@ -181,7 +181,7 @@ class CondaSpecification(BaseModel):
     name: constr(regex=f"^[{ALLOWED_CHARACTERS}]+$")  # noqa: F722
     channels: List[str] = []
     dependencies: List[Union[str, CondaSpecificationPip]] = []
-    variables: Optional[Dict[str, str]]
+    variables: Optional[Dict[str, int]]
     prefix: Optional[str]
     description: Optional[str] = ""
 
