@@ -416,6 +416,29 @@ def api_update_environment_build(
     return {"status": "ok"}
 
 
+@router_api.cancel(
+    "/environment/{namespace}/{name}/",
+    response_model=schema.APIAckResponse,
+)
+def api_cancel_environment_build(
+    namespace: str,
+    name: str,
+    request: Request,
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
+):
+
+    # TODO Change this auth request
+    auth.authorize_request(
+        request, f"{namespace}/{name}", {Permissions.ENVIRONMENT_DELETE}, require=True
+    )
+
+    # implement this function
+    # conda_store.cancel_environment_build(namespace, name)
+    # return {"status": "ok"}
+    pass
+
+
 @router_api.delete(
     "/environment/{namespace}/{name}/",
     response_model=schema.APIAckResponse,
