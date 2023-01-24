@@ -416,11 +416,12 @@ def api_update_environment_build(
     return {"status": "ok"}
 
 
-@router_api.cancel(
-    "/environment/{namespace}/{name}/",
+@router_api.put(
+    # TODO Grab the right URL 
+    "/environment/{namespace}/{name}/{build-id}",
     response_model=schema.APIAckResponse,
 )
-def api_cancel_environment_build(
+def api_cancel_build(
     namespace: str,
     name: str,
     request: Request,
@@ -434,7 +435,7 @@ def api_cancel_environment_build(
     )
 
     # implement this function
-    # conda_store.cancel_environment_build(namespace, name)
+    conda_store.cancel_build(namespace, name)
     # return {"status": "ok"}
     pass
 
