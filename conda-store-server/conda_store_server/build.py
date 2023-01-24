@@ -161,8 +161,10 @@ def build_environment(conda_command, environment_filename, conda_prefix):
 def parse_conda_environment_variables(
     conda_prefix: pathlib.Path, environment_variables: Dict[str, Union[str, int]]
 ):
-    """Takes an input of the conda prefix and the recipe used to build the environment,
-    and then checks if there are variables present. If they are, then activate them on environment activation."""
+    """Takes an input of the conda prefix and the, variables defined in the environment yaml
+    specification. Then, generates the files neccesary to "activate" these when an environment
+    is activated.
+    """
     for item in ("activate", "deactivate"):
         folderpath = conda_prefix.joinpath("etc", "conda", f"{item}.d")
         folderpath.mkdir(parents=True, exist_ok=False)
