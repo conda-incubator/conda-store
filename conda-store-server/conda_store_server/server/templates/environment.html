@@ -37,6 +37,11 @@
                 <ion-icon name="checkmark"></ion-icon>
             </button>
             {% endif %}
+	    {% if build.id != environment.current_build_id and build.status.value in ["QUEUED", "BUILDING"] and build.deleted_on is none %}
+            <button type="button" data-action="cancel" data-id="{{ build.id }}" class="btn btn-danger mb-2">
+                <ion-icon name="close-circle-outline"></ion-icon>
+            </button>
+            {% endif %}
             <button type="button" data-action="refresh" data-id="{{ build.id }}" class="btn btn-primary mb-2">
                 <ion-icon name="refresh"></ion-icon>
             </button>
@@ -84,6 +89,13 @@
      }
  }
 
+ async function cancelBuild(event) {
+     event.preventDefault();
+     let buildId = event.currentTarget.getAttribute('data-id');
+     console.log(buildId);
+ }
+
+
  async function refreshBuild(event) {
      event.preventDefault();
      let buildId = event.currentTarget.getAttribute('data-id');
@@ -117,6 +129,11 @@
  document.querySelectorAll('button[data-action="set-current"]').forEach(item => {
      item.addEventListener('click', (event) => setCurrentEnvironmentBuild(event));
  })
+
+ document.querySelectorAll('button[data-action="cancel"]').forEach(item => {
+     item.addEventListener('click', (event) => cancelBuild(event));
+ })
+
 
  document.querySelectorAll('button[data-action="refresh"]').forEach(item => {
      item.addEventListener('click', (event) => refreshBuild(event));
