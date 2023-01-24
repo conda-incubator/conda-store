@@ -216,7 +216,7 @@ def build_conda_environment(conda_store, build):
                             conda_prefix,
                         )
 
-                    if "variables" in build.specification.spec.keys():
+                    if build.specification.spec["variables"] is not None:
                         parse_conda_environment_variables(
                             pathlib.Path(conda_prefix),
                             build.specification.spec["variables"],
