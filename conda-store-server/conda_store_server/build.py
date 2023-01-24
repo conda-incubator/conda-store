@@ -9,7 +9,7 @@ import tarfile
 import shutil
 import logging
 
-from typing import Tuple, Dict, Union
+from typing import Tuple, Dict
 
 import filelock
 import requests
