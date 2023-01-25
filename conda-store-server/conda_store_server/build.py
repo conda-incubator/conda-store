@@ -158,7 +158,7 @@ def build_environment(conda_command, environment_filename, conda_prefix):
     )
 
 
-def parse_conda_environment_variables(
+def set_conda_environment_variables(
     conda_prefix: pathlib.Path, environment_variables: Dict[str, Union[str, int]]
 ):
     """Takes an input of the conda prefix and the, variables defined in the environment yaml
@@ -219,7 +219,7 @@ def build_conda_environment(conda_store, build):
                         )
 
                     if build.specification.spec["variables"] is not None:
-                        parse_conda_environment_variables(
+                        set_conda_environment_variables(
                             pathlib.Path(conda_prefix),
                             build.specification.spec["variables"],
                         )
