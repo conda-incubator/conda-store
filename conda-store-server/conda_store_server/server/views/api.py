@@ -417,27 +417,36 @@ def api_update_environment_build(
 
 
 @router_api.put(
-    # TODO Grab the right URL 
-    "/environment/{namespace}/{name}/{build-id}",
+    "/environment/{namespace}/{environment_name}/{environment}",
     response_model=schema.APIAckResponse,
 )
 def api_cancel_build(
     namespace: str,
-    name: str,
+    environment_name: str,
+    environment,
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
+    build_id = Body(None, embed=True)
 ):
 
     # TODO Change this auth request
     auth.authorize_request(
-        request, f"{namespace}/{name}", {Permissions.ENVIRONMENT_DELETE}, require=True
+        request, f"{namespace}/{environment_name}", {Permissions.ENVIRONMENT_UPDATE}, require=True
     )
 
+    print(f"recieved {build_id}")
+    print(environment)
     # implement this function
-    conda_store.cancel_build(namespace, name)
-    # return {"status": "ok"}
-    pass
+    i = conda_store.celery_app.control.inspect()
+
+    print(i.scheduled(), i.active(), i.reserved())
+
+    r = conda_store.celery_app.control.revoke
+    
+    #r(i.active().keys()[0]["id"], terminate=True)
+    #conda_store.cancel_build(namespace, environment_name, build_id, i)
+    return { "status" : "ok"}
 
 
 @router_api.delete(

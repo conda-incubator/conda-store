@@ -621,6 +621,21 @@ class CondaStore(LoggingConfigurable):
 
         tasks.task_delete_environment.si(environment.id).apply_async()
 
+    def cancel_build(self, namespace: str, name: str,  build_id: str, i):
+        args = f"""
+        id: {build_id}
+        namespace: {namespace}
+        name: {name}
+        build_id: {build_id}
+        --------
+        celery
+        --------
+        active: {i.active()}
+        """
+        print(f"HELLO, {args}")
+        return
+
+
     def delete_build(self, build_id):
         build = api.get_build(self.db, build_id)
         if build.status not in [

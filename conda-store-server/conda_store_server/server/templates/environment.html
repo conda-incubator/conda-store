@@ -37,8 +37,8 @@
                 <ion-icon name="checkmark"></ion-icon>
             </button>
             {% endif %}
-	    {% if build.id != environment.current_build_id and build.status.value in ["QUEUED", "BUILDING"] and build.deleted_on is none %}
-            <button type="button" data-action="cancel" data-id="{{ build.id }}" class="btn btn-danger mb-2">
+	    {% if build.id != environment.current_build_id and build.status.value in ["QUEUED", "BUILDING"] and build.deleted_on is none %} 
+	    <button type="button" data-action="cancel" data-id="{{ build.id }}" class="btn btn-danger mb-2">
                 <ion-icon name="close-circle-outline"></ion-icon>
             </button>
             {% endif %}
@@ -92,7 +92,21 @@
  async function cancelBuild(event) {
      event.preventDefault();
      let buildId = event.currentTarget.getAttribute('data-id');
-     console.log(buildId);
+
+     console.log(event)
+     let url = `{{ url_for('api_cancel_build', namespace=environment.namespace.name, environment_name=environment.name, environment=environment.id) }}`;
+	
+     let response = await fetch(url, { 
+	  method: 'PUT',
+	  headers: {
+	      'Content-Type': 'application/json'
+          },
+	  body: JSON.stringify({ 
+		  build_id : buildId
+	  })
+     })
+
+     console.log(response); 
  }
 
 
