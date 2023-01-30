@@ -183,9 +183,6 @@ class CondaStoreAPI:
 
             return (await response.json())["data"]
 
-    async def cancel_build(self, build_id: text):
-        pass
-
     async def download(self, build_id: int, artifact: str) -> bytes:
         url = self.api_url / "build" / str(build_id) / artifact
         async with self.session.get(url) as response:
