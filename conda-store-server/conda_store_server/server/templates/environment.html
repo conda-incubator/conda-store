@@ -94,7 +94,7 @@
      let buildId = event.currentTarget.getAttribute('data-id');
 
      console.log(event)
-     let url = `{{ url_for('api_cancel_build', namespace=environment.namespace.name, environment_name=environment.name, environment=environment.id) }}`;
+     let url = `{{ url_for('api_cancel_build', namespace=environment.namespace.name, environment_name=environment.name, environment=environment.current_build) }}`;
 	
      let response = await fetch(url, { 
 	  method: 'PUT',
