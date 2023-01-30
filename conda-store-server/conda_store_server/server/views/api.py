@@ -437,6 +437,7 @@ def api_cancel_build(
 
     print(f"recieved {build_id}")
     print(environment)
+    print(type(environment))
     # implement this function
     i = conda_store.celery_app.control.inspect()
 

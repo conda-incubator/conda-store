@@ -150,6 +150,7 @@ def task_update_conda_channel(self, channel_name):
 def task_solve_conda_environment(self, solve_id):
     conda_store = self.worker.conda_store
     solve = api.get_solve(conda_store.db, solve_id)
+    print(f"SOLVING CONDA ENVIONMENT | TASK ID IS {str(self.request.id)}")
     solve_conda_environment(conda_store, solve)
 
 
@@ -157,7 +158,10 @@ def task_solve_conda_environment(self, solve_id):
 def task_build_conda_environment(self, build_id):
     conda_store = self.worker.conda_store
     build = api.get_build(conda_store.db, build_id)
-    build_conda_environment(conda_store, build)
+    task_id = str(self.request.id)
+    print(f"SOLVING CONDA ENVIONMENT | TASK ID IS {str(self.request.id)}")
+
+    build_conda_environment(conda_store, build, task_id)
 
 
 @current_app.task(base=WorkerTask, name="task_build_conda_env_export", bind=True)

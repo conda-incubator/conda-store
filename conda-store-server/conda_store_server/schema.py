@@ -137,6 +137,7 @@ class Build(BaseModel):
     packages: Optional[List[CondaPackage]]
     status: BuildStatus
     size: int
+    task_id: Optional[str]
     scheduled_on: datetime.datetime
     started_on: Optional[datetime.datetime]
     ended_on: Optional[datetime.datetime]
