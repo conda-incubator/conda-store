@@ -133,7 +133,7 @@ class Build(Base):
     status = Column(Enum(schema.BuildStatus), default=schema.BuildStatus.QUEUED)
     size = Column(BigInteger, default=0)
     scheduled_on = Column(DateTime, default=datetime.datetime.utcnow)
-    task_id = Column(str, default=None)
+    task_id = Column(Text, default=None)
     started_on = Column(DateTime, default=None)
     ended_on = Column(DateTime, default=None)
     deleted_on = Column(DateTime, default=None)
