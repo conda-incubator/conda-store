@@ -191,6 +191,9 @@ def task_update_environment_build(self, environment_id):
 
     utils.symlink(conda_prefix, environment_prefix)
 
+    if conda_store.post_update_environment_build_hook:
+        conda_store.post_update_environment_build_hook(conda_store, environment)
+
 
 def delete_build_artifact(conda_store, build_artifact):
     if build_artifact.artifact_type == schema.BuildArtifactType.DIRECTORY:

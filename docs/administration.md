@@ -233,6 +233,9 @@ files in two concurrent builds the downloads/extraction can
 overlap. This is a bug in Conda/Mamba that needs to be fixed. Default
 is True until this bug is fixed.
 
+`CondaStore.post_update_environment_build_hook` is an optional configurable to 
+allow for custom behavior that will run after an environment's current build changes.
+
 ### `conda_store_server.storage.S3Storage`
 
 conda-store uses [minio-py](https://github.com/minio/minio-py) as a

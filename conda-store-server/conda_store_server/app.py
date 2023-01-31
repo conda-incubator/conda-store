@@ -297,6 +297,13 @@ class CondaStore(LoggingConfigurable):
         config=True,
     )
 
+    post_update_environment_build_hook = Callable(
+        default_value=None,
+        help="callable function taking conda_store and `orm.Environment` object as input arguments. This function can be used to add custom behavior that will run after an environment's current build changes.",
+        config=True,
+        allow_none=True,
+    )
+
     @property
     def session_factory(self):
         if hasattr(self, "_session_factory"):
