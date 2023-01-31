@@ -2,11 +2,14 @@ import datetime
 import os
 import stat
 import subprocess
+import pathlib
 import tempfile
 import traceback
 
 import filelock
 import yaml
+
+from typing import Dict, Union
 
 from conda_store_server import api, conda, orm, utils, schema
 
@@ -155,6 +158,29 @@ def build_environment(conda_command, environment_filename, conda_prefix):
     )
 
 
+def set_conda_environment_variables(
+    conda_prefix: pathlib.Path, environment_variables: Dict[str, Union[str, int]]
+):
+    """Takes an input of the conda prefix and the, variables defined in the environment yaml
+    specification. Then, generates the files neccesary to "activate" these when an environment
+    is activated.
+    """
+    for item in ("activate", "deactivate"):
+        folderpath = conda_prefix.joinpath("etc", "conda", f"{item}.d")
+        folderpath.mkdir(parents=True, exist_ok=False)
+        env_vars_file = folderpath.joinpath("env_vars.sh")
+        env_vars_file.touch()
+        with open(env_vars_file, "w") as f:
+            f.write("#!/bin/bash\n")
+            if item == "activate":
+                for key in environment_variables:
+                    f.write(f"export {key}={environment_variables[key]}\n")
+            elif item == "deactivate":
+                for key in environment_variables.keys():
+                    f.write(f"unset {key}\n")
+    return
+
+
 def build_conda_environment(conda_store, build):
     """Build a conda environment with set uid/gid/and permissions and
     symlink the build to a named environment
@@ -190,6 +216,12 @@ def build_conda_environment(conda_store, build):
                             conda_store.conda_command,
                             tmp_environment_filename,
                             conda_prefix,
+                        )
+
+                    if build.specification.spec["variables"] is not None:
+                        set_conda_environment_variables(
+                            pathlib.Path(conda_prefix),
+                            build.specification.spec["variables"],
                         )
 
         utils.symlink(conda_prefix, environment_prefix)
