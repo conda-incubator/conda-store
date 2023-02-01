@@ -632,6 +632,7 @@ class CondaStore(LoggingConfigurable):
         active = tasks.active() 
         reserved = tasks.reserved()
 
+        # TODO: Write information about the worker to the database as well
         # Query the database
         result = self.db.execute(text(f'SELECT task_id FROM build WHERE id={build_id};')).fetchone()
         task_id = result[0]
@@ -646,8 +647,7 @@ class CondaStore(LoggingConfigurable):
                     print("CANCELLING TASK")
 
                    # Cancel the Build
-                    revoke(result[0], terminate=True)
-
+                    revoke(task_id, terminate=True)
                     print(tasks.active())
 
                    # Set to Cancelled
