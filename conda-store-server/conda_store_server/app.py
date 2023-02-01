@@ -634,22 +634,25 @@ class CondaStore(LoggingConfigurable):
 
         # Query the database
         result = self.db.execute(text(f'SELECT task_id FROM build WHERE id={build_id};')).fetchone()
+        task_id = result[0]
         print(result[0], active)
 
         # Search for the active task
         # TODO: Filter by worker
-        for worker in active:
-            for worker_tasks in worker:
-                print(worker_tasks)
-                if worker_tasks["id"] == result[0] and worker_tasks["id"] == build_id:
+        for worker in active.keys():
+            for task in active[worker]:
+                print(task)
+                if task['id'] == task_id:
                     print("CANCELLING TASK")
 
-                    # Cancel the Build
+                   # Cancel the Build
                     revoke(result[0], terminate=True)
 
-                    # Set to Cancelled
+                    print(tasks.active())
+
+                   # Set to Cancelled
                     build = api.get_build(self.db, build_id)
-                    build.status = schema.BuildStatus.CANCELLED
+                    #build.status = schema.BuildStatus.CANCELLED
                     build.task_id = None
                     self.db.commit()
         return
