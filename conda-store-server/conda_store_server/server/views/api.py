@@ -437,17 +437,9 @@ def api_cancel_build(
 
     print(f"recieved {build_id}")
     print(environment)
-    print(type(environment))
     # implement this function
-    i = conda_store.celery_app.control.inspect()
-
-    print(i.scheduled(), i.active(), i.reserved())
-
-    r = conda_store.celery_app.control.revoke
-    
-    #r(i.active().keys()[0]["id"], terminate=True)
-    #conda_store.cancel_build(namespace, environment_name, build_id, i)
-    return { "status" : "ok"}
+    conda_store.cancel_build(namespace, environment_name, build_id)
+    return { "status" : "ok" }
 
 
 @router_api.delete(
