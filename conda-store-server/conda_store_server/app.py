@@ -652,7 +652,7 @@ class CondaStore(LoggingConfigurable):
 
                    # Set to Cancelled
                     build = api.get_build(self.db, build_id)
-                    #build.status = schema.BuildStatus.CANCELLED
+                    build.status = schema.BuildStatus.CANCELLED
                     build.task_id = None
                     self.db.commit()
         return
