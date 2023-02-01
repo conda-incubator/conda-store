@@ -350,7 +350,7 @@ async def list_namespace(ctx, output: str):
 @click.option(
     "--status",
     # see conda_store_server.schema.BuildStatus
-    type=click.Choice(["QUEUED", "BUILDING", "COMPLETED", "FAILED"]),
+    type=click.Choice(["QUEUED", "BUILDING", "COMPLETED", "CANCELLED", "FAILED"]),
     help="Filter builds which have given status",
 )
 @click.option(
@@ -405,7 +405,7 @@ async def list_build(ctx, output: str, status: str, artifact: str, package: List
 @click.option(
     "--status",
     # see conda_store_server.schema.BuildStatus
-    type=click.Choice(["QUEUED", "BUILDING", "COMPLETED", "FAILED"]),
+    type=click.Choice(["QUEUED", "BUILDING", "COMPLETED", "CANCELLED", "FAILED"]),
     help="Filter environments which have given status",
 )
 @click.option(
