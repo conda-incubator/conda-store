@@ -161,7 +161,7 @@ def task_build_conda_environment(self, build_id):
     task_id = str(self.request.id)
     print(f"SOLVING CONDA ENVIONMENT | TASK ID IS {str(self.request.id)}")
 
-    build_conda_environment(conda_store, build, task_id)
+    build_conda_environment(conda_store, build)
 
 
 @current_app.task(base=WorkerTask, name="task_build_conda_env_export", bind=True)
