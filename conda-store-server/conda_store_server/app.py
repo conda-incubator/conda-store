@@ -16,6 +16,7 @@ from traitlets import (
 )
 from traitlets.config import LoggingConfigurable
 from sqlalchemy.pool import NullPool
+from sqlalchemy import text
 
 from conda_store_server import (
     orm,
@@ -621,20 +622,37 @@ class CondaStore(LoggingConfigurable):
 
         tasks.task_delete_environment.si(environment.id).apply_async()
 
-    def cancel_build(self, namespace: str, name: str,  build_id: str, i):
-        args = f"""
-        id: {build_id}
-        namespace: {namespace}
-        name: {name}
-        build_id: {build_id}
-        --------
-        celery
-        --------
-        active: {i.active()}
-        """
-        print(f"HELLO, {args}")
-        return
+    def cancel_build(self, namespace: str, name: str, build_id: str):
 
+        print("IN CANCEL BUILD METHOD")
+        tasks = self.celery_app.control.inspect()
+        revoke = self.celery_app.control.revoke
+
+        scheduled = tasks.scheduled() 
+        active = tasks.active() 
+        reserved = tasks.reserved()
+
+        # Query the database
+        result = self.db.execute(text(f'SELECT task_id FROM build WHERE id={build_id};')).fetchone()
+        print(result[0], active)
+
+        # Search for the active task
+        # TODO: Filter by worker
+        for worker in active:
+            for worker_tasks in worker:
+                print(worker_tasks)
+                if worker_tasks["id"] == result[0] and worker_tasks["id"] == build_id:
+                    print("CANCELLING TASK")
+
+                    # Cancel the Build
+                    revoke(result[0], terminate=True)
+
+                    # Set to Cancelled
+                    build = api.get_build(self.db, build_id)
+                    build.status = schema.BuildStatus.CANCELLED
+                    build.task_id = None
+                    self.db.commit()
+        return
 
     def delete_build(self, build_id):
         build = api.get_build(self.db, build_id)
