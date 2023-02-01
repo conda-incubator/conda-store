@@ -14,7 +14,6 @@ from conda_store_server import api, conda, orm, utils, schema
 def set_build_started(conda_store, build):
     build.status = schema.BuildStatus.BUILDING
     build.started_on = datetime.datetime.utcnow()
-    build.task_id = 'blahfornow'
     conda_store.db.commit()
 
 
