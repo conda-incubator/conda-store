@@ -158,9 +158,7 @@ def task_solve_conda_environment(self, solve_id):
 def task_build_conda_environment(self, build_id):
     conda_store = self.worker.conda_store
     build = api.get_build(conda_store.db, build_id)
-    task_id = str(self.request.id)
-    print(f"SOLVING CONDA ENVIONMENT | TASK ID IS {str(self.request.id)}")
-
+    build.task_id = str(self.request.id)
     build_conda_environment(conda_store, build)
 
 
