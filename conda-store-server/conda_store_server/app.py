@@ -632,12 +632,8 @@ class CondaStore(LoggingConfigurable):
         self.log.info(f"CANCELLING | TASK ID: {task_id}")
 
         tasks = self.celery_app.control.inspect()
-        scheduled = tasks.scheduled()
-        active = tasks.active()
-        reserved = tasks.reserved()
-
         tasks_by_worker = {}
-        for d in (active, scheduled, reserved):
+        for d in (tasks.active(), tasks.scheduled(), tasks.reserved()):
             for key, value in d.items():
                 if key in tasks_by_worker:
                     if len(value) > 0:
