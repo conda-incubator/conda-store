@@ -435,10 +435,7 @@ def api_cancel_build(
         request, f"{namespace}/{environment_name}", {Permissions.ENVIRONMENT_UPDATE}, require=True
     )
 
-    print(f"recieved {build_id}")
-    print(environment)
-    # implement this function
-    conda_store.cancel_build(namespace, environment_name, build_id)
+    conda_store.cancel_build(build_id)
     return { "status" : "ok" }
 
 
