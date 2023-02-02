@@ -1,6 +1,8 @@
 import os
 import datetime
 
+from typing import Dict, List 
+
 from celery import Celery, group
 from traitlets import (
     Type,
@@ -622,39 +624,42 @@ class CondaStore(LoggingConfigurable):
 
         tasks.task_delete_environment.si(environment.id).apply_async()
 
-    def cancel_build(self, namespace: str, name: str, build_id: str):
+    def cancel_build(self, build_id: str):
 
-        print("IN CANCEL BUILD METHOD")
+        result = self.db.execute(
+            text(f"SELECT task_id FROM build WHERE id={build_id};")
+        ).fetchone()
+        task_id = result[0]
+
+        self.log.info(f"CANCELLING | TASK ID: {task_id}")
+
         tasks = self.celery_app.control.inspect()
-        revoke = self.celery_app.control.revoke
-
-        scheduled = tasks.scheduled() 
-        active = tasks.active() 
+        scheduled = tasks.scheduled()
+        active = tasks.active()
         reserved = tasks.reserved()
 
-        # TODO: Write information about the worker to the database as well
-        # Query the database
-        result = self.db.execute(text(f'SELECT task_id FROM build WHERE id={build_id};')).fetchone()
-        task_id = result[0]
-        print(result[0], active)
+        tasks_by_worker: Dict[str, List[Dict]] = {}
+        for d in (active, scheduled, reserved):
+            for key, value in d.items():
+                if key in tasks_by_worker:
+                    if len(value) > 0:
+                        tasks_by_worker[key].append(*value)
+                else:
+                    tasks_by_worker[key] = value
 
-        # Search for the active task
-        # TODO: Filter by worker
-        for worker in active.keys():
-            for task in active[worker]:
-                print(task)
-                if task['id'] == task_id:
-                    print("CANCELLING TASK")
-
-                   # Cancel the Build
+        revoke = self.celery_app.control.revoke
+        for worker in tasks_by_worker:
+            for i in range(0, len(tasks_by_worker[worker])):
+                if tasks_by_worker[worker][i]["id"] == task_id:
                     revoke(task_id, terminate=True)
-                    print(tasks.active())
 
-                   # Set to Cancelled
                     build = api.get_build(self.db, build_id)
                     build.status = schema.BuildStatus.CANCELLED
                     build.task_id = None
+                    build.ended_on = datetime.datetime.utcnow()
                     self.db.commit()
+
+                    self.log.info(f"CANCELLED | TASK ID: {task_id}")
         return
 
     def delete_build(self, build_id):
