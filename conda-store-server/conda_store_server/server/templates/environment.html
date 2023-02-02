@@ -93,7 +93,6 @@
      event.preventDefault();
      let buildId = event.currentTarget.getAttribute('data-id');
 
-     console.log(event)
      let url = `{{ url_for('api_cancel_build', namespace=environment.namespace.name, environment_name=environment.name) }}`;
 	
      let response = await fetch(url, { 

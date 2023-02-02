@@ -417,7 +417,7 @@ def api_update_environment_build(
 
 
 @router_api.put(
-    "/environment/{namespace}/{environment_name}/{environment}",
+    "/environment/{namespace}/{environment_name}/cancel/",
     response_model=schema.APIAckResponse,
 )
 def api_cancel_build(
