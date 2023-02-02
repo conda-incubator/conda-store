@@ -37,7 +37,7 @@
                 <ion-icon name="checkmark"></ion-icon>
             </button>
             {% endif %}
-	    {% if build.id != environment.current_build_id and build.status.value in ["QUEUED", "BUILDING"] and build.deleted_on is none %} 
+	    {% if build.id != environment.current_build_id and build.status.value in ["QUEUED", "BUILDING"] and build.ended_on is none %} 
 	    <button type="button" data-action="cancel" data-id="{{ build.id }}" class="btn btn-danger mb-2">
                 <ion-icon name="close-circle-outline"></ion-icon>
             </button>
@@ -106,7 +106,12 @@
 	  })
      })
 
-     console.log(response); 
+     if (response.ok) {
+	 window.location.reload(true);
+     } else {
+	 let data = await response.json();
+         bannerMessage(`<div class="alert alert-danger col">${data.message}</div>`);
+     }
  }
 
 
