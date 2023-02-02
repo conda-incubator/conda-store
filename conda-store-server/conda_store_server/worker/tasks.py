@@ -158,7 +158,6 @@ def task_build_conda_environment(self, build_id):
     conda_store = self.worker.conda_store
     build = api.get_build(conda_store.db, build_id)
     build.task_id = str(self.request.id)
-    print(f"BUILDING CONDA ENVIONMENT | TASK ID IS {build.task_id}")
     build_conda_environment(conda_store, build)
 
 
@@ -167,7 +166,6 @@ def task_build_conda_env_export(self, build_id):
     conda_store = self.worker.conda_store
     build = api.get_build(conda_store.db, build_id)
     build.task_id = str(self.request.id)
-    print(f"CONDA ENVIONMENT EXPORT | TASK ID IS {build.task_id}")
     build_conda_env_export(conda_store, build)
 
 
@@ -176,7 +174,6 @@ def task_build_conda_pack(self, build_id):
     conda_store = self.worker.conda_store
     build = api.get_build(conda_store.db, build_id)
     build.task_id = str(self.request.id)
-    print(f"CONDA PACK ENVIONMENT | TASK ID IS {build.task_id}")
     build_conda_pack(conda_store, build)
 
 
@@ -185,7 +182,6 @@ def task_build_conda_docker(self, build_id):
     conda_store = self.worker.conda_store
     build = api.get_build(conda_store.db, build_id)
     build.task_id = str(self.request.id)
-    print(f"BUILD CONDA DOCKER | TASK ID IS {build.task_id}")
     build_conda_docker(conda_store, build)
 
 
