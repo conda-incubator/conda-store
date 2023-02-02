@@ -1,8 +1,6 @@
 import os
 import datetime
 
-from typing import Dict, List
-
 from celery import Celery, group
 from traitlets import (
     Type,
@@ -638,7 +636,7 @@ class CondaStore(LoggingConfigurable):
         active = tasks.active()
         reserved = tasks.reserved()
 
-        tasks_by_worker: Dict[str, List[Dict]] = {}
+        tasks_by_worker = {}
         for d in (active, scheduled, reserved):
             for key, value in d.items():
                 if key in tasks_by_worker:
