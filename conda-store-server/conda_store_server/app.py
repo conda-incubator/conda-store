@@ -1,7 +1,7 @@
 import os
 import datetime
 
-from typing import Dict, List 
+from typing import Dict, List
 
 from celery import Celery, group
 from traitlets import (

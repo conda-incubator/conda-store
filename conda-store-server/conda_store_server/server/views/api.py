@@ -423,20 +423,21 @@ def api_update_environment_build(
 def api_cancel_build(
     namespace: str,
     environment_name: str,
-    environment,
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
-    build_id = Body(None, embed=True)
+    build_id=Body(None, embed=True),
 ):
 
-    # TODO Change this auth request
     auth.authorize_request(
-        request, f"{namespace}/{environment_name}", {Permissions.ENVIRONMENT_UPDATE}, require=True
+        request,
+        f"{namespace}/{environment_name}",
+        {Permissions.ENVIRONMENT_UPDATE},
+        require=True,
     )
 
     conda_store.cancel_build(build_id)
-    return { "status" : "ok" }
+    return {"status": "ok"}
 
 
 @router_api.delete(
