@@ -586,6 +586,8 @@ class CondaPackageBuild(Base):
     sha256 = Column(Unicode(64), nullable=False)
     size = Column(BigInteger, nullable=False)
     subdir = Column(Unicode(64), nullable=True)
+    # needed to differentiate between package `.tar.bz2` and `.conda` files
+    tarball_ext = Column(Unicode(64), nullable=True)
     timestamp = Column(BigInteger, nullable=True)
 
     def __repr__(self):

@@ -53,6 +53,7 @@ def set_build_completed(conda_store, build, logs, packages):
         "sha256",
         "size",
         "subdir",
+        "tarball_ext",
         "timestamp",
     ]
 

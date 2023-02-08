@@ -198,6 +198,7 @@ def conda_prefix_packages(prefix):
             "sha256": hashlib.sha256(
                 open(record.package_tarball_full_path, "rb").read()
             ).hexdigest(),
+            "tarball_ext": pathlib.Path(record.package_tarball_full_path).suffix,
             "name": record.name,
             "size": record.size,
             "subdir": record.subdir,
