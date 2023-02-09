@@ -89,7 +89,8 @@ def list_environments(
 
     if packages:
         query = (
-            query.join(orm.Build.packages)
+            query.join(orm.Build.package_builds)
+            .join(orm.CondaPackageBuild.package)
             .filter(orm.CondaPackage.name.in_(packages))
             .group_by(orm.Namespace.name, orm.Environment.name, orm.Environment.id)
             .having(func.count() == len(packages))
@@ -197,19 +198,19 @@ def get_build(db, build_id: int):
 def get_build_packages(
     db, build_id: int, search: str = None, exact: bool = False, build: str = None
 ):
-    filters = [(orm.build_conda_package.c.build_id == build_id)]
+    filters = [(orm.Build.id == build_id)]
     if search:
         if exact:
             filters.append(orm.CondaPackage.name.like(search.replace("%", r"\%")))
         else:
             filters.append(orm.CondaPackage.name.contains(search, autoescape=True))
     if build:
-        filters.append(orm.CondaPackage.build.contains(build, autoescape=True))
+        filters.append(orm.CondaPackageBuild.build.contains(build, autoescape=True))
 
     return (
         db.query(orm.CondaPackage)
-        .join(orm.build_conda_package)
-        .join(orm.CondaChannel)
+        .join(orm.Build.package_builds)
+        .join(orm.CondaPackage, orm.CondaChannel)
         .filter(*filters)
     )
 
@@ -217,8 +218,8 @@ def get_build_packages(
 def get_build_lockfile(db, build_id: int):
     build = db.query(orm.Build).filter(orm.Build.id == build_id).first()
     packages = [
-        f"{row.channel.name}/{row.subdir}/{row.name}-{row.version}-{row.build}.tar.bz2#{row.md5}"
-        for row in build.packages
+        f"{row.package.channel.name}/{row.subdir}/{row.package.name}-{row.package.version}-{row.build}.tar.bz2#{row.md5}"
+        for row in build.package_builds
     ]
     return """#platform: {0}
 @EXPLICIT
