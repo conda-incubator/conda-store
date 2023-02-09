@@ -35,7 +35,6 @@ dependencies:
 
   # dev dependencies
   - pytest
-  - pytest-xdist
   - pytest-mock
   - black ==22.3.0
   - flake8
