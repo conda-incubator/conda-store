@@ -17,7 +17,7 @@ import yaml
 import yarl
 import requests
 
-from conda_store_server import schema
+from conda_store_server import schema, utils
 
 
 def normalize_channel_name(channel_alias, channel):
@@ -198,7 +198,7 @@ def conda_prefix_packages(prefix):
             "sha256": hashlib.sha256(
                 open(record.package_tarball_full_path, "rb").read()
             ).hexdigest(),
-            "tarball_ext": pathlib.Path(record.package_tarball_full_path).suffix,
+            "tarball_ext": utils.extract_tarball_extension(record.package_tarball_full_path),
             "name": record.name,
             "size": record.size,
             "subdir": record.subdir,

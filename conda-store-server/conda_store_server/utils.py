@@ -78,3 +78,17 @@ def callable_or_value(v, *args, **kwargs):
     if callable(v):
         return v(*args, **kwargs)
     return v
+
+
+def extract_tarball_extension(package_tarball_full_path: str) -> str:
+    """
+    extract file extension from package records
+
+    Args:
+        package_tarball_full_path: package attr loaded from `conda.core.prefix_data.PrefixData.load()`
+
+    Returns:
+        file extension
+    """
+    return '.' + re.compile(r'^.*?[.](?P<ext>tar\.gz|tar\.bz2|\w+)$').match(package_tarball_full_path).group('ext')
+
