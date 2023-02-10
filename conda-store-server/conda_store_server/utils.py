@@ -5,6 +5,7 @@ import contextlib
 import time
 import hashlib
 import json
+from typing import Optional
 
 
 class CondaStoreError(Exception):
@@ -80,15 +81,14 @@ def callable_or_value(v, *args, **kwargs):
     return v
 
 
-def extract_tarball_extension(package_tarball_full_path: str) -> str:
+def extract_tarball_extension(package_tarball_full_path: str) -> Optional[str]:
     """
     extract file extension from package records
 
-    Args:
-        package_tarball_full_path: package attr loaded from `conda.core.prefix_data.PrefixData.load()`
+    :package_tarball_full_path: package attr loaded from `conda.core.prefix_data.PrefixData.load()`
 
-    Returns:
-        file extension
+    :return: str or None
     """
-    return '.' + re.compile(r'^.*?[.](?P<ext>tar\.gz|tar\.bz2|\w+)$').match(package_tarball_full_path).group('ext')
+    match = re.compile(r'^.*?[.](?P<ext>tar\.gz|tar\.bz2|\w+)$').match(package_tarball_full_path)
+    return '.' + match.group('ext') if match else None
 
