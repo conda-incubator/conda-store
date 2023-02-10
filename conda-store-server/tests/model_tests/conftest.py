@@ -5,8 +5,8 @@ sys.path.append(os.path.join(os.getcwd(), 'conda-store-server'))
 
 import pytest  # noqa: E402
 from conda_store_server import orm, schema  # noqa: E402
-from sqlalchemy.orm import mapper, sessionmaker  # noqa: E402
-from sqlalchemy import create_engine, insert  # noqa: E402
+from sqlalchemy.orm import sessionmaker  # noqa: E402
+from sqlalchemy import create_engine # noqa: E402
 from typing import TYPE_CHECKING  # noqa: E402
 
 if TYPE_CHECKING:
