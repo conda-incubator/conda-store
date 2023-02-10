@@ -32,7 +32,6 @@ def test_get_build_lockfile(mocker, db_session):
         "conda_store_server.api.conda_platform",
         return_value="linux-64",
     )
-
     lines = api.get_build_lockfile(db_session, 1).split("\n")
     assert lines[0] == "# platform: linux-64"
     assert lines[1] == "@EXPLICIT"
