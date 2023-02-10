@@ -34,7 +34,7 @@ pip dependencies. Click the `lockfile` icon to download the
 lockfile. First install `conda-lock` if it is not already installed.
 
 ```shell
-conda install -c conda-forge lockfile 
+conda install -c conda-forge conda-lock
 ```
 
 Install the locked environment file from conda-store.
