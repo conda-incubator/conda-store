@@ -25,5 +25,3 @@ from conda_store_server.utils import extract_tarball_extension
 def test_extract_tarball_extension(package_tarball_full_path, expected):
     actual = extract_tarball_extension(package_tarball_full_path)
     assert actual == expected
-
-
