@@ -9,6 +9,8 @@ def test_mocked_toolchain_example(mocked_session):
     build_artifact = mocked_session.query(orm.BuildArtifact).filter_by(id=1).first()
     assert build_artifact.artifact_type == schema.BuildArtifactType.LOCKFILE
 
+    # test relationship resolutions
+    assert build.build_artifacts[0].id == build_artifact.id
     # https://github.com/resulyrt93/pytest-sqlalchemy-mock/issues/6
     # for some reason it's not liking to resolve the through relationship
     # assert build.package_builds != []
