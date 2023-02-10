@@ -89,6 +89,7 @@ def extract_tarball_extension(package_tarball_full_path: str) -> Optional[str]:
 
     :return: str or None
     """
-    match = re.compile(r'^.*?[.](?P<ext>tar\.gz|tar\.bz2|\w+)$').match(package_tarball_full_path)
-    return '.' + match.group('ext') if match else None
-
+    match = re.compile(r"^.*?[.](?P<ext>tar\.gz|tar\.bz2|\w+)$").match(
+        package_tarball_full_path
+    )
+    return "." + match.group("ext") if match else None
