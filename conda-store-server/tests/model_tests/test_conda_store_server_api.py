@@ -19,12 +19,16 @@ def test_mocked_toolchain_example(mocked_session):
     # assert build.package_builds != []
 
 
-def test_get_build_lockfile(mocked_session):
+def test_get_build_lockfile(mocker, mocked_session):
+    mocker.patch(
+        "conda_store_server.api.conda_platform",
+        return_value="linux-64",
+    )
     response_text = api.get_build_lockfile(mocked_session, 1)
     lines = response_text.split("\n")
     for indx, line in enumerate(lines):
         if indx == 0:
-            assert line.startswith("# platform")
+            assert line == "# platform: linux-64"
             continue
 
         if indx == 1:
