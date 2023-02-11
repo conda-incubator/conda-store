@@ -74,7 +74,7 @@ def sqlalchemy_model_fixtures():
                 "md5": "37d4251d34eb991ff9e40e546cc2e803",
             },
             {
-                "id": 1,
+                "id": 3,
                 "package_id": 1,
                 "channel_id": 1,
                 "subdir": "linux-64",
