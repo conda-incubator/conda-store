@@ -20,20 +20,21 @@ def sqlalchemy_declarative_base():
 
 @pytest.fixture(scope="function")
 def sqlalchemy_model_fixtures():
-    return [("build", [
+    return {
+        orm.Build: [
         {
             "id": 1,
             "specification_id": 1,
             "environment_id": 1,
             "status": schema.BuildStatus.COMPLETED,
-        },
-    ]), ("build_artifact", [
+        }],
+        orm.BuildArtifact: [
         {
             "id": 1,
             "build_id": 1,
             "artifact_type": schema.BuildArtifactType.LOCKFILE
-        }
-    ]), ("build_conda_package", [
+        }],
+        orm.build_conda_package: [
         {
             "build_id": 1,
             "conda_package_build_id": 1,
@@ -41,8 +42,8 @@ def sqlalchemy_model_fixtures():
         {
             "build_id": 1,
             "conda_package_build_id": 2,
-        },
-    ]), ("conda_package_build", [
+        }],
+        orm.CondaPackageBuild: [
         {
             "id": 1,
             "package_id": 1,
@@ -68,8 +69,8 @@ def sqlalchemy_model_fixtures():
             "size": 2314454,
             "tarball_ext": ".tar.bz2",
             "md5": "37d4251d34eb991ff9e40e546cc2e803",
-        },
-    ]), ("conda_package", [
+        }],
+        orm.CondaPackage: [
         {
             "id": 1,
             "channel_id": 1,
@@ -81,14 +82,13 @@ def sqlalchemy_model_fixtures():
             "channel_id": 1,
             "name": "zarr",
             "version": "2.12.0",
-        }
-    ]), ("conda_channel", [
+        }],
+        orm.CondaChannel: [
         {
             "id": 1,
             "name": "https://conda.anaconda.org/conda-forge"
-        },
-    ])
-    ]
+        }]
+    }
 
 
 @pytest.fixture(scope="session")
@@ -123,31 +123,30 @@ def db_session(
     # with added support for `conda_store_server.orm.build_conda_package` m2m
     session: Session = sessionmaker()(bind=connection)
 
-    def get_model_class_with_table_name(table_name: str):
-        for mapper in sqlalchemy_declarative_base.registry.mappers:
-            cls = mapper.class_
-            if cls.__tablename__ == table_name:
-                return cls
-
     if sqlalchemy_declarative_base and sqlalchemy_model_fixtures:
-        through_m2m_table, m2m_data = None, None
-        for model_config in sqlalchemy_model_fixtures:
-            table_name, data = model_config
 
-            if table_name == "build_conda_package":
-                through_m2m_table, m2m_data = orm.build_conda_package, data
-
-            model_class = get_model_class_with_table_name(table_name)
-            if model_class:
+        through_m2m_tables_and_data = []
+        for model_config in sqlalchemy_model_fixtures.items():
+            model_class, data = model_config
+            # handle things that inherit from `declarative_base`
+            if hasattr(model_class, "mro"):
                 for datum in data:
                     instance = model_class(**datum)
                     session.add(instance)
+            else:
+                through_m2m_tables_and_data.append((model_class, data))
 
+        # shouldn't need to do this
+        # but given that non-declarative-base models
+        # cannot use `session.add` and only `connection.execute`
+        # means we need to actually persist these things
         session.commit()
 
-        for datum in m2m_data:
-            stmt = through_m2m_table.insert().values(**datum)
-            connection.execute(stmt)
+        # handle m2m(s)
+        for m2m_model_class, m2m_data in through_m2m_tables_and_data:
+            for datum in m2m_data:
+                stmt = m2m_model_class.insert().values(**datum)
+                connection.execute(stmt)
 
     yield session
     session.close()
