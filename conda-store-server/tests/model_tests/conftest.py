@@ -22,85 +22,91 @@ def sqlalchemy_declarative_base():
 def sqlalchemy_model_fixtures():
     return {
         orm.Build: [
-        {
-            "id": 1,
-            "specification_id": 1,
-            "environment_id": 1,
-            "status": schema.BuildStatus.COMPLETED,
-        }],
+            {
+                "id": 1,
+                "specification_id": 1,
+                "environment_id": 1,
+                "status": schema.BuildStatus.COMPLETED,
+            }
+        ],
         orm.BuildArtifact: [
-        {
-            "id": 1,
-            "build_id": 1,
-            "artifact_type": schema.BuildArtifactType.LOCKFILE
-        }],
+            {
+                "id": 1,
+                "build_id": 1,
+                "artifact_type": schema.BuildArtifactType.LOCKFILE
+            }
+        ],
         orm.build_conda_package: [
-        {
-            "build_id": 1,
-            "conda_package_build_id": 1,
-        },
-        {
-            "build_id": 1,
-            "conda_package_build_id": 2,
-        }],
+            {
+                "build_id": 1,
+                "conda_package_build_id": 1,
+            },
+            {
+                "build_id": 1,
+                "conda_package_build_id": 2,
+            }
+        ],
         orm.CondaPackageBuild: [
-        {
-            "id": 1,
-            "package_id": 1,
-            "channel_id": 1,
-            "subdir": "linux-64",
-            "build": "h27087fc_0",
-            "build_number": 1,
-            "depends": "[]",
-            "sha256": "sha256",
-            "size": 2314454,
-            "tarball_ext": ".conda",
-            "md5": "87473a15119779e021c314249d4b4aed",
-        },
-        {
-            "id": 2,
-            "package_id": 2,
-            "channel_id": 1,
-            "subdir": "linux-64",
-            "build": "pyhd8ed1ab_0",
-            "build_number": 1,
-            "depends": "[]",
-            "sha256": "sha256",
-            "size": 2314454,
-            "tarball_ext": ".tar.bz2",
-            "md5": "37d4251d34eb991ff9e40e546cc2e803",
-        },
-        {
-            "id": 1,
-            "package_id": 1,
-            "channel_id": 1,
-            "subdir": "linux-64",
-            "build": "h27087fc_0",
-            "build_number": 1,
-            "depends": "[]",
-            "sha256": "sha256",
-            "size": 2314454,
-            "tarball_ext": None,
-            "md5": "87473a15119779e021c314249d4b4aed",
-        }],
+            {
+                "id": 1,
+                "package_id": 1,
+                "channel_id": 1,
+                "subdir": "linux-64",
+                "build": "h27087fc_0",
+                "build_number": 1,
+                "depends": "[]",
+                "sha256": "sha256",
+                "size": 2314454,
+                "tarball_ext": ".conda",
+                "md5": "87473a15119779e021c314249d4b4aed",
+            },
+            {
+                "id": 2,
+                "package_id": 2,
+                "channel_id": 1,
+                "subdir": "linux-64",
+                "build": "pyhd8ed1ab_0",
+                "build_number": 1,
+                "depends": "[]",
+                "sha256": "sha256",
+                "size": 2314454,
+                "tarball_ext": ".tar.bz2",
+                "md5": "37d4251d34eb991ff9e40e546cc2e803",
+            },
+            {
+                "id": 1,
+                "package_id": 1,
+                "channel_id": 1,
+                "subdir": "linux-64",
+                "build": "h27087fc_0",
+                "build_number": 1,
+                "depends": "[]",
+                "sha256": "sha256",
+                "size": 2314454,
+                "tarball_ext": None,
+                "md5": "87473a15119779e021c314249d4b4aed",
+            }
+        ],
         orm.CondaPackage: [
-        {
-            "id": 1,
-            "channel_id": 1,
-            "name": "icu",
-            "version": "70.1",
-        },
-        {
-            "id": 2,
-            "channel_id": 1,
-            "name": "zarr",
-            "version": "2.12.0",
-        }],
+            {
+                "id": 1,
+                "channel_id": 1,
+                "name": "icu",
+                "version": "70.1",
+            },
+            {
+                "id": 2,
+                "channel_id": 1,
+                "name": "zarr",
+                "version": "2.12.0",
+            }
+        ],
         orm.CondaChannel: [
-        {
-            "id": 1,
-            "name": "https://conda.anaconda.org/conda-forge"
-        }]
+            {
+                "id": 1,
+                "name": "https://conda.anaconda.org/conda-forge"
+            }
+        ]
     }
 
 
