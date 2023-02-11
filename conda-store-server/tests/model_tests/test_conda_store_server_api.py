@@ -37,4 +37,4 @@ def test_get_build_lockfile(mocker, db_session):
     assert lines[1] == "@EXPLICIT"
     assert lines[2] == "https://conda.anaconda.org/conda-forge/linux-64/icu-70.1-h27087fc_0.conda#87473a15119779e021c314249d4b4aed"
     assert lines[3] == "https://conda.anaconda.org/conda-forge/linux-64/zarr-2.12.0-pyhd8ed1ab_0.tar.bz2#37d4251d34eb991ff9e40e546cc2e803"
-    assert lines[4] == "https://conda.anaconda.org/conda-forge/linux-64/icu-70.1-h27087fc_0.tar.bz2#87473a15119779e021c314249d4b4aed"
+    assert lines[4] == "https://conda.anaconda.org/conda-forge/linux-64/icu-70.1-h27087fc_0.tar.bz2#97473a15119779e021c314249d4b4aed"

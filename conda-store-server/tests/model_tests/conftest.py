@@ -84,7 +84,7 @@ def sqlalchemy_model_fixtures():
                 "sha256": "sha256",
                 "size": 2314454,
                 "tarball_ext": None,
-                "md5": "87473a15119779e021c314249d4b4aed",
+                "md5": "97473a15119779e021c314249d4b4aed",
             }
         ],
         orm.CondaPackage: [
