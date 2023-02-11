@@ -69,6 +69,19 @@ def sqlalchemy_model_fixtures():
             "size": 2314454,
             "tarball_ext": ".tar.bz2",
             "md5": "37d4251d34eb991ff9e40e546cc2e803",
+        },
+        {
+            "id": 1,
+            "package_id": 1,
+            "channel_id": 1,
+            "subdir": "linux-64",
+            "build": "h27087fc_0",
+            "build_number": 1,
+            "depends": "[]",
+            "sha256": "sha256",
+            "size": 2314454,
+            "tarball_ext": None,
+            "md5": "87473a15119779e021c314249d4b4aed",
         }],
         orm.CondaPackage: [
         {
