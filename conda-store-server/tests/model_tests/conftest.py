@@ -44,6 +44,10 @@ def sqlalchemy_model_fixtures():
             {
                 "build_id": 1,
                 "conda_package_build_id": 2,
+            },
+            {
+                "build_id": 1,
+                "conda_package_build_id": 3,
             }
         ],
         orm.CondaPackageBuild: [
