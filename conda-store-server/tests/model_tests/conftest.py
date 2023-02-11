@@ -81,7 +81,7 @@ def sqlalchemy_model_fixtures():
                 "build": "h27087fc_0",
                 "build_number": 1,
                 "depends": "[]",
-                "sha256": "sha256",
+                "sha256": "thesha256",
                 "size": 2314454,
                 "tarball_ext": None,
                 "md5": "97473a15119779e021c314249d4b4aed",
