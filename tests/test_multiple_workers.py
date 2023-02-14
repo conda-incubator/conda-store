@@ -23,7 +23,7 @@ def read_environment_spec(name: str, p: pathlib.Path = ENVIRONMENT_YAML_PATH):
     spec["name"] = name
     return json.dumps(spec)
 
-
+@pytest.mark.dependency(depends=['test_delete_build_auth'])
 def test_parallel_specification_build_auth(testclient):
     namespace = "default"
     envs = {}
