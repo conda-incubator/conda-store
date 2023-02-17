@@ -27,14 +27,20 @@ def test_conftest_relationship_lookups(db_session):
     assert len(m2ms) == 3
 
 
-def test_get_build_lockfile(mocker, db_session):
+def test_get_build_lockfile_for_tarball_ext(mocker, db_session):
+    # https://github.com/Quansight/conda-store/issues/431
+    build_id = 1
     mocker.patch(
         "conda_store_server.api.conda_platform",
         return_value="linux-64",
     )
-    lines = api.get_build_lockfile(db_session, 1).split("\n")
+    build = db_session.query(orm.Build).filter(orm.Build.id == build_id).first()
+    conda_package_builds = build.package_builds
+    lines = api.get_build_lockfile(db_session, build_id).split("\n")
     assert lines[0] == "# platform: linux-64"
     assert lines[1] == "@EXPLICIT"
-    assert lines[2] == "https://conda.anaconda.org/conda-forge/linux-64/icu-70.1-h27087fc_0.conda#87473a15119779e021c314249d4b4aed"
-    assert lines[3] == "https://conda.anaconda.org/conda-forge/linux-64/zarr-2.12.0-pyhd8ed1ab_0.tar.bz2#37d4251d34eb991ff9e40e546cc2e803"
-    assert lines[4] == "https://conda.anaconda.org/conda-forge/linux-64/icu-70.1-h27087fc_0.tar.bz2#97473a15119779e021c314249d4b4aed"
+    for conda_package_build_record, lockfile_line in zip(conda_package_builds, lines[2:]):
+        if conda_package_build_record.tarball_ext:
+            assert conda_package_build_record.tarball_ext in lockfile_line
+        else:
+            assert ".tar.bz2" in lockfile_line

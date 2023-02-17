@@ -9,7 +9,7 @@ from conda_store_server.utils import extract_tarball_extension
         ("blah.conda", ".conda"),
         ("blah.zip", ".zip"),
         ("blah-4.33.tar", ".tar"),
-        # double ext
+        # tar double ext
         ("blah.tar.gz", ".tar.gz"),
         ("blah.tar.bz2", ".tar.bz2"),
         # paths with dots in names
