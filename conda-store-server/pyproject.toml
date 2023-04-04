@@ -1,7 +1,112 @@
 [build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling>=1.14.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "conda-store-server"
+description = "Conda Environment Management, Builds, and Serve"
+readme = "README.md"
+license = "BSD-3-Clause"
+requires-python = ">=3.7"
+keywords = [
+  "conda",
+]
+authors = [
+  { name = "Christopher Ostrouchov", email = "crhsi.ostrouchov@gmail.com" },
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Topic :: Software Development :: Build Tools",
+  "License :: OSI Approved :: BSD License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.7",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3 :: Only",
+]
+dependencies = [
+  "conda-docker",
+  "conda-pack",
+  "celery",
+  "sqlalchemy",
+  "requests",
+  "fastapi",
+  "pyyaml",
+  "redis",
+  "pydantic",
+  "minio",
+  "traitlets",
+  "pyjwt",
+  "yarl",
+  "filelock",
+  "itsdangerous",
+  "jinja2",
+  "python-multipart",
+  # conda (which should not be included here)
+]
+dynamic = ["version"]
+
+[project.urls]
+Homepage = "https://conda.store/"
+Source = "https://github.com/Quansight/conda-store"
+
+[project.optional-dependencies]
+dev = [
+  "build",
+  "twine",
+]
+
+[tool.hatch.version]
+path = "conda_store_server/__init__.py"
+
+[tool.hatch.envs.test]
+dependencies = [
+  "pytest",
+  "pytest-mock",
+  "pytest-playwright",
+]
+
+[tool.hatch.envs.test.scripts]
+test = "PYTHONPATH=$PWD:$PYTHONPATH pytest ../tests"
+
+[tool.hatch.envs.lint]
+dependencies = [
+   "black==22.3.0",
+   "ruff"
+]
+
+[tool.hatch.envs.lint.scripts]
+check = [
+  "black --check --diff .",
+  "ruff check .",
+]
+fmt = [
+  "black .",
+  "check",
+]
+
+[tool.hatch.envs.docs]
+dependencies = [
+  "sphinx",
+  "myst-parser",
+  "sphinx-panels",
+  "sphinx-copybutton",
+  "pydata-sphinx-theme",
+]
+
+[tool.hatch.envs.docs.scripts]
+build = "sphinx-build -b html ../docs ../docs/_build"
+
+[project.scripts]
+conda-store-server = "conda_store_server.server.__main__:main"
+conda-store-worker = "conda_store_server.worker.__main__:main"
 
 [tool.black]
 line-length = 88
-target-version = ['py36', 'py37', 'py38']
+target-version = ['py37', 'py38', 'py39']
+
+[tool.ruff]
+ignore = [
+  "E501",  # line-length
+]

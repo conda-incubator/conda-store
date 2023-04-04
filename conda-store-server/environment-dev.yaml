@@ -34,9 +34,11 @@ dependencies:
   - typer
 
   # dev dependencies
+  - hatch
   - pytest
   - pytest-mock
   - black ==22.3.0
+  - ruff
   - flake8
   - sphinx
   - myst-parser
