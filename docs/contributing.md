@@ -23,7 +23,7 @@ Install the following dependencies before developing on conda-store.
 To deploy `conda-store` run the following command
 
 ```shell
-docker-compose up --build
+docker-compose up --build -d
 ```
 
 :::{important}
@@ -53,7 +53,7 @@ are making and changes to conda-store-server and would like to see
 those changes in the deployment. Run.
 
 ```shell
-docker-compose down  # not always necessary
+docker-compose down -v # not always necessary
 docker-compose up --build
 ```
 

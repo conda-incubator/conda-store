@@ -44,3 +44,4 @@ dependencies:
   - sphinx-copybutton
   - pydata-sphinx-theme
   - playwright
+  - docker-compose
