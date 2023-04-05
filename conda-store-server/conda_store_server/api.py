@@ -210,7 +210,8 @@ def get_build_packages(
     return (
         db.query(orm.CondaPackage)
         .join(orm.Build.package_builds)
-        .join(orm.CondaPackage, orm.CondaChannel)
+        .join(orm.CondaPackageBuild.package)
+        .join(orm.CondaPackage.channel)
         .filter(*filters)
     )
 
