@@ -1,0 +1,44 @@
+name: Documentation
+
+env:
+  DEFAULT_PYTHON_VERSION: "3.10"
+
+on:
+  pull_request:
+    paths:
+      - '**.md'
+  push:
+    branches:
+      - main
+    paths:
+      - '**.md'
+
+jobs:
+  build-docs:
+    name: 'documentation'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: conda-store-server
+    steps:
+      - name: 'Checkout Repository'
+        uses: actions/checkout@master
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+
+      - name: Install Dependencies
+        run: |
+          pip install hatch
+
+      - name: Build Documentation
+        run: |
+          hatch env run -e dev docs
+
+      - uses: actions/upload-artifact@v2
+        if: ${{ always() }}
+        with:
+          name: documentation
+          path: docs/_build
