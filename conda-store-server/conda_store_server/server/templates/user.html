@@ -62,6 +62,49 @@
     </div>
 </div>
 
+<div class="card m-2">
+    <div class="card-body">
+        <h5 class="card-title">Usage</h5>
+        <p>Bellow is your current usage for namespaces you have access to.</p>
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th scope="col">Namespace</th>
+                    <th scope="col"># Environments</th>
+                    <th scope="col"># Builds</th>
+                    <th scope="col">Total Storage</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for namespace, num_builds, num_environments, storage in namespace_usage_metrics %}
+                <tr>
+                    <td>{{ namespace }}</td>
+                    <td>{{ num_environments }}</td>
+                    <td>{{ num_builds }}</td>
+                    <td><span class="badge badge-light">{{ storage | filesizeformat(true) }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card m-2">
+    <div class="card-body">
+        <h5>System</h5>
+        <p>Bellow is system metrics.</p>
+        <ul class="list-group">
+            <li class="list-group-item">Storage Total<span class="badge badge-light">{{ system_metrics.disk_total | filesizeformat(true) }}</span></li>
+            <li class="list-group-item">Storage Free<span class="badge badge-light">{{ system_metrics.disk_free | filesizeformat(true) }}</span></li>
+            <li class="list-group-item">Storage Used<span class="badge badge-light">{{ system_metrics.disk_usage | filesizeformat(true) }}</span></li>
+        </ul>
+
+        <div class="progress">
+            <div class="progress-bar" role="progressbar" style="width: {{ (system_metrics.disk_usage / system_metrics.disk_total * 100) | round | int }}%;" aria-valuenow="{{ (system_metrics.disk_usage / system_metrics.disk_total * 100) | round | int }}" aria-valuemin="0" aria-valuemax="100">{{ (system_metrics.disk_usage / system_metrics.disk_total * 100) | round | int }}%</div>
+        </div>
+    </div>
+</div>
+
 <script>
  function setClipboard(value) {
      var tempInput = document.createElement("input");

@@ -314,3 +314,22 @@ def get_metrics(db):
 
     metrics["environments"] = db.query(orm.Environment).count()
     return metrics
+
+
+def get_system_metrics(db):
+    return db.query(
+        orm.CondaStoreConfiguration.free_storage.label("disk_free"),
+        orm.CondaStoreConfiguration.total_storage.label("disk_total"),
+        orm.CondaStoreConfiguration.disk_usage,
+    ).first()
+
+
+def get_namespace_metrics(db):
+    return db.query(
+        orm.Namespace.name,
+        func.count(orm.Environment.id),
+        func.count(orm.Build.id),
+        func.sum(orm.Build.size)
+    ).join(orm.Build.environment) \
+     .join(orm.Environment.namespace) \
+     .group_by(orm.Namespace.name)
