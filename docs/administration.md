@@ -121,6 +121,10 @@ the channel `repodata` and `channeldata` from. The default is `main`
 and `conda-forge`. If `conda_allowed_channels` is an empty list all
 Channels are accepted by users.
 
+`CondaStore.conda_indexed_channels` tells conda-store which channels to prefetch
+the channel `repodata` and `channeldata` from. The default is `main`
+and `conda-forge`.
+
 `CondaStore.conda_default_packages` is a list of Conda packages that
 are included by default if none are specified within the specification
 dependencies.
