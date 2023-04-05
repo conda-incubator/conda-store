@@ -255,10 +255,22 @@ class CondaStoreServer(Application):
                 prefix=trim_slash(self.url_prefix),
             )
 
+            # serving new conda-store-ui
+            import conda_store_server.server
+            app.mount(
+                trim_slash(self.url_prefix) + "/ui/",
+                StaticFiles(
+                    directory=os.path.join(
+                        os.path.dirname(conda_store_server.server.__file__),
+                        "static/conda-store-ui/"),
+                    html=True,
+                ),
+                name="conda-store-ui",
+            )
+
             # convenience to redirect "/" to home page when using a prefix
             # realistically this url will not be hit with a proxy + prefix
             if self.url_prefix != "/":
-
                 @app.get("/")
                 def redirect_home(request: Request):
                     return RedirectResponse(request.url_for("ui_list_environments"))
