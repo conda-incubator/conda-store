@@ -1,5 +1,8 @@
 name: Tests
 
+env:
+  DEFAULT_PYTHON_VERSION: "3.10"
+
 on:
   pull_request:
   push:
@@ -8,14 +11,14 @@ on:
 
 jobs:
   test-conda-store-server:
-    name: 'Test conda-store-server'
+    name: 'unit-test conda-store-server'
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: conda-store-server
     strategy:
       matrix:
-        python-version: [3.7, 3.8, 3.9]
+        python-version: ["3.8", "3.9", "3.10"]
     steps:
       - name: 'Checkout Repository'
         uses: actions/checkout@master
@@ -28,21 +31,10 @@ jobs:
       - name: Install Dependencies
         run: |
           pip install hatch
-          sudo apt install wait-for-it -y
 
       - name: Linting Checks
         run: |
           hatch env run -e dev lint
-
-      - name: Build Documentation
-        run: |
-          hatch env run -e dev docs
-
-      - uses: actions/upload-artifact@v2
-        if: ${{ always() }}
-        with:
-          name: documentation
-          path: docs/_build
 
       - name: Release Check
         run: |
@@ -51,6 +43,26 @@ jobs:
       - name: Unit Tests
         run: |
           hatch env run -e dev unit-test
+
+  integration-test-conda-store-server:
+    name: 'integration-test conda-store-server'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: conda-store-server
+    steps:
+      - name: 'Checkout Repository'
+        uses: actions/checkout@master
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+
+      - name: Install Dependencies
+        run: |
+          pip install hatch
+          sudo apt install wait-for-it -y
 
       - name: Deploy docker-compose
         run: |
@@ -88,7 +100,7 @@ jobs:
         working-directory: conda-store
     strategy:
       matrix:
-        python-version: [3.7, 3.8, 3.9]
+        python-version: ["3.8", "3.9", "3.10"]
     steps:
       - name: 'Checkout Repository'
         uses: actions/checkout@v2
@@ -160,6 +172,11 @@ jobs:
           time conda-store run 1 -- python -c "print(1 + 3)"
           time conda-store run 1 -- python -c "print(1 + 4)"
           ../tests/scripts/shebang.py
+
+      - name: Docker logs
+        if: ${{ failure() }}
+        run: |
+          docker-compose logs
 
   build-docker-image:
     name: 'Build docker images'
