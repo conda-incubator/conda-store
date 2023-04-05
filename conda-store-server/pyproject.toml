@@ -84,7 +84,14 @@ fmt = [
   "lint",
 ]
 docs = "sphinx-build -b html ../docs ../docs/_build"
-test = "pytest tests"
+unit-test = "pytest tests"
+playwright-test = [
+  "playwright install",
+  "pytest --video on ../tests/test_playwright.py"
+]
+integration-test = [
+  "pytest ../tests/test_api.py ../tests/test_metrics.py"
+]
 
 [tool.hatch.build.hooks.custom]
 

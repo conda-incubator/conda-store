@@ -50,7 +50,7 @@ jobs:
 
       - name: Unit Tests
         run: |
-          hatch env run -e dev test
+          hatch env run -e dev unit-test
 
       - name: Deploy docker-compose
         run: |
@@ -61,14 +61,9 @@ jobs:
           wait-for-it localhost:9000 # minio
           wait-for-it localhost:5000 # conda-store-server
 
-      - name: Playwright install browser
-        run: |
-          playwright install
-
       - name: Run Playwright tests
         run: |
-          cd ..
-          pytest --video on tests/test_playwright.py
+          hatch env run -e dev playwright-test
           pwd
           ls -la
 
@@ -76,12 +71,11 @@ jobs:
         if: ${{ always() }}
         with:
           name: playwright-tests
-          path: test-results
+          path: conda-store-server/test-results
 
       - name: Run integration tests
         run: |
-          cd ..
-          pytest tests/test_api.py tests/test_metrics.py
+          hatch env run -e dev integration-test
 
   test-conda-store:
     name: 'Test conda-store'
