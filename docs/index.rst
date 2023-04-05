@@ -79,7 +79,7 @@ The conda packaging system works well for individual users, but it can get trick
 
 .. rst-class:: border
 
-.. figure:: _static/images/conda-store-ui.gif
+.. figure:: _static/images/conda-store-ui.webp
     :alt: conda-store video
     :align: center
     :class: dark-light p-2
