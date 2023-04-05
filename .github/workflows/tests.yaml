@@ -64,8 +64,6 @@ jobs:
       - name: Run Playwright tests
         run: |
           hatch env run -e dev playwright-test
-          pwd
-          ls -la
 
       - uses: actions/upload-artifact@v2
         if: ${{ always() }}
@@ -76,6 +74,11 @@ jobs:
       - name: Run integration tests
         run: |
           hatch env run -e dev integration-test
+
+      - name: Docker logs
+        if: ${{ failure() }}
+        run: |
+          docker-compose logs
 
   test-conda-store:
     name: 'Test conda-store'
