@@ -81,7 +81,7 @@ lint = [
 ]
 fmt = [
   "black .",
-  "check",
+  "lint",
 ]
 docs = "sphinx-build -b html ../docs ../docs/_build"
 test = "pytest tests"

@@ -18,10 +18,13 @@ CONDA_STORE_UI_FILES = [
     "index.html",
 ]
 
+
 class DownloadCondaStoreUIHook(BuildHookInterface):
     def clean(self, versions: List[str]) -> None:
         super().clean(versions)
-        destination_directory = pathlib.Path(self.root) / "conda_store_server/server/static/conda-store-ui"
+        destination_directory = (
+            pathlib.Path(self.root) / "conda_store_server/server/static/conda-store-ui"
+        )
         shutil.rmtree(destination_directory, ignore_errors=True)
 
     def initialize(self, version: str, build_data: Dict[str, Any]) -> None:
@@ -41,7 +44,10 @@ class DownloadCondaStoreUIHook(BuildHookInterface):
                 tar.extractall(path=tmp_dir)
 
             source_directory = tmp_dir / "package/dist"
-            destination_directory = pathlib.Path(self.root) / "conda_store_server/server/static/conda-store-ui"
+            destination_directory = (
+                pathlib.Path(self.root)
+                / "conda_store_server/server/static/conda-store-ui"
+            )
             destination_directory.mkdir(parents=True, exist_ok=True)
 
             print(f"Copying files {CONDA_STORE_UI_FILES}")

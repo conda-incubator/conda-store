@@ -385,9 +385,9 @@ form.addEventListener('submit', loginHandler);
             )
 
         request.session["next"] = next or request.session.get("next")
-        redirect_url = request.session.pop("next") or str(request.url_for(
-            "ui_list_environments"
-        ))
+        redirect_url = request.session.pop("next") or str(
+            request.url_for("ui_list_environments")
+        )
         response = await self._post_login_method_response(redirect_url)
         response.set_cookie(
             self.cookie_name,
