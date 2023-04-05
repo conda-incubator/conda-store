@@ -125,10 +125,7 @@ class CondaStore(LoggingConfigurable):
     )
 
     conda_indexed_channels = List(
-        [
-            "main",
-            "conda-forge",
-        ],
+        ["main", "conda-forge", "https://repo.anaconda.com/pkgs/main"],
         help="Conda channels to be indexed by conda-store at start.  Defaults to main and conda-forge.",
         config=True,
     )
