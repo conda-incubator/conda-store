@@ -32,7 +32,7 @@ from conda_store_server import (
 def conda_store_validate_specification(
     conda_store: "CondaStore", namespace: str, specification: schema.CondaSpecification
 ) -> schema.CondaSpecification:
-    
+
     specification = environment.validate_environment_channels(
         specification,
         conda_store.conda_channel_alias,
@@ -132,7 +132,6 @@ class CondaStore(LoggingConfigurable):
         help="Conda channels to be indexed by conda-store at start.  Defaults to main and conda-forge.",
         config=True,
     )
-
 
     conda_default_packages = List(
         [],
@@ -404,7 +403,7 @@ class CondaStore(LoggingConfigurable):
     def ensure_conda_channels(self):
         """Ensure that conda-store indexed channels and packages are in database"""
         self.log.info("updating conda store channels")
-        
+
         for channel in self.conda_indexed_channels:
             normalized_channel = conda.normalize_channel_name(
                 self.conda_channel_alias, channel
