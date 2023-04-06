@@ -23,7 +23,7 @@ from filelock import FileLock
 def at_start(sender, **k):
     with sender.app.connection():
         sender.app.send_task("task_update_conda_channels")
-        sender.app.send_task("task_update_storage_metrics")
+        # sender.app.send_task("task_update_storage_metrics")
         sender.app.send_task("task_watch_paths")
 
 
