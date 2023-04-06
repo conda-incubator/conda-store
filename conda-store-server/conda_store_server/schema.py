@@ -24,10 +24,12 @@ ARN_ALLOWED = f"^([{ALLOWED_CHARACTERS}*]+)/([{ALLOWED_CHARACTERS}*]+)$"
 
 
 class Permissions(enum.Enum):
+    "Permissions map to conda-store actions"
     ENVIRONMENT_CREATE = "environment:create"
     ENVIRONMENT_READ = "environment::read"
     ENVIRONMENT_UPDATE = "environment::update"
     ENVIRONMENT_DELETE = "environment::delete"
+    ENVIRONMENT_SOLVE = "environment::solve"
     BUILD_DELETE = "build::delete"
     NAMESPACE_CREATE = "namespace::create"
     NAMESPACE_READ = "namespace::read"

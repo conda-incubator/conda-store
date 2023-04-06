@@ -23,7 +23,7 @@ from filelock import FileLock
 def at_start(sender, **k):
     with sender.app.connection():
         sender.app.send_task("task_update_conda_channels")
-        sender.app.send_task("task_update_storage_metrics")
+        # sender.app.send_task("task_update_storage_metrics")
         sender.app.send_task("task_watch_paths")
 
 
@@ -45,6 +45,9 @@ class WorkerTask(Task):
 @current_app.task(base=WorkerTask, name="task_watch_paths", bind=True)
 def task_watch_paths(self):
     conda_store = self.worker.conda_store
+    conda_store.configuration.update_storage_metrics(
+        conda_store.db, conda_store.store_directory
+    )
 
     environment_paths = environment.discover_environments(self.worker.watch_paths)
     for path in environment_paths:
