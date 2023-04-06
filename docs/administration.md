@@ -100,6 +100,10 @@ validating and modifying a given specification. If there are
 validation issues with the environment ValueError with message will be
 raised.
 
+`CondaStore.validate_action` callable function taking conda_store,
+namespace, and action. If there are issues with performing the given
+action raise a CondaStoreError should be raised.
+
 `CondaStore.conda_command` is the `command` to use for creation of
 Conda environments. Currently `mamba` is the default which will
 usually result in lower peak memory usage and faster builds.
@@ -150,6 +154,9 @@ are missing.
 `CondaStore.pypi_included_packages` is a list of PyPi packages that
 if not specified within the specification dependencies will be auto
 added.
+
+`CondaStore.storage_thresold` storage threshold in bytes of minimum
+available storage required in order to perform builds.
 
 `CondaStore.database_url` is the url string for connecting to the
 database. Behind the scenes [SQLAlchemy](https://www.sqlalchemy.org/)

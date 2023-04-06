@@ -189,7 +189,7 @@ class CondaStore(LoggingConfigurable):
 
     storage_threshold = Integer(
         5 * 1024**3,  # 5 GB
-        help="Storage threshold of available storage to prevent conda-store builds in bytes",
+        help="Storage threshold in bytes of minimum available storage required in order to perform builds",
         config=True,
     )
 
