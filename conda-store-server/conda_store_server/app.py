@@ -32,7 +32,6 @@ from conda_store_server import (
 def conda_store_validate_specification(
     conda_store: "CondaStore", namespace: str, specification: schema.CondaSpecification
 ) -> schema.CondaSpecification:
-
     specification = environment.validate_environment_channels(
         specification,
         conda_store.conda_channel_alias,
@@ -55,6 +54,22 @@ def conda_store_validate_specification(
     )
 
     return specification
+
+
+def conda_store_validate_action(
+    conda_store: "CondaStore",
+    namespace: str,
+    action: schema.Permissions,
+) -> None:
+    system_metrics = api.get_system_metrics(conda_store.db)
+
+    if action in (
+        schema.Permissions.ENVIRONMENT_CREATE,
+        schema.Permissions.ENVIRONMENT_UPDATE,
+    ) and (conda_store.storage_threshold > system_metrics.disk_free):
+        raise utils.CondaStoreError(
+            f"`CondaStore.storage_threshold` reached. Action {action.value} prevented due to insufficient storage space"
+        )
 
 
 class CondaStore(LoggingConfigurable):
@@ -169,6 +184,12 @@ class CondaStore(LoggingConfigurable):
     conda_max_solve_time = Integer(
         5 * 60,  # 5 minute
         help="Maximum time in seconds to allow for solving a given conda environment",
+        config=True,
+    )
+
+    storage_threshold = Integer(
+        5 * 1024**3,  # 5 GB
+        help="Storage threshold of available storage to prevent conda-store builds in bytes",
         config=True,
     )
 
@@ -300,7 +321,13 @@ class CondaStore(LoggingConfigurable):
 
     validate_specification = Callable(
         conda_store_validate_specification,
-        help="callable function taking conda_store and specification as input arguments to apply for validating and modifying a given specification. If there are validation issues with the environment ValueError with message should be raised. If changed you may need to call the default function to preseve many of the trait effects e.g. `c.CondaStore.default_channels` etc",
+        help="callable function taking conda_store, namespace, and specification as input arguments to apply for validating and modifying a given specification. If there are validation issues with the environment ValueError with message should be raised. If changed you may need to call the default function to preseve many of the trait effects e.g. `c.CondaStore.default_channels` etc",
+        config=True,
+    )
+
+    validate_action = Callable(
+        conda_store_validate_action,
+        help="callable function taking conda_store, namespace, and action. If there are issues with performing the given action raise a CondaStoreError should be raised.",
         config=True,
     )
 
@@ -422,6 +449,12 @@ class CondaStore(LoggingConfigurable):
                 self.db.commit()
 
     def register_solve(self, specification: schema.CondaSpecification):
+        """Registers a solve for a given specification"""
+        self.validate_action(
+            conda_store=self,
+            namespace="solve",
+            action=schema.Permissions.ENVIRONMENT_SOLVE,
+        )
         specification_model = self.validate_specification(
             conda_store=self,
             namespace="solve",
@@ -473,6 +506,11 @@ class CondaStore(LoggingConfigurable):
         else:
             namespace = namespace_model
 
+        self.validate_action(
+            conda_store=self,
+            namespace=namespace.name,
+            action=schema.Permissions.ENVIRONMENT_CREATE,
+        )
         specification_model = self.validate_specification(
             conda_store=self,
             namespace=namespace.name,
@@ -522,6 +560,13 @@ class CondaStore(LoggingConfigurable):
         return build.id
 
     def create_build(self, environment_id: int, specification_sha256: str):
+        environment = api.get_environment(self.db, id=environment_id)
+        self.validate_action(
+            conda_store=self,
+            namespace=environment.namespace.name,
+            action=schema.Permissions.ENVIRONMENT_UPDATE,
+        )
+
         specification = api.get_specification(self.db, specification_sha256)
         build = orm.Build(
             environment_id=environment_id, specification_id=specification.id
@@ -554,7 +599,13 @@ class CondaStore(LoggingConfigurable):
 
         return build
 
-    def update_environment_build(self, namespace, name, build_id):
+    def update_environment_build(self, namespace: str, name: str, build_id: int):
+        self.validate_action(
+            conda_store=self,
+            namespace=namespace,
+            action=schema.Permissions.ENVIRONMENT_UPDATE,
+        )
+
         build = api.get_build(self.db, build_id)
         if build is None:
             raise utils.CondaStoreError(f"build id={build_id} does not exist")
@@ -585,7 +636,6 @@ class CondaStore(LoggingConfigurable):
         tasks.task_update_environment_build.si(environment.id).apply_async()
 
     def update_environment_description(self, namespace, name, description):
-
         environment = api.get_environment(self.db, namespace=namespace, name=name)
         if environment is None:
             raise utils.CondaStoreError(
@@ -595,7 +645,13 @@ class CondaStore(LoggingConfigurable):
         environment.description = description
         self.db.commit()
 
-    def delete_namespace(self, namespace):
+    def delete_namespace(self, namespace: str):
+        self.validate_action(
+            conda_store=self,
+            namespace=namespace,
+            action=schema.Permissions.NAMESPACE_DELETE,
+        )
+
         namespace = api.get_namespace(self.db, name=namespace)
         if namespace is None:
             raise utils.CondaStoreError(f"namespace={namespace} does not exist")
@@ -615,7 +671,13 @@ class CondaStore(LoggingConfigurable):
 
         tasks.task_delete_namespace.si(namespace.id).apply_async()
 
-    def delete_environment(self, namespace, name):
+    def delete_environment(self, namespace: str, name: str):
+        self.validate_action(
+            conda_store=self,
+            namespace=namespace,
+            action=schema.Permissions.ENVIRONMENT_DELETE,
+        )
+
         environment = api.get_environment(self.db, namespace=namespace, name=name)
         if environment is None:
             raise utils.CondaStoreError(
@@ -635,8 +697,15 @@ class CondaStore(LoggingConfigurable):
 
         tasks.task_delete_environment.si(environment.id).apply_async()
 
-    def delete_build(self, build_id):
+    def delete_build(self, build_id: int):
         build = api.get_build(self.db, build_id)
+
+        self.validate_action(
+            conda_store=self,
+            namespace=build.environment.namespace.name,
+            action=schema.Permissions.BUILD_DELETE,
+        )
+
         if build.status not in [
             schema.BuildStatus.FAILED,
             schema.BuildStatus.COMPLETED,

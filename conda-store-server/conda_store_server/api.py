@@ -1,7 +1,7 @@
 from typing import List
 import re
 
-from sqlalchemy import func, null, or_
+from sqlalchemy import func, null, or_, distinct
 
 from conda_store_server import orm, schema
 from conda_store_server.conda import conda_platform
@@ -325,11 +325,14 @@ def get_system_metrics(db):
 
 
 def get_namespace_metrics(db):
-    return db.query(
-        orm.Namespace.name,
-        func.count(orm.Environment.id),
-        func.count(orm.Build.id),
-        func.sum(orm.Build.size)
-    ).join(orm.Build.environment) \
-     .join(orm.Environment.namespace) \
-     .group_by(orm.Namespace.name)
+    return (
+        db.query(
+            orm.Namespace.name,
+            func.count(distinct(orm.Environment.id)),
+            func.count(distinct(orm.Build.id)),
+            func.sum(orm.Build.size),
+        )
+        .join(orm.Build.environment)
+        .join(orm.Environment.namespace)
+        .group_by(orm.Namespace.name)
+    )

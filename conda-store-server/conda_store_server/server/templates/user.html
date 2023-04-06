@@ -26,7 +26,12 @@
 <div class="card m-2">
     <div class="card-body">
         <h5 class="card-title">Namespace</h5>
-        <p>Your current default namespace is <span class="badge badge-light">{{ username }}</span>. The ability to create and manage namespace are controlled by permissions shown below.</p>
+        <p>Your current default namespace is <span class="badge badge-light">{{ username }}</span> with access to the following existing namespaces
+            {% for namespace in namespaces %}
+            <span class="badge badge-light">{{ namespace.name }}</span>
+            {% endfor %}
+        </p>
+        <p>The ability to create and manage namespace are controlled by permissions shown below.</p>
         <a class="btn btn-outline-success my-2 my-sm-0 mr-2 text-center" href="{{ url_for('ui_list_namespaces') }}" role="button">
             Manage Namespaces
         </a>
