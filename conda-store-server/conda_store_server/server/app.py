@@ -252,31 +252,34 @@ class CondaStoreServer(Application):
         if self.enable_ui:
             app.include_router(
                 views.router_ui,
+                prefix=trim_slash(self.url_prefix) + "/admin",
+            )
+
+            app.include_router(
+                views.router_conda_store_ui,
                 prefix=trim_slash(self.url_prefix),
             )
 
-            # serving new conda-store-ui
+            # serving static files
             import conda_store_server.server
 
             app.mount(
-                trim_slash(self.url_prefix) + "/ui/",
+                trim_slash(self.url_prefix) + "/static/",
                 StaticFiles(
                     directory=os.path.join(
                         os.path.dirname(conda_store_server.server.__file__),
-                        "static/conda-store-ui/",
+                        "static",
                     ),
-                    html=True,
                 ),
-                name="conda-store-ui",
+                name="static",
             )
 
             # convenience to redirect "/" to home page when using a prefix
             # realistically this url will not be hit with a proxy + prefix
             if self.url_prefix != "/":
-
                 @app.get("/")
                 def redirect_home(request: Request):
-                    return RedirectResponse(request.url_for("ui_list_environments"))
+                    return RedirectResponse(request.url_for("get_conda_store_ui"))
 
         if self.enable_metrics:
             app.include_router(
@@ -291,7 +294,7 @@ class CondaStoreServer(Application):
             app.mount(
                 self.conda_store.storage.storage_url,
                 StaticFiles(directory=self.conda_store.storage.storage_path),
-                name="static",
+                name="static-storage",
             )
 
         self.conda_store.ensure_namespace()
