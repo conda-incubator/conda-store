@@ -59,6 +59,7 @@ def test_api_permissions_auth(testclient):
             schema.Permissions.ENVIRONMENT_READ.value,
             schema.Permissions.ENVIRONMENT_UPDATE.value,
             schema.Permissions.ENVIRONMENT_DELETE.value,
+            schema.Permissions.ENVIRONMENT_SOLVE.value,
             schema.Permissions.BUILD_DELETE.value,
             schema.Permissions.NAMESPACE_CREATE.value,
             schema.Permissions.NAMESPACE_READ.value,
