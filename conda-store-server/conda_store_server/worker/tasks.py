@@ -45,6 +45,9 @@ class WorkerTask(Task):
 @current_app.task(base=WorkerTask, name="task_watch_paths", bind=True)
 def task_watch_paths(self):
     conda_store = self.worker.conda_store
+    conda_store.configuration.update_storage_metrics(
+        conda_store.db, conda_store.store_directory
+    )
 
     environment_paths = environment.discover_environments(self.worker.watch_paths)
     for path in environment_paths:
