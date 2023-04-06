@@ -219,7 +219,7 @@ def ui_get_user(
     entity=Depends(dependencies.get_entity),
 ):
     if entity is None:
-        return RedirectResponse(f"{request.url_for('ui_list_environments')}login/")
+        return RedirectResponse(request.url_for("get_login_method"))
 
     entity_binding_permissions = auth.authorization.get_entity_binding_permissions(
         entity.role_bindings, authenticated=True

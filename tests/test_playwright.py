@@ -6,8 +6,8 @@ from playwright.sync_api import Page
 
 @pytest.mark.playwright
 def test_integration(page: Page):
-    # Go to http://localhost:5000/conda-store/
-    page.goto("http://localhost:5000/conda-store/", wait_until="domcontentloaded")
+    # Go to http://localhost:5000/conda-store/admin/
+    page.goto("http://localhost:5000/conda-store/admin/", wait_until="domcontentloaded")
     page.screenshot(path="test-results/conda-store-unauthenticated.png")
 
     # Click text=Login
@@ -61,4 +61,7 @@ def test_integration(page: Page):
 
     page.screenshot(path="test-results/conda-store-build-complete.png")
 
+    page.goto("http://localhost:5000/conda-store/admin/")
+
     page.goto("http://localhost:5000/conda-store/")
+    time.sleep(5)
