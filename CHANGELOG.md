@@ -18,7 +18,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
-## [0.4.13] - 2023-04-23
+## [0.4.14] - 2023-04-07
+
+### Fixed
+
+ - make conda-store-ui settings configurable (were previously hardcoded and broken) (#451)
+
+## [0.4.13] - 2023-04-06
 
 ### Added
 
