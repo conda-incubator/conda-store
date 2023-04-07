@@ -4,6 +4,7 @@ import tarfile
 import pathlib
 import urllib.request
 import shutil
+import re
 
 from hatchling.builders.hooks.plugin.interface import BuildHookInterface
 
@@ -56,3 +57,13 @@ class DownloadCondaStoreUIHook(BuildHookInterface):
                     source_directory / filename,
                     destination_directory / filename,
                 )
+
+            # dirty modifications (bound to break eventually!) to
+            # main.js to enable easy configuration see
+            # conda_store_server/server/templates/conda-store-ui.html
+            # for global variable set
+            with (source_directory / "main.js").open('r') as source_f:
+                content = source_f.read()
+                content = re.sub('"MISSING_ENV_VAR"', 'GLOBAL_CONDA_STORE_STATE', content)
+                with (destination_directory / "main.js").open('w') as dest_f:
+                    dest_f.write(content)
