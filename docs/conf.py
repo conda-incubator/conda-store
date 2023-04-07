@@ -1,7 +1,7 @@
 project = 'conda-store'
 copyright = '2022, Quansight'
 author = 'Quansight'
-release = '0.4.12'
+release = '0.4.13'
 
 extensions = [
     'myst_parser',
