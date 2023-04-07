@@ -4,6 +4,18 @@
         <meta charset="utf-8">
         <title>conda-store</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <script>
+         var GLOBAL_CONDA_STORE_STATE = {
+             NODE_DEBUG: null,
+             REACT_APP_CONTEXT: "single-page-app", // not a true setting
+             REACT_APP_AUTH_METHOD: "cookie",
+             REACT_APP_AUTH_TOKEN: "",
+             REACT_APP_STYLE_TYPE: "grayscale",
+             REACT_APP_SHOW_LOGIN_ICON: "true",
+             REACT_APP_API_URL: "{{ url_for('get_conda_store_ui') }}",
+             REACT_APP_LOGIN_PAGE_URL: "{{ url_for('get_login_method') }}?next=",
+         };
+        </script>
         <script defer src="static/conda-store-ui/main.js"></script>
         <link href="static/conda-store-ui/main.css" rel="stylesheet">
     </head>
