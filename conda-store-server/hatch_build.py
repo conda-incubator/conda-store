@@ -62,8 +62,10 @@ class DownloadCondaStoreUIHook(BuildHookInterface):
             # main.js to enable easy configuration see
             # conda_store_server/server/templates/conda-store-ui.html
             # for global variable set
-            with (source_directory / "main.js").open('r') as source_f:
+            with (source_directory / "main.js").open("r") as source_f:
                 content = source_f.read()
-                content = re.sub('"MISSING_ENV_VAR"', 'GLOBAL_CONDA_STORE_STATE', content)
-                with (destination_directory / "main.js").open('w') as dest_f:
+                content = re.sub(
+                    '"MISSING_ENV_VAR"', "GLOBAL_CONDA_STORE_STATE", content
+                )
+                with (destination_directory / "main.js").open("w") as dest_f:
                     dest_f.write(content)
