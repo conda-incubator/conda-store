@@ -29,3 +29,10 @@ docs/_build
 
 # playwright
 screenshots
+test-results
+
+# ruff
+.ruff_cache
+
+# conda-store-ui
+conda-store-server/conda_store_server/server/static/conda-store-ui/

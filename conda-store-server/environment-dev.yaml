@@ -34,6 +34,7 @@ dependencies:
   - typer
 
   # dev dependencies
+  - hatch
   - pytest
   - pytest-mock
   - black ==22.3.0
@@ -44,3 +45,4 @@ dependencies:
   - sphinx-copybutton
   - pydata-sphinx-theme
   - playwright
+  - docker-compose

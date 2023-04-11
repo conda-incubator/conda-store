@@ -100,6 +100,10 @@ validating and modifying a given specification. If there are
 validation issues with the environment ValueError with message will be
 raised.
 
+`CondaStore.validate_action` callable function taking conda_store,
+namespace, and action. If there are issues with performing the given
+action raise a CondaStoreError should be raised.
+
 `CondaStore.conda_command` is the `command` to use for creation of
 Conda environments. Currently `mamba` is the default which will
 usually result in lower peak memory usage and faster builds.
@@ -120,6 +124,10 @@ are allowed. This also tells conda-store which channels to prefetch
 the channel `repodata` and `channeldata` from. The default is `main`
 and `conda-forge`. If `conda_allowed_channels` is an empty list all
 Channels are accepted by users.
+
+`CondaStore.conda_indexed_channels` tells conda-store which channels to prefetch
+the channel `repodata` and `channeldata` from. The default is `main`
+and `conda-forge`.
 
 `CondaStore.conda_default_packages` is a list of Conda packages that
 are included by default if none are specified within the specification
@@ -146,6 +154,9 @@ are missing.
 `CondaStore.pypi_included_packages` is a list of PyPi packages that
 if not specified within the specification dependencies will be auto
 added.
+
+`CondaStore.storage_thresold` storage threshold in bytes of minimum
+available storage required in order to perform builds.
 
 `CondaStore.database_url` is the url string for connecting to the
 database. Behind the scenes [SQLAlchemy](https://www.sqlalchemy.org/)
@@ -232,6 +243,9 @@ parallel. This is due to an issue in Conda/Mamba that when downloading
 files in two concurrent builds the downloads/extraction can
 overlap. This is a bug in Conda/Mamba that needs to be fixed. Default
 is True until this bug is fixed.
+
+`CondaStore.post_update_environment_build_hook` is an optional configurable to 
+allow for custom behavior that will run after an environment's current build changes.
 
 ### `conda_store_server.storage.S3Storage`
 

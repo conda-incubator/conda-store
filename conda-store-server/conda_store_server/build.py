@@ -70,6 +70,7 @@ def set_build_completed(conda_store, build, logs, packages):
 
         channel_orm = api.get_conda_channel(conda_store.db, channel)
         if channel_orm is None:
+            # Empty list for conda_allowed_channels allows any channel ( PR #358 )
             if len(conda_store.conda_allowed_channels) == 0:
                 channel_orm = api.create_conda_channel(conda_store.db, channel)
                 conda_store.db.commit()
@@ -431,6 +432,7 @@ def solve_conda_environment(conda_store, solve):
 
             channel_orm = api.get_conda_channel(conda_store.db, channel)
             if channel_orm is None:
+                # Empty list for conda_allowed_channels allows any channel ( PR #358 )
                 if len(conda_store.conda_allowed_channels) == 0:
                     channel_orm = api.create_conda_channel(conda_store.db, channel)
                     conda_store.db.commit()

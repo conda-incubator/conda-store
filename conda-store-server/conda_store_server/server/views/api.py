@@ -308,7 +308,11 @@ def api_delete_namespace(
     if namespace_orm is None:
         raise HTTPException(status_code=404, detail="namespace does not exist")
 
-    conda_store.delete_namespace(namespace)
+    try:
+        conda_store.delete_namespace(namespace)
+    except utils.CondaStoreError as e:
+        raise HTTPException(status_code=400, detail=e.message)
+
     return {"status": "ok"}
 
 
@@ -431,7 +435,11 @@ def api_delete_environment(
         request, f"{namespace}/{name}", {Permissions.ENVIRONMENT_DELETE}, require=True
     )
 
-    conda_store.delete_environment(namespace, name)
+    try:
+        conda_store.delete_environment(namespace, name)
+    except utils.CondaStoreError as e:
+        raise HTTPException(status_code=400, detail=e.message)
+
     return {"status": "ok"}
 
 
@@ -514,6 +522,8 @@ def api_post_specification(
         build_id = api.post_specification(conda_store, specification, namespace_name)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e.args[0]))
+    except utils.CondaStoreError as e:
+        raise HTTPException(status_code=400, detail=str(e.message))
 
     return {"status": "ok", "data": {"build_id": build_id}}
 
@@ -604,9 +614,13 @@ def api_put_build(
         require=True,
     )
 
-    new_build = conda_store.create_build(
-        build.environment_id, build.specification.sha256
-    )
+    try:
+        new_build = conda_store.create_build(
+            build.environment_id, build.specification.sha256
+        )
+    except utils.CondaStoreError as e:
+        raise HTTPException(status_code=400, detail=e.message)
+
     return {
         "status": "ok",
         "message": "rebuild triggered",

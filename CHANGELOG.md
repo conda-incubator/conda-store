@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+ - conda-store and conda-store-server images are now deployed to quay.io/Quansight, which has support for podman and rkt. (#455)
+
 ### Changed
 
 ### Deprecated
@@ -18,6 +20,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
+## [0.4.14] - 2023-04-07
+
+### Fixed
+
+ - make conda-store-ui settings configurable (were previously hardcoded and broken) (#451)
+
+## [0.4.13] - 2023-04-06
+
+### Added
+
+ - Added new conda-store-ui (#444)
+ - Added new option `CondaStore.conda_indexed_channels` for indexed channels (#445)
+ - Allow passing environment variables in specification (#424)
+
+### Changed
+
+ - Switched to hatch for conda-store and conda-store-server (#449, #450)
+ - Switch default UI to conda-store-ui and expose behind `/admin/` (#448) 
+ - Significant database rework on package storage for performance (#300)
+
+### Removed
+
+ - Remove unused helm chart (#450)
+ - Remove nix flakes from repository (#443)
 
 ## [0.4.12] - 2022-09-21
 

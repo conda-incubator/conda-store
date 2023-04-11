@@ -68,6 +68,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
                 schema.Permissions.ENVIRONMENT_CREATE,
                 schema.Permissions.ENVIRONMENT_READ,
                 schema.Permissions.ENVIRONMENT_UPDATE,
+                schema.Permissions.ENVIRONMENT_SOLVE,
                 schema.Permissions.NAMESPACE_READ,
             },
             "admin": {
@@ -76,6 +77,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
                 schema.Permissions.ENVIRONMENT_DELETE,
                 schema.Permissions.ENVIRONMENT_READ,
                 schema.Permissions.ENVIRONMENT_UPDATE,
+                schema.Permissions.ENVIRONMENT_SOLVE,
                 schema.Permissions.NAMESPACE_CREATE,
                 schema.Permissions.NAMESPACE_DELETE,
                 schema.Permissions.NAMESPACE_READ,
@@ -361,7 +363,7 @@ form.addEventListener('submit', loginHandler);
             {"request": request, "login_html": self.get_login_html(request, templates)},
         )
 
-    async def _post_login_method_response(self, redirect_url):
+    async def _post_login_method_response(self, redirect_url: str):
         return JSONResponse(
             content=jsonable_encoder(
                 {
@@ -385,8 +387,8 @@ form.addEventListener('submit', loginHandler);
             )
 
         request.session["next"] = next or request.session.get("next")
-        redirect_url = request.session.pop("next") or request.url_for(
-            "ui_list_environments"
+        redirect_url = request.session.pop("next") or str(
+            request.url_for("ui_list_environments")
         )
         response = await self._post_login_method_response(redirect_url)
         response.set_cookie(

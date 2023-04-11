@@ -219,15 +219,28 @@ def ui_get_user(
     entity=Depends(dependencies.get_entity),
 ):
     if entity is None:
-        return RedirectResponse(f"{request.url_for('ui_list_environments')}login/")
+        return RedirectResponse(request.url_for("get_login_method"))
 
     entity_binding_permissions = auth.authorization.get_entity_binding_permissions(
         entity.role_bindings, authenticated=True
     )
 
+    orm_namespaces = auth.filter_namespaces(
+        entity, api.list_namespaces(conda_store.db, show_soft_deleted=False)
+    )
+
+    system_metrics = api.get_system_metrics(conda_store.db)
+
+    namespace_usage_metrics = auth.filter_namespaces(
+        entity, api.get_namespace_metrics(conda_store.db)
+    )
+
     context = {
         "request": request,
         "username": entity.primary_namespace,
+        "namespaces": orm_namespaces,
         "entity_binding_permissions": entity_binding_permissions,
+        "system_metrics": system_metrics,
+        "namespace_usage_metrics": namespace_usage_metrics,
     }
     return templates.TemplateResponse("user.html", context)
