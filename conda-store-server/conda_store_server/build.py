@@ -5,14 +5,11 @@ import subprocess
 import pathlib
 import tempfile
 import traceback
-import tarfile
 import shutil
-import logging
 
-from typing import Tuple, Dict, Union
+from typing import Dict, Union
 
 import filelock
-import requests
 import yaml
 import conda_package_handling.api
 import conda_package_streaming.url
@@ -164,9 +161,7 @@ def build_environment(conda_command, environment_filename, conda_prefix):
     )
 
 
-def build_lock_environment(
-    lock_filename: pathlib.Path, conda_prefix: pathlib.Path
-):
+def build_lock_environment(lock_filename: pathlib.Path, conda_prefix: pathlib.Path):
     return subprocess.check_output(
         ["conda-lock", "install", "--prefix", str(conda_prefix), str(lock_filename)],
         stderr=subprocess.STDOUT,
@@ -174,13 +169,8 @@ def build_lock_environment(
     )
 
 
-def fetch_and_extract_packages(
-        conda_store,
-        conda_lock_filename: pathlib.Path
-):
-    """Download packages from a conda-lock specification using filelocks
-
-    """
+def fetch_and_extract_packages(conda_store, conda_lock_filename: pathlib.Path):
+    """Download packages from a conda-lock specification using filelocks"""
     prefix: pathlib.Path = conda.conda_root_package_dir()
 
     try:
@@ -198,8 +188,8 @@ def fetch_and_extract_packages(
 
     for package in spec["package"]:
         packages_searched += 1
-        if p["manager"] == "conda":
-            url: str = p["url"]
+        if package["manager"] == "conda":
+            url: str = package["url"]
             filepath: pathlib.Path = prefix.joinpath(
                 pathlib.Path(url.split("/")[-1:][0])
             )
@@ -209,8 +199,11 @@ def fetch_and_extract_packages(
                 if filepath.exists():
                     conda_store.log.info(f"SKIPPING {filepath.name} | FILE EXISTS")
                 else:
-                    log.info(f"DOWNLOAD {filepath.name} | {count_message}")
-                    filename, conda_package_stream = conda_package_streaming.url.conda_reader_for_url(url)
+                    conda_store.log.info(f"DOWNLOAD {filepath.name} | {count_message}")
+                    (
+                        filename,
+                        conda_package_stream,
+                    ) = conda_package_streaming.url.conda_reader_for_url(url)
                     with filepath.open("wb") as f:
                         shutil.copyfileobj(conda_package_stream, f)
 
@@ -218,9 +211,7 @@ def fetch_and_extract_packages(
 
 
 def solve_lock_environment(
-        conda_command: str,
-        environment_filename: pathlib.Path,
-        lock_filename: pathlib.Path
+    conda_command: str, environment_filename: pathlib.Path, lock_filename: pathlib.Path
 ):
     from conda_lock.conda_lock import run_lock
     from conda_store_server.conda import conda_platform
@@ -284,10 +275,7 @@ def build_conda_environment(conda_store, build):
                     pathlib.Path(tmp_lock_filename),
                 )
 
-                fetch_and_extract_packages(
-                    conda_store,
-                    pathlib.Path(tmp_lock_filename)
-                )
+                fetch_and_extract_packages(conda_store, pathlib.Path(tmp_lock_filename))
 
                 output = build_lock_environment(
                     pathlib.Path(tmp_lock_filename),

@@ -238,11 +238,7 @@ installed](https://docs.anaconda.com/anaconda/install/linux/). Often
 times for non-graphic and non-gpu environments glibc is enough. Hence
 the default docker image `library/debian:sid-slim`.
 
-`CondaStore.serialize_builds` no longer build Conda environment in
-parallel. This is due to an issue in Conda/Mamba that when downloading
-files in two concurrent builds the downloads/extraction can
-overlap. This is a bug in Conda/Mamba that needs to be fixed. Default
-is True until this bug is fixed.
+`CondaStore.serialize_builds` DEPRECATED no longer has any effect
 
 `CondaStore.post_update_environment_build_hook` is an optional configurable to 
 allow for custom behavior that will run after an environment's current build changes.
