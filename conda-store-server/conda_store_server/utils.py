@@ -2,6 +2,7 @@ import os
 import re
 import subprocess
 import contextlib
+import pathlib
 import time
 import hashlib
 import json
@@ -36,6 +37,16 @@ def chown(directory, uid, gid):
         raise ValueError(f"chown gid={gid} not integer value")
 
     subprocess.check_output(["chown", "-R", f"{uid}:{gid}", directory])
+
+
+@contextlib.contextmanager
+def chdir(directory: pathlib.Path):
+    current_directory = os.getcwd()
+    try:
+        os.chdir(directory)
+        yield
+    finally:
+        os.chdir(current_directory)
 
 
 def disk_usage(path):

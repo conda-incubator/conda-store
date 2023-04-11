@@ -8,6 +8,7 @@ dependencies:
   - conda-docker >= 0.1.2
   - conda-pack
   - conda-lock >=1.0.5
+  - conda-package-handling
   # web server
   - celery
   - flower

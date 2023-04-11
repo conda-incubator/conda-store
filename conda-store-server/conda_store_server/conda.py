@@ -33,6 +33,13 @@ def conda_list(prefix, executable: str = "conda"):
     return json.loads(subprocess.check_output(args))
 
 
+def conda_root_package_dir() -> pathlib.Path:
+    args = ["conda", "info", "--json"]
+    conf = json.loads(subprocess.check_output(args))
+    prefix: pathlib.Path = pathlib.Path(conf["pkgs_dirs"][0])
+    return prefix
+
+
 def conda_pack(prefix, output, ignore_missing_files=True):
     from conda_pack import pack
 
@@ -185,6 +192,7 @@ def conda_prefix_packages(prefix):
     prefix_data.load()
 
     for record in prefix_data.iter_records():
+
         package = {
             "build": record.build,
             "build_number": record.build_number,
@@ -199,7 +207,7 @@ def conda_prefix_packages(prefix):
                 open(record.package_tarball_full_path, "rb").read()
             ).hexdigest(),
             "name": record.name,
-            "size": record.size,
+            "size": getattr(record, "size", None),
             "subdir": record.subdir,
             "timestamp": record.timestamp,
             "version": record.version,

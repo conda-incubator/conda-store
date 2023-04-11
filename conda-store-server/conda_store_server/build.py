@@ -5,11 +5,14 @@ import subprocess
 import pathlib
 import tempfile
 import traceback
+import shutil
+
+from typing import Dict, Union
 
 import filelock
 import yaml
-
-from typing import Dict, Union
+import conda_package_handling.api
+import conda_package_streaming.url
 
 from conda_store_server import api, conda, orm, utils, schema
 
@@ -143,7 +146,6 @@ def set_build_completed(conda_store, build, logs, packages):
 
 
 def build_environment(conda_command, environment_filename, conda_prefix):
-
     return subprocess.check_output(
         [
             conda_command,
@@ -156,6 +158,69 @@ def build_environment(conda_command, environment_filename, conda_prefix):
         ],
         stderr=subprocess.STDOUT,
         encoding="utf-8",
+    )
+
+
+def build_lock_environment(lock_filename: pathlib.Path, conda_prefix: pathlib.Path):
+    return subprocess.check_output(
+        ["conda-lock", "install", "--prefix", str(conda_prefix), str(lock_filename)],
+        stderr=subprocess.STDOUT,
+        encoding="utf-8",
+    )
+
+
+def fetch_and_extract_packages(conda_store, conda_lock_filename: pathlib.Path):
+    """Download packages from a conda-lock specification using filelocks"""
+    prefix: pathlib.Path = conda.conda_root_package_dir()
+
+    try:
+        prefix.exists()
+    except FileNotFoundError as e:
+        conda_store.log.error(
+            f"The conda prefix {prefix} does not exist. Traceback: {e}"
+        )
+
+    with conda_lock_filename.open() as f:
+        spec = yaml.safe_load(f)
+
+    packages_searched = 1
+    total_packages = len(spec["package"])
+
+    for package in spec["package"]:
+        packages_searched += 1
+        if package["manager"] == "conda":
+            url: str = package["url"]
+            filepath: pathlib.Path = prefix.joinpath(
+                pathlib.Path(url.split("/")[-1:][0])
+            )
+            count_message = f"{packages_searched} of {total_packages}"
+            with filelock.FileLock(f"{str(filepath)}.lock"):
+
+                if filepath.exists():
+                    conda_store.log.info(f"SKIPPING {filepath.name} | FILE EXISTS")
+                else:
+                    conda_store.log.info(f"DOWNLOAD {filepath.name} | {count_message}")
+                    (
+                        filename,
+                        conda_package_stream,
+                    ) = conda_package_streaming.url.conda_reader_for_url(url)
+                    with filepath.open("wb") as f:
+                        shutil.copyfileobj(conda_package_stream, f)
+
+                    conda_package_handling.api.extract(str(filepath))
+
+
+def solve_lock_environment(
+    conda_command: str, environment_filename: pathlib.Path, lock_filename: pathlib.Path
+):
+    from conda_lock.conda_lock import run_lock
+    from conda_store_server.conda import conda_platform
+
+    run_lock(
+        environment_files=[environment_filename],
+        platforms=[conda_platform()],
+        lockfile_path=lock_filename,
+        conda_exe=conda_command,
     )
 
 
@@ -195,35 +260,33 @@ def build_conda_environment(conda_store, build):
     environment_prefix = build.environment_path(conda_store)
     os.makedirs(os.path.dirname(environment_prefix), exist_ok=True)
 
-    conda_store.log.info(f"building conda environment={conda_prefix}")
-
     try:
         with utils.timer(conda_store.log, f"building {conda_prefix}"):
             with tempfile.TemporaryDirectory() as tmpdir:
                 tmp_environment_filename = os.path.join(tmpdir, "environment.yaml")
+                tmp_lock_filename = os.path.join(tmpdir, "conda-lock.yml")
+
                 with open(tmp_environment_filename, "w") as f:
                     yaml.dump(build.specification.spec, f)
-                    if conda_store.serialize_builds:
-                        with filelock.FileLock(
-                            os.path.join(tempfile.tempdir, "conda-store.lock")
-                        ):
-                            output = build_environment(
-                                conda_store.conda_command,
-                                tmp_environment_filename,
-                                conda_prefix,
-                            )
-                    else:
-                        output = build_environment(
-                            conda_store.conda_command,
-                            tmp_environment_filename,
-                            conda_prefix,
-                        )
 
-                    if build.specification.spec.get("variables") is not None:
-                        set_conda_environment_variables(
-                            pathlib.Path(conda_prefix),
-                            build.specification.spec["variables"],
-                        )
+                solve_lock_environment(
+                    conda_store.conda_command,
+                    pathlib.Path(tmp_environment_filename),
+                    pathlib.Path(tmp_lock_filename),
+                )
+
+                fetch_and_extract_packages(conda_store, pathlib.Path(tmp_lock_filename))
+
+                output = build_lock_environment(
+                    pathlib.Path(tmp_lock_filename),
+                    conda_prefix,
+                )
+
+                if build.specification.spec.get("variables") is not None:
+                    set_conda_environment_variables(
+                        pathlib.Path(conda_prefix),
+                        build.specification.spec["variables"],
+                    )
 
         utils.symlink(conda_prefix, environment_prefix)
 
@@ -354,10 +417,10 @@ def build_conda_pack(conda_store, build):
 def build_conda_docker(conda_store, build):
     from conda_docker.conda import (
         build_docker_environment_image,
-        find_user_conda,
         conda_info,
-        precs_from_environment_prefix,
         fetch_precs,
+        find_user_conda,
+        precs_from_environment_prefix,
     )
 
     conda_prefix = build.build_path(conda_store)
