@@ -87,12 +87,20 @@ jobs:
           username: ${{ env.DOCKER_USERNAME }}
           password: ${{ env.DOCKER_PASSWORD }}
 
+      - name: Login to quay.io
+        uses: docker/login-action@v1
+        with:
+          registry: quay.io
+          username: ${{ env.QUAY_USERNAME }}
+          password: ${{ env.QUAY_PASSWORD }}
+
       - name: Docker Meta
         id: meta
         uses: crazy-max/ghaction-docker-meta@v2
         with:
           images: |
             quansight/${{ matrix.docker-image }}
+            quay.io/quansight/${{ matrix.docker-image }}
           tags: |
             type=ref,event=tag
 

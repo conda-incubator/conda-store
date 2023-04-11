@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+ - conda-store and conda-store-server images are now deployed to quay.io/Quansight, which has support for podman and rkt. (#455)
+
 ### Changed
 
 ### Deprecated
