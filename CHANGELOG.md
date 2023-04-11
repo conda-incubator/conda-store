@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
  - conda-store and conda-store-server images are now deployed to quay.io/Quansight, which has support for podman and rkt. (#455)
  - Parallel builds of conda environments (#417)
+Environment build logs now include the output 'conda info' and 'conda config --show' (#456)
 
 ### Changed
 
