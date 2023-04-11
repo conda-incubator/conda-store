@@ -14,7 +14,8 @@ from typing import Tuple, Dict, Union
 import filelock
 import requests
 import yaml
-import libarchive
+import conda_package_handling.api
+import conda_package_streaming.url
 
 from conda_store_server import api, conda, orm, utils, schema
 
@@ -148,7 +149,6 @@ def set_build_completed(conda_store, build, logs, packages):
 
 
 def build_environment(conda_command, environment_filename, conda_prefix):
-
     return subprocess.check_output(
         [
             conda_command,
@@ -164,81 +164,24 @@ def build_environment(conda_command, environment_filename, conda_prefix):
     )
 
 
-def build_lock_environment(lock_filename, conda_prefix):
+def build_lock_environment(
+    lock_filename: pathlib.Path, conda_prefix: pathlib.Path
+):
     return subprocess.check_output(
-        ["conda-lock", "install", "--prefix", conda_prefix, lock_filename],
+        ["conda-lock", "install", "--prefix", str(conda_prefix), str(lock_filename)],
         stderr=subprocess.STDOUT,
         encoding="utf-8",
     )
 
 
-def generate_extracted_folderpath(
-    filepath: pathlib.Path, filename: pathlib.Path, extension: str
-) -> Tuple[pathlib.Path, str]:
-    """Given a compressed file, generate a foldername for it
-    and return a tuple containing the full folderpath for it, and the extension for the compressed file."""
-    filesuff = filename.suffixes
-    file_extension = "".join(filesuff[filesuff.index(extension) :])
-    folderpath = pathlib.Path(str(filepath).replace(file_extension, ""))
-    return (folderpath, file_extension)
-
-
-def download_package(
-    log: logging.Logger, filepath: pathlib.Path, url: str, count_message: str
+def fetch_and_extract_packages(
+        conda_store,
+        conda_lock_filename: pathlib.Path
 ):
-    log.info(f"DOWNLOAD {filepath.name} | {count_message}")
+    """Download packages from a conda-lock specification using filelocks
 
-    res = requests.get(url, stream=True)
-
-    with open(filepath, "wb") as compressed_package:
-        shutil.copyfileobj(res.raw, compressed_package)
-
-
-def extract_package(log: logging.Logger, filepath: pathlib.Path):
-    """Given the filepath to the uncompressed file located
-    at the root package directory, extract it.
-    """
-    filename = pathlib.Path(filepath.name)
-    extensions = {".tar": "r:", ".tar.gz": "r:gz", ".tar.bz2": "r:bz2"}
-
-    if ".tar" in str(filepath):
-        folderpath, file_extension = generate_extracted_folderpath(
-            filepath, filename, ".tar"
-        )
-
-        folderpath.mkdir(parents=True, exist_ok=False)
-
-        log.info(f"EXTRACT {filename} | PATH: {folderpath}")
-
-        with tarfile.open(filepath, extensions[file_extension]) as tf:
-            tf.extractall(folderpath)
-
-    elif str(filepath).endswith(".conda"):
-        folderpath, file_extension = generate_extracted_folderpath(
-            filepath, filename, ".conda"
-        )
-        folderpath.mkdir(parents=True, exist_ok=False)
-        temp_compressed_filepath = folderpath.joinpath(filename)
-        shutil.copy2(str(filepath), str(temp_compressed_filepath))
-        with utils.chdir(folderpath):
-            log.info(f"EXTRACT {filename} | PATH: {temp_compressed_filepath}")
-            libarchive.extract_file(str(temp_compressed_filepath))
-            for zip in filepath.glob("*.zst"):
-                if str(zip).startswith("pkg"):
-                    libarchive.extract_file(zip)
-                    zip.unlink()
-                elif str(zip).startswith("info"):
-                    libarchive.extract_file(zip)
-                    zip.unlink()
-            temp_compressed_filepath.unlink()
-
-
-def fetch_and_extract_packages(conda_store, lock_filename):
-    """Fetch links from a conda-locked build recipe and then
-    gets a filelock on the required folder.
     """
     prefix: pathlib.Path = conda.conda_root_package_dir()
-    spec = dict()
 
     try:
         prefix.exists()
@@ -247,44 +190,45 @@ def fetch_and_extract_packages(conda_store, lock_filename):
             f"The conda prefix {prefix} does not exist. Traceback: {e}"
         )
 
-    with open(pathlib.Path(lock_filename)) as f:
+    with conda_lock_filename.open() as f:
         spec = yaml.safe_load(f)
 
     packages_searched = 1
     total_packages = len(spec["package"])
 
-    for p in spec["package"]:
-        if p["manager"] != "conda":
-            # ignore non-conda managed packages for now
-            pass
-
-        else:
+    for package in spec["package"]:
+        packages_searched += 1
+        if p["manager"] == "conda":
             url: str = p["url"]
             filepath: pathlib.Path = prefix.joinpath(
                 pathlib.Path(url.split("/")[-1:][0])
             )
             count_message = f"{packages_searched} of {total_packages}"
-
             with filelock.FileLock(f"{str(filepath)}.lock"):
 
                 if filepath.exists():
                     conda_store.log.info(f"SKIPPING {filepath.name} | FILE EXISTS")
-                    packages_searched += 1
-
                 else:
-                    download_package(conda_store.log, filepath, url, count_message)
-                    extract_package(conda_store.log, filepath)
-                    packages_searched += 1
+                    log.info(f"DOWNLOAD {filepath.name} | {count_message}")
+                    filename, conda_package_stream = conda_package_streaming.url.conda_reader_for_url(url)
+                    with filepath.open("wb") as f:
+                        shutil.copyfileobj(conda_package_stream, f)
+
+                    conda_package_handling.api.extract(str(filepath))
 
 
-def solve_lock_environment(conda_command, environment_filename, lock_filename):
+def solve_lock_environment(
+        conda_command: str,
+        environment_filename: pathlib.Path,
+        lock_filename: pathlib.Path
+):
     from conda_lock.conda_lock import run_lock
     from conda_store_server.conda import conda_platform
 
     run_lock(
-        environment_files=[pathlib.Path(environment_filename)],
+        environment_files=[environment_filename],
         platforms=[conda_platform()],
-        lockfile_path=pathlib.Path(lock_filename),
+        lockfile_path=lock_filename,
         conda_exe=conda_command,
     )
 
@@ -334,37 +278,21 @@ def build_conda_environment(conda_store, build):
                 with open(tmp_environment_filename, "w") as f:
                     yaml.dump(build.specification.spec, f)
 
-                if conda_store.serialize_builds:
-                    with filelock.FileLock(
-                        os.path.join(tempfile.tempdir, "conda-store.lock")
-                    ):
-                        solve_lock_environment(
-                            conda_store.conda_command,
-                            tmp_environment_filename,
-                            tmp_lock_filename,
-                        )
+                solve_lock_environment(
+                    conda_store.conda_command,
+                    pathlib.Path(tmp_environment_filename),
+                    pathlib.Path(tmp_lock_filename),
+                )
 
-                        fetch_and_extract_packages(conda_store, tmp_lock_filename)
+                fetch_and_extract_packages(
+                    conda_store,
+                    pathlib.Path(tmp_lock_filename)
+                )
 
-                        output = build_lock_environment(
-                            tmp_lock_filename,
-                            conda_prefix,
-                        )
-
-                else:
-
-                    solve_lock_environment(
-                        conda_store.conda_command,
-                        tmp_environment_filename,
-                        tmp_lock_filename,
-                    )
-
-                    fetch_and_extract_packages(conda_store, tmp_lock_filename)
-
-                    output = build_lock_environment(
-                        tmp_lock_filename,
-                        conda_prefix,
-                    )
+                output = build_lock_environment(
+                    pathlib.Path(tmp_lock_filename),
+                    conda_prefix,
+                )
 
                 if build.specification.spec.get("variables") is not None:
                     set_conda_environment_variables(
