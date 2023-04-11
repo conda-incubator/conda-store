@@ -1,8 +1,0 @@
-name: "placeholder"
-channels:
-  - conda-forge
-dependencies:
-  - pandas
-  - universal_pathlib
-  - numpy
-  - tornado
