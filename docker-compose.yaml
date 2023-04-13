@@ -5,13 +5,13 @@ services:
     build: conda-store-server
     user: 1000:1000
     volumes:
-      - ./tests/assets/environments:/opt/environments:ro
-      - ./tests/assets/conda_store_config.py:/opt/conda_store/conda_store_config.py:ro
+      - ./tests/assets/environments:/opt/src/tests/assets/environments:ro
+      - ./tests/assets/conda_store_config.py:/opt/src/tests/assets/conda_store_config.py:ro
     depends_on:
       conda-store-server:
         condition: service_healthy
     platform: linux/amd64
-    command: ['conda-store-worker', '--config', '/opt/conda_store/conda_store_config.py']
+    command: ['conda-store-worker', '--config', '/opt/src/tests/assets/conda_store_config.py']
 
   conda-store-server:
     build: conda-store-server
@@ -24,14 +24,14 @@ services:
       redis:
         condition: service_healthy
     volumes:
-      - ./tests/assets/conda_store_config.py:/opt/conda_store/conda_store_config.py:ro
+      - ./tests/assets/conda_store_config.py:/opt/src/tests/assets/conda_store_config.py:ro
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:5000/conda-store/api/v1/"]
       interval: 10s
       timeout: 5s
       retries: 5
     platform: linux/amd64
-    command: ['conda-store-server', '--config', '/opt/conda_store/conda_store_config.py']
+    command: ['conda-store-server', '--config', '/opt/src/tests/assets/conda_store_config.py']
     ports:
       - "5000:5000"
 

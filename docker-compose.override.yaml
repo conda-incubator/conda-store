@@ -1,0 +1,8 @@
+services:
+  conda-store-worker:
+    volumes:
+      - ./:/opt/src
+
+  conda-store-server:
+    volumes:
+      - ./:/opt/src/
