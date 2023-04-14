@@ -1,6 +1,7 @@
 import logging
 import os
 import sys
+from pathlib import Path
 
 import uvicorn
 from fastapi import FastAPI, Request, HTTPException
@@ -322,7 +323,8 @@ class CondaStoreServer(Application):
                 app,
                 host=self.address,
                 port=self.port,
-                reload=False,
+                reload=True,
+                reload_dirs = f"{Path(__file__).parent}",
                 workers=1,
                 proxy_headers=self.behind_proxy,
                 forwarded_allow_ips=("*" if self.behind_proxy else None),
