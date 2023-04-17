@@ -81,7 +81,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for namespace, num_builds, num_environments, storage in namespace_usage_metrics %}
+                {% for namespace, num_environments, num_builds, storage in namespace_usage_metrics %}
                 <tr>
                     <td>{{ namespace }}</td>
                     <td>{{ num_environments }}</td>
