@@ -163,9 +163,14 @@ def build_environment(conda_command, environment_filename, conda_prefix):
 
 def build_lock_environment(lock_filename: pathlib.Path, conda_prefix: pathlib.Path):
     return subprocess.check_output(
-        ["conda-lock", "install", "--prefix", str(conda_prefix), str(lock_filename)],
+        (
+            "conda info"
+            " && conda config --show"
+            f" && conda-lock install --prefix {conda_prefix} {lock_filename}"
+        ),
         stderr=subprocess.STDOUT,
         encoding="utf-8",
+        shell=True,
     )
 
 
