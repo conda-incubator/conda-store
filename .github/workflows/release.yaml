@@ -33,7 +33,7 @@ jobs:
           namespace: "admin/quansight"
           role: "repository-quansight-conda-store-role"
           secrets: |
-            kv/data/repository/Quansight/conda-store/shared_secrets PYPI_PASSWORD | HATCH_INDEX_USER;
+            kv/data/repository/Quansight/conda-store/shared_secrets PYPI_USERNAME | HATCH_INDEX_USER;
             kv/data/repository/Quansight/conda-store/shared_secrets PYPI_PASSWORD | HATCH_INDEX_AUTH;
 
       - name: Set up Python
