@@ -325,14 +325,16 @@ def get_system_metrics(db):
 
 
 def get_namespace_metrics(db):
-    return (
+
+    query = (
         db.query(
             orm.Namespace.name,
-            func.count(distinct(orm.Environment.id)),
-            func.count(distinct(orm.Build.id)),
-            func.sum(orm.Build.size),
+            func.count(distinct(orm.Environment.id)).label("env_count"),
+            func.count(distinct(orm.Build.id)).label("build_count"),
+            func.sum(orm.Build.size).label("disk_usage"),
         )
         .join(orm.Build.environment)
         .join(orm.Environment.namespace)
         .group_by(orm.Namespace.name)
     )
+    return query

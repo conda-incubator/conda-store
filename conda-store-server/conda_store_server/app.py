@@ -62,6 +62,38 @@ def conda_store_validate_action(
     action: schema.Permissions,
 ) -> None:
     system_metrics = api.get_system_metrics(conda_store.db)
+    namespace_metrics = (
+        api.get_namespace_metrics(conda_store.db)
+        .filter(orm.Namespace.name == namespace)
+        .filter(orm.Build.status.in_(["COMPLETED", "BUILDING"]))
+        .filter(orm.Environment.deleted_on == None)
+        .filter(orm.Environment.current_build_id.isnot(None))
+        .first()
+    )
+
+    if (
+        action == schema.Permissions.ENVIRONMENT_CREATE
+        and namespace_metrics is not None
+    ):
+        # Limit env count for a namespace
+        if namespace_metrics.env_count >= conda_store.namespace_env_limit:
+            raise utils.CondaStoreError(
+                f"The namespace '{namespace_metrics.name}' has reached  the "
+                f"environment limit of {conda_store.namespace_env_limit}."
+                " Consider deleting environments."
+            )
+
+        # Limit disk usage for a namespace
+        if (
+            namespace_metrics.disk_usage + conda_store.storage_threshold
+        ) > conda_store.namespace_storage_limit:
+            raise utils.CondaStoreError(
+                f"The namespace '{namespace_metrics.name}' is too close to the namespace"
+                " storage limit: "
+                f"{namespace_metrics.disk_usage/2**30:.1f}"
+                f"/{conda_store.namespace_storage_limit/2**30:.1f}GB"
+                ". Consider deleting environments."
+            )
 
     if action in (
         schema.Permissions.ENVIRONMENT_CREATE,
@@ -190,6 +222,22 @@ class CondaStore(LoggingConfigurable):
     storage_threshold = Integer(
         5 * 1024**3,  # 5 GB
         help="Storage threshold in bytes of minimum available storage required in order to perform builds",
+        config=True,
+    )
+
+    namespace_storage_limit = Integer(
+        10 * 1024**3,  # 20 GB
+        help=(
+            "Storage threshold in bytes of maximum projected storage space used by an"
+            " environment (used in conjunction with storage_threshold to prevent"
+            " environment creation)."
+        ),
+        config=True,
+    )
+
+    namespace_env_limit = Integer(
+        20,
+        help="Maximum number of environments allowed per namespace.",
         config=True,
     )
 
