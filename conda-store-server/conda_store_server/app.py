@@ -66,7 +66,7 @@ def conda_store_validate_action(
         api.get_namespace_metrics(conda_store.db)
         .filter(orm.Namespace.name == namespace)
         .filter(orm.Build.status.in_(["COMPLETED", "BUILDING"]))
-        .filter(orm.Environment.deleted_on == None) # noqa: E711
+        .filter(orm.Environment.deleted_on == None)  # noqa: E711
         .filter(orm.Environment.current_build_id.isnot(None))
         .first()
     )
