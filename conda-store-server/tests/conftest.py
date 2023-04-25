@@ -1,4 +1,6 @@
 import datetime
+import os
+import pathlib
 
 import pytest
 import yaml
@@ -50,3 +52,8 @@ def simple_specification_with_pip():
 def simple_conda_lock():
     with open("tests/assets/conda-lock.zlib.yaml") as f:
         return yaml.safe_load(f)
+
+
+@pytest.fixture
+def current_prefix():
+    return pathlib.Path(os.environ["CONDA_PREFIX"])
