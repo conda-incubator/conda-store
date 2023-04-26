@@ -18,8 +18,13 @@ from sqlalchemy import (
     or_,
     and_,
 )
-from sqlalchemy.orm import sessionmaker, relationship, scoped_session, backref
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import (
+    sessionmaker,
+    relationship,
+    scoped_session,
+    backref,
+    declarative_base,
+)
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import create_engine
 

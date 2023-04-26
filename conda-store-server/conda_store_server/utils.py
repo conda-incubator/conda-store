@@ -49,8 +49,10 @@ def chdir(directory: pathlib.Path):
         os.chdir(current_directory)
 
 
-def disk_usage(path):
-    return subprocess.check_output(["du", "-sb", path], encoding="utf-8").split()[0]
+def disk_usage(path: pathlib.Path):
+    return subprocess.check_output(["du", "-sb", str(path)], encoding="utf-8").split()[
+        0
+    ]
 
 
 @contextlib.contextmanager

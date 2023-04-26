@@ -1,11 +1,10 @@
-import tempfile
 import pathlib
 import typing
 import json
 
 import yaml
 
-from conda_store_server import schema, utils, conda, action
+from conda_store_server import schema, conda, action
 
 from conda_lock.conda_lock import run_lock
 

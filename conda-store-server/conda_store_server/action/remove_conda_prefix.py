@@ -1,6 +1,5 @@
 import shutil
 import pathlib
-import typing
 
 from conda_store_server import conda, action
 

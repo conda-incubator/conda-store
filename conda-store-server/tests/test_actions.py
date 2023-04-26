@@ -1,10 +1,9 @@
 import pytest
 
-import io
 import pathlib
 import sys
 
-from conda_store_server import action, conda, utils, schema
+from conda_store_server import action, conda, utils, schema, api
 
 
 def test_action_decorator():
@@ -58,7 +57,7 @@ def test_fetch_and_extract_conda_packages(tmp_path, simple_conda_lock):
 def test_install_specification(tmp_path, conda_store, simple_specification):
     conda_prefix = tmp_path / "test"
 
-    context = action.action_install_specification(
+    action.action_install_specification(
         conda_command=conda_store.conda_command,
         specification=simple_specification,
         conda_prefix=conda_prefix,
@@ -88,7 +87,7 @@ def test_generate_conda_export(conda_store, current_prefix):
 def test_generate_conda_pack(tmp_path, current_prefix):
     output_filename = tmp_path / "environment.tar.gz"
 
-    context = action.action_generate_conda_pack(
+    action.action_generate_conda_pack(
         conda_prefix=current_prefix,
         output_filename=output_filename,
     )
@@ -98,10 +97,7 @@ def test_generate_conda_pack(tmp_path, current_prefix):
 
 @pytest.mark.xfail
 def test_generate_conda_docker(conda_store, current_prefix):
-    output = io.StringIO()
-
-    image = action.action_generate_conda_docker(
-        output,
+    action.action_generate_conda_docker(
         conda_prefix=current_prefix,
         default_docker_image=utils.callable_or_value(
             conda_store.default_docker_base_image, None
@@ -150,3 +146,29 @@ def test_set_conda_prefix_permissions(tmp_path, conda_store, simple_conda_lock):
     )
     assert "no changes for permissions of conda_prefix" in context.stdout.getvalue()
     assert "no changes for gid and uid of conda_prefix" in context.stdout.getvalue()
+
+
+def test_get_conda_prefix_stats(tmp_path, conda_store, simple_conda_lock):
+    conda_prefix = tmp_path / "test"
+
+    action.action_install_lockfile(
+        conda_lock_spec=simple_conda_lock, conda_prefix=conda_prefix
+    )
+
+    context = action.action_get_conda_prefix_stats(conda_prefix)
+    assert context.result["disk_usage"] > 0
+
+
+def test_add_conda_prefix_packages(conda_store, simple_specification, current_prefix):
+    build_id = conda_store.register_environment(
+        specification=simple_specification.spec, namespace="pytest"
+    )
+
+    action.action_add_conda_prefix_packages(
+        db=conda_store.db,
+        conda_prefix=current_prefix,
+        build_id=build_id,
+    )
+
+    build = api.get_build(conda_store.db, build_id=build_id)
+    assert len(build.package_builds) > 0

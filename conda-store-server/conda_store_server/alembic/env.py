@@ -5,7 +5,6 @@ from sqlalchemy import pool
 
 from alembic import context
 
-
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
@@ -18,6 +17,14 @@ fileConfig(config.config_file_name)
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
+
+# allow running without having conda_store_server installed
+# assumes that alembic is inside directory conda_store_server/alembic/env.py
+import sys  # noqa E402
+import pathlib  # noqa E402
+
+sys.path.append(str(pathlib.Path(__file__).parent.parent.parent))
+
 from conda_store_server.orm import Base  # noqa E402
 
 target_metadata = Base.metadata

@@ -1,6 +1,4 @@
 import pathlib
-import tempfile
-import typing
 
 from conda_docker.conda import (
     build_docker_environment_image,
@@ -10,11 +8,12 @@ from conda_docker.conda import (
     precs_from_environment_prefix,
 )
 
-from conda_store_server import utils
+from conda_store_server import action
 
 
+@action.action
 def action_generate_conda_docker(
-    io: typing.TextIO,
+    context,
     conda_prefix: pathlib.Path,
     default_docker_image: str,
     container_registry,
