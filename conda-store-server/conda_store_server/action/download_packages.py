@@ -4,13 +4,14 @@ import shutil
 
 import filelock
 
-from conda_store_server import conda
+from conda_store_server import conda, action
 import conda_package_handling.api
 import conda_package_streaming.url
 
 
+@action.action
 def action_fetch_and_extract_conda_packages(
-    io: typing.TextIO,
+    context,
     conda_lock_spec: typing.Dict,
     pkgs_dir: pathlib.Path,
     platforms: typing.List[str] = [conda.conda_platform(), "noarch"],
@@ -29,9 +30,9 @@ def action_fetch_and_extract_conda_packages(
             count_message = f"{packages_searched} of {total_packages}"
             with filelock.FileLock(str(lock_filename)):
                 if file_path.exists():
-                    io.write(f"SKIPPING {filename} | FILE EXISTS\n")
+                    context.log.info(f"SKIPPING {filename} | FILE EXISTS\n")
                 else:
-                    io.write(f"DOWNLOAD {filename} | {count_message}\n")
+                    context.log.info(f"DOWNLOAD {filename} | {count_message}\n")
                     (
                         filename,
                         conda_package_stream,

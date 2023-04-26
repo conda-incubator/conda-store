@@ -179,6 +179,10 @@ def conda_platform():
     return context.subdir
 
 
+def is_conda_prefix(conda_prefix: pathlib.Path):
+    return (conda_prefix / "conda-meta/history").exists()
+
+
 def conda_prefix_packages(prefix):
     """
     Returns a list of the packages that exist for a given prefix

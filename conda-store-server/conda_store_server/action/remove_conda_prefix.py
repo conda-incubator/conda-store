@@ -1,0 +1,18 @@
+import shutil
+import pathlib
+import typing
+
+from conda_store_server import conda, action
+
+
+@action.action
+def action_remove_conda_prefix(
+    context,
+    conda_prefix: pathlib.Path,
+):
+    # safeguard to try and prevent destructive actions
+    if not conda.is_conda_prefix(conda_prefix):
+        raise ValueError("given prefix is not a conda environment")
+
+    context.log.info(f'removing conda prefix "{conda_prefix.resolve()}"')
+    shutil.rmtree(conda_prefix)

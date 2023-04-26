@@ -1,3 +1,5 @@
+from conda_store_server.action.base import action
+
 from conda_store_server.action.generate_lockfile import action_solve_lockfile
 from conda_store_server.action.download_packages import (
     action_fetch_and_extract_conda_packages,
@@ -7,3 +9,7 @@ from conda_store_server.action.install_specification import action_install_speci
 from conda_store_server.action.generate_conda_export import action_generate_conda_export
 from conda_store_server.action.generate_conda_pack import action_generate_conda_pack
 from conda_store_server.action.generate_conda_docker import action_generate_conda_docker
+from conda_store_server.action.remove_conda_prefix import action_remove_conda_prefix
+from conda_store_server.action.set_conda_prefix_permissions import (
+    action_set_conda_prefix_permissions,
+)

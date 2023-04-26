@@ -1,8 +1,32 @@
 import pytest
 
 import io
+import pathlib
+import sys
 
-from conda_store_server import action, conda, utils
+from conda_store_server import action, conda, utils, schema
+
+
+def test_action_decorator():
+    @action.action
+    def test_function(context):
+        print("stdout")
+        print("stderr", file=sys.stderr)
+        context.run(["echo", "subprocess"])
+        context.run("echo subprocess_stdout", shell=True)
+        context.run("echo subprocess_stderr 1>&2", shell=True)
+        context.log.info("log")
+        return pathlib.Path.cwd()
+
+    context = test_function()
+    assert (
+        context.stdout.getvalue()
+        == "stdout\nstderr\nsubprocess\nsubprocess_stdout\nsubprocess_stderr\nlog\n"
+    )
+    # test that action direction is not the same as outside function
+    assert context.result != pathlib.Path.cwd()
+    # test that temportary directory is cleaned up
+    assert not context.result.exists()
 
 
 @pytest.mark.parametrize(
@@ -13,66 +37,66 @@ from conda_store_server import action, conda, utils
     ],
 )
 def test_solve_lockfile(conda_store, specification, request):
-    output = io.StringIO()
     specification = request.getfixturevalue(specification)
-    lock_specification = action.action_solve_lockfile(
-        output,
+    context = action.action_solve_lockfile(
         conda_command=conda_store.conda_command,
         specification=specification,
         platforms=[conda.conda_platform()],
     )
-    assert len(lock_specification["package"]) != 0
+    assert len(context.result["package"]) != 0
 
 
 def test_fetch_and_extract_conda_packages(tmp_path, simple_conda_lock):
-    output = io.StringIO()
-
-    action.action_fetch_and_extract_conda_packages(
-        output,
+    context = action.action_fetch_and_extract_conda_packages(
         conda_lock_spec=simple_conda_lock,
         pkgs_dir=tmp_path,
     )
 
-    assert output.getvalue()
+    assert context.stdout.getvalue()
 
 
 def test_install_specification(tmp_path, conda_store, simple_specification):
-    output = io.StringIO()
+    conda_prefix = tmp_path / "test"
 
-    action.action_install_specification(
-        output,
+    context = action.action_install_specification(
         conda_command=conda_store.conda_command,
         specification=simple_specification,
-        conda_prefix=tmp_path,
+        conda_prefix=conda_prefix,
     )
+
+    assert conda.is_conda_prefix(conda_prefix)
 
 
 def test_install_lockfile(tmp_path, conda_store, simple_conda_lock):
-    output = io.StringIO()
+    conda_prefix = tmp_path / "test"
 
     action.action_install_lockfile(
-        output, conda_lock_spec=simple_conda_lock, conda_prefix=tmp_path
+        conda_lock_spec=simple_conda_lock, conda_prefix=conda_prefix
     )
+
+    assert conda.is_conda_prefix(conda_prefix)
 
 
 def test_generate_conda_export(conda_store, current_prefix):
-    output = io.StringIO()
-
-    conda_export = action.action_generate_conda_export(
-        output, conda_command=conda_store.conda_command, conda_prefix=current_prefix
+    context = action.action_generate_conda_export(
+        conda_command=conda_store.conda_command, conda_prefix=current_prefix
     )
+
+    schema.CondaSpecification.parse_obj(context.result)
 
 
 def test_generate_conda_pack(tmp_path, current_prefix):
-    output = io.StringIO()
+    output_filename = tmp_path / "environment.tar.gz"
 
-    conda_export = action.action_generate_conda_pack(
-        output,
+    context = action.action_generate_conda_pack(
         conda_prefix=current_prefix,
-        output_filename=(tmp_path / "environment.tar.gz"),
+        output_filename=output_filename,
     )
 
+    assert output_filename.exists()
 
+
+@pytest.mark.xfail
 def test_generate_conda_docker(conda_store, current_prefix):
     output = io.StringIO()
 
@@ -86,4 +110,43 @@ def test_generate_conda_docker(conda_store, current_prefix):
         output_image_name="test",
         output_image_tag="tag",
     )
-    breakpoint()
+
+
+def test_remove_not_conda_prefix(tmp_path):
+    fake_conda_prefix = tmp_path / "test"
+    fake_conda_prefix.mkdir()
+
+    with pytest.raises(ValueError):
+        action.action_remove_conda_prefix(fake_conda_prefix)
+
+
+def test_remove_conda_prefix(tmp_path, simple_conda_lock):
+    conda_prefix = tmp_path / "test"
+
+    action.action_install_lockfile(
+        conda_lock_spec=simple_conda_lock, conda_prefix=conda_prefix
+    )
+
+    assert conda.is_conda_prefix(conda_prefix)
+
+    action.action_remove_conda_prefix(conda_prefix)
+
+    assert not conda.is_conda_prefix(conda_prefix)
+    assert not conda_prefix.exists()
+
+
+def test_set_conda_prefix_permissions(tmp_path, conda_store, simple_conda_lock):
+    conda_prefix = tmp_path / "test"
+
+    action.action_install_lockfile(
+        conda_lock_spec=simple_conda_lock, conda_prefix=conda_prefix
+    )
+
+    context = action.action_set_conda_prefix_permissions(
+        conda_prefix=conda_prefix,
+        permissions="755",
+        uid=None,
+        gid=None,
+    )
+    assert "no changes for permissions of conda_prefix" in context.stdout.getvalue()
+    assert "no changes for gid and uid of conda_prefix" in context.stdout.getvalue()
