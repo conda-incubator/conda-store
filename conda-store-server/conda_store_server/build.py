@@ -55,13 +55,8 @@ def set_build_completed(conda_store, build, logs):
     conda_store.db.add(lockfile_build_artifact)
     conda_store.db.add(directory_build_artifact)
 
-    environment = (
-        conda_store.db.query(orm.Environment)
-        .filter(orm.Environment.name == build.specification.name)
-        .first()
-    )
-    environment.current_build = build
-    environment.specification = build.specification
+    build.environment.current_build = build
+    build.environment.specification = build.specification
     conda_store.db.commit()
 
 
@@ -157,29 +152,25 @@ def build_conda_environment(conda_store, build):
 
 
 def solve_conda_environment(conda_store, solve):
-    try:
-        solve.started_on = datetime.datetime.utcnow()
-        conda_store.db.commit()
+    solve.started_on = datetime.datetime.utcnow()
+    conda_store.db.commit()
 
-        specification = schema.CondaSpecification.parse_obj(solve.specification.spec)
-        context = action.action_solve_lockfile(
-            conda_command=conda_store.conda_command,
-            specification=specification,
-            platforms=[conda.conda_platform()],
-        )
-        conda_lock_spec = context.result
+    specification = schema.CondaSpecification.parse_obj(solve.specification.spec)
+    context = action.action_solve_lockfile(
+        conda_command=conda_store.conda_command,
+        specification=specification,
+        platforms=[conda.conda_platform()],
+    )
+    conda_lock_spec = context.result
 
-        action.action_add_lockfile_packages(
-            db=conda_store.db,
-            conda_lock_spec=conda_lock_spec,
-            solve_id=solve.id,
-        )
+    action.action_add_lockfile_packages(
+        db=conda_store.db,
+        conda_lock_spec=conda_lock_spec,
+        solve_id=solve.id,
+    )
 
-        solve.ended_on = datetime.datetime.utcnow()
-        conda_store.db.commit()
-    except Exception as e:
-        print("Task failed!!!!!!!!!!!", str(e))
-        raise e
+    solve.ended_on = datetime.datetime.utcnow()
+    conda_store.db.commit()
 
 
 def build_conda_env_export(conda_store, build):
@@ -221,7 +212,6 @@ def build_conda_pack(conda_store, build):
 
 def build_conda_docker(conda_store, build):
     conda_prefix = build.build_path(conda_store)
-    conda_store.log.info(f"creating docker archive of conda environment={conda_prefix}")
 
     context = action.action_generate_conda_docker(
         conda_prefix=conda_prefix,

@@ -423,9 +423,7 @@ class CondaStore(LoggingConfigurable):
 
     def ensure_namespace(self):
         """Ensure that conda-store default namespaces exists"""
-        namespace = api.get_namespace(self.db, name=self.default_namespace)
-        if namespace is None:
-            api.create_namespace(self.db, name=self.default_namespace)
+        api.ensure_namespace(self.db, self.default_namespace)
 
     def ensure_directories(self):
         """Ensure that conda-store filesystem directories exist"""
@@ -439,14 +437,7 @@ class CondaStore(LoggingConfigurable):
             normalized_channel = conda.normalize_channel_name(
                 self.conda_channel_alias, channel
             )
-
-            conda_channel = api.get_conda_channel(self.db, normalized_channel)
-            if conda_channel is None:
-                conda_channel = orm.CondaChannel(
-                    name=normalized_channel, last_update=None
-                )
-                self.db.add(conda_channel)
-                self.db.commit()
+            api.ensure_conda_channel(self.db, normalized_channel)
 
     def register_solve(self, specification: schema.CondaSpecification):
         """Registers a solve for a given specification"""
@@ -455,103 +446,54 @@ class CondaStore(LoggingConfigurable):
             namespace="solve",
             action=schema.Permissions.ENVIRONMENT_SOLVE,
         )
+
         specification_model = self.validate_specification(
             conda_store=self,
             namespace="solve",
             specification=specification,
         )
-        specification_sha256 = utils.datastructure_hash(specification_model.dict())
-        specification = api.get_specification(self.db, sha256=specification_sha256)
-        if specification is None:
-            self.log.info(
-                f"specification name={specification_model.name} sha256={specification_sha256} registered"
-            )
-            specification = orm.Specification(specification_model.dict())
-            self.db.add(specification)
-            self.db.commit()
-        else:
-            self.log.debug(
-                f"specification name={specification_model.name} sha256={specification_sha256} already registered"
-            )
 
-        solve_model = orm.Solve(specification_id=specification.id)
-        self.db.add(solve_model)
+        specification_orm = api.ensure_specification(self.db, specification_model)
+        solve = api.create_solve(self.db, specification_orm.id)
         self.db.commit()
 
         self.celery_app
 
-        # must import tasks after a celery app has been initialized
         from conda_store_server.worker import tasks
 
         task = tasks.task_solve_conda_environment.apply_async(
-            args=[solve_model.id], time_limit=self.conda_max_solve_time
+            args=[solve.id], time_limit=self.conda_max_solve_time
         )
 
-        return task, solve_model.id
+        return task, solve.id
 
-    def register_environment(
-        self, specification: dict, namespace: str = None, force_build=False
-    ):
-        """Register a given specification to conda store with given namespace/name.
-
-        If force_build is True a build will be triggered even if
-        specification already exists.
-
-        """
+    def register_environment(self, specification: dict, namespace: str = None):
+        """Register a given specification to conda store with given namespace/name."""
         namespace = namespace or self.default_namespace
-
-        # Create Namespace if namespace if it does not exist
-        namespace_model = api.get_namespace(self.db, name=namespace)
-        if namespace_model is None:
-            namespace = api.create_namespace(self.db, name=namespace)
-            self.db.commit()
-        else:
-            namespace = namespace_model
+        namespace = api.ensure_namespace(self.db, name=namespace)
 
         self.validate_action(
             conda_store=self,
             namespace=namespace.name,
             action=schema.Permissions.ENVIRONMENT_CREATE,
         )
+
         specification_model = self.validate_specification(
             conda_store=self,
             namespace=namespace.name,
             specification=schema.CondaSpecification.parse_obj(specification),
         )
-        specification_sha256 = utils.datastructure_hash(specification_model.dict())
 
-        specification = api.get_specification(self.db, sha256=specification_sha256)
-        if specification is None:
-            self.log.info(
-                f"specification name={specification_model.name} sha256={specification_sha256} registered"
-            )
-            specification = orm.Specification(specification_model.dict())
-            self.db.add(specification)
-            self.db.commit()
-        else:
-            self.log.debug(
-                f"specification name={specification_model.name} sha256={specification_sha256} already registered"
-            )
-            if not force_build:
-                return
-
-        # Create Environment if specification of given namespace/name
-        # does not exist yet
-        environment = api.get_environment(
-            self.db, namespace_id=namespace.id, name=specification.name
+        specification = api.ensure_specification(self.db, specification_model)
+        environment_was_empty = api.get_environment(
+            self.db, name=specification.name, namespace_id=namespace.id
         )
-        environment_was_empty = environment is None
-        if environment_was_empty:
-            environment = orm.Environment(
-                name=specification.name,
-                namespace_id=namespace.id,
-                description=specification.spec["description"],
-            )
-            self.db.add(environment)
-            self.db.commit()
-        else:
-            environment.description = specification.spec["description"]
-            self.db.commit()
+        environment = api.ensure_environment(
+            self.db,
+            name=specification.name,
+            namespace_id=namespace.id,
+            description=specification.spec["description"],
+        )
 
         build = self.create_build(environment.id, specification.sha256)
 
@@ -570,10 +512,9 @@ class CondaStore(LoggingConfigurable):
         )
 
         specification = api.get_specification(self.db, specification_sha256)
-        build = orm.Build(
-            environment_id=environment_id, specification_id=specification.id
+        build = api.create_build(
+            self.db, environment_id=environment_id, specification_id=specification.id
         )
-        self.db.add(build)
         self.db.commit()
 
         self.celery_app
