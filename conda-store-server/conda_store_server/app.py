@@ -485,9 +485,9 @@ class CondaStore(LoggingConfigurable):
         )
 
         specification = api.ensure_specification(self.db, specification_model)
-        environment_was_empty = api.get_environment(
+        environment_was_empty = (api.get_environment(
             self.db, name=specification.name, namespace_id=namespace.id
-        )
+        ) == None)
         environment = api.ensure_environment(
             self.db,
             name=specification.name,
