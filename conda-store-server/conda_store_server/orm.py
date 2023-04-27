@@ -1,5 +1,6 @@
 import os
 import datetime
+import pathlib
 import shutil
 
 from sqlalchemy import (
@@ -154,11 +155,13 @@ class Build(Base):
         store_directory = os.path.abspath(conda_store.store_directory)
         namespace = self.environment.namespace.name
         name = self.specification.name
-        return os.path.join(
-            conda_store.build_directory.format(
-                store_directory=store_directory, namespace=namespace, name=name
-            ),
-            self.build_key,
+        return (
+            pathlib.Path(
+                conda_store.build_directory.format(
+                    store_directory=store_directory, namespace=namespace, name=name
+                )
+            )
+            / self.build_key
         )
 
     def environment_path(self, conda_store):
@@ -169,8 +172,10 @@ class Build(Base):
         store_directory = os.path.abspath(conda_store.store_directory)
         namespace = self.environment.namespace.name
         name = self.specification.name
-        return conda_store.environment_directory.format(
-            store_directory=store_directory, namespace=namespace, name=name
+        return pathlib.Path(
+            conda_store.environment_directory.format(
+                store_directory=store_directory, namespace=namespace, name=name
+            )
         )
 
     @property

@@ -39,6 +39,7 @@ class ActionContext:
         self.id = str(uuid.uuid4())
         self.stdout = io.StringIO()
         self.log = logging.getLogger(f"conda_store_server.action.{self.id}")
+        self.log.propagate = False
         self.log.addHandler(logging.StreamHandler(stream=self.stdout))
         self.log.setLevel(logging.INFO)
         self.result = None
