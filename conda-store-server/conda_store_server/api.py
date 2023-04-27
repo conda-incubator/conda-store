@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 import re
 
 from sqlalchemy import func, null, or_, distinct
@@ -134,7 +134,7 @@ def post_specification(conda_store, specification, namespace=None):
     return conda_store.register_environment(specification, namespace, force_build=True)
 
 
-def post_solve(conda_store, specification):
+def post_solve(conda_store, specification: schema.CondaSpecification):
     return conda_store.register_solve(specification)
 
 
@@ -280,6 +280,109 @@ def get_conda_channel(db, channel_name: str):
     return (
         db.query(orm.CondaChannel).filter(orm.CondaChannel.name == channel_name).first()
     )
+
+
+def get_conda_package(db, channel_id: int, name: str, version: str):
+    return (
+        db.query(orm.CondaPackage)
+        .filter(orm.CondaPackage.channel_id == channel_id)
+        .filter(orm.CondaPackage.name == name)
+        .filter(orm.CondaPackage.version == version)
+        .first()
+    )
+
+
+def get_conda_package_build(db, package_id: int, subdir: str, build: str):
+    return (
+        db.query(orm.CondaPackageBuild)
+        .filter(orm.CondaPackageBuild.package_id == package_id)
+        .filter(orm.CondaPackageBuild.subdir == subdir)
+        .filter(orm.CondaPackageBuild.build == build)
+        .first()
+    )
+
+
+def create_or_ignore_conda_package(db, package_record: Dict):
+    # first create the conda channel
+    channel = package_record["channel_id"]
+    if channel == "https://conda.anaconda.org/pypi":
+        # ignore pypi package for now
+        return None
+
+    channel_orm = get_conda_channel(db, channel)
+    if channel_orm is None:
+        channel_orm = create_conda_channel(db, channel)
+        db.commit()
+
+    package_record["channel_id"] = channel_orm.id
+
+    # Retrieve the package from the DB if it already exists
+    conda_package = get_conda_package(
+        db,
+        channel_id=package_record["channel_id"],
+        name=package_record["name"],
+        version=package_record["version"],
+    )
+
+    # If it doesn't exist, let's create it in DB
+    if conda_package is None:
+        conda_package = create_conda_package(db, package_record=package_record)
+
+    # Retrieve the build for this pacakge, if it already exists
+    conda_package_build = get_conda_package_build(
+        db,
+        package_id=conda_package.id,
+        subdir=package_record["subdir"],
+        build=package_record["build"],
+    )
+
+    # If it doesn't exist, let's create it in DB
+    if conda_package_build is None:
+        conda_package_build = create_conda_package_build(
+            db,
+            package_id=conda_package.id,
+            package_record=package_record,
+        )
+
+    return conda_package_build
+
+
+def create_conda_package(db, package_record: Dict):
+    conda_package_keys = [
+        "channel_id",
+        "license",
+        "license_family",
+        "name",
+        "version",
+        "summary",
+        "description",
+    ]
+
+    conda_package = orm.CondaPackage(
+        **{k: package_record[k] for k in conda_package_keys}
+    )
+    db.add(conda_package)
+    return conda_package
+
+
+def create_conda_package_build(db, package_id: int, package_record: Dict):
+    conda_package_build_keys = [
+        "build",
+        "build_number",
+        "constrains",
+        "depends",
+        "md5",
+        "sha256",
+        "size",
+        "subdir",
+        "timestamp",
+    ]
+    conda_package_build = orm.CondaPackageBuild(
+        package_id=package_id,
+        **{k: package_record[k] for k in conda_package_build_keys},
+    )
+    db.add(conda_package_build)
+    return conda_package_build
 
 
 def list_conda_packages(db, search: str = None, exact: bool = False, build: str = None):

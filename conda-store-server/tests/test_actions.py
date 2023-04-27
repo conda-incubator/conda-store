@@ -172,3 +172,20 @@ def test_add_conda_prefix_packages(conda_store, simple_specification, current_pr
 
     build = api.get_build(conda_store.db, build_id=build_id)
     assert len(build.package_builds) > 0
+
+
+def test_add_lockfile_packages(
+    conda_store, simple_specification, simple_conda_lock, current_prefix
+):
+    conda_specification = schema.CondaSpecification.parse_obj(simple_specification.spec)
+
+    task, solve_id = conda_store.register_solve(specification=conda_specification)
+
+    action.action_add_lockfile_packages(
+        db=conda_store.db,
+        conda_lock_spec=simple_conda_lock,
+        solve_id=solve_id,
+    )
+
+    solve = api.get_solve(conda_store.db, solve_id=solve_id)
+    assert len(solve.package_builds) > 0

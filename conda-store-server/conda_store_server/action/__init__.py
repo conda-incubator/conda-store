@@ -29,3 +29,6 @@ from conda_store_server.action.get_conda_prefix_stats import (
 from conda_store_server.action.add_conda_prefix_packages import (
     action_add_conda_prefix_packages,  # noqa
 )
+from conda_store_server.action.add_lockfile_packages import (
+    action_add_lockfile_packages,  # noqa
+)
