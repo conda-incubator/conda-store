@@ -49,8 +49,7 @@ path = "conda_store/__init__.py"
 
 [tool.hatch.envs.dev]
 dependencies = [
-  "black==22.3.0",
-  "ruff",
+  "pre-commit",
   "sphinx",
   "myst-parser",
   "sphinx-panels",
@@ -62,12 +61,7 @@ dependencies = [
 
 [tool.hatch.envs.dev.scripts]
 lint = [
-  "black --check --diff .",
-  "ruff check .",
-]
-fmt = [
-  "black .",
-  "lint",
+  "pre-commit run --all",
 ]
 docs = "sphinx-build -b html ../docs ../docs/_build"
 test = "pytest tests"
