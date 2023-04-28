@@ -4,11 +4,11 @@ from conda_store_server import api, schema
 def test_conda_store_app_register_solve(conda_store, celery_worker):
     conda_specification = schema.CondaSpecification(
         name="pytest-name",
-        channels=["conda-forge"],
-        dependencies=["conda-store-server"],
+        channels=["main"],
+        dependencies=["python"],
     )
 
-    task, solve_id = conda_store.register_solve(conda_specification)
+    task_id, solve_id = conda_store.register_solve(conda_specification)
     solve = api.get_solve(conda_store.db, solve_id=solve_id)
 
     assert solve is not None
@@ -20,6 +20,9 @@ def test_conda_store_app_register_solve(conda_store, celery_worker):
     assert solve.specification.spec["dependencies"] == conda_specification.dependencies
 
     # wait for task to complete
+    from celery.result import AsyncResult
+
+    task = AsyncResult(task_id)
     task.get()
     assert task.state == "SUCCESS"
 
@@ -28,11 +31,11 @@ def test_conda_store_app_register_solve(conda_store, celery_worker):
     assert len(solve.package_builds) > 0
 
 
-def test_conda_store_register_environment(conda_store):
+def test_conda_store_register_environment(conda_store, celery_worker):
     conda_specification = schema.CondaSpecification(
         name="pytest-name",
-        channels=["conda-forge"],
-        dependencies=["conda-store-server"],
+        channels=["main"],
+        dependencies=["python"],
     )
     namespace_name = "pytest-namespace"
 
@@ -48,5 +51,22 @@ def test_conda_store_register_environment(conda_store):
     assert build.specification.spec["name"] == conda_specification.name
     assert build.specification.spec["channels"] == conda_specification.channels
     assert build.specification.spec["dependencies"] == conda_specification.dependencies
-    # when new environment is created current_build should be the build
+    # when new environment is created current_build should be the default build
     assert build.environment.current_build == build
+
+    from celery.result import AsyncResult
+
+    # wait for task to complete
+    # build: environment, export, archive
+
+    task = AsyncResult(f"build-{build.id}-environment")
+    task.wait(timeout=60)
+
+    task = AsyncResult(f"build-{build.id}-conda-env-export")
+    task.wait(timeout=60)
+
+    task = AsyncResult(f"build-{build.id}-conda-pack")
+    task.wait(timeout=60)
+
+    conda_store.db.expire_all()
+    assert build.status == schema.BuildStatus.COMPLETED

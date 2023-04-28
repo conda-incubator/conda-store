@@ -467,13 +467,14 @@ class CondaStore(LoggingConfigurable):
 
         from conda_store_server.worker import tasks
 
-        task = tasks.task_solve_conda_environment.apply_async(
+        task_id = f"solve-{solve.id}"
+        tasks.task_solve_conda_environment.apply_async(
             args=[solve.id],
             time_limit=self.conda_max_solve_time,
-            task_id=f"solve-{solve.id}",
+            task_id=task_id,
         )
 
-        return task, solve.id
+        return task_id, solve.id
 
     def register_environment(self, specification: dict, namespace: str = None):
         """Register a given specification to conda store with given namespace/name."""
@@ -535,21 +536,41 @@ class CondaStore(LoggingConfigurable):
 
         artifact_tasks = []
         if schema.BuildArtifactType.YAML in self.build_artifacts:
-            artifact_tasks.append(tasks.task_build_conda_env_export.si(build.id))
+            artifact_tasks.append(
+                tasks.task_build_conda_env_export.subtask(
+                    args=(build.id,),
+                    task_id=f"build-{build.id}-conda-env-export",
+                    immutable=True,
+                )
+            )
         if schema.BuildArtifactType.CONDA_PACK in self.build_artifacts:
-            artifact_tasks.append(tasks.task_build_conda_pack.si(build.id))
+            artifact_tasks.append(
+                tasks.task_build_conda_pack.subtask(
+                    args=(build.id,),
+                    task_id=f"build-{build.id}-conda-pack",
+                    immutable=True,
+                )
+            )
         if (
             schema.BuildArtifactType.DOCKER_MANIFEST in self.build_artifacts
             or schema.BuildArtifactType.CONTAINER_REGISTRY in self.build_artifacts
         ):
-            artifact_tasks.append(tasks.task_build_conda_docker.si(build.id))
+            artifact_tasks.append(
+                tasks.task_build_conda_docker.subtask(
+                    args=(build.id,), task_id=f"build-{build.id}-docker", immutable=True
+                )
+            )
 
         (
             tasks.task_update_storage_metrics.si()
-            | tasks.task_build_conda_environment.si(build.id)
+            | tasks.task_build_conda_environment.subtask(
+                args=(build.id,),
+                task_id=f"build-{build.id}-environment",
+                immutable=True,
+            )
             | group(*artifact_tasks)
             | tasks.task_update_storage_metrics.si()
-        ).apply_async(task_id=build.build_key)
+        ).apply_async(task_id=f"build-{build.id}")
 
         return build
 

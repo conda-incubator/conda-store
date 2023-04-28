@@ -97,7 +97,7 @@ def build_conda_environment(conda_store, build):
     environment_prefix.parent.mkdir(parents=True, exist_ok=True)
 
     try:
-        with utils.timer(conda_store.log, f"building {conda_prefix}"):
+        with utils.timer(conda_store.log, f"building conda_prefix={conda_prefix}"):
             context = action.action_solve_lockfile(
                 conda_store.conda_command,
                 specification=schema.CondaSpecification.parse_obj(
@@ -195,38 +195,43 @@ def build_conda_env_export(conda_store, build):
 def build_conda_pack(conda_store, build):
     conda_prefix = build.build_path(conda_store)
 
-    conda_store.log.info(f"packaging archive of conda environment={conda_prefix}")
-    with tempfile.TemporaryDirectory() as tmpdir:
-        output_filename = pathlib.Path(tmpdir) / "environment.tar.gz"
-        action.action_generate_conda_pack(
-            conda_prefix=conda_prefix, output_filename=output_filename
-        )
-        conda_store.storage.fset(
-            conda_store.db,
-            build.id,
-            build.conda_pack_key,
-            output_filename,
-            content_type="application/gzip",
-            artifact_type=schema.BuildArtifactType.CONDA_PACK,
-        )
+    with utils.timer(
+        conda_store.log, f"packaging archive of conda environment={conda_prefix}"
+    ):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output_filename = pathlib.Path(tmpdir) / "environment.tar.gz"
+            action.action_generate_conda_pack(
+                conda_prefix=conda_prefix, output_filename=output_filename
+            )
+            conda_store.storage.fset(
+                conda_store.db,
+                build.id,
+                build.conda_pack_key,
+                output_filename,
+                content_type="application/gzip",
+                artifact_type=schema.BuildArtifactType.CONDA_PACK,
+            )
 
 
 def build_conda_docker(conda_store, build):
     conda_prefix = build.build_path(conda_store)
 
-    context = action.action_generate_conda_docker(
-        conda_prefix=conda_prefix,
-        default_docker_image=utils.callable_or_value(
-            conda_store.default_docker_base_image, None
-        ),
-        container_registry=conda_store.container_registry,
-        output_image_name=build.specification.name,
-        output_image_tag=build.build_key,
-    )
-    image = context.result
+    with utils.timer(
+        conda_store.log, f"packaging docker image of conda environment={conda_prefix}"
+    ):
+        context = action.action_generate_conda_docker(
+            conda_prefix=conda_prefix,
+            default_docker_image=utils.callable_or_value(
+                conda_store.default_docker_base_image, None
+            ),
+            container_registry=conda_store.container_registry,
+            output_image_name=build.specification.name,
+            output_image_tag=build.build_key,
+        )
+        image = context.result
 
-    if schema.BuildArtifactType.DOCKER_MANIFEST in conda_store.build_artifacts:
-        conda_store.container_registry.store_image(conda_store, build, image)
+        if schema.BuildArtifactType.DOCKER_MANIFEST in conda_store.build_artifacts:
+            conda_store.container_registry.store_image(conda_store, build, image)
 
-    if schema.BuildArtifactType.CONTAINER_REGISTRY in conda_store.build_artifacts:
-        conda_store.container_registry.push_image(conda_store, build, image)
+        if schema.BuildArtifactType.CONTAINER_REGISTRY in conda_store.build_artifacts:
+            conda_store.container_registry.push_image(conda_store, build, image)
