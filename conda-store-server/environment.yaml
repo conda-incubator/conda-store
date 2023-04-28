@@ -12,7 +12,7 @@ dependencies:
   - celery
   - flower
   - redis-py
-  - sqlalchemy
+  - sqlalchemy<=1.4.47
   - alembic
   - psycopg2
   - pymysql
