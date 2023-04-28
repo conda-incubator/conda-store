@@ -24,7 +24,7 @@ def test_testing_initialize_database(conda_store):
         },
     }
 
-    testing.initialize_database(conda_store.db, config)
+    testing.seed_conda_store(conda_store, config)
 
     assert len(api.list_namespaces(conda_store.db).all()) == 2
     assert len(api.list_environments(conda_store.db).all()) == 3

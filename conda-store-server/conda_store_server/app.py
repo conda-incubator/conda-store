@@ -392,33 +392,39 @@ class CondaStore(LoggingConfigurable):
         return self._container_registry
 
     @property
+    def celery_config(self):
+        return {
+            "broker_url": self.celery_broker_url,
+            "result_backend": self.celery_results_backend,
+            "include": [
+                "conda_store_server.worker.tasks",
+            ],
+            "task_track_started": True,
+            "result_extended": True,
+            "beat_schedule": {
+                "watch-paths": {
+                    "task": "task_watch_paths",
+                    "schedule": 60.0,  # 1 minute
+                    "args": [],
+                    "kwargs": {},
+                },
+                "update-conda-channels": {
+                    "task": "task_update_conda_channels",
+                    "schedule": 15.0 * 60.0,  # 15 minutes
+                    "args": [],
+                    "kwargs": {},
+                },
+            },
+            "triatlets": {},
+        }
+
+    @property
     def celery_app(self):
         if hasattr(self, "_celery_app"):
             return self._celery_app
 
-        self._celery_app = Celery(
-            "tasks",
-            backend=self.celery_results_backend,
-            broker=self.celery_broker_url,
-            include=[
-                "conda_store_server.worker.tasks",
-            ],
-        )
-        self._celery_app.conf.beat_schedule = {
-            "watch-paths": {
-                "task": "task_watch_paths",
-                "schedule": 60.0,  # 1 minute
-                "args": [],
-                "kwargs": {},
-            },
-            "update-conda-channels": {
-                "task": "task_update_conda_channels",
-                "schedule": 15.0 * 60.0,  # 15 minutes
-                "args": [],
-                "kwargs": {},
-            },
-        }
-
+        self._celery_app = Celery("tasks")
+        self._celery_app.config_from_object(self.celery_config)
         return self._celery_app
 
     def ensure_namespace(self):
@@ -462,7 +468,9 @@ class CondaStore(LoggingConfigurable):
         from conda_store_server.worker import tasks
 
         task = tasks.task_solve_conda_environment.apply_async(
-            args=[solve.id], time_limit=self.conda_max_solve_time
+            args=[solve.id],
+            time_limit=self.conda_max_solve_time,
+            task_id=f"solve-{solve.id}",
         )
 
         return task, solve.id
@@ -541,7 +549,7 @@ class CondaStore(LoggingConfigurable):
             | tasks.task_build_conda_environment.si(build.id)
             | group(*artifact_tasks)
             | tasks.task_update_storage_metrics.si()
-        ).apply_async()
+        ).apply_async(task_id=build.build_key)
 
         return build
 

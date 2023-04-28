@@ -13,14 +13,14 @@ from conda_lock.conda_lock import run_lock
 def action_solve_lockfile(
     context,
     conda_command: str,
-    specification: schema.Specification,
+    specification: schema.CondaSpecification,
     platforms: typing.List[str] = [conda.conda_platform()],
 ):
     environment_filename = pathlib.Path.cwd() / "environment.yaml"
     lockfile_filename = pathlib.Path.cwd() / "conda-lock.yaml"
 
     with environment_filename.open("w") as f:
-        json.dump(specification.spec, f)
+        json.dump(specification.dict(), f)
 
     run_lock(
         environment_files=[environment_filename],

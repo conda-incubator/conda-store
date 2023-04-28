@@ -37,6 +37,7 @@ dependencies:
   # dev dependencies
   - hatch
   - pytest
+  - pytest-celery
   - pytest-mock
   - black ==22.3.0
   - flake8

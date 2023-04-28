@@ -38,7 +38,16 @@ class WorkerTask(Task):
     def worker(self):
         if self._worker is None:
             self._worker = CondaStoreWorker()
+
+            # hook to allow for traitlet configuration via celery config
+            if "traitlets" in current_app.conf:
+                from traitlets.config.loader import Config
+
+                config = Config(**current_app.conf["traitlets"])
+                self._worker.update_config(config)
+
             self._worker.initialize()
+
         return self._worker
 
 

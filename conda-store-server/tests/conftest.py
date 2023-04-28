@@ -9,6 +9,13 @@ from conda_store_server import app, schema, dbutil, utils
 
 
 @pytest.fixture
+def celery_config(conda_store):
+    config = conda_store.celery_config
+    config["traitlets"] = {"CondaStore": {"database_url": conda_store.database_url}}
+    return config
+
+
+@pytest.fixture
 def conda_store(tmp_path):
     with utils.chdir(tmp_path):
         filename = pathlib.Path(tmp_path) / "database.sqlite"

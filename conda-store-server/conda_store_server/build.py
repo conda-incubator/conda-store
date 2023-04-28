@@ -100,7 +100,9 @@ def build_conda_environment(conda_store, build):
         with utils.timer(conda_store.log, f"building {conda_prefix}"):
             context = action.action_solve_lockfile(
                 conda_store.conda_command,
-                specification=build.specification,
+                specification=schema.CondaSpecification.parse_obj(
+                    build.specification.spec
+                ),
             )
             conda_lock_spec = context.result
 
@@ -155,10 +157,9 @@ def solve_conda_environment(conda_store, solve):
     solve.started_on = datetime.datetime.utcnow()
     conda_store.db.commit()
 
-    specification = schema.CondaSpecification.parse_obj(solve.specification.spec)
     context = action.action_solve_lockfile(
         conda_command=conda_store.conda_command,
-        specification=specification,
+        specification=schema.CondaSpecification.parse_obj(solve.specification.spec),
         platforms=[conda.conda_platform()],
     )
     conda_lock_spec = context.result
