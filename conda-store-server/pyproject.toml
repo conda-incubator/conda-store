@@ -62,8 +62,7 @@ path = "conda_store_server/__init__.py"
 
 [tool.hatch.envs.dev]
 dependencies = [
-  "black==22.3.0",
-  "ruff",
+  "pre-commit",
   "sphinx",
   "myst-parser",
   "sphinx-panels",
