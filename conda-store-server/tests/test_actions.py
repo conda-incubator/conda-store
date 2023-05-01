@@ -161,7 +161,7 @@ def test_get_conda_prefix_stats(tmp_path, conda_store, simple_conda_lock):
 
 def test_add_conda_prefix_packages(conda_store, simple_specification, current_prefix):
     build_id = conda_store.register_environment(
-        specification=simple_specification.spec, namespace="pytest"
+        specification=simple_specification, namespace="pytest"
     )
 
     action.action_add_conda_prefix_packages(
@@ -177,9 +177,7 @@ def test_add_conda_prefix_packages(conda_store, simple_specification, current_pr
 def test_add_lockfile_packages(
     conda_store, simple_specification, simple_conda_lock, current_prefix
 ):
-    conda_specification = schema.CondaSpecification.parse_obj(simple_specification.spec)
-
-    task, solve_id = conda_store.register_solve(specification=conda_specification)
+    task, solve_id = conda_store.register_solve(specification=simple_specification)
 
     action.action_add_lockfile_packages(
         db=conda_store.db,

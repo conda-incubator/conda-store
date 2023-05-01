@@ -398,6 +398,7 @@ class CondaStore(LoggingConfigurable):
             "result_backend": self.celery_results_backend,
             "include": [
                 "conda_store_server.worker.tasks",
+                "celery.contrib.testing.tasks",
             ],
             "task_track_started": True,
             "result_extended": True,

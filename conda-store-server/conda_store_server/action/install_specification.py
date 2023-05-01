@@ -8,12 +8,12 @@ from conda_store_server import schema, action
 def action_install_specification(
     context,
     conda_command: str,
-    specification: schema.Specification,
+    specification: schema.CondaSpecification,
     conda_prefix: pathlib.Path,
 ):
     environment_filename = pathlib.Path.cwd() / "environment.yaml"
     with environment_filename.open("w") as f:
-        json.dump(specification.spec, f)
+        json.dump(specification.dict(), f)
 
     command = [
         conda_command,

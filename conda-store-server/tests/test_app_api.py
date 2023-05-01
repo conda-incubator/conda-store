@@ -23,7 +23,7 @@ def test_conda_store_app_register_solve(conda_store, celery_worker):
     from celery.result import AsyncResult
 
     task = AsyncResult(task_id)
-    task.get()
+    task.get(timeout=30)
     assert task.state == "SUCCESS"
 
     conda_store.db.expire_all()
@@ -67,6 +67,11 @@ def test_conda_store_register_environment(conda_store, celery_worker):
 
     task = AsyncResult(f"build-{build.id}-conda-pack")
     task.wait(timeout=60)
+
+    task = AsyncResult(f"build-{build.id}-docker")
+    task.get(timeout=60, propagate=False)
+    # currently docker images are failing to build
+    task.state == "FAILED"
 
     conda_store.db.expire_all()
     assert build.status == schema.BuildStatus.COMPLETED

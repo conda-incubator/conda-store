@@ -3,6 +3,7 @@ channels:
   - conda-forge
   - Microsoft
 dependencies:
+  - python ==3.10
   # conda builds
   - conda
   - conda-docker >= 0.1.2
@@ -41,6 +42,7 @@ dependencies:
   - pytest-mock
   - black ==22.3.0
   - flake8
+  - ruff
   - sphinx
   - myst-parser
   - sphinx-panels

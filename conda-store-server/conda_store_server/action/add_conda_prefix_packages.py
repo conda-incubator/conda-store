@@ -33,7 +33,7 @@ def list_conda_prefix_packages(conda_prefix: pathlib.Path):
                 open(record.package_tarball_full_path, "rb").read()
             ).hexdigest(),
             "name": record.name,
-            "size": getattr(record, "size", None),
+            "size": getattr(record, "size", 0),
             "subdir": record.subdir,
             "timestamp": record.timestamp,
             "version": record.version,
