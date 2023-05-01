@@ -69,7 +69,7 @@ def test_conda_store_register_environment(conda_store, celery_worker):
     task.wait(timeout=60)
 
     task = AsyncResult(f"build-{build.id}-docker")
-    task.get(timeout=2*60, propagate=False)
+    task.get(timeout=2 * 60, propagate=False)
     # currently docker images are failing to build
     task.state == "FAILED"
 
