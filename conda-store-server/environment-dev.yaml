@@ -14,7 +14,7 @@ dependencies:
   - celery
   - flower
   - redis-py
-  - sqlalchemy <2.0 # kombu
+  - sqlalchemy<=1.4.47
   - psycopg2
   - pymysql
   - requests
