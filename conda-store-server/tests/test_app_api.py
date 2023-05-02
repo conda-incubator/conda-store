@@ -1,3 +1,5 @@
+from celery.result import AsyncResult
+
 from conda_store_server import api, schema
 
 
@@ -18,10 +20,6 @@ def test_conda_store_app_register_solve(conda_store, celery_worker):
     assert solve.specification.spec["name"] == conda_specification.name
     assert solve.specification.spec["channels"] == conda_specification.channels
     assert solve.specification.spec["dependencies"] == conda_specification.dependencies
-
-    # wait for task to complete
-    from celery.result import AsyncResult
-
     task = AsyncResult(task_id)
     task.get(timeout=30)
     assert task.state == "SUCCESS"
@@ -31,7 +29,8 @@ def test_conda_store_app_register_solve(conda_store, celery_worker):
     assert len(solve.package_builds) > 0
 
 
-def test_conda_store_register_environment(conda_store, celery_worker):
+def test_conda_store_register_environment_workflow(conda_store, celery_worker):
+    """Test entire environment build workflow"""
     conda_specification = schema.CondaSpecification(
         name="pytest-name",
         channels=["main"],
@@ -58,6 +57,7 @@ def test_conda_store_register_environment(conda_store, celery_worker):
 
     # wait for task to complete
     # build: environment, export, archive
+    # docker is expected to fail will be fixed soon
 
     task = AsyncResult(f"build-{build.id}-environment")
     task.wait(timeout=60)
@@ -75,3 +75,86 @@ def test_conda_store_register_environment(conda_store, celery_worker):
 
     conda_store.db.expire_all()
     assert build.status == schema.BuildStatus.COMPLETED
+
+
+def test_conda_store_register_environment_force_false_same_namespace(conda_store):
+    """Ensure behavior that when force=False and same namespace the
+    same spec does not trigger another build
+
+    """
+    conda_specification = schema.CondaSpecification(
+        name="pytest-name",
+        channels=["main"],
+        dependencies=["python"],
+    )
+    namespace_name = "pytest-namespace"
+
+    first_build_id = conda_store.register_environment(
+        specification=conda_specification.dict(),
+        namespace=namespace_name,
+        force=False,
+    )
+
+    second_build_id = conda_store.register_environment(
+        specification=conda_specification.dict(),
+        namespace=namespace_name,
+        force=False,
+    )
+
+    assert first_build_id == 1
+    assert second_build_id is None
+
+
+def test_conda_store_register_environment_force_false_different_namespace(conda_store):
+    """Ensure behavior that when force=False and different namespace
+    the same spec still triggers another build
+
+    """
+    conda_specification = schema.CondaSpecification(
+        name="pytest-name",
+        channels=["main"],
+        dependencies=["python"],
+    )
+
+    first_build_id = conda_store.register_environment(
+        specification=conda_specification.dict(),
+        namespace="pytest-namespace",
+        force=False,
+    )
+
+    second_build_id = conda_store.register_environment(
+        specification=conda_specification.dict(),
+        namespace="pytest-different-namespace",
+        force=False,
+    )
+
+    assert first_build_id == 1
+    assert second_build_id == 2
+
+
+def test_conda_store_register_environment_duplicate_force_true(conda_store):
+    """Ensure behavior that when force=True the same spec in same
+    namespace still triggers another build
+
+    """
+    conda_specification = schema.CondaSpecification(
+        name="pytest-name",
+        channels=["main"],
+        dependencies=["python"],
+    )
+    namespace_name = "pytest-namespace"
+
+    first_build_id = conda_store.register_environment(
+        specification=conda_specification.dict(),
+        namespace=namespace_name,
+        force=True,
+    )
+
+    second_build_id = conda_store.register_environment(
+        specification=conda_specification.dict(),
+        namespace=namespace_name,
+        force=True,
+    )
+
+    assert first_build_id == 1
+    assert second_build_id == 2

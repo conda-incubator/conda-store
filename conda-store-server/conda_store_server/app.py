@@ -477,7 +477,9 @@ class CondaStore(LoggingConfigurable):
 
         return task_id, solve.id
 
-    def register_environment(self, specification: dict, namespace: str = None):
+    def register_environment(
+        self, specification: dict, namespace: str = None, force: bool = True
+    ):
         """Register a given specification to conda store with given namespace/name."""
         namespace = namespace or self.default_namespace
         namespace = api.ensure_namespace(self.db, name=namespace)
@@ -493,6 +495,18 @@ class CondaStore(LoggingConfigurable):
             namespace=namespace.name,
             specification=schema.CondaSpecification.parse_obj(specification),
         )
+
+        spec_sha256 = utils.datastructure_hash(specification_model.dict())
+        matching_specification = api.get_specification(self.db, sha256=spec_sha256)
+        if (
+            matching_specification is not None
+            and not force
+            and any(
+                _.environment.namespace.id == namespace.id
+                for _ in matching_specification.builds
+            )
+        ):
+            return None
 
         specification = api.ensure_specification(self.db, specification_model)
         environment_was_empty = (

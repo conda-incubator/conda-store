@@ -184,13 +184,12 @@ def list_specifications(db, search=None):
 
 
 def get_specification(db, sha256: str):
-    return (
-        db.query(orm.Specification).filter(orm.Specification.sha256 == sha256).first()
-    )
+    filters = [orm.Specification.sha256 == sha256]
+    return db.query(orm.Specification).filter(*filters).first()
 
 
 def post_specification(conda_store, specification, namespace=None):
-    return conda_store.register_environment(specification, namespace)
+    return conda_store.register_environment(specification, namespace, force=True)
 
 
 def post_solve(conda_store, specification: schema.CondaSpecification):

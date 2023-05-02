@@ -62,6 +62,7 @@ def task_watch_paths(self):
             conda_store.register_environment(
                 specification=yaml.safe_load(f),
                 namespace=conda_store.filesystem_namespace,
+                force=False,
             )
 
 
