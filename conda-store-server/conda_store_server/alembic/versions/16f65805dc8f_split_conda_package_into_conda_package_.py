@@ -225,6 +225,16 @@ def upgrade():
             "build_environment_id_fkey", "environment", ["environment_id"], ["id"]
         )
 
+    # One case of data inconsistency has been identified, that makes the migration fail :
+    #   Dangling build artifacts : rows in table `build_artifact` with a `build_id`` that doesn't exists anymore.
+    #   see issue https://github.com/Quansight/conda-store/issues/476
+    # Fix : delete dangling artifacts
+    op.execute(
+        """ DELETE FROM build_artifact
+                   WHERE build_id NOT IN (SELECT DISTINCT(id) FROM build)
+            """
+    )
+
     with op.batch_alter_table("build_artifact") as batch_op:
         batch_op.create_foreign_key(
             "build_artifact_build_id_fkey", "build", ["build_id"], ["id"]
