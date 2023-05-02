@@ -301,11 +301,6 @@ class CondaStoreServer(Application):
         self.conda_store.ensure_namespace()
         self.conda_store.ensure_conda_channels()
 
-        # schedule tasks
-        self.conda_store.celery_app
-
-        from conda_store_server.worker import tasks  # noqa
-
         # start worker if in standalone mode
         if self.standalone:
             import multiprocessing

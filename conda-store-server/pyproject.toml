@@ -84,7 +84,7 @@ fmt = [
   "lint",
 ]
 docs = "sphinx-build -b html ../docs ../docs/_build"
-unit-test = "pytest tests"
+unit-test = "pytest tests -v"
 playwright-test = [
   "playwright install",
   "pytest --video on ../tests/test_playwright.py"

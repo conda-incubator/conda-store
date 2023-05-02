@@ -1,9 +1,9 @@
-from typing import List
+from typing import List, Dict
 import re
 
 from sqlalchemy import func, null, or_, distinct
 
-from conda_store_server import orm, schema
+from conda_store_server import orm, schema, utils
 from conda_store_server.conda import conda_platform
 
 
@@ -13,6 +13,14 @@ def list_namespaces(db, show_soft_deleted: bool = False):
         filters.append(orm.Namespace.deleted_on == null())
 
     return db.query(orm.Namespace).filter(*filters)
+
+
+def ensure_namespace(db, name: str):
+    namespace = get_namespace(db, name=name)
+    if namespace is None:
+        namespace = create_namespace(db, name=name)
+        db.commit()
+    return namespace
 
 
 def get_namespace(db, name: str = None, id: int = None, show_soft_deleted: bool = True):
@@ -99,6 +107,40 @@ def list_environments(
     return query
 
 
+def ensure_environment(
+    db,
+    name: str,
+    namespace_id: int,
+    description: str = None,
+):
+    environment = get_environment(db, name=name, namespace_id=namespace_id)
+    if environment is None:
+        environment = create_environment(
+            db, name=name, namespace_id=namespace_id, description=description
+        )
+        db.commit()
+    elif description:
+        update_environment(
+            db, name=name, namespace_id=namespace_id, description=description
+        )
+        db.commit()
+    return environment
+
+
+def create_environment(db, name: str, namespace_id: int, description: str):
+    environment = orm.Environment(
+        name=name, namespace_id=namespace_id, description=description
+    )
+    db.add(environment)
+    return environment
+
+
+def update_environment(db, name: str, namespace_id: int, description: str):
+    environment = get_environment(db, name=name, namespace_id=namespace_id)
+    environment.description = description
+    return environment
+
+
 def get_environment(
     db,
     name: str = None,
@@ -119,27 +161,53 @@ def get_environment(
     return db.query(orm.Environment).join(orm.Namespace).filter(*filters).first()
 
 
+def ensure_specification(db, specification: schema.CondaSpecification):
+    specification_sha256 = utils.datastructure_hash(specification.dict())
+    specification_orm = get_specification(db, sha256=specification_sha256)
+
+    if specification_orm is None:
+        specification_orm = create_speficication(db, specification)
+        db.commit()
+
+    return specification_orm
+
+
+def create_speficication(db, specification: schema.CondaSpecification):
+    specification_orm = orm.Specification(specification.dict())
+    db.add(specification_orm)
+    return specification_orm
+
+
 def list_specifications(db, search=None):
     filters = []
     return db.query(orm.Specification).filter(*filters)
 
 
-def get_specification(db, sha256):
-    return (
-        db.query(orm.Specification).filter(orm.Specification.sha256 == sha256).first()
-    )
+def get_specification(db, sha256: str):
+    filters = [orm.Specification.sha256 == sha256]
+    return db.query(orm.Specification).filter(*filters).first()
 
 
 def post_specification(conda_store, specification, namespace=None):
-    return conda_store.register_environment(specification, namespace, force_build=True)
+    return conda_store.register_environment(specification, namespace, force=True)
 
 
-def post_solve(conda_store, specification):
+def post_solve(conda_store, specification: schema.CondaSpecification):
     return conda_store.register_solve(specification)
+
+
+def create_solve(db, specification_id: int):
+    solve = orm.Solve(specification_id=specification_id)
+    db.add(solve)
+    return solve
 
 
 def get_solve(db, solve_id: int):
     return db.query(orm.Solve).filter(orm.Solve.id == solve_id).first()
+
+
+def list_solves(db):
+    return db.query(orm.Solve)
 
 
 def list_builds(
@@ -189,6 +257,12 @@ def list_builds(
         )
 
     return query
+
+
+def create_build(db, environment_id: int, specification_id: int):
+    build = orm.Build(environment_id=environment_id, specification_id=specification_id)
+    db.add(build)
+    return build
 
 
 def get_build(db, build_id: int):
@@ -265,6 +339,14 @@ def get_build_artifact(db, build_id: int, key: str):
     )
 
 
+def ensure_conda_channel(db, channel_name: str):
+    conda_channel = get_conda_channel(db, channel_name)
+    if conda_channel is None:
+        conda_channel = create_conda_channel(db, channel_name)
+        db.commit()
+    return conda_channel
+
+
 def list_conda_channels(db):
     filters = []
     return db.query(orm.CondaChannel).filter(*filters)
@@ -280,6 +362,109 @@ def get_conda_channel(db, channel_name: str):
     return (
         db.query(orm.CondaChannel).filter(orm.CondaChannel.name == channel_name).first()
     )
+
+
+def get_conda_package(db, channel_id: int, name: str, version: str):
+    return (
+        db.query(orm.CondaPackage)
+        .filter(orm.CondaPackage.channel_id == channel_id)
+        .filter(orm.CondaPackage.name == name)
+        .filter(orm.CondaPackage.version == version)
+        .first()
+    )
+
+
+def get_conda_package_build(db, package_id: int, subdir: str, build: str):
+    return (
+        db.query(orm.CondaPackageBuild)
+        .filter(orm.CondaPackageBuild.package_id == package_id)
+        .filter(orm.CondaPackageBuild.subdir == subdir)
+        .filter(orm.CondaPackageBuild.build == build)
+        .first()
+    )
+
+
+def create_or_ignore_conda_package(db, package_record: Dict):
+    # first create the conda channel
+    channel = package_record["channel_id"]
+    if channel == "https://conda.anaconda.org/pypi":
+        # ignore pypi package for now
+        return None
+
+    channel_orm = get_conda_channel(db, channel)
+    if channel_orm is None:
+        channel_orm = create_conda_channel(db, channel)
+        db.commit()
+
+    package_record["channel_id"] = channel_orm.id
+
+    # Retrieve the package from the DB if it already exists
+    conda_package = get_conda_package(
+        db,
+        channel_id=package_record["channel_id"],
+        name=package_record["name"],
+        version=package_record["version"],
+    )
+
+    # If it doesn't exist, let's create it in DB
+    if conda_package is None:
+        conda_package = create_conda_package(db, package_record=package_record)
+
+    # Retrieve the build for this pacakge, if it already exists
+    conda_package_build = get_conda_package_build(
+        db,
+        package_id=conda_package.id,
+        subdir=package_record["subdir"],
+        build=package_record["build"],
+    )
+
+    # If it doesn't exist, let's create it in DB
+    if conda_package_build is None:
+        conda_package_build = create_conda_package_build(
+            db,
+            package_id=conda_package.id,
+            package_record=package_record,
+        )
+
+    return conda_package_build
+
+
+def create_conda_package(db, package_record: Dict):
+    conda_package_keys = [
+        "channel_id",
+        "license",
+        "license_family",
+        "name",
+        "version",
+        "summary",
+        "description",
+    ]
+
+    conda_package = orm.CondaPackage(
+        **{k: package_record[k] for k in conda_package_keys}
+    )
+    db.add(conda_package)
+    return conda_package
+
+
+def create_conda_package_build(db, package_id: int, package_record: Dict):
+    conda_package_build_keys = [
+        "build",
+        "build_number",
+        "constrains",
+        "depends",
+        "md5",
+        "sha256",
+        "size",
+        "subdir",
+        "timestamp",
+    ]
+    conda_package_build = orm.CondaPackageBuild(
+        package_id=package_id,
+        **{k: package_record[k] for k in conda_package_build_keys},
+    )
+    db.add(conda_package_build)
+    return conda_package_build
 
 
 def list_conda_packages(db, search: str = None, exact: bool = False, build: str = None):

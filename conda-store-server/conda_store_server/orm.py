@@ -1,5 +1,6 @@
 import os
 import datetime
+import pathlib
 import shutil
 
 from sqlalchemy import (
@@ -18,8 +19,13 @@ from sqlalchemy import (
     or_,
     and_,
 )
-from sqlalchemy.orm import sessionmaker, relationship, scoped_session, backref
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import (
+    sessionmaker,
+    relationship,
+    scoped_session,
+    backref,
+    declarative_base,
+)
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import create_engine
 
@@ -149,11 +155,13 @@ class Build(Base):
         store_directory = os.path.abspath(conda_store.store_directory)
         namespace = self.environment.namespace.name
         name = self.specification.name
-        return os.path.join(
-            conda_store.build_directory.format(
-                store_directory=store_directory, namespace=namespace, name=name
-            ),
-            self.build_key,
+        return (
+            pathlib.Path(
+                conda_store.build_directory.format(
+                    store_directory=store_directory, namespace=namespace, name=name
+                )
+            )
+            / self.build_key
         )
 
     def environment_path(self, conda_store):
@@ -164,8 +172,10 @@ class Build(Base):
         store_directory = os.path.abspath(conda_store.store_directory)
         namespace = self.environment.namespace.name
         name = self.specification.name
-        return conda_store.environment_directory.format(
-            store_directory=store_directory, namespace=namespace, name=name
+        return pathlib.Path(
+            conda_store.environment_directory.format(
+                store_directory=store_directory, namespace=namespace, name=name
+            )
         )
 
     @property

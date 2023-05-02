@@ -392,40 +392,45 @@ class CondaStore(LoggingConfigurable):
         return self._container_registry
 
     @property
+    def celery_config(self):
+        return {
+            "broker_url": self.celery_broker_url,
+            "result_backend": self.celery_results_backend,
+            "imports": [
+                "conda_store_server.worker.tasks",
+                "celery.contrib.testing.tasks",
+            ],
+            "task_track_started": True,
+            "result_extended": True,
+            "beat_schedule": {
+                "watch-paths": {
+                    "task": "task_watch_paths",
+                    "schedule": 60.0,  # 1 minute
+                    "args": [],
+                    "kwargs": {},
+                },
+                "update-conda-channels": {
+                    "task": "task_update_conda_channels",
+                    "schedule": 15.0 * 60.0,  # 15 minutes
+                    "args": [],
+                    "kwargs": {},
+                },
+            },
+            "triatlets": {},
+        }
+
+    @property
     def celery_app(self):
         if hasattr(self, "_celery_app"):
             return self._celery_app
 
-        self._celery_app = Celery(
-            "tasks",
-            backend=self.celery_results_backend,
-            broker=self.celery_broker_url,
-            include=[
-                "conda_store_server.worker.tasks",
-            ],
-        )
-        self._celery_app.conf.beat_schedule = {
-            "watch-paths": {
-                "task": "task_watch_paths",
-                "schedule": 60.0,  # 1 minute
-                "args": [],
-                "kwargs": {},
-            },
-            "update-conda-channels": {
-                "task": "task_update_conda_channels",
-                "schedule": 15.0 * 60.0,  # 15 minutes
-                "args": [],
-                "kwargs": {},
-            },
-        }
-
+        self._celery_app = Celery("tasks")
+        self._celery_app.config_from_object(self.celery_config)
         return self._celery_app
 
     def ensure_namespace(self):
         """Ensure that conda-store default namespaces exists"""
-        namespace = api.get_namespace(self.db, name=self.default_namespace)
-        if namespace is None:
-            api.create_namespace(self.db, name=self.default_namespace)
+        api.ensure_namespace(self.db, self.default_namespace)
 
     def ensure_directories(self):
         """Ensure that conda-store filesystem directories exist"""
@@ -439,14 +444,7 @@ class CondaStore(LoggingConfigurable):
             normalized_channel = conda.normalize_channel_name(
                 self.conda_channel_alias, channel
             )
-
-            conda_channel = api.get_conda_channel(self.db, normalized_channel)
-            if conda_channel is None:
-                conda_channel = orm.CondaChannel(
-                    name=normalized_channel, last_update=None
-                )
-                self.db.add(conda_channel)
-                self.db.commit()
+            api.ensure_conda_channel(self.db, normalized_channel)
 
     def register_solve(self, specification: schema.CondaSpecification):
         """Registers a solve for a given specification"""
@@ -455,101 +453,74 @@ class CondaStore(LoggingConfigurable):
             namespace="solve",
             action=schema.Permissions.ENVIRONMENT_SOLVE,
         )
+
         specification_model = self.validate_specification(
             conda_store=self,
             namespace="solve",
             specification=specification,
         )
-        specification_sha256 = utils.datastructure_hash(specification_model.dict())
-        specification = api.get_specification(self.db, sha256=specification_sha256)
-        if specification is None:
-            self.log.info(
-                f"specification name={specification_model.name} sha256={specification_sha256} registered"
-            )
-            specification = orm.Specification(specification_model.dict())
-            self.db.add(specification)
-            self.db.commit()
-        else:
-            self.log.debug(
-                f"specification name={specification_model.name} sha256={specification_sha256} already registered"
-            )
 
-        solve_model = orm.Solve(specification_id=specification.id)
-        self.db.add(solve_model)
+        specification_orm = api.ensure_specification(self.db, specification_model)
+        solve = api.create_solve(self.db, specification_orm.id)
         self.db.commit()
 
-        # must import tasks after a celery app has been initialized
+        self.celery_app
+
         from conda_store_server.worker import tasks
 
-        task = tasks.task_solve_conda_environment.apply_async(
-            args=[solve_model.id], time_limit=self.conda_max_solve_time
+        task_id = f"solve-{solve.id}"
+        tasks.task_solve_conda_environment.apply_async(
+            args=[solve.id],
+            time_limit=self.conda_max_solve_time,
+            task_id=task_id,
         )
 
-        return task, solve_model.id
+        return task_id, solve.id
 
     def register_environment(
-        self, specification: dict, namespace: str = None, force_build=False
+        self, specification: dict, namespace: str = None, force: bool = True
     ):
-        """Register a given specification to conda store with given namespace/name.
-
-        If force_build is True a build will be triggered even if
-        specification already exists.
-
-        """
+        """Register a given specification to conda store with given namespace/name."""
         namespace = namespace or self.default_namespace
-
-        # Create Namespace if namespace if it does not exist
-        namespace_model = api.get_namespace(self.db, name=namespace)
-        if namespace_model is None:
-            namespace = api.create_namespace(self.db, name=namespace)
-            self.db.commit()
-        else:
-            namespace = namespace_model
+        namespace = api.ensure_namespace(self.db, name=namespace)
 
         self.validate_action(
             conda_store=self,
             namespace=namespace.name,
             action=schema.Permissions.ENVIRONMENT_CREATE,
         )
+
         specification_model = self.validate_specification(
             conda_store=self,
             namespace=namespace.name,
             specification=schema.CondaSpecification.parse_obj(specification),
         )
-        specification_sha256 = utils.datastructure_hash(specification_model.dict())
 
-        specification = api.get_specification(self.db, sha256=specification_sha256)
-        if specification is None:
-            self.log.info(
-                f"specification name={specification_model.name} sha256={specification_sha256} registered"
+        spec_sha256 = utils.datastructure_hash(specification_model.dict())
+        matching_specification = api.get_specification(self.db, sha256=spec_sha256)
+        if (
+            matching_specification is not None
+            and not force
+            and any(
+                _.environment.namespace.id == namespace.id
+                for _ in matching_specification.builds
             )
-            specification = orm.Specification(specification_model.dict())
-            self.db.add(specification)
-            self.db.commit()
-        else:
-            self.log.debug(
-                f"specification name={specification_model.name} sha256={specification_sha256} already registered"
-            )
-            if not force_build:
-                return
+        ):
+            return None
 
-        # Create Environment if specification of given namespace/name
-        # does not exist yet
-        environment = api.get_environment(
-            self.db, namespace_id=namespace.id, name=specification.name
+        specification = api.ensure_specification(self.db, specification_model)
+        environment_was_empty = (
+            api.get_environment(
+                self.db, name=specification.name, namespace_id=namespace.id
+            )
+            is None
         )
-        environment_was_empty = environment is None
-        if environment_was_empty:
-            environment = orm.Environment(
-                name=specification.name,
-                namespace_id=namespace.id,
-                description=specification.spec["description"],
-            )
-            self.db.add(environment)
-            self.db.commit()
-        else:
-            environment.description = specification.spec["description"]
-            self.db.commit()
+        environment = api.ensure_environment(
+            self.db,
+            name=specification.name,
+            namespace_id=namespace.id,
+            description=specification.spec["description"],
+        )
 
         build = self.create_build(environment.id, specification.sha256)
 
@@ -568,10 +539,9 @@ class CondaStore(LoggingConfigurable):
         )
 
         specification = api.get_specification(self.db, specification_sha256)
-        build = orm.Build(
-            environment_id=environment_id, specification_id=specification.id
+        build = api.create_build(
+            self.db, environment_id=environment_id, specification_id=specification.id
         )
-        self.db.add(build)
         self.db.commit()
 
         self.celery_app
@@ -581,21 +551,41 @@ class CondaStore(LoggingConfigurable):
 
         artifact_tasks = []
         if schema.BuildArtifactType.YAML in self.build_artifacts:
-            artifact_tasks.append(tasks.task_build_conda_env_export.si(build.id))
+            artifact_tasks.append(
+                tasks.task_build_conda_env_export.subtask(
+                    args=(build.id,),
+                    task_id=f"build-{build.id}-conda-env-export",
+                    immutable=True,
+                )
+            )
         if schema.BuildArtifactType.CONDA_PACK in self.build_artifacts:
-            artifact_tasks.append(tasks.task_build_conda_pack.si(build.id))
+            artifact_tasks.append(
+                tasks.task_build_conda_pack.subtask(
+                    args=(build.id,),
+                    task_id=f"build-{build.id}-conda-pack",
+                    immutable=True,
+                )
+            )
         if (
             schema.BuildArtifactType.DOCKER_MANIFEST in self.build_artifacts
             or schema.BuildArtifactType.CONTAINER_REGISTRY in self.build_artifacts
         ):
-            artifact_tasks.append(tasks.task_build_conda_docker.si(build.id))
+            artifact_tasks.append(
+                tasks.task_build_conda_docker.subtask(
+                    args=(build.id,), task_id=f"build-{build.id}-docker", immutable=True
+                )
+            )
 
         (
             tasks.task_update_storage_metrics.si()
-            | tasks.task_build_conda_environment.si(build.id)
+            | tasks.task_build_conda_environment.subtask(
+                args=(build.id,),
+                task_id=f"build-{build.id}-environment",
+                immutable=True,
+            )
             | group(*artifact_tasks)
             | tasks.task_update_storage_metrics.si()
-        ).apply_async()
+        ).apply_async(task_id=f"build-{build.id}")
 
         return build
 

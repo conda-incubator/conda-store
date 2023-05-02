@@ -72,7 +72,6 @@ def upgrade(db_url, revision="head"):
     revision: str [default: head]
         The alembic revision to upgrade to.
     """
-
     engine = create_engine(db_url)
 
     # retrieves the names of tables in the DB

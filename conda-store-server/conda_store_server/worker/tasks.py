@@ -1,7 +1,7 @@
 import shutil
 import os
 
-from celery import Task, current_app
+from celery import Task, shared_task
 from celery.signals import worker_ready
 import yaml
 
@@ -28,21 +28,28 @@ def at_start(sender, **k):
 
 
 class WorkerTask(Task):
-    _worker = None
-
     def after_return(self, *args, **kwargs):
-        if self._worker is not None:
+        if hasattr(self, "_worker"):
             self._worker.conda_store.session_factory.remove()
 
     @property
     def worker(self):
-        if self._worker is None:
+        if not hasattr(self, "_worker"):
             self._worker = CondaStoreWorker()
+
+            # hook to allow for traitlet configuration via celery config
+            if "traitlets" in self.app.conf:
+                from traitlets.config.loader import Config
+
+                config = Config(**self.app.conf.traitlets)
+                self._worker.update_config(config)
+
             self._worker.initialize()
+
         return self._worker
 
 
-@current_app.task(base=WorkerTask, name="task_watch_paths", bind=True)
+@shared_task(base=WorkerTask, name="task_watch_paths", bind=True)
 def task_watch_paths(self):
     conda_store = self.worker.conda_store
     conda_store.configuration.update_storage_metrics(
@@ -55,10 +62,11 @@ def task_watch_paths(self):
             conda_store.register_environment(
                 specification=yaml.safe_load(f),
                 namespace=conda_store.filesystem_namespace,
+                force=False,
             )
 
 
-@current_app.task(base=WorkerTask, name="task_update_storage_metrics", bind=True)
+@shared_task(base=WorkerTask, name="task_update_storage_metrics", bind=True)
 def task_update_storage_metrics(self):
     conda_store = self.worker.conda_store
     conda_store.configuration.update_storage_metrics(
@@ -85,7 +93,7 @@ https://stackoverflow.com/questions/12003221/celery-task-schedule-ensuring-a-tas
 """
 
 
-@current_app.task(base=WorkerTask, name="task_update_conda_channels", bind=True)
+@shared_task(base=WorkerTask, name="task_update_conda_channels", bind=True)
 def task_update_conda_channels(self):
     conda_store = self.worker.conda_store
 
@@ -94,7 +102,7 @@ def task_update_conda_channels(self):
         send_task("task_update_conda_channel", args=[channel.name], kwargs={})
 
 
-@current_app.task(base=WorkerTask, name="task_update_conda_channel", bind=True)
+@shared_task(base=WorkerTask, name="task_update_conda_channel", bind=True)
 def task_update_conda_channel(self, channel_name):
 
     conda_store = self.worker.conda_store
@@ -149,42 +157,42 @@ def task_update_conda_channel(self, channel_name):
             lock.release()
 
 
-@current_app.task(base=WorkerTask, name="task_solve_conda_environment", bind=True)
+@shared_task(base=WorkerTask, name="task_solve_conda_environment", bind=True)
 def task_solve_conda_environment(self, solve_id):
     conda_store = self.worker.conda_store
     solve = api.get_solve(conda_store.db, solve_id)
     solve_conda_environment(conda_store, solve)
 
 
-@current_app.task(base=WorkerTask, name="task_build_conda_environment", bind=True)
+@shared_task(base=WorkerTask, name="task_build_conda_environment", bind=True)
 def task_build_conda_environment(self, build_id):
     conda_store = self.worker.conda_store
     build = api.get_build(conda_store.db, build_id)
     build_conda_environment(conda_store, build)
 
 
-@current_app.task(base=WorkerTask, name="task_build_conda_env_export", bind=True)
+@shared_task(base=WorkerTask, name="task_build_conda_env_export", bind=True)
 def task_build_conda_env_export(self, build_id):
     conda_store = self.worker.conda_store
     build = api.get_build(conda_store.db, build_id)
     build_conda_env_export(conda_store, build)
 
 
-@current_app.task(base=WorkerTask, name="task_build_conda_pack", bind=True)
+@shared_task(base=WorkerTask, name="task_build_conda_pack", bind=True)
 def task_build_conda_pack(self, build_id):
     conda_store = self.worker.conda_store
     build = api.get_build(conda_store.db, build_id)
     build_conda_pack(conda_store, build)
 
 
-@current_app.task(base=WorkerTask, name="task_build_conda_docker", bind=True)
+@shared_task(base=WorkerTask, name="task_build_conda_docker", bind=True)
 def task_build_conda_docker(self, build_id):
     conda_store = self.worker.conda_store
     build = api.get_build(conda_store.db, build_id)
     build_conda_docker(conda_store, build)
 
 
-@current_app.task(base=WorkerTask, name="task_update_environment_build", bind=True)
+@shared_task(base=WorkerTask, name="task_update_environment_build", bind=True)
 def task_update_environment_build(self, environment_id):
     conda_store = self.worker.conda_store
     environment = api.get_environment(conda_store.db, id=environment_id)
@@ -222,7 +230,7 @@ def delete_build_artifact(conda_store, build_artifact):
         )
 
 
-@current_app.task(base=WorkerTask, name="task_delete_build", bind=True)
+@shared_task(base=WorkerTask, name="task_delete_build", bind=True)
 def task_delete_build(self, build_id):
     conda_store = self.worker.conda_store
     build = api.get_build(conda_store.db, build_id)
@@ -237,7 +245,7 @@ def task_delete_build(self, build_id):
     conda_store.db.commit()
 
 
-@current_app.task(base=WorkerTask, name="task_delete_environment", bind=True)
+@shared_task(base=WorkerTask, name="task_delete_environment", bind=True)
 def task_delete_environment(self, environment_id):
     conda_store = self.worker.conda_store
     environment = api.get_environment(conda_store.db, id=environment_id)
@@ -254,7 +262,7 @@ def task_delete_environment(self, environment_id):
     conda_store.db.commit()
 
 
-@current_app.task(base=WorkerTask, name="task_delete_namespace", bind=True)
+@shared_task(base=WorkerTask, name="task_delete_namespace", bind=True)
 def task_delete_namespace(self, namespace_id):
     conda_store = self.worker.conda_store
     namespace = api.get_namespace(conda_store.db, id=namespace_id)
