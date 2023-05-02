@@ -396,7 +396,7 @@ class CondaStore(LoggingConfigurable):
         return {
             "broker_url": self.celery_broker_url,
             "result_backend": self.celery_results_backend,
-            "include": [
+            "imports": [
                 "conda_store_server.worker.tasks",
                 "celery.contrib.testing.tasks",
             ],

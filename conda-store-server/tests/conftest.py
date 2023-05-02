@@ -14,23 +14,6 @@ def celery_config(conda_store):
     return config
 
 
-# @pytest.fixture(scope='session')
-# def celery_parameters():
-#     return {
-#         'include': ['conda_store_server.worker.tasks']
-#     }
-
-# @pytest.fixture(scope='function')
-# def celery_app(conda_store):
-#     return conda_store.celery_app
-
-# @pytest.fixture
-# def celery_includes():
-#     return [
-#         'conda_store_server.worker.tasks',
-#     ]
-
-
 @pytest.fixture
 def conda_store(tmp_path):
     with utils.chdir(tmp_path):
@@ -40,23 +23,17 @@ def conda_store(tmp_path):
         _conda_store.database_url = f"sqlite:///{filename}"
         pathlib.Path(_conda_store.store_directory).mkdir()
 
-        # breakpoint()
-
         dbutil.upgrade(_conda_store.database_url)
 
         _conda_store.celery_app
+
+        # must import tasks after a celery app has been initialized
         import conda_store_server.worker.tasks  # noqa
 
         # ensure that models are created
         from celery.backends.database.session import ResultModelBase
 
         ResultModelBase.metadata.create_all(_conda_store.db.get_bind())
-
-        # from conda_store_server.worker import tasks
-        # task = tasks.task_update_storage_metrics.si().apply_async()
-        # task.state
-
-        # breakpoint()
 
         _conda_store.configuration.update_storage_metrics(
             _conda_store.db, _conda_store.store_directory
