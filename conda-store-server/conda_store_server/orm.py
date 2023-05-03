@@ -300,8 +300,8 @@ class BuildArtifact(Base):
 
     id = Column(Integer, primary_key=True)
 
-    build_id = Column(Integer, ForeignKey("build.id"))
-    build = relationship(Build, back_populates="build_artifacts")
+    build_id = Column(Integer, ForeignKey("build.id", ondelete="CASCADE"))
+    build = relationship(Build, back_populates="build_artifacts", passive_deletes=True)
 
     artifact_type = Column(Enum(schema.BuildArtifactType), nullable=False)
 
