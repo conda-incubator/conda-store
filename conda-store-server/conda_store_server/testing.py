@@ -1,11 +1,13 @@
 import typing
 import json
+import uuid
 
 from conda_store_server import schema, api, orm
 
 
 def seed_conda_store(
-    conda_store, config: typing.Dict[str, typing.Dict[str, schema.CondaSpecification]]
+    conda_store,
+    config: typing.Dict[str, typing.Dict[str, schema.CondaSpecification]] = {},
 ):
     for namespace_name in config:
         namespace = api.ensure_namespace(conda_store.db, name=namespace_name)
@@ -19,10 +21,44 @@ def seed_conda_store(
             build = api.create_build(conda_store.db, environment.id, specification.id)
             conda_store.db.commit()
 
+            environment.current_build_id = build.id
+            conda_store.db.commit()
+
             _create_build_artifacts(conda_store, build)
+            _create_build_packages(conda_store, build)
 
             api.create_solve(conda_store.db, specification.id)
             conda_store.db.commit()
+
+
+def _create_build_packages(conda_store, build: orm.Build):
+    channel = api.ensure_conda_channel(conda_store.db, "conda-forge")
+
+    conda_package = orm.CondaPackage(
+        name=f"madeup-{uuid.uuid4()}",
+        version="1.2.3",
+        channel_id=channel.id,
+    )
+    conda_store.db.add(conda_package)
+    conda_store.db.commit()
+
+    conda_package_build = orm.CondaPackageBuild(
+        package_id=conda_package.id,
+        build="fakebuild",
+        build_number=1,
+        constrains=[],
+        depends=[],
+        md5=str(uuid.uuid4()),
+        sha256=str(uuid.uuid4()),
+        size=123456,
+        subdir="noarch",
+        timestamp=12345667,
+    )
+    conda_store.db.add(conda_package_build)
+    conda_store.db.commit()
+
+    build.package_builds.append(conda_package_build)
+    conda_store.db.commit()
 
 
 def _create_build_artifacts(conda_store, build: orm.Build):

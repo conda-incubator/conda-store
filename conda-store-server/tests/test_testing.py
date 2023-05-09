@@ -30,3 +30,4 @@ def test_testing_initialize_database(conda_store):
     assert len(api.list_environments(conda_store.db).all()) == 3
     assert len(api.list_builds(conda_store.db).all()) == 3
     assert len(api.list_solves(conda_store.db).all()) == 3
+    assert len(api.list_conda_packages(conda_store.db).all()) == 3
