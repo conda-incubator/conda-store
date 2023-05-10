@@ -2,7 +2,7 @@ import typing
 import json
 import uuid
 
-from conda_store_server import schema, api, orm
+from conda_store_server import schema, api, orm, conda
 
 
 def seed_conda_store(
@@ -32,7 +32,10 @@ def seed_conda_store(
 
 
 def _create_build_packages(conda_store, build: orm.Build):
-    channel = api.ensure_conda_channel(conda_store.db, "conda-forge")
+    channel_name = conda.normalize_channel_name(
+        conda_store.conda_channel_alias, "conda-forge"
+    )
+    channel = api.ensure_conda_channel(conda_store.db, channel_name)
 
     conda_package = orm.CondaPackage(
         name=f"madeup-{uuid.uuid4()}",

@@ -1,11 +1,12 @@
 import os
 import pathlib
+import datetime
 
 import pytest
 import yaml
 from fastapi.testclient import TestClient
 
-from conda_store_server import app, schema, dbutil, utils, testing
+from conda_store_server import app, schema, dbutil, utils, testing, api
 from conda_store_server.server import app as server_app
 
 
@@ -99,6 +100,13 @@ def seed_conda_store(conda_store):
             },
         },
     )
+
+    # for testing purposes make build 4 complete
+    build = api.get_build(conda_store.db, build_id=4)
+    build.started_on = datetime.datetime.utcnow()
+    build.ended_on = datetime.datetime.utcnow()
+    build.status = schema.BuildStatus.COMPLETED
+    conda_store.db.commit()
 
 
 @pytest.fixture
