@@ -463,6 +463,7 @@ class CondaStore(LoggingConfigurable):
             conda_included_packages=self.conda_included_packages,
             pypi_default_packages=self.pypi_default_packages,
             pypi_required_packages=self.pypi_required_packages,
+            pypi_included_packages=self.pypi_included_packages,
             build_artifacts=self.build_artifacts,
             default_docker_base_image=self.default_docker_base_image,
         )

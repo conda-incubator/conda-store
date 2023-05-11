@@ -132,12 +132,12 @@ def validate_environment_pypi_packages(
         _append_pip_packages(specification, [_included_packages[package]])
 
     missing_packages = (
-        _package_names(settings.conda_required_packages).keys()
+        _package_names(settings.pypi_required_packages).keys()
         <= _package_names(_get_pip_packages(specification)).keys()
     )
     if not missing_packages:
         raise ValueError(
-            f"Conda packages {missing_packages} required and missing from specification"
+            f"PyPi packages {missing_packages} required and missing from specification"
         )
 
     return specification
