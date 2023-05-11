@@ -458,6 +458,11 @@ behind proxy since Flask will trust any `X-Forward-...` header.
 `CondaStoreServer.template_vars` extra variables to be passed into
 jinja templates for page rendering.
 
+`CondaStoreServer.additional_routes` additional routes for conda-store
+to serve in form `[(path, method, function), ...]`. `path` is a
+string, `method` is `get`, `post`, `put`, `delete` etc. and function
+is a regular python fastapi function.
+
 ### `conda_store_server.worker.app.CondaStoreWorker`
 
 `CondaStoreWorker.log_level` is the level for all server
