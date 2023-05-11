@@ -1,8 +1,11 @@
 import tempfile
 import pathlib
 
+import pytest
 from fastapi.testclient import TestClient
 from fastapi.templating import Jinja2Templates
+
+from conda_store_server import schema
 
 
 def test_conda_store_server_enable_ui(conda_store_server):
@@ -123,3 +126,61 @@ def test_conda_store_server_additional_routes(conda_store_server):
     response = client.get("/a/path/to/another/", params={"a": "c", "b": "d"})
     assert response.status_code == 200
     assert response.json() == {"data": "Hello World c d"}
+
+
+def test_conda_store_conda_channels_packages_validate_valid(conda_store):
+    specification = schema.CondaSpecification(
+        name="test",
+        channels=["conda-forge"],
+        dependencies=[
+            "flask",
+            {"pip": ["numpy"]},
+        ],
+    )
+
+    conda_store.conda_allowed_channels = ["conda-forge"]
+    conda_store.conda_included_packages = ["ipykernel"]
+    conda_store.conda_required_packages = ["flask"]
+    conda_store.pypi_included_packages = ["scipy"]
+    conda_store.pypi_required_packages = ["numpy"]
+    new_specification = conda_store.validate_specification(
+        conda_store, namespace="default", specification=specification
+    )
+    assert new_specification.channels == ["conda-forge"]
+    assert new_specification.dependencies == [
+        "flask",
+        schema.CondaSpecificationPip(pip=["numpy", "scipy"]),
+        "ipykernel",
+    ]
+
+    # not allowed channel name
+    with pytest.raises(ValueError):
+        conda_store.validate_specification(
+            conda_store,
+            namespace="default",
+            specification=schema.CondaSpecification(
+                name="test",
+                channels=["bad-channel"],
+                dependencies=["flask", {"pip": ["numpy"]}],
+            ),
+        )
+
+    # missing required conda package
+    with pytest.raises(ValueError):
+        conda_store.validate_specification(
+            conda_store,
+            namespace="default",
+            specification=schema.CondaSpecification(
+                name="test", channels=["conda-forge"], dependencies=[{"pip": ["numpy"]}]
+            ),
+        )
+
+    # missing required pip package
+    with pytest.raises(ValueError):
+        conda_store.validate_specification(
+            conda_store,
+            namespace="default",
+            specification=schema.CondaSpecification(
+                name="test", channels=["conda-forge"], dependencies=["flask"]
+            ),
+        )
