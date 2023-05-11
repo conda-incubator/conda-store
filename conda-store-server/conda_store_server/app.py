@@ -449,6 +449,11 @@ class CondaStore(LoggingConfigurable):
             default_gid=self.default_gid,
             default_permissions=self.default_permissions,
             storage_threshold=self.storage_threshold,
+            conda_command=self.conda_command,
+            conda_platforms=self.conda_platforms,
+            conda_max_solve_time=self.conda_max_solve_time,
+            conda_indexed_channels=self.conda_indexed_channels,
+            build_artifacts_kept_on_deletion=self.build_artifacts_kept_on_deletion,
         )
 
     def environment_settings(
