@@ -177,7 +177,7 @@ class CondaStoreServer(Application):
         # ensure checks on redis_url
         self.conda_store.redis_url
 
-    def start(self):
+    def init_fastapi_app(self):
         def trim_slash(url):
             return url[:-1] if url.endswith("/") else url
 
@@ -298,6 +298,11 @@ class CondaStoreServer(Application):
                 name="static-storage",
             )
 
+        return app
+
+    def start(self):
+        fastapi_app = self.init_fastapi_app()
+
         self.conda_store.ensure_namespace()
         self.conda_store.ensure_conda_channels()
 
@@ -314,7 +319,7 @@ class CondaStoreServer(Application):
 
         try:
             uvicorn.run(
-                app,
+                fastapi_app,
                 host=self.address,
                 port=self.port,
                 reload=False,
