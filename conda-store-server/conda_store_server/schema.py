@@ -1,10 +1,13 @@
 import re
+import os
 import datetime
 import enum
-from typing import List, Optional, Union, Dict, Any
+from typing import List, Optional, Union, Dict, Any, Callable
 import functools
 
 from pydantic import BaseModel, Field, constr, validator
+
+from conda_store_server import conda
 
 
 def _datetime_factory(offset: datetime.timedelta):
@@ -34,6 +37,8 @@ class Permissions(enum.Enum):
     NAMESPACE_CREATE = "namespace::create"
     NAMESPACE_READ = "namespace::read"
     NAMESPACE_DELETE = "namespace::delete"
+    SETTINGS_EDIT = "settings::update"
+    SETTINGS_READ = "settings::read"
 
 
 class AuthenticationToken(BaseModel):
@@ -159,6 +164,120 @@ class Environment(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class GlobalSettings(BaseModel):
+    default_namespace: str = "default"
+    filesystem_namespace: str = "filesystem"
+
+    default_uid: int = Field(
+        os.getuid(), description="default uid to assign to built environments"
+    )
+
+    default_gid: int = Field(
+        os.getgid(), description="default gid to assign to built environments"
+    )
+
+    default_permissions: str = Field(
+        "775",
+        description="default file permissions to assign to built environments",
+    )
+
+    storage_threshold: int = Field(
+        5 * 1024**3,
+        description="Storage threshold in bytes of minimum available storage required in order to perform builds",
+    )
+
+    conda_command: str = Field(
+        "mamba",
+        description="conda executable to use for solves",
+    )
+
+    conda_platforms: List[str] = Field([conda.conda_platform(), "noarch"])
+
+    conda_max_solve_time: int = Field(
+        5 * 60,  # 5 minute
+        description="Maximum time in seconds to allow for solving a given conda environment",
+    )
+
+    conda_indexed_channels: List[str] = Field(
+        ["main", "conda-forge", "https://repo.anaconda.com/pkgs/main"],
+        description="Conda channels to be indexed by conda-store at start.  Defaults to main and conda-forge.",
+    )
+
+    build_artifacts_kept_on_deletion: List[BuildArtifactType] = Field(
+        [
+            BuildArtifactType.LOGS,
+            BuildArtifactType.LOCKFILE,
+            BuildArtifactType.YAML,
+            # no possible way to delete these artifacts
+            # in most container registries via api
+            BuildArtifactType.CONTAINER_REGISTRY,
+        ],
+        description="artifacts to keep on build deletion",
+    )
+
+
+class EnvironmentSettings(BaseModel):
+    conda_channel_alias: str = Field(
+        "https://conda.anaconda.org",
+        description="prepended url to associate with channel names",
+    )
+
+    conda_default_channels: List[str] = Field(
+        ["conda-forge"],
+        description="channels that by default are included if channels are empty",
+    )
+
+    conda_allowed_channels: List[str] = Field(
+        ["main", "conda-forge", "https://repo.anaconda.com/pkgs/main"],
+        description="Allowed conda channels to be used in conda environments. If set to empty list all channels are accepted. Defaults to main and conda-forge",
+    )
+
+    conda_default_packages: List[str] = Field(
+        [], description="Conda packages that included by default if none are included"
+    )
+
+    conda_required_packages: List[str] = Field(
+        [],
+        description="Conda packages that are required to be within environment specification. Will raise a validation error is package not in specification",
+    )
+
+    conda_included_packages: List[str] = Field(
+        [],
+        description="Conda packages that auto included within environment specification. Will not raise a validation error if package not in specification and will be auto added",
+    )
+
+    pypi_default_packages: List[str] = Field(
+        [],
+        description="PyPi packages that included by default if none are included",
+    )
+
+    pypi_required_packages: List[str] = Field(
+        [],
+        description="PyPi packages that are required to be within environment specification. Will raise a validation error is package not in specification",
+    )
+
+    pypi_included_packages: List[str] = Field(
+        [],
+        description="PyPi packages that auto included within environment specification. Will not raise a validation error if package not in specification and will be auto added",
+    )
+
+    build_artifacts: List[BuildArtifactType] = Field(
+        [
+            BuildArtifactType.LOCKFILE,
+            BuildArtifactType.YAML,
+            BuildArtifactType.CONDA_PACK,
+            BuildArtifactType.DOCKER_MANIFEST,
+            BuildArtifactType.CONTAINER_REGISTRY,
+        ],
+        description="artifacts to build in conda-store. By default all of the artifacts",
+    )
+
+    default_docker_base_image: Union[str, Callable] = Field(
+        "registry-1.docker.io/library/debian:sid-slim",
+        description="default base image used for the Dockerized environments. Make sure to have a proper glibc within image (highly discourage alpine/musl based images). Can also be callable function which takes the `orm.Build` object as input which has access to all attributes about the build such as install packages, requested packages, name, namespace, etc",
+    )
 
 
 # Conda Environment

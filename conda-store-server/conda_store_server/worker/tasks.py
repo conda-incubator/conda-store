@@ -52,6 +52,8 @@ class WorkerTask(Task):
 @shared_task(base=WorkerTask, name="task_watch_paths", bind=True)
 def task_watch_paths(self):
     conda_store = self.worker.conda_store
+    global_settings = conda_store.global_settings()
+
     conda_store.configuration.update_storage_metrics(
         conda_store.db, conda_store.store_directory
     )
@@ -61,7 +63,7 @@ def task_watch_paths(self):
         with open(path) as f:
             conda_store.register_environment(
                 specification=yaml.safe_load(f),
-                namespace=conda_store.filesystem_namespace,
+                namespace=global_settings.filesystem_namespace,
                 force=False,
             )
 
@@ -106,6 +108,7 @@ def task_update_conda_channels(self):
 def task_update_conda_channel(self, channel_name):
 
     conda_store = self.worker.conda_store
+    global_settings = conda_store.global_settings()
 
     # sanitize the channel name as it's an URL, and it's used for the lock.
     sanitizing = {
@@ -138,7 +141,9 @@ def task_update_conda_channel(self, channel_name):
             channel = api.get_conda_channel(conda_store.db, channel_name)
 
             conda_store.log.debug(f"updating packages for channel {channel.name}")
-            channel.update_packages(conda_store.db, subdirs=conda_store.conda_platforms)
+            channel.update_packages(
+                conda_store.db, subdirs=global_settings.conda_platforms
+            )
 
         else:
             conda_store.log.debug(
@@ -233,13 +238,15 @@ def delete_build_artifact(conda_store, build_artifact):
 @shared_task(base=WorkerTask, name="task_delete_build", bind=True)
 def task_delete_build(self, build_id):
     conda_store = self.worker.conda_store
+    global_settings = conda_store.global_settings()
+
     build = api.get_build(conda_store.db, build_id)
 
     conda_store.log.info(f"deleting artifacts for build={build.id}")
     for build_artifact in api.list_build_artifacts(
         conda_store.db,
         build_id=build_id,
-        excluded_artifact_types=conda_store.build_artifacts_kept_on_deletion,
+        excluded_artifact_types=global_settings.build_artifacts_kept_on_deletion,
     ).all():
         delete_build_artifact(conda_store, build_artifact)
     conda_store.db.commit()

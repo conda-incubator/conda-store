@@ -90,6 +90,8 @@ def build_conda_environment(conda_store, build):
     """
     set_build_started(conda_store, build)
 
+    global_settings = conda_store.global_settings()
+
     conda_prefix = build.build_path(conda_store)
     conda_prefix.parent.mkdir(parents=True, exist_ok=True)
 
@@ -126,9 +128,9 @@ def build_conda_environment(conda_store, build):
 
         action.action_set_conda_prefix_permissions(
             conda_prefix=conda_prefix,
-            permissions=conda_store.default_permissions,
-            uid=conda_store.default_uid,
-            gid=conda_store.default_gid,
+            permissions=global_settings.default_permissions,
+            uid=global_settings.default_uid,
+            gid=global_settings.default_gid,
         )
 
         action.action_add_conda_prefix_packages(
@@ -215,6 +217,7 @@ def build_conda_pack(conda_store, build):
 
 def build_conda_docker(conda_store, build):
     conda_prefix = build.build_path(conda_store)
+    environment_settings = conda_store.environment_settings()
 
     with utils.timer(
         conda_store.log, f"packaging docker image of conda environment={conda_prefix}"
@@ -222,7 +225,7 @@ def build_conda_docker(conda_store, build):
         context = action.action_generate_conda_docker(
             conda_prefix=conda_prefix,
             default_docker_image=utils.callable_or_value(
-                conda_store.default_docker_base_image, None
+                environment_settings.default_docker_base_image, None
             ),
             container_registry=conda_store.container_registry,
             output_image_name=build.specification.name,
@@ -230,8 +233,14 @@ def build_conda_docker(conda_store, build):
         )
         image = context.result
 
-        if schema.BuildArtifactType.DOCKER_MANIFEST in conda_store.build_artifacts:
+        if (
+            schema.BuildArtifactType.DOCKER_MANIFEST
+            in environment_settings.build_artifacts
+        ):
             conda_store.container_registry.store_image(conda_store, build, image)
 
-        if schema.BuildArtifactType.CONTAINER_REGISTRY in conda_store.build_artifacts:
+        if (
+            schema.BuildArtifactType.CONTAINER_REGISTRY
+            in environment_settings.build_artifacts
+        ):
             conda_store.container_registry.push_image(conda_store, build, image)
