@@ -12,7 +12,11 @@ on:
 jobs:
   test-conda-store-server:
     name: 'unit-test conda-store-server'
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # cannot run on windows due to needing fake-chroot for conda-docker
+        os: [ubuntu-latest, osx-latest]
+    runs-on: ${{ matrix.os }}
     defaults:
       run:
         shell: bash -el {0}
