@@ -7,8 +7,6 @@ import functools
 
 from pydantic import BaseModel, Field, constr, validator
 
-from conda_store_server import conda
-
 
 def _datetime_factory(offset: datetime.timedelta):
     """utcnow datetime + timezone as string"""
@@ -193,7 +191,10 @@ class GlobalSettings(BaseModel):
         description="conda executable to use for solves",
     )
 
-    conda_platforms: List[str] = Field([conda.conda_platform(), "noarch"])
+    conda_platforms: List[str] = Field(
+        ...,
+        description="Conda platforms to download package repodata.json from. By default includes current architecture and noarch",
+    )
 
     conda_max_solve_time: int = Field(
         5 * 60,  # 5 minute

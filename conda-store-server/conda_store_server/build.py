@@ -101,7 +101,7 @@ def build_conda_environment(conda_store, build):
     try:
         with utils.timer(conda_store.log, f"building conda_prefix={conda_prefix}"):
             context = action.action_solve_lockfile(
-                conda_store.conda_command,
+                global_settings.conda_command,
                 specification=schema.CondaSpecification.parse_obj(
                     build.specification.spec
                 ),
@@ -156,11 +156,13 @@ def build_conda_environment(conda_store, build):
 
 
 def solve_conda_environment(conda_store, solve):
+    global_settings = conda_store.global_settings()
+
     solve.started_on = datetime.datetime.utcnow()
     conda_store.db.commit()
 
     context = action.action_solve_lockfile(
-        conda_command=conda_store.conda_command,
+        conda_command=global_settings.conda_command,
         specification=schema.CondaSpecification.parse_obj(solve.specification.spec),
         platforms=[conda.conda_platform()],
     )
@@ -177,10 +179,12 @@ def solve_conda_environment(conda_store, solve):
 
 
 def build_conda_env_export(conda_store, build):
+    global_settings = conda_store.global_settings()
+
     conda_prefix = build.build_path(conda_store)
 
     context = action.action_generate_conda_export(
-        conda_command=conda_store.conda_command, conda_prefix=conda_prefix
+        conda_command=global_settings.conda_command, conda_prefix=conda_prefix
     )
     conda_prefix_export = yaml.dump(context.result).encode("utf-8")
 
