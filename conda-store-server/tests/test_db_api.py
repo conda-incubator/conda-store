@@ -79,3 +79,25 @@ def test_environment_crud(conda_store):
     # api.ensure_environment(conda_store.db, name=environment_name, namespace_id=namespace.id)
 
     # assert len(api.list_environments(conda_store.db).all()) == 1
+
+
+def test_get_set_settings(conda_store):
+    setting_1 = {"a": 1, "b": 2}
+    setting_2 = {"c": 1, "d": 2}
+    setting_3 = {"e": 1, "f": 2}
+
+    api.update_settings(conda_store.db, None, None, setting_1)
+    api.update_settings(conda_store.db, 1, None, setting_2)
+    api.update_settings(conda_store.db, 1, 1, setting_3)
+
+    def result_to_dict(result):
+        return {_.key: _.value for _ in result}
+
+    assert setting_1 == result_to_dict(api.get_settings(conda_store.db, None, None))
+    assert {**setting_1, **setting_2} == result_to_dict(
+        api.get_settings(conda_store.db, 1, None)
+    )
+    assert {**setting_1, **setting_2, **setting_3} == result_to_dict(
+        api.get_settings(conda_store.db, 1, 1)
+    )
+    breakpoint()

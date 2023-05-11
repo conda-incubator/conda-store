@@ -32,9 +32,7 @@ from conda_store_server import (
 def conda_store_validate_specification(
     conda_store: "CondaStore", namespace: str, specification: schema.CondaSpecification
 ) -> schema.CondaSpecification:
-    settings = conda_store.environment_settings(
-        namespace=namespace, name=specification.name
-    )
+    settings = conda_store.settings(namespace=namespace, name=specification.name)
 
     specification = environment.validate_environment_channels(specification, settings)
     specification = environment.validate_environment_pypi_packages(
@@ -52,13 +50,13 @@ def conda_store_validate_action(
     namespace: str,
     action: schema.Permissions,
 ) -> None:
-    global_settings = conda_store.global_settings()
+    settings = conda_store.settings()
     system_metrics = api.get_system_metrics(conda_store.db)
 
     if action in (
         schema.Permissions.ENVIRONMENT_CREATE,
         schema.Permissions.ENVIRONMENT_UPDATE,
-    ) and (global_settings.storage_threshold > system_metrics.disk_free):
+    ) and (settings.storage_threshold > system_metrics.disk_free):
         raise utils.CondaStoreError(
             f"`CondaStore.storage_threshold` reached. Action {action.value} prevented due to insufficient storage space"
         )
@@ -432,17 +430,18 @@ class CondaStore(LoggingConfigurable):
         """Ensure that conda-store indexed channels and packages are in database"""
         self.log.info("updating conda store channels")
 
-        global_settings = self.global_settings()
-        environment_settings = self.environment_settings()
+        settings = self.settings()
 
-        for channel in global_settings.conda_indexed_channels:
+        for channel in settings.conda_indexed_channels:
             normalized_channel = conda.normalize_channel_name(
-                environment_settings.conda_channel_alias, channel
+                settings.conda_channel_alias, channel
             )
             api.ensure_conda_channel(self.db, normalized_channel)
 
-    def global_settings(self) -> schema.GlobalSettings:
-        return schema.GlobalSettings(
+    def settings(
+        self, namespace_id: int = None, environment_id: int = None
+    ) -> schema.Settings:
+        return schema.Settings(
             default_namespace=self.default_namespace,
             filesystem_namespace=self.filesystem_namespace,
             default_uid=self.default_uid,
@@ -454,12 +453,6 @@ class CondaStore(LoggingConfigurable):
             conda_max_solve_time=self.conda_max_solve_time,
             conda_indexed_channels=self.conda_indexed_channels,
             build_artifacts_kept_on_deletion=self.build_artifacts_kept_on_deletion,
-        )
-
-    def environment_settings(
-        self, namespace: str = None, name: str = None
-    ) -> schema.EnvironmentSettings:
-        return schema.EnvironmentSettings(
             conda_channel_alias=self.conda_channel_alias,
             conda_default_channels=self.conda_default_channels,
             conda_allowed_channels=self.conda_allowed_channels,
@@ -475,7 +468,7 @@ class CondaStore(LoggingConfigurable):
 
     def register_solve(self, specification: schema.CondaSpecification):
         """Registers a solve for a given specification"""
-        global_settings = self.global_settings()
+        settings = self.settings()
 
         self.validate_action(
             conda_store=self,
@@ -500,7 +493,7 @@ class CondaStore(LoggingConfigurable):
         task_id = f"solve-{solve.id}"
         tasks.task_solve_conda_environment.apply_async(
             args=[solve.id],
-            time_limit=global_settings.conda_max_solve_time,
+            time_limit=settings.conda_max_solve_time,
             task_id=task_id,
         )
 
@@ -510,9 +503,9 @@ class CondaStore(LoggingConfigurable):
         self, specification: dict, namespace: str = None, force: bool = True
     ):
         """Register a given specification to conda store with given namespace/name."""
-        global_settings = self.global_settings()
+        settings = self.settings()
 
-        namespace = namespace or global_settings.default_namespace
+        namespace = namespace or settings.default_namespace
         namespace = api.ensure_namespace(self.db, name=namespace)
 
         self.validate_action(
@@ -569,9 +562,7 @@ class CondaStore(LoggingConfigurable):
             action=schema.Permissions.ENVIRONMENT_UPDATE,
         )
 
-        environment_settings = self.environment_settings(
-            environment.namespace.name, environment.name
-        )
+        settings = self.settings(environment.namespace.name, environment.name)
 
         specification = api.get_specification(self.db, specification_sha256)
         build = api.create_build(
@@ -585,7 +576,7 @@ class CondaStore(LoggingConfigurable):
         from conda_store_server.worker import tasks
 
         artifact_tasks = []
-        if schema.BuildArtifactType.YAML in environment_settings.build_artifacts:
+        if schema.BuildArtifactType.YAML in settings.build_artifacts:
             artifact_tasks.append(
                 tasks.task_build_conda_env_export.subtask(
                     args=(build.id,),
@@ -593,7 +584,7 @@ class CondaStore(LoggingConfigurable):
                     immutable=True,
                 )
             )
-        if schema.BuildArtifactType.CONDA_PACK in environment_settings.build_artifacts:
+        if schema.BuildArtifactType.CONDA_PACK in settings.build_artifacts:
             artifact_tasks.append(
                 tasks.task_build_conda_pack.subtask(
                     args=(build.id,),
@@ -602,10 +593,8 @@ class CondaStore(LoggingConfigurable):
                 )
             )
         if (
-            schema.BuildArtifactType.DOCKER_MANIFEST
-            in environment_settings.build_artifacts
-            or schema.BuildArtifactType.CONTAINER_REGISTRY
-            in environment_settings.build_artifacts
+            schema.BuildArtifactType.DOCKER_MANIFEST in settings.build_artifacts
+            or schema.BuildArtifactType.CONTAINER_REGISTRY in settings.build_artifacts
         ):
             artifact_tasks.append(
                 tasks.task_build_conda_docker.subtask(

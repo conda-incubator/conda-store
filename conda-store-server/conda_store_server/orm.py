@@ -630,6 +630,29 @@ class CondaStoreConfiguration(Base):
         db.commit()
 
 
+class Setting(Base):
+    """Settings can be applied globally, on namespaces and on environments
+
+    - namespace_id is None and environment_id is None -> global
+    - namespace_id is not None and environment_id is None -> namespace
+    - namespace_id is not None and environment_id is not None -> environment
+    """
+
+    __tablename__ = "setting"
+    __table_args__ = (
+        UniqueConstraint(
+            "namespace_id", "environment_id", "key", name="_namespace_name_key_uc"
+        ),
+    )
+
+    id = Column(Integer, primary_key=True)
+
+    namespace_id = Column(Integer, ForeignKey("namespace.id"), nullable=True)
+    environment_id = Column(Integer, ForeignKey("environment.id"), nullable=True)
+    key = Column(Unicode)
+    value = Column(JSON)
+
+
 def new_session_factory(url="sqlite:///:memory:", reset=False, **kwargs):
     engine = create_engine(url, **kwargs)
 
