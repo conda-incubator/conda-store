@@ -113,6 +113,12 @@ class CondaStoreServer(Application):
         config=True,
     )
 
+    additional_routes = List(
+        [],
+        help="Additional routes for conda-store to serve [(path, method, function), ...]",
+        config=True,
+    )
+
     cors_allow_origins = List(
         [], help="list of allowed origins for CORS requests", config=True
     )
@@ -287,6 +293,10 @@ class CondaStoreServer(Application):
                 views.router_metrics,
                 prefix=trim_slash(self.url_prefix),
             )
+
+        if self.additional_routes:
+            for path, method, func in self.additional_routes:
+                getattr(app, method)(path, name=func.__name__)(func)
 
         if isinstance(self.conda_store.storage, storage.LocalStorage):
             self.conda_store.storage.storage_url = (

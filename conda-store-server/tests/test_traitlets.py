@@ -105,3 +105,21 @@ def test_conda_store_server_authentication_class(conda_store_server):
         "/login/", json={"username": "username", "password": "helloworld"}
     )
     assert response.status_code == 200
+
+
+def test_conda_store_server_additional_routes(conda_store_server):
+    def a_route(a: str, b: str):
+        return {"data": f"Hello World {a} {b}"}
+
+    conda_store_server.additional_routes = [
+        (
+            "/a/path/to/another/",
+            "get",
+            a_route,
+        )
+    ]
+
+    client = TestClient(conda_store_server.init_fastapi_app())
+    response = client.get("/a/path/to/another/", params={"a": "c", "b": "d"})
+    assert response.status_code == 200
+    assert response.json() == {"data": "Hello World c d"}
