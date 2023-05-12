@@ -81,23 +81,30 @@ def test_environment_crud(conda_store):
     # assert len(api.list_environments(conda_store.db).all()) == 1
 
 
-def test_get_set_settings(conda_store):
+def test_get_set_keyvaluestore(conda_store):
     setting_1 = {"a": 1, "b": 2}
     setting_2 = {"c": 1, "d": 2}
     setting_3 = {"e": 1, "f": 2}
 
-    api.update_settings(conda_store.db, None, None, setting_1)
-    api.update_settings(conda_store.db, 1, None, setting_2)
-    api.update_settings(conda_store.db, 1, 1, setting_3)
+    api.set_kvstore_key_values(conda_store.db, "setting", setting_1)
+    api.set_kvstore_key_values(conda_store.db, "setting/1", setting_2)
+    api.set_kvstore_key_values(conda_store.db, "setting/1/2", setting_3)
 
-    def result_to_dict(result):
-        return {_.key: _.value for _ in result}
+    assert setting_1 == api.get_kvstore_key_values(conda_store.db, "setting")
+    assert setting_2 == api.get_kvstore_key_values(conda_store.db, "setting/1")
+    assert setting_3 == api.get_kvstore_key_values(conda_store.db, "setting/1/2")
 
-    assert setting_1 == result_to_dict(api.get_settings(conda_store.db, None, None))
-    assert {**setting_1, **setting_2} == result_to_dict(
-        api.get_settings(conda_store.db, 1, None)
-    )
-    assert {**setting_1, **setting_2, **setting_3} == result_to_dict(
-        api.get_settings(conda_store.db, 1, 1)
+    # test updating a prefix
+    api.set_kvstore_key_values(conda_store.db, "setting", setting_2)
+    assert {**setting_1, **setting_2} == api.get_kvstore_key_values(
+        conda_store.db, "setting"
     )
     breakpoint()
+
+    # test updating a prefix
+    api.set_kvstore_key_values(
+        conda_store.db, "setting", {"c": 999, "d": 999}, update=False
+    )
+    assert {**setting_1, **setting_2} == api.get_kvstore_key_values(
+        conda_store.db, "setting"
+    )

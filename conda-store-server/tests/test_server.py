@@ -593,3 +593,19 @@ def test_celery_stats(testclient, celery_worker):
         "scheduled_tasks",
         "stats",
     }
+
+
+def test_get_global_settings(testclient):
+    response = testclient.get("/api/v1/setting/")
+    assert response.status_code == 403
+
+    r = schema.APIResponse.parse_obj(response.json())
+    assert r.status == schema.APIStatus.ERROR
+
+
+def test_put_global_settings(testclient):
+    response = testclient.put("/api/v1/setting/")
+    assert response.status_code == 403
+
+    r = schema.APIResponse.parse_obj(response.json())
+    assert r.status == schema.APIStatus.ERROR

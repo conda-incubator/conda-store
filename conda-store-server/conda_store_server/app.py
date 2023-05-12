@@ -1,5 +1,6 @@
 import os
 import datetime
+from typing import Any, Dict
 
 from celery import Celery, group
 from traitlets import (
@@ -16,6 +17,7 @@ from traitlets import (
 )
 from traitlets.config import LoggingConfigurable
 from sqlalchemy.pool import NullPool
+import pydantic
 
 from conda_store_server import (
     orm,
@@ -430,7 +432,7 @@ class CondaStore(LoggingConfigurable):
         """Ensure that conda-store indexed channels and packages are in database"""
         self.log.info("updating conda store channels")
 
-        settings = self.settings()
+        settings = self.get_settings()
 
         for channel in settings.conda_indexed_channels:
             normalized_channel = conda.normalize_channel_name(
@@ -438,7 +440,39 @@ class CondaStore(LoggingConfigurable):
             )
             api.ensure_conda_channel(self.db, normalized_channel)
 
-    def settings(
+    def set_settings(
+        self,
+        namespace: str = None,
+        environment_name: str = None,
+        data: Dict[str, Any] = {},
+    ):
+        setting_keys = schema.Settings.__fields__.keys()
+        if not data.keys() <= setting_keys:
+            invalid_keys = data.keys() - setting_keys
+            raise ValueError(f"Invalid setting keys {invalid_keys}")
+
+        for key, value in data.items():
+            field = schema.Settings.__fields__[key]
+            global_setting = field.field_info.extra["metadata"]["global"]
+            if global_setting and (
+                namespace is not None or environment_name is not None
+            ):
+                raise ValueError(
+                    f"Setting {key} is a global setting cannot be set within namespace or environment"
+                )
+
+            data[key] = pydantic.parse_obj_as(field.outer_type_, value)
+
+            if namespace is not None and environment_name is not None:
+                prefix = f"setting/{namespace}/{environment_name}"
+            elif namespace is not None:
+                prefix = f"setting/{namespace}"
+            else:
+                prefix = "setting"
+
+        api.set_kvstore_key_values(self.db, prefix, data)
+
+    def get_settings(
         self, namespace_id: int = None, environment_id: int = None
     ) -> schema.Settings:
         return schema.Settings(
@@ -468,7 +502,7 @@ class CondaStore(LoggingConfigurable):
 
     def register_solve(self, specification: schema.CondaSpecification):
         """Registers a solve for a given specification"""
-        settings = self.settings()
+        settings = self.get_settings()
 
         self.validate_action(
             conda_store=self,
@@ -503,7 +537,7 @@ class CondaStore(LoggingConfigurable):
         self, specification: dict, namespace: str = None, force: bool = True
     ):
         """Register a given specification to conda store with given namespace/name."""
-        settings = self.settings()
+        settings = self.get_settings()
 
         namespace = namespace or settings.default_namespace
         namespace = api.ensure_namespace(self.db, name=namespace)
@@ -562,7 +596,7 @@ class CondaStore(LoggingConfigurable):
             action=schema.Permissions.ENVIRONMENT_UPDATE,
         )
 
-        settings = self.settings(environment.namespace.name, environment.name)
+        settings = self.get_settings(environment.namespace.name, environment.name)
 
         specification = api.get_specification(self.db, specification_sha256)
         build = api.create_build(

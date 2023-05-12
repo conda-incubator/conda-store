@@ -36,7 +36,7 @@ def discover_environments(paths):
 
 
 def validate_environment_channels(
-    specification: schema.Specification, settings: schema.EnvironmentSettings
+    specification: schema.Specification, settings: schema.Settings
 ) -> schema.Specification:
     if len(specification.channels) == 0:
         specification.channels = settings.conda_default_channels.copy()
@@ -62,7 +62,7 @@ def validate_environment_channels(
 
 
 def validate_environment_conda_packages(
-    specification: schema.Specification, settings: schema.EnvironmentSettings
+    specification: schema.Specification, settings: schema.Settings
 ) -> schema.Specification:
     def _package_names(dependencies):
         from conda.models.match_spec import MatchSpec
@@ -91,7 +91,7 @@ def validate_environment_conda_packages(
 
 
 def validate_environment_pypi_packages(
-    specification: schema.Specification, settings: schema.EnvironmentSettings
+    specification: schema.Specification, settings: schema.Settings
 ) -> schema.Specification:
     def _package_names(packages):
         from pkg_resources import Requirement

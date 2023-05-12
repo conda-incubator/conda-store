@@ -1,7 +1,7 @@
-from typing import List, Dict
+from typing import List, Dict, Any
 import re
 
-from sqlalchemy import func, null, or_, and_, distinct
+from sqlalchemy import func, null, or_, distinct
 
 from conda_store_server import orm, schema, utils
 from conda_store_server.conda import conda_platform
@@ -523,48 +523,33 @@ def get_namespace_metrics(db):
     )
 
 
-def get_settings(db, namespace_id: int = None, environment_id: int = None):
-    """Get effective settings for given global, namespace, or environment
-
-    Global setting > Namespace settings > Environment settings
-    """
-    or_filters = [
-        and_(
-            orm.Setting.namespace_id == None, orm.Setting.environment_id == None
-        )  # noqa
-    ]
-    if namespace_id is not None:
-        or_filters.append(
-            and_(
-                orm.Setting.namespace_id == namespace_id,
-                orm.Setting.environment_id == None,  # noqa
-            )
-        )
-
-        if environment_id is not None:
-            or_filters.append(
-                and_(
-                    orm.Setting.namespace_id == namespace_id,
-                    orm.Setting.environment_id == environment_id,
-                )
-            )
-
-    return (
-        db.query(orm.Setting)
-        .filter(or_(*or_filters))
-        .group_by(orm.Setting.key)
-        .order_by(orm.Setting.namespace_id, orm.Setting.environment_id)
+def get_kvstore_key_values(db, prefix: str):
+    """Get effective key, values for a particular prefix"""
+    return {
+        _.key: _.value
+        for _ in db.query(orm.KeyValueStore)
+        .filter(orm.KeyValueStore.prefix == prefix)
         .all()
-    )
+    }
 
 
-def update_settings(db, namespace_id: int, environment_id: int, settings: Dict):
-    for key, value in settings.items():
-        setting = orm.Setting(
-            namespace_id=namespace_id,
-            environment_id=environment_id,
-            key=key,
-            value=value,
+def set_kvstore_key_values(db, prefix: str, d: Dict[str, Any], update: bool = True):
+    """Set key, values for a particular prefix"""
+    for key, value in d.items():
+        record = (
+            db.query(orm.KeyValueStore)
+            .filter(orm.KeyValueStore.prefix == prefix, orm.KeyValueStore.key == key)
+            .first()
         )
-        db.merge(setting)
-    db.commit()
+
+        if record is None:
+            record = orm.KeyValueStore(
+                prefix=prefix,
+                key=key,
+                value=value,
+            )
+            db.add(record)
+            db.commit()
+        elif update:
+            record.value = value
+            db.commit()

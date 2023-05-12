@@ -1,4 +1,4 @@
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Any
 import datetime
 
 import pydantic
@@ -857,3 +857,165 @@ def api_get_build_docker_image_url(
             status_code=400,
             detail=f"Build {build_id} doesn't have a docker manifest",
         )
+
+
+@router_api.get(
+    "/setting/",
+    response_model=schema.APIGetSetting,
+)
+def api_get_global_settings(
+    request: Request,
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
+):
+    auth.authorize_request(
+        request,
+        "",
+        {Permissions.SETTING_READ},
+        require=True,
+    )
+
+    return {
+        "status": "ok",
+        "data": conda_store.get_settings(None, None).dict(),
+        "message": None,
+    }
+
+
+@router_api.put(
+    "/setting/",
+    response_model=schema.APIPutSetting,
+)
+def api_put_global_settings(
+    request: Request,
+    data: Dict[str, Any],
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
+):
+    auth.authorize_request(
+        request,
+        "",
+        {Permissions.SETTING_UPDATE},
+        require=True,
+    )
+
+    try:
+        conda_store.set_settings(None, None, data)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e.args[0]))
+
+    return {
+        "status": "ok",
+        "data": None,
+        "message": f"global setting keys {list(data.keys())} updated",
+    }
+
+
+@router_api.get(
+    "/setting/{namespace}/",
+    response_model=schema.APIGetSetting,
+)
+def api_get_namespace_settings(
+    request: Request,
+    namespace: str,
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
+):
+    auth.authorize_request(
+        request,
+        namespace,
+        {Permissions.SETTING_READ},
+        require=True,
+    )
+
+    return {
+        "status": "ok",
+        "data": conda_store.get_settings(namespace, None).dict(),
+        "message": None,
+    }
+
+
+@router_api.put(
+    "/setting/{namespace}/",
+    response_model=schema.APIPutSetting,
+)
+def api_put_namespace_settings(
+    request: Request,
+    namespace: str,
+    data: Dict[str, Any],
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
+):
+    auth.authorize_request(
+        request,
+        namespace,
+        {Permissions.SETTING_UPDATE},
+        require=True,
+    )
+
+    try:
+        conda_store.set_settings(namespace, None, data)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e.args[0]))
+
+    return {
+        "status": "ok",
+        "data": None,
+        "message": f"namespace {namespace} setting keys {list(data.keys())} updated",
+    }
+
+
+@router_api.get(
+    "/setting/{namespace}/{environment_name}/",
+    response_model=schema.APIGetSetting,
+)
+def api_get_environment_settings(
+    request: Request,
+    namespace: str,
+    environment_name: str,
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
+):
+    auth.authorize_request(
+        request,
+        f"{namespace}/{environment_name}",
+        {Permissions.SETTING_READ},
+        require=True,
+    )
+
+    return {
+        "status": "ok",
+        "data": conda_store.get_settings(namespace, environment_name).dict(),
+        "message": None,
+    }
+
+
+@router_api.put(
+    "/setting/{namespace}/{environment_name}/",
+    response_model=schema.APIPutSetting,
+)
+def api_put_environment_settings(
+    request: Request,
+    namespace: str,
+    environment_name: str,
+    data: Dict[str, Any],
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
+):
+    auth.authorize_request(
+        request,
+        f"{namespace}/{environment_name}",
+        {Permissions.SETTING_UPDATE},
+        require=True,
+    )
+
+    try:
+        conda_store.set_settings(namespace, environment_name, data)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e.args[0]))
+
+    return {
+        "status": "ok",
+        "data": None,
+        "message": f"environment {namespace}/{environment_name} setting keys {list(data.keys())} updated",
+    }

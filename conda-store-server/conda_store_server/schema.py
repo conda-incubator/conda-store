@@ -35,8 +35,8 @@ class Permissions(enum.Enum):
     NAMESPACE_CREATE = "namespace::create"
     NAMESPACE_READ = "namespace::read"
     NAMESPACE_DELETE = "namespace::delete"
-    SETTING_EDIT = "setting::update"
     SETTING_READ = "setting::read"
+    SETTING_UPDATE = "setting::update"
 
 
 class AuthenticationToken(BaseModel):
@@ -578,3 +578,13 @@ class APIListCondaChannel(APIPaginatedResponse):
 # GET /api/v1/package
 class APIListCondaPackage(APIPaginatedResponse):
     data: List[CondaPackage]
+
+
+# GET /api/v1/setting/*/*
+class APIGetSetting(APIResponse):
+    data: Dict[str, Any]
+
+
+# PUT /api/v1/setting/*/*
+class APIPutSetting(APIResponse):
+    pass

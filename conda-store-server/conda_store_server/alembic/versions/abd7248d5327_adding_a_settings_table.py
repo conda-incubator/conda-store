@@ -18,10 +18,9 @@ depends_on = None
 
 def upgrade():
     op.create_table(
-        "setting",
+        "keyvaluestore",
         sa.Column("id", sa.Integer(), nullable=False, primary_key=True),
-        sa.Column("namespace_id", sa.Integer(), nullable=True),
-        sa.Column("environment_id", sa.Integer(), nullable=True),
+        sa.Column("prefix", sa.Unicode(), nullable=False, index=True),
         sa.Column("key", sa.Unicode(), nullable=False),
         sa.Column("value", sa.JSON(), nullable=True),
     )
@@ -29,15 +28,11 @@ def upgrade():
     with op.batch_alter_table(
         "setting",
         table_args=[
-            sa.ForeignKeyConstraint(["namespace_id"], ["namespace.id"]),
-            sa.ForeignKeyConstraint(["environment_id"], ["environment.id"]),
-            sa.UniqueConstraint(
-                "namespace_id", "environment_id", "key", name="_namespace_name_key_uc"
-            ),
+            sa.UniqueConstraint("prefix", "key", name="_prefix_key_uc"),
         ],
     ):
         pass
 
 
 def downgrade():
-    op.drop_table("setting")
+    op.drop_table("keyvaluestore")
