@@ -63,7 +63,6 @@ class RBACAuthorizationBackend(LoggingConfigurable):
             "viewer": {
                 schema.Permissions.ENVIRONMENT_READ,
                 schema.Permissions.NAMESPACE_READ,
-                schema.Permissions.SETTING_READ,
             },
             "developer": {
                 schema.Permissions.ENVIRONMENT_CREATE,
@@ -72,7 +71,6 @@ class RBACAuthorizationBackend(LoggingConfigurable):
                 schema.Permissions.ENVIRONMENT_SOLVE,
                 schema.Permissions.NAMESPACE_READ,
                 schema.Permissions.SETTING_READ,
-                schema.Permissions.SETTING_UPDATE,
             },
             "admin": {
                 schema.Permissions.BUILD_DELETE,

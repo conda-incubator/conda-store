@@ -244,3 +244,46 @@ def ui_get_user(
         "namespace_usage_metrics": namespace_usage_metrics,
     }
     return templates.TemplateResponse("user.html", context)
+
+
+@router_ui.get("/setting/")
+@router_ui.get("/setting/{namespace}/")
+@router_ui.get("/setting/{namespace}/{environment_name}/")
+def ui_get_setting(
+    request: Request,
+    templates=Depends(dependencies.get_templates),
+    auth=Depends(dependencies.get_auth),
+    conda_store=Depends(dependencies.get_conda_store),
+    namespace: str = None,
+    environment_name: str = None,
+):
+    if namespace is None:
+        arn = ""
+    elif environment_name is None:
+        arn = namespace
+    else:
+        arn = f"{namespace}/{environment_name}"
+
+    auth.authorize_request(
+        request,
+        arn,
+        {Permissions.SETTING_READ},
+        require=True,
+    )
+
+    api_setting_url = str(request.url_for("api_put_settings"))
+    if namespace is not None:
+        api_setting_url += f"{namespace}/"
+    if environment_name is not None:
+        api_setting_url += f"{environment_name}/"
+
+    context = {
+        "request": request,
+        "namespace": namespace,
+        "environment_name": environment_name,
+        "api_settings_url": api_setting_url,
+        "settings": conda_store.get_settings(
+            namespace=namespace, environment_name=environment_name
+        ),
+    }
+    return templates.TemplateResponse("setting.html", context)

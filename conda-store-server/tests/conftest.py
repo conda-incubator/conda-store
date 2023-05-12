@@ -32,6 +32,7 @@ def conda_store_server(conda_store_config):
     _conda_store_server = server_app.CondaStoreServer(config=conda_store_config)
     _conda_store_server.initialize()
     _conda_store = _conda_store_server.conda_store
+    _conda_store.ensure_settings()
 
     pathlib.Path(_conda_store.store_directory).mkdir(exist_ok=True)
 
@@ -112,6 +113,8 @@ def seed_conda_store(conda_store):
 @pytest.fixture
 def conda_store(conda_store_config):
     _conda_store = app.CondaStore(config=conda_store_config)
+    _conda_store.ensure_settings()
+
     pathlib.Path(_conda_store.store_directory).mkdir(exist_ok=True)
 
     dbutil.upgrade(_conda_store.database_url)

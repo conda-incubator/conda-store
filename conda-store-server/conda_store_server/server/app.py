@@ -320,6 +320,7 @@ class CondaStoreServer(Application):
     def start(self):
         fastapi_app = self.init_fastapi_app()
 
+        self.conda_store.ensure_settings()
         self.conda_store.ensure_namespace()
         self.conda_store.ensure_conda_channels()
 

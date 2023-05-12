@@ -90,8 +90,9 @@ def build_conda_environment(conda_store, build):
     """
     set_build_started(conda_store, build)
 
-    settings = conda_store.settings(
-        namespace_id=build.environment.namespace.id, environment_id=build.environment.id
+    settings = conda_store.get_settings(
+        namespace=build.environment.namespace.name,
+        environment_name=build.environment.name,
     )
 
     conda_prefix = build.build_path(conda_store)
@@ -158,7 +159,7 @@ def build_conda_environment(conda_store, build):
 
 
 def solve_conda_environment(conda_store, solve):
-    settings = conda_store.settings()
+    settings = conda_store.get_settings()
 
     solve.started_on = datetime.datetime.utcnow()
     conda_store.db.commit()
@@ -182,8 +183,9 @@ def solve_conda_environment(conda_store, solve):
 
 def build_conda_env_export(conda_store, build):
     conda_prefix = build.build_path(conda_store)
-    settings = conda_store.settings(
-        namespace_id=build.environment.namespace.id, environment_id=build.environment.id
+    settings = conda_store.get_settings(
+        namespace=build.environment.namespace.name,
+        environment_name=build.environment.name,
     )
 
     context = action.action_generate_conda_export(
@@ -224,8 +226,9 @@ def build_conda_pack(conda_store, build):
 
 def build_conda_docker(conda_store, build):
     conda_prefix = build.build_path(conda_store)
-    settings = conda_store.settings(
-        namespace_id=build.environment.namespace.id, environment_id=build.environment.id
+    settings = conda_store.get_settings(
+        namespace=build.environment.namespace.name,
+        environment_name=build.environment.name,
     )
 
     with utils.timer(

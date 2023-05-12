@@ -52,7 +52,7 @@ class WorkerTask(Task):
 @shared_task(base=WorkerTask, name="task_watch_paths", bind=True)
 def task_watch_paths(self):
     conda_store = self.worker.conda_store
-    settings = conda_store.settings()
+    settings = conda_store.get_settings()
 
     conda_store.configuration.update_storage_metrics(
         conda_store.db, conda_store.store_directory
@@ -108,7 +108,7 @@ def task_update_conda_channels(self):
 def task_update_conda_channel(self, channel_name):
 
     conda_store = self.worker.conda_store
-    settings = conda_store.settings()
+    settings = conda_store.get_settings()
 
     # sanitize the channel name as it's an URL, and it's used for the lock.
     sanitizing = {
@@ -236,7 +236,7 @@ def delete_build_artifact(conda_store, build_artifact):
 @shared_task(base=WorkerTask, name="task_delete_build", bind=True)
 def task_delete_build(self, build_id):
     conda_store = self.worker.conda_store
-    settings = conda_store.settings()
+    settings = conda_store.get_settings()
 
     build = api.get_build(conda_store.db, build_id)
 
