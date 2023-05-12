@@ -37,6 +37,7 @@ def conda_store_server(conda_store_config):
 
     dbutil.upgrade(_conda_store.database_url)
 
+    _conda_store.ensure_settings()
     _conda_store.celery_app
 
     # must import tasks after a celery app has been initialized
@@ -112,10 +113,12 @@ def seed_conda_store(conda_store):
 @pytest.fixture
 def conda_store(conda_store_config):
     _conda_store = app.CondaStore(config=conda_store_config)
+
     pathlib.Path(_conda_store.store_directory).mkdir(exist_ok=True)
 
     dbutil.upgrade(_conda_store.database_url)
 
+    _conda_store.ensure_settings()
     _conda_store.celery_app
 
     # must import tasks after a celery app has been initialized

@@ -1,6 +1,8 @@
 import yaml
 import json
 
+import pytest
+
 from conda_store_server import __version__, schema
 
 
@@ -49,6 +51,8 @@ def test_api_permissions_auth(testclient, authenticate):
                 schema.Permissions.NAMESPACE_CREATE.value,
                 schema.Permissions.NAMESPACE_READ.value,
                 schema.Permissions.NAMESPACE_DELETE.value,
+                schema.Permissions.SETTING_READ.value,
+                schema.Permissions.SETTING_UPDATE.value,
             ]
         ),
         "default/*": sorted(
@@ -593,3 +597,188 @@ def test_celery_stats(testclient, celery_worker):
         "scheduled_tasks",
         "stats",
     }
+
+
+@pytest.mark.parametrize(
+    "route",
+    [
+        "/api/v1/setting/",
+        "/api/v1/setting/namespace1/",
+        "/api/v1/setting/namespace1/name1",
+    ],
+)
+def test_get_settings_unauth(testclient, route):
+    response = testclient.get(route)
+    assert response.status_code == 403
+
+    r = schema.APIResponse.parse_obj(response.json())
+    assert r.status == schema.APIStatus.ERROR
+
+
+@pytest.mark.parametrize(
+    "route",
+    [
+        "/api/v1/setting/",
+        "/api/v1/setting/namespace1/",
+        "/api/v1/setting/namespace1/name1",
+    ],
+)
+def test_put_settings_unauth(testclient, route):
+    response = testclient.put(route, json={"conda_included_packages": ["numpy"]})
+    assert response.status_code == 403
+
+    r = schema.APIResponse.parse_obj(response.json())
+    assert r.status == schema.APIStatus.ERROR
+
+
+@pytest.mark.parametrize(
+    "route",
+    [
+        "/api/v1/setting/",
+        "/api/v1/setting/namespace1/",
+        "/api/v1/setting/namespace1/name1",
+    ],
+)
+def test_get_settings_auth(testclient, authenticate, route):
+    response = testclient.get(route)
+    assert response.status_code == 200
+
+    r = schema.APIGetSetting.parse_obj(response.json())
+    assert r.status == schema.APIStatus.OK
+    assert {
+        "default_namespace",
+        "filesystem_namespace",
+        "default_uid",
+        "default_gid",
+        "default_permissions",
+        "storage_threshold",
+        "conda_command",
+        "conda_platforms",
+        "conda_max_solve_time",
+        "conda_indexed_channels",
+        "build_artifacts_kept_on_deletion",
+        "conda_channel_alias",
+        "conda_default_channels",
+        "conda_allowed_channels",
+        "conda_default_packages",
+        "conda_required_packages",
+        "conda_included_packages",
+        "pypi_default_packages",
+        "pypi_required_packages",
+        "pypi_included_packages",
+        "build_artifacts",
+        "default_docker_base_image",
+    } <= r.data.keys()
+
+
+@pytest.mark.parametrize(
+    "route",
+    [
+        "/api/v1/setting/",
+    ],
+)
+def test_put_global_settings_auth(testclient, authenticate, route):
+    response = testclient.put(
+        route,
+        json={
+            "conda_max_solve_time": 60 * 60,  # 1 hour
+        },
+    )
+    response.raise_for_status()
+
+    r = schema.APIPutSetting.parse_obj(response.json())
+    assert r.status == schema.APIStatus.OK
+
+    response = testclient.get(route)
+    response.raise_for_status()
+    r = schema.APIPutSetting.parse_obj(response.json())
+    assert r.data["conda_max_solve_time"] == 60 * 60
+
+
+@pytest.mark.parametrize(
+    "route",
+    [
+        "/api/v1/setting/",
+        "/api/v1/setting/namespace1",
+        "/api/v1/setting/namespace1/name1",
+    ],
+)
+def test_put_environment_settings_auth(testclient, authenticate, route):
+    response = testclient.put(
+        route, json={"conda_included_packages": ["numpy", "ipykernel"]}
+    )
+    response.raise_for_status()
+
+    r = schema.APIPutSetting.parse_obj(response.json())
+    assert r.status == schema.APIStatus.OK
+
+    response = testclient.get(route)
+    response.raise_for_status()
+    r = schema.APIPutSetting.parse_obj(response.json())
+    assert r.data["conda_included_packages"] == ["numpy", "ipykernel"]
+
+
+@pytest.mark.parametrize(
+    "route",
+    [
+        "/api/v1/setting/",
+        "/api/v1/setting/namespace1",
+        "/api/v1/setting/namespace1/name1",
+    ],
+)
+def test_put_environment_settings_auth_invliad_type(testclient, authenticate, route):
+    response = testclient.put(route, json={"conda_included_packages": 1})
+    assert response.status_code == 400
+
+    r = schema.APIPutSetting.parse_obj(response.json())
+    assert r.status == schema.APIStatus.ERROR
+    assert "Invalid parsing" in r.message
+
+
+@pytest.mark.parametrize(
+    "route",
+    [
+        "/api/v1/setting/",
+        "/api/v1/setting/namespace1/",
+        "/api/v1/setting/namespace1/name1/",
+    ],
+)
+def test_put_settings_auth_invalid_keys(testclient, authenticate, route):
+    """This is a test that you cannot set invalid settings"""
+    response = testclient.put(
+        route,
+        json={
+            "invalidkey": 1,
+            "conda_included_packages": ["numpy"],
+        },
+    )
+    assert response.status_code == 400
+
+    r = schema.APIPutSetting.parse_obj(response.json())
+    assert r.status == schema.APIStatus.ERROR
+    assert "Invalid setting keys" in r.message
+
+
+@pytest.mark.parametrize(
+    "route",
+    [
+        "/api/v1/setting/namespace1",
+        "/api/v1/setting/namespace1/name1",
+    ],
+)
+def test_put_global_settings_auth_in_namespace_environment(
+    testclient, authenticate, route
+):
+    """This is a test that you cannot set a global setting at the
+    namespace or environment settings level"""
+    response = testclient.put(
+        route,
+        json={
+            "conda_max_solve_time": 60 * 60,  # 1 hour
+        },
+    )
+    assert response.status_code == 400
+
+    r = schema.APIPutSetting.parse_obj(response.json())
+    assert r.status == schema.APIStatus.ERROR
+    assert "global setting" in r.message

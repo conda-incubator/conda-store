@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}User info{% endblock %}
+
+{% block content %}
+
+
+<div class="card my-2" id="environment-settings">
+    <div class="card-body">
+        <h5 class="card-title">
+            <h3>Environment Settings</h3>
+        </h5>
+        <p class="card-text">
+            <p>Settings must be JSON parsable</p>
+
+            <form id="environment-settings-form">
+               {% for key, value in settings.dict().items() if not settings.__fields__[key].field_info.extra['metadata']['global'] %}
+            <div class="form-group row">
+                <label for="{{ key }}">{{ key }}</label>
+                <input type="text" class="form-control" id="{{ key }}" name="{{ key }}" value="{{ value | tojson | forceescape }}">
+                <small id="{{ key }}Help" class="form-text text-muted">{{ settings.__fields__[key].field_info.description }}</small>
+            </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-secondary">Save Settings</button>
+            </form>
+        </p>
+    </div>
+</div>
+
+<div class="card my-2" id="global-settings">
+    <div class="card-body">
+        <h5 class="card-title">
+            <h3>Global Settings</h3>
+        </h5>
+        <p class="card-text">
+            <p>Settings must be JSON parsable</p>
+
+            <form id="global-settings-form">
+               {% for key, value in settings.dict().items() if settings.__fields__[key].field_info.extra['metadata']['global'] %}
+            <div class="form-group row">
+                <label for="{{ key }}">{{ key }}</label>
+                <input type="text" {% if namespace is not none %}readonly{% endif %} class="form-control" id="{{ key }}" name="{{ key }}" value="{{ value | tojson | forceescape}}">
+                <small id="{{ key }}Help" class="form-text text-muted">{{ settings.__fields__[key].field_info.description }}</small>
+            </div>
+            {% endfor %}
+            <button type="submit" {% if namespace is not none%}disabled{% endif %} class="btn btn-secondary">Save Global Settings</button>
+            </form>
+        </p>
+    </div>
+</div>
+
+<script>
+ function bannerMessage(message) {
+     let banner = document.querySelector('#message');
+     banner.innerHTML = message;
+ }
+
+ async function updateSettings(event) {
+     event.preventDefault();
+     formData = new FormData(event.target);
+
+     let data = {}
+     formData.forEach((value, key) => console.log(key, value));
+     formData.forEach((value, key) => data[key] = JSON.parse(value));
+
+     let response = await fetch('{{ api_settings_url }}', {
+         method: 'PUT',
+         body: JSON.stringify(data),
+         headers: {
+             'Content-Type': 'application/json'
+         },
+     });
+
+     if (response.ok) {
+         window.location.reload(true);
+     } else {
+         let data = await response.json();
+         bannerMessage(`<div class="alert alert-danger col">${data.message}</div>`);
+     }
+ }
+
+ var globalSettingsForm = document.querySelector('#global-settings-form')
+ var environmentSettingsForm = document.querySelector('#environment-settings-form')
+
+ globalSettingsForm.addEventListener("submit", updateSettings);
+ environmentSettingsForm.addEventListener("submit", updateSettings);
+</script>
+
+{% endblock %}

@@ -22,6 +22,7 @@ from traitlets import (
 )
 from traitlets.config import Application, catch_config_error
 
+import conda_store_server
 from conda_store_server import storage
 from conda_store_server.server import auth, views
 from conda_store_server.app import CondaStore
@@ -45,6 +46,12 @@ class CondaStoreServer(Application):
             "Run conda-store-server in standalone mode with celery worker as a subprocess of webserver",
         ),
     }
+
+    reload = Bool(
+        False,
+        help="Enable reloading on code change",
+        config=True,
+    )
 
     log_level = Integer(
         logging.INFO,
@@ -313,6 +320,7 @@ class CondaStoreServer(Application):
     def start(self):
         fastapi_app = self.init_fastapi_app()
 
+        self.conda_store.ensure_settings()
         self.conda_store.ensure_namespace()
         self.conda_store.ensure_conda_channels()
 
@@ -332,10 +340,15 @@ class CondaStoreServer(Application):
                 fastapi_app,
                 host=self.address,
                 port=self.port,
-                reload=False,
                 workers=1,
                 proxy_headers=self.behind_proxy,
                 forwarded_allow_ips=("*" if self.behind_proxy else None),
+                reload=self.reload,
+                reload_dirs=(
+                    [os.path.dirname(conda_store_server.__file__)]
+                    if self.reload
+                    else []
+                ),
             )
         finally:
             if self.standalone:

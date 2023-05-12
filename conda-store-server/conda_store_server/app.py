@@ -1,5 +1,6 @@
 import os
 import datetime
+from typing import Any, Dict
 
 from celery import Celery, group
 from traitlets import (
@@ -16,6 +17,7 @@ from traitlets import (
 )
 from traitlets.config import LoggingConfigurable
 from sqlalchemy.pool import NullPool
+import pydantic
 
 from conda_store_server import (
     orm,
@@ -32,25 +34,16 @@ from conda_store_server import (
 def conda_store_validate_specification(
     conda_store: "CondaStore", namespace: str, specification: schema.CondaSpecification
 ) -> schema.CondaSpecification:
-    specification = environment.validate_environment_channels(
-        specification,
-        conda_store.conda_channel_alias,
-        conda_store.conda_default_channels,
-        conda_store.conda_allowed_channels,
+    settings = conda_store.get_settings(
+        namespace=namespace, environment_name=specification.name
     )
 
+    specification = environment.validate_environment_channels(specification, settings)
     specification = environment.validate_environment_pypi_packages(
-        specification,
-        conda_store.pypi_default_packages,
-        conda_store.pypi_included_packages,
-        conda_store.pypi_required_packages,
+        specification, settings
     )
-
     specification = environment.validate_environment_conda_packages(
-        specification,
-        conda_store.conda_default_packages,
-        conda_store.conda_included_packages,
-        conda_store.conda_required_packages,
+        specification, settings
     )
 
     return specification
@@ -61,12 +54,13 @@ def conda_store_validate_action(
     namespace: str,
     action: schema.Permissions,
 ) -> None:
+    settings = conda_store.get_settings()
     system_metrics = api.get_system_metrics(conda_store.db)
 
     if action in (
         schema.Permissions.ENVIRONMENT_CREATE,
         schema.Permissions.ENVIRONMENT_UPDATE,
-    ) and (conda_store.storage_threshold > system_metrics.disk_free):
+    ) and (settings.storage_threshold > system_metrics.disk_free):
         raise utils.CondaStoreError(
             f"`CondaStore.storage_threshold` reached. Action {action.value} prevented due to insufficient storage space"
         )
@@ -428,6 +422,34 @@ class CondaStore(LoggingConfigurable):
         self._celery_app.config_from_object(self.celery_config)
         return self._celery_app
 
+    def ensure_settings(self):
+        """Ensure that conda-store traitlets settings are applied"""
+        settings = schema.Settings(
+            default_namespace=self.default_namespace,
+            filesystem_namespace=self.filesystem_namespace,
+            default_uid=self.default_uid,
+            default_gid=self.default_gid,
+            default_permissions=self.default_permissions,
+            storage_threshold=self.storage_threshold,
+            conda_command=self.conda_command,
+            conda_platforms=self.conda_platforms,
+            conda_max_solve_time=self.conda_max_solve_time,
+            conda_indexed_channels=self.conda_indexed_channels,
+            build_artifacts_kept_on_deletion=self.build_artifacts_kept_on_deletion,
+            conda_channel_alias=self.conda_channel_alias,
+            conda_default_channels=self.conda_default_channels,
+            conda_allowed_channels=self.conda_allowed_channels,
+            conda_default_packages=self.conda_default_packages,
+            conda_required_packages=self.conda_required_packages,
+            conda_included_packages=self.conda_included_packages,
+            pypi_default_packages=self.pypi_default_packages,
+            pypi_required_packages=self.pypi_required_packages,
+            pypi_included_packages=self.pypi_included_packages,
+            build_artifacts=self.build_artifacts,
+            # default_docker_base_image=self.default_docker_base_image,
+        )
+        api.set_kvstore_key_values(self.db, "setting", settings.dict(), update=False)
+
     def ensure_namespace(self):
         """Ensure that conda-store default namespaces exists"""
         api.ensure_namespace(self.db, self.default_namespace)
@@ -440,14 +462,75 @@ class CondaStore(LoggingConfigurable):
         """Ensure that conda-store indexed channels and packages are in database"""
         self.log.info("updating conda store channels")
 
-        for channel in self.conda_indexed_channels:
+        settings = self.get_settings()
+
+        for channel in settings.conda_indexed_channels:
             normalized_channel = conda.normalize_channel_name(
-                self.conda_channel_alias, channel
+                settings.conda_channel_alias, channel
             )
             api.ensure_conda_channel(self.db, normalized_channel)
 
+    def set_settings(
+        self,
+        namespace: str = None,
+        environment_name: str = None,
+        data: Dict[str, Any] = {},
+    ):
+        setting_keys = schema.Settings.__fields__.keys()
+        if not data.keys() <= setting_keys:
+            invalid_keys = data.keys() - setting_keys
+            raise ValueError(f"Invalid setting keys {invalid_keys}")
+
+        for key, value in data.items():
+            field = schema.Settings.__fields__[key]
+            global_setting = field.field_info.extra["metadata"]["global"]
+            if global_setting and (
+                namespace is not None or environment_name is not None
+            ):
+                raise ValueError(
+                    f"Setting {key} is a global setting cannot be set within namespace or environment"
+                )
+
+            try:
+                pydantic.parse_obj_as(field.outer_type_, value)
+            except Exception as e:
+                raise ValueError(
+                    f"Invalid parsing of setting {key} expected type {field.outer_type_} ran into error {e}"
+                )
+
+        if namespace is not None and environment_name is not None:
+            prefix = f"setting/{namespace}/{environment_name}"
+        elif namespace is not None:
+            prefix = f"setting/{namespace}"
+        else:
+            prefix = "setting"
+
+        api.set_kvstore_key_values(self.db, prefix, data)
+
+    def get_settings(
+        self, namespace: str = None, environment_name: str = None
+    ) -> schema.Settings:
+        # setting logic is intentionally done in python code
+        # rather than using the database for merges and ordering
+        # becuase in the future we may likely want to do some
+        # more complex logic around settings
+
+        prefixes = ["setting"]
+        if namespace is not None:
+            prefixes.append(f"setting/{namespace}")
+        if namespace is not None and environment_name is not None:
+            prefixes.append(f"setting/{namespace}/{environment_name}")
+
+        settings = {}
+        for prefix in prefixes:
+            settings.update(api.get_kvstore_key_values(self.db, prefix))
+
+        return schema.Settings(**settings)
+
     def register_solve(self, specification: schema.CondaSpecification):
         """Registers a solve for a given specification"""
+        settings = self.get_settings()
+
         self.validate_action(
             conda_store=self,
             namespace="solve",
@@ -471,7 +554,7 @@ class CondaStore(LoggingConfigurable):
         task_id = f"solve-{solve.id}"
         tasks.task_solve_conda_environment.apply_async(
             args=[solve.id],
-            time_limit=self.conda_max_solve_time,
+            time_limit=settings.conda_max_solve_time,
             task_id=task_id,
         )
 
@@ -481,7 +564,9 @@ class CondaStore(LoggingConfigurable):
         self, specification: dict, namespace: str = None, force: bool = True
     ):
         """Register a given specification to conda store with given namespace/name."""
-        namespace = namespace or self.default_namespace
+        settings = self.get_settings()
+
+        namespace = namespace or settings.default_namespace
         namespace = api.ensure_namespace(self.db, name=namespace)
 
         self.validate_action(
@@ -538,6 +623,10 @@ class CondaStore(LoggingConfigurable):
             action=schema.Permissions.ENVIRONMENT_UPDATE,
         )
 
+        settings = self.get_settings(
+            namespace=environment.namespace.name, environment_name=environment.name
+        )
+
         specification = api.get_specification(self.db, specification_sha256)
         build = api.create_build(
             self.db, environment_id=environment_id, specification_id=specification.id
@@ -550,7 +639,7 @@ class CondaStore(LoggingConfigurable):
         from conda_store_server.worker import tasks
 
         artifact_tasks = []
-        if schema.BuildArtifactType.YAML in self.build_artifacts:
+        if schema.BuildArtifactType.YAML in settings.build_artifacts:
             artifact_tasks.append(
                 tasks.task_build_conda_env_export.subtask(
                     args=(build.id,),
@@ -558,7 +647,7 @@ class CondaStore(LoggingConfigurable):
                     immutable=True,
                 )
             )
-        if schema.BuildArtifactType.CONDA_PACK in self.build_artifacts:
+        if schema.BuildArtifactType.CONDA_PACK in settings.build_artifacts:
             artifact_tasks.append(
                 tasks.task_build_conda_pack.subtask(
                     args=(build.id,),
@@ -567,8 +656,8 @@ class CondaStore(LoggingConfigurable):
                 )
             )
         if (
-            schema.BuildArtifactType.DOCKER_MANIFEST in self.build_artifacts
-            or schema.BuildArtifactType.CONTAINER_REGISTRY in self.build_artifacts
+            schema.BuildArtifactType.DOCKER_MANIFEST in settings.build_artifacts
+            or schema.BuildArtifactType.CONTAINER_REGISTRY in settings.build_artifacts
         ):
             artifact_tasks.append(
                 tasks.task_build_conda_docker.subtask(

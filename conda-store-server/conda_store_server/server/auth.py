@@ -70,6 +70,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
                 schema.Permissions.ENVIRONMENT_UPDATE,
                 schema.Permissions.ENVIRONMENT_SOLVE,
                 schema.Permissions.NAMESPACE_READ,
+                schema.Permissions.SETTING_READ,
             },
             "admin": {
                 schema.Permissions.BUILD_DELETE,
@@ -81,6 +82,8 @@ class RBACAuthorizationBackend(LoggingConfigurable):
                 schema.Permissions.NAMESPACE_CREATE,
                 schema.Permissions.NAMESPACE_DELETE,
                 schema.Permissions.NAMESPACE_READ,
+                schema.Permissions.SETTING_READ,
+                schema.Permissions.SETTING_UPDATE,
             },
         },
         help="default role to permissions mapping to use",

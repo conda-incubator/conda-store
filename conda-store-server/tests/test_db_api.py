@@ -79,3 +79,31 @@ def test_environment_crud(conda_store):
     # api.ensure_environment(conda_store.db, name=environment_name, namespace_id=namespace.id)
 
     # assert len(api.list_environments(conda_store.db).all()) == 1
+
+
+def test_get_set_keyvaluestore(conda_store):
+    setting_1 = {"a": 1, "b": 2}
+    setting_2 = {"c": 1, "d": 2}
+    setting_3 = {"e": 1, "f": 2}
+
+    api.set_kvstore_key_values(conda_store.db, "pytest", setting_1)
+    api.set_kvstore_key_values(conda_store.db, "pytest/1", setting_2)
+    api.set_kvstore_key_values(conda_store.db, "pytest/1/2", setting_3)
+
+    assert setting_1 == api.get_kvstore_key_values(conda_store.db, "pytest")
+    assert setting_2 == api.get_kvstore_key_values(conda_store.db, "pytest/1")
+    assert setting_3 == api.get_kvstore_key_values(conda_store.db, "pytest/1/2")
+
+    # test updating a prefix
+    api.set_kvstore_key_values(conda_store.db, "pytest", setting_2)
+    assert {**setting_1, **setting_2} == api.get_kvstore_key_values(
+        conda_store.db, "pytest"
+    )
+
+    # test updating a prefix
+    api.set_kvstore_key_values(
+        conda_store.db, "pytest", {"c": 999, "d": 999}, update=False
+    )
+    assert {**setting_1, **setting_2} == api.get_kvstore_key_values(
+        conda_store.db, "pytest"
+    )

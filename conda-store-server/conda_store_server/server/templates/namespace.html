@@ -10,6 +10,7 @@
     <li class="list-group-item d-flex justify-content-between align-items-center">
         <span>{{ namespace.name }}</span>
         <div class="btn-group" role="group" aria-label="Namespace actions">
+            <a class="btn btn-primary mb-2" href="{{ url_for('ui_get_setting', namespace=namespace.name) }}#environment-settings"><ion-icon name="settings"></ion-icon></a>
             <button type="button" onclick="deleteNamespace('{{ namespace.name }}')" class="btn btn-primary mb-2">
                 <ion-icon name="trash"></ion-icon>
             </button>

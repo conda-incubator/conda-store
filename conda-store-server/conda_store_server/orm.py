@@ -630,6 +630,18 @@ class CondaStoreConfiguration(Base):
         db.commit()
 
 
+class KeyValueStore(Base):
+    """KeyValueStore use to store arbitrary prefix, key, values"""
+
+    __tablename__ = "keyvaluestore"
+    __table_args__ = (UniqueConstraint("prefix", "key", name="_prefix_key_uc"),)
+
+    id = Column(Integer, primary_key=True)
+    prefix = Column(Unicode)
+    key = Column(Unicode)
+    value = Column(JSON)
+
+
 def new_session_factory(url="sqlite:///:memory:", reset=False, **kwargs):
     engine = create_engine(url, **kwargs)
 

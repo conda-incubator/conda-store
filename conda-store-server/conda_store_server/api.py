@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List, Dict, Any
 import re
 
 from sqlalchemy import func, null, or_, distinct
@@ -521,3 +521,35 @@ def get_namespace_metrics(db):
         .join(orm.Environment.namespace)
         .group_by(orm.Namespace.name)
     )
+
+
+def get_kvstore_key_values(db, prefix: str):
+    """Get effective key, values for a particular prefix"""
+    return {
+        _.key: _.value
+        for _ in db.query(orm.KeyValueStore)
+        .filter(orm.KeyValueStore.prefix == prefix)
+        .all()
+    }
+
+
+def set_kvstore_key_values(db, prefix: str, d: Dict[str, Any], update: bool = True):
+    """Set key, values for a particular prefix"""
+    for key, value in d.items():
+        record = (
+            db.query(orm.KeyValueStore)
+            .filter(orm.KeyValueStore.prefix == prefix, orm.KeyValueStore.key == key)
+            .first()
+        )
+
+        if record is None:
+            record = orm.KeyValueStore(
+                prefix=prefix,
+                key=key,
+                value=value,
+            )
+            db.add(record)
+            db.commit()
+        elif update:
+            record.value = value
+            db.commit()

@@ -15,8 +15,6 @@ import yaml
 import yarl
 import requests
 
-from conda_store_server import schema
-
 
 def normalize_channel_name(channel_alias, channel):
     if channel.startswith("http"):
@@ -48,7 +46,7 @@ def conda_pack(prefix, output, ignore_missing_files=True):
     )
 
 
-def conda_lock(specification: schema.CondaSpecification, conda_exe: str = "mamba"):
+def conda_lock(specification: "CondaSpecification", conda_exe: str = "mamba"):  # noqa
     from conda_lock.conda_lock import run_lock
     from conda.models.dist import Dist
 

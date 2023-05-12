@@ -128,29 +128,97 @@ def test_conda_store_server_additional_routes(conda_store_server):
     assert response.json() == {"data": "Hello World c d"}
 
 
-def test_conda_store_conda_channels_packages_validate_valid(conda_store):
-    specification = schema.CondaSpecification(
-        name="test",
-        channels=["conda-forge"],
-        dependencies=[
-            "flask",
-            {"pip": ["numpy"]},
-        ],
+def test_conda_store_settings_conda_channels_packages_validate_valid(conda_store):
+    conda_store.set_settings(
+        data={
+            "conda_allowed_channels": ["conda-forge"],
+            "conda_included_packages": ["ipykernel"],
+            "conda_required_packages": ["flask"],
+            "pypi_included_packages": ["scipy"],
+            "pypi_required_packages": ["numpy"],
+        }
     )
 
-    conda_store.conda_allowed_channels = ["conda-forge"]
-    conda_store.conda_included_packages = ["ipykernel"]
-    conda_store.conda_required_packages = ["flask"]
-    conda_store.pypi_included_packages = ["scipy"]
-    conda_store.pypi_required_packages = ["numpy"]
-    new_specification = conda_store.validate_specification(
-        conda_store, namespace="default", specification=specification
+    global_specification = conda_store.validate_specification(
+        conda_store,
+        namespace="default",
+        specification=schema.CondaSpecification(
+            name="test",
+            channels=["conda-forge"],
+            dependencies=[
+                "flask",
+                {"pip": ["numpy"]},
+            ],
+        ),
     )
-    assert new_specification.channels == ["conda-forge"]
-    assert new_specification.dependencies == [
+    assert global_specification.channels == ["conda-forge"]
+    assert sorted(global_specification.dependencies, key=lambda i: str(i)) == [
         "flask",
-        schema.CondaSpecificationPip(pip=["numpy", "scipy"]),
         "ipykernel",
+        schema.CondaSpecificationPip(pip=["numpy", "scipy"]),
+    ]
+
+    conda_store.set_settings(
+        namespace="default",
+        data={
+            "conda_allowed_channels": ["conda-forge"],
+            "conda_included_packages": ["ipykernel", "pandas"],
+            "conda_required_packages": ["flask"],
+            "pypi_included_packages": ["scipy"],
+            "pypi_required_packages": ["numpy"],
+        },
+    )
+
+    namespace_specification = conda_store.validate_specification(
+        conda_store,
+        namespace="default",
+        specification=schema.CondaSpecification(
+            name="test",
+            channels=["conda-forge"],
+            dependencies=[
+                "flask",
+                {"pip": ["numpy"]},
+            ],
+        ),
+    )
+    assert namespace_specification.channels == ["conda-forge"]
+    assert sorted(namespace_specification.dependencies, key=lambda i: str(i)) == [
+        "flask",
+        "ipykernel",
+        "pandas",
+        schema.CondaSpecificationPip(pip=["numpy", "scipy"]),
+    ]
+
+    conda_store.set_settings(
+        namespace="default",
+        environment_name="test",
+        data={
+            "conda_allowed_channels": ["conda-forge"],
+            "conda_included_packages": ["ipykernel", "asdf"],
+            "conda_required_packages": ["flask"],
+            "pypi_included_packages": ["scipy"],
+            "pypi_required_packages": ["numpy"],
+        },
+    )
+
+    environment_specification = conda_store.validate_specification(
+        conda_store,
+        namespace="default",
+        specification=schema.CondaSpecification(
+            name="test",
+            channels=["conda-forge"],
+            dependencies=[
+                "flask",
+                {"pip": ["numpy"]},
+            ],
+        ),
+    )
+    assert environment_specification.channels == ["conda-forge"]
+    assert sorted(environment_specification.dependencies, key=lambda i: str(i)) == [
+        "asdf",
+        "flask",
+        "ipykernel",
+        schema.CondaSpecificationPip(pip=["numpy", "scipy"]),
     ]
 
     # not allowed channel name

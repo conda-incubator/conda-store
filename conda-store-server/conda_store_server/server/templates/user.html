@@ -25,6 +25,14 @@
 
 <div class="card m-2">
     <div class="card-body">
+        <h5 class="card-title">Settings</h5>
+        <a class="btn btn-outline-success my-2 my-sm-0 mr-2 text-center" href="{{ url_for('ui_get_setting') }}#environment-settings">Manage Environment Settings <ion-icon name="settings"></ion-icon></a>
+        <a class="btn btn-outline-success my-2 my-sm-0 mr-2 text-center" href="{{ url_for('ui_get_setting') }}#global-settings">Manage Global Settings <ion-icon name="settings"></ion-icon></a>
+    </div>
+</div>
+
+<div class="card m-2">
+    <div class="card-body">
         <h5 class="card-title">Namespace</h5>
         <p>Your current default namespace is <span class="badge badge-light">{{ username }}</span> with access to the following existing namespaces
             {% for namespace in namespaces %}
