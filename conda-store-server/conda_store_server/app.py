@@ -525,7 +525,7 @@ class CondaStore(LoggingConfigurable):
         for prefix in prefixes:
             settings.update(api.get_kvstore_key_values(self.db, prefix))
 
-        return schema.Settings.parse_obj(settings)
+        return schema.Settings(**settings)
 
     def register_solve(self, specification: schema.CondaSpecification):
         """Registers a solve for a given specification"""

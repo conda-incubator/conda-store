@@ -310,6 +310,14 @@ class Settings(BaseModel):
         metadata={"global": False},
     )
 
+    @validator("build_artifacts", each_item=True)
+    def check_build_artifacts(cls, v):
+        return BuildArtifactType(v)
+
+    @validator("build_artifacts_kept_on_deletion", each_item=True)
+    def check_build_artifacts_kept_on_deletion(cls, v):
+        return BuildArtifactType(v)
+
     class Config:
         use_enum_values = True
 
