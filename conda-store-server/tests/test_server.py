@@ -51,6 +51,8 @@ def test_api_permissions_auth(testclient, authenticate):
                 schema.Permissions.NAMESPACE_CREATE.value,
                 schema.Permissions.NAMESPACE_READ.value,
                 schema.Permissions.NAMESPACE_DELETE.value,
+                schema.Permissions.SETTING_READ.value,
+                schema.Permissions.SETTING_UPDATE.value,
             ]
         ),
         "default/*": sorted(

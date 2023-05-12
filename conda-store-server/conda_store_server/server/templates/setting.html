@@ -5,13 +5,13 @@
 {% block content %}
 
 
-<div class="card my-2">
+<div class="card my-2" id="environment-settings">
     <div class="card-body">
         <h5 class="card-title">
             <h3>Environment Settings</h3>
         </h5>
         <p class="card-text">
-            <p>Settings must JSON parsable</p>
+            <p>Settings must be JSON parsable</p>
 
             <form id="environment-settings-form">
                {% for key, value in settings.dict().items() if not settings.__fields__[key].field_info.extra['metadata']['global'] %}
@@ -27,13 +27,13 @@
     </div>
 </div>
 
-<div class="card my-2">
+<div class="card my-2" id="global-settings">
     <div class="card-body">
         <h5 class="card-title">
             <h3>Global Settings</h3>
         </h5>
         <p class="card-text">
-            <p>Settings must JSON parsable</p>
+            <p>Settings must be JSON parsable</p>
 
             <form id="global-settings-form">
                {% for key, value in settings.dict().items() if settings.__fields__[key].field_info.extra['metadata']['global'] %}

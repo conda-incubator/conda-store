@@ -18,6 +18,7 @@
         </li>
     </ul>
     <div class="card-body">
+        <a href="{{ url_for('ui_get_setting', namespace=environment.namespace.name, environment_name=environment.name) }}" class="btn btn-primary btn-block">Settings</a>
         <a href="{{ url_for('ui_edit_environment', namespace=environment.namespace.name, environment_name=environment.name) }}" class="btn btn-primary btn-block">Edit</a>
         <button id="delete-environment" type="button" class="btn btn-primary btn-block">
             Delete
