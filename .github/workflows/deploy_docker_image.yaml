@@ -1,0 +1,83 @@
+name: "Deploy image"
+
+on:
+  push:
+    branches:
+      - 'main'
+    tags:
+      - 'v*'
+
+permissions:
+  id-token: write # This is required for requesting the JWT
+  contents: read  # This is required for actions/checkout
+
+jobs:
+  build_and_push_docker_image:
+    name: 'Build Docker Images'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        docker-image:
+          - conda-store
+          - conda-store-server
+    steps:
+      - name: 'Checkout Infrastructure'
+        uses: actions/checkout@master
+
+      - name: Retrieve secret from Vault
+        uses: hashicorp/vault-action@v2.5.0
+        with:
+          method: jwt
+          url: "https://quansight-vault-public-vault-b2379fa7.d415e30e.z1.hashicorp.cloud:8200"
+          namespace: "admin/quansight"
+          role: "repository-quansight-conda-store-role"
+          secrets: |
+            kv/data/repository/Quansight/conda-store/shared_secrets DOCKER_QUANSIGHT_USERNAME | DOCKER_USERNAME;
+            kv/data/repository/Quansight/conda-store/shared_secrets DOCKER_QUANSIGHT_PASSWORD | DOCKER_PASSWORD;
+            kv/data/repository/Quansight/conda-store/shared_secrets QUAY_QUANSIGHT_USERNAME | QUAY_USERNAME;
+            kv/data/repository/Quansight/conda-store/shared_secrets QUAY_QUANSIGHT_PASSWORD | QUAY_PASSWORD;
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ env.DOCKER_USERNAME }}
+          password: ${{ env.DOCKER_PASSWORD }}
+
+      - name: Login to quay.io
+        uses: docker/login-action@v1
+        with:
+          registry: quay.io
+          username: ${{ env.QUAY_USERNAME }}
+          password: ${{ env.QUAY_PASSWORD }}
+
+      - name: Docker Meta
+        id: meta
+        uses: crazy-max/ghaction-docker-meta@v2
+        with:
+          images: |
+            quansight/${{ matrix.docker-image }}
+            quay.io/quansight/${{ matrix.docker-image }}
+          tags: |
+            # formal tagged releases:
+            type=ref,event=tag
+            # Branches... if this workflow is triggered for the branch
+            type=ref,event=branch
+            # short githash for reproducibility:
+            type=sha
+
+      - name: Build docker
+        uses: docker/build-push-action@v2
+        with:
+          context: "${{ matrix.docker-image }}"
+          file: "${{ matrix.docker-image }}/Dockerfile"
+          tags: |
+            ${{ steps.meta.outputs.tags }}
+          push: true
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+

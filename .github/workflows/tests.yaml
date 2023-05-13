@@ -175,6 +175,13 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
+      - name: Lint Dockerfiles
+        uses: jbergstroem/hadolint-gh-action@v1
+        with:
+          dockerfile: ${{ matrix.docker-image }}/Dockerfile
+          output_format: tty
+          error_level: 0
+
       - name: Docker Meta
         id: meta
         uses: crazy-max/ghaction-docker-meta@v2
