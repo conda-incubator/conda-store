@@ -85,7 +85,7 @@
 </div>
 {% endif %}
 
-{% if build.status.value in ['COMPLETED', 'FAILED'] %}
+{% if build.status.value in ['BUILDING', 'COMPLETED', 'FAILED'] %}
 <div class="card my-2">
     <div class="card-body">
         <a href="{{ url_for('api_get_build_logs', build_id=build.id) }}" class="btn btn-primary btn-block">Full Logs</a>

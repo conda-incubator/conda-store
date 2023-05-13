@@ -1,6 +1,6 @@
 import datetime
-import subprocess
 import pathlib
+import subprocess
 import tempfile
 import traceback
 
@@ -17,29 +17,29 @@ def set_build_started(conda_store, build):
     conda_store.db.commit()
 
 
-def set_build_failed(conda_store, build, logs):
+def append_to_logs(conda_store, build, logs: str):
+    try:
+        current_logs = conda_store.storage.get(build.log_key)
+    except Exception:
+        current_logs = b""
+
     conda_store.storage.set(
         conda_store.db,
         build.id,
         build.log_key,
-        logs,
+        current_logs + logs.encode("utf-8"),
         content_type="text/plain",
         artifact_type=schema.BuildArtifactType.LOGS,
     )
+
+
+def set_build_failed(conda_store, build):
     build.status = schema.BuildStatus.FAILED
     build.ended_on = datetime.datetime.utcnow()
     conda_store.db.commit()
 
 
-def set_build_completed(conda_store, build, logs):
-    conda_store.storage.set(
-        conda_store.db,
-        build.id,
-        build.log_key,
-        logs,
-        content_type="text/plain",
-        artifact_type=schema.BuildArtifactType.LOGS,
-    )
+def set_build_completed(conda_store, build):
     build.status = schema.BuildStatus.COMPLETED
     build.ended_on = datetime.datetime.utcnow()
 
@@ -89,6 +89,11 @@ def build_conda_environment(conda_store, build):
 
     """
     set_build_started(conda_store, build)
+    append_to_logs(
+        conda_store,
+        build,
+        f'starting build of conda environment {datetime.datetime.utcnow()} UTC\n'
+    )
 
     settings = conda_store.get_settings(
         namespace=build.environment.namespace.name,
@@ -109,16 +114,37 @@ def build_conda_environment(conda_store, build):
                     build.specification.spec
                 ),
             )
+            append_to_logs(
+                conda_store,
+                build,
+                "::group::action_solve_lockfile\n"
+                + context.stdout.getvalue()
+                + "\n::endgroup::\n",
+            )
             conda_lock_spec = context.result
 
-            action.action_fetch_and_extract_conda_packages(
+            context = action.action_fetch_and_extract_conda_packages(
                 conda_lock_spec=conda_lock_spec,
                 pkgs_dir=conda.conda_root_package_dir(),
             )
+            append_to_logs(
+                conda_store,
+                build,
+                "::group::action_fetch_and_extract_conda_packages\n"
+                + context.stdout.getvalue()
+                + "\n::endgroup::\n",
+            )
 
-            action.action_install_lockfile(
+            context = action.action_install_lockfile(
                 conda_lock_spec=conda_lock_spec,
                 conda_prefix=conda_prefix,
+            )
+            append_to_logs(
+                conda_store,
+                build,
+                "::group::action_install_lockfile\n"
+                + context.stdout.getvalue()
+                + "\n::endgroup::\n",
             )
 
             #     if build.specification.spec.get("variables") is not None:
@@ -145,16 +171,16 @@ def build_conda_environment(conda_store, build):
         context = action.action_get_conda_prefix_stats(conda_prefix)
         build.size = context.result["disk_usage"]
 
-        set_build_completed(
-            conda_store, build, b"Preparing transaction: Executing transaction:"
-        )  # output.encode("utf-8"))
+        set_build_completed(conda_store, build)
     except subprocess.CalledProcessError as e:
         conda_store.log.exception(e)
-        set_build_failed(conda_store, build, e.output.encode("utf-8"))
+        append_to_logs(conda_store, build, e.output)
+        set_build_failed(conda_store, build)
         raise e
     except Exception as e:
         conda_store.log.exception(e)
-        set_build_failed(conda_store, build, traceback.format_exc().encode("utf-8"))
+        append_to_logs(conda_store, build, traceback.format_exc())
+        set_build_failed(conda_store, build)
         raise e
 
 
@@ -191,6 +217,14 @@ def build_conda_env_export(conda_store, build):
     context = action.action_generate_conda_export(
         conda_command=settings.conda_command, conda_prefix=conda_prefix
     )
+    append_to_logs(
+        conda_store,
+        build,
+        "::group::action_generate_conda_export\n"
+        + context.stdout.getvalue()
+        + "\n::endgroup::\n",
+    )
+
     conda_prefix_export = yaml.dump(context.result).encode("utf-8")
 
     conda_store.storage.set(
@@ -211,8 +245,15 @@ def build_conda_pack(conda_store, build):
     ):
         with tempfile.TemporaryDirectory() as tmpdir:
             output_filename = pathlib.Path(tmpdir) / "environment.tar.gz"
-            action.action_generate_conda_pack(
+            context = action.action_generate_conda_pack(
                 conda_prefix=conda_prefix, output_filename=output_filename
+            )
+            append_to_logs(
+                conda_store,
+                build,
+                "::group::action_generate_conda_pack\n"
+                + context.stdout.getvalue()
+                + "\n::endgroup::\n",
             )
             conda_store.storage.fset(
                 conda_store.db,
@@ -231,22 +272,36 @@ def build_conda_docker(conda_store, build):
         environment_name=build.environment.name,
     )
 
-    with utils.timer(
-        conda_store.log, f"packaging docker image of conda environment={conda_prefix}"
-    ):
-        context = action.action_generate_conda_docker(
-            conda_prefix=conda_prefix,
-            default_docker_image=utils.callable_or_value(
-                settings.default_docker_base_image, None
-            ),
-            container_registry=conda_store.container_registry,
-            output_image_name=build.specification.name,
-            output_image_tag=build.build_key,
-        )
-        image = context.result
+    try:
+        with utils.timer(
+            conda_store.log,
+            f"packaging docker image of conda environment={conda_prefix}",
+        ):
+            context = action.action_generate_conda_docker(
+                conda_prefix=conda_prefix,
+                default_docker_image=utils.callable_or_value(
+                    settings.default_docker_base_image, None
+                ),
+                container_registry=conda_store.container_registry,
+                output_image_name=build.specification.name,
+                output_image_tag=build.build_key,
+            )
+            append_to_logs(
+                conda_store,
+                build,
+                "::group::action_generate_conda_docker\n"
+                + context.stdout.getvalue()
+                + "\n::endgroup::\n",
+            )
 
-        if schema.BuildArtifactType.DOCKER_MANIFEST in settings.build_artifacts:
-            conda_store.container_registry.store_image(conda_store, build, image)
+            image = context.result
 
-        if schema.BuildArtifactType.CONTAINER_REGISTRY in settings.build_artifacts:
-            conda_store.container_registry.push_image(conda_store, build, image)
+            if schema.BuildArtifactType.DOCKER_MANIFEST in settings.build_artifacts:
+                conda_store.container_registry.store_image(conda_store, build, image)
+
+            if schema.BuildArtifactType.CONTAINER_REGISTRY in settings.build_artifacts:
+                conda_store.container_registry.push_image(conda_store, build, image)
+    except Exception as e:
+        conda_store.log.exception(e)
+        append_to_logs(conda_store, build, traceback.format_exc())
+        raise e
