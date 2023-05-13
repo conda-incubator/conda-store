@@ -596,3 +596,8 @@ class APIGetSetting(APIResponse):
 # PUT /api/v1/setting/*/*
 class APIPutSetting(APIResponse):
     pass
+
+
+# GET /api/v1/usage/
+class APIGetUsage(APIResponse):
+    data: Dict[str, Dict[str, Any]]
