@@ -70,6 +70,22 @@ def test_api_permissions_auth(testclient, authenticate):
     }
 
 
+def test_get_usage_unauth(testclient):
+    response = testclient.get("/api/v1/usage/")
+    response.raise_for_status()
+
+    r = schema.APIPutSetting.parse_obj(response.json())
+    assert r.status == schema.APIStatus.OK
+
+
+def test_get_usage_auth(testclient, authenticate):
+    response = testclient.get("/api/v1/usage/")
+    response.raise_for_status()
+
+    r = schema.APIPutSetting.parse_obj(response.json())
+    assert r.status == schema.APIStatus.OK
+
+
 def test_api_list_namespace_unauth(testclient, seed_conda_store):
     response = testclient.get("api/v1/namespace")
     response.raise_for_status()

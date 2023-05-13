@@ -161,6 +161,35 @@ def api_get_permissions(
     }
 
 
+@router_api.get(
+    "/usage/",
+    response_model=schema.APIGetUsage,
+)
+def api_get_usage(
+    request: Request,
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
+    entity=Depends(dependencies.get_entity),
+):
+    namespace_usage_metrics = auth.filter_namespaces(
+        entity, api.get_namespace_metrics(conda_store.db)
+    )
+
+    data = {}
+    for namespace, num_environments, num_builds, storage in namespace_usage_metrics:
+        data[namespace] = {
+            "num_environments": num_environments,
+            "num_builds": num_builds,
+            "storage": storage,
+        }
+
+    return {
+        "status": "ok",
+        "data": data,
+        "message": None,
+    }
+
+
 @router_api.post(
     "/token/",
     response_model=schema.APIPostToken,
