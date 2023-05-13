@@ -38,6 +38,9 @@ class Storage(LoggingConfigurable):
         )
         db.commit()
 
+    def get(self, key: str):
+        raise NotImplementedError()
+
     def get_url(self, key: str):
         raise NotImplementedError()
 
@@ -178,6 +181,10 @@ class S3Storage(Storage):
         )
         super().fset(db, build_id, key, value, artifact_type)
 
+    def get(self, key):
+        response = self.internal_client.get_object(self.bucket_name, key)
+        return response.read()
+
     def get_url(self, key):
         return self.external_client.presigned_get_object(self.bucket_name, key)
 
@@ -212,6 +219,10 @@ class LocalStorage(Storage):
         with open(destination_filename, "wb") as f:
             f.write(value)
         super().set(db, build_id, key, value, artifact_type)
+
+    def get(self, key):
+        with open(os.path.join(self.storage_path, key), "rb") as f:
+            return f.read()
 
     def get_url(self, key):
         return os.path.join(self.storage_url, key)
