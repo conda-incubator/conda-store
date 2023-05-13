@@ -92,7 +92,7 @@ def build_conda_environment(conda_store, build):
     append_to_logs(
         conda_store,
         build,
-        f'starting build of conda environment {datetime.datetime.utcnow()} UTC\n'
+        f"starting build of conda environment {datetime.datetime.utcnow()} UTC\n",
     )
 
     settings = conda_store.get_settings(
