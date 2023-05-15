@@ -95,7 +95,6 @@ def test_generate_conda_pack(tmp_path, current_prefix):
     assert output_filename.exists()
 
 
-@pytest.mark.xfail
 def test_generate_conda_docker(conda_store, current_prefix):
     action.action_generate_conda_docker(
         conda_prefix=current_prefix,

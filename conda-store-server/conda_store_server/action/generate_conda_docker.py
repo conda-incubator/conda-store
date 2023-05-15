@@ -34,6 +34,6 @@ def action_generate_conda_docker(
         download_dir=download_dir,
         user_conda=user_conda,
         channels_remap=info.get("channels_remap", []),
-        layering_strategy="layered",
+        layering_strategy="single",
     )
     return image
