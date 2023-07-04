@@ -239,6 +239,10 @@ class RBACAuthorizationBackend(LoggingConfigurable):
             entity_bindings=entity_bindings, arn=arn, authenticated=authenticated
         )
 
+    def get_namespace_role_bindings(namespace: str):
+        # TODO    
+        return None
+
 
 class Authentication(LoggingConfigurable):
     cookie_name = Unicode(

@@ -51,6 +51,27 @@ class Namespace(Base):
 
     deleted_on = Column(DateTime, default=None)
 
+    role_mapping_metadata = Column(JSON)
+
+    roles_mappings = relationship("NamespaceRoleMapping", back_populates="namespace")
+
+
+class NamespaceRoleMapping(Base):
+    """ Mapping between roles and namespaces """
+    
+    __tablename__ = "namespace_role_mapping"
+
+    id = Column(Integer, primary_key=True)
+    namespace_id = Column(Integer, ForeignKey("namespace.id"), nullable=False)
+    namespace = relationship(Namespace, back_populates="roles_mappings")
+
+    # arn e.g. <namespace>/<name> like `quansight-*/*` or `quansight-devops/*`
+    entity = Column(Unicode(255), nullable=False)     
+
+    # e.g. viewer
+    role = Column(Unicode(255), nullable=False)  
+
+    
 
 class Specification(Base):
     """The specifiction for a given conda environment"""
