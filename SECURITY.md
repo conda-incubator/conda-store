@@ -8,4 +8,4 @@ You should feel comfortable upgrading if you're using our documented public APIs
 
 ## Reporting a Vulnerability
 
-If you think you found a vulnerability, please report it at [conda-store/security](https://github.com/).
+If you think you found a vulnerability, please report it at [conda-store/security](https://github.com/Quansight/conda-store/security).
