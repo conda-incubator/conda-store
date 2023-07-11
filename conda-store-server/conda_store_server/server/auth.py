@@ -108,9 +108,11 @@ class RBACAuthorizationBackend(LoggingConfigurable):
         config=True,
     )
 
-    authentication_db = Instance(SQLAlchemySession, 
-              help="SQLAlchemy session to query DB. Used for role mapping",
-              config=False )
+    authentication_db = Instance(
+        SQLAlchemySession,
+        help="SQLAlchemy session to query DB. Used for role mapping",
+        config=False,
+    )
 
     @staticmethod
     def compile_arn_regex(arn: str) -> re.Pattern:
@@ -160,26 +162,26 @@ class RBACAuthorizationBackend(LoggingConfigurable):
         )
         return (arn_1_matches_arn_2 and arn_2_matches_arn_1) or arn_2_matches_arn_1
 
-    def get_entity_bindings(self, entity):  
-        
+    def get_entity_bindings(self, entity):
+
         authenticated = entity is not None
         entity_role_bindings = {} if entity is None else entity.role_bindings
 
         if authenticated:
-            
+
             db_role_bindings = self.database_role_bindings(entity)
-            
+
             return {
                 **self.authenticated_role_bindings,
                 **entity_role_bindings,
-                **db_role_bindings
+                **db_role_bindings,
             }
         else:
             return {
                 **self.unauthenticated_role_bindings,
                 **entity_role_bindings,
             }
-        
+
     def convert_roles_to_permissions(self, roles):
         permissions = set()
         for role in roles:
@@ -187,17 +189,13 @@ class RBACAuthorizationBackend(LoggingConfigurable):
         return permissions
 
     def get_entity_binding_permissions(self, entity):
-        entity_bindings = self.get_entity_bindings(
-            entity
-        )
+        entity_bindings = self.get_entity_bindings(entity)
         return {
             entity_arn: self.convert_roles_to_permissions(roles=entity_roles)
             for entity_arn, entity_roles in entity_bindings.items()
         }
 
-    def get_entity_permissions(
-        self, entity, arn: str
-    ):
+    def get_entity_permissions(self, entity, arn: str):
         """Get set of permissions for given ARN given AUTHENTICATION
         state and entity_bindings
 
@@ -206,30 +204,22 @@ class RBACAuthorizationBackend(LoggingConfigurable):
         ENTITY_BINDINGS is a mapping of ARN with regex support to ROLES
         ROLES is a set of roles defined in `RBACAuthorizationBackend.role_mappings`
         """
-        entity_binding_permissions = self.get_entity_binding_permissions(
-            entity
-        )
+        entity_binding_permissions = self.get_entity_binding_permissions(entity)
         permissions = set()
         for entity_arn, entity_permissions in entity_binding_permissions.items():
             if self.compile_arn_regex(entity_arn).match(arn):
                 permissions = permissions | set(entity_permissions)
         return permissions
 
-    def is_subset_entity_permissions(
-        self, entity, new_entity
-    ):
+    def is_subset_entity_permissions(self, entity, new_entity):
         """Determine if new_entity_bindings is a strict subset of entity_bindings
 
         This feature is required to allow authenticated entitys to
         create new permissions that are a strict subset of its
         permissions.
         """
-        entity_binding_permissions = self.get_entity_binding_permissions(
-            entity
-        )
-        new_entity_binding_permissions = self.get_entity_binding_permissions(
-            new_entity
-        )
+        entity_binding_permissions = self.get_entity_binding_permissions(entity)
+        new_entity_binding_permissions = self.get_entity_binding_permissions(new_entity)
         for (
             new_entity_binding,
             new_permissions,
@@ -243,33 +233,32 @@ class RBACAuthorizationBackend(LoggingConfigurable):
                 return False
         return True
 
-    def authorize(
-        self, entity, arn, required_permissions
-    ):
+    def authorize(self, entity, arn, required_permissions):
         return required_permissions <= self.get_entity_permissions(
             entity=entity, arn=arn
         )
-    
-
 
     def database_role_bindings(self, entity):
-        result = self.authentication_db.execute("""SELECT nrm.entity, nrm.role
+        result = self.authentication_db.execute(
+            """SELECT nrm.entity, nrm.role
                                                 FROM namespace n
                                                 LEFT JOIN namespace_role_mapping nrm ON nrm.namespace_id = n.id
                                                 WHERE n.name = :primary_namespace
-                                                """, {'primary_namespace':entity.primary_namespace})
+                                                """,
+            {"primary_namespace": entity.primary_namespace},
+        )
         raw_role_mappings = result.mappings().all()
 
         db_role_mappings = {}
         for row in raw_role_mappings:
-            if row['entity'] not in db_role_mappings:
-                db_role_mappings[ row['entity'] ] = []
-            db_role_mappings[ row['entity'] ].append(  row['role'] )
+            if row["entity"] not in db_role_mappings:
+                db_role_mappings[row["entity"]] = []
+            db_role_mappings[row["entity"]].append(row["role"])
 
-        db_role_mappings = { k:set(v) for k,v in db_role_mappings.items() }
+        db_role_mappings = {k: set(v) for k, v in db_role_mappings.items()}
 
         return db_role_mappings
-    
+
 
 class Authentication(LoggingConfigurable):
     cookie_name = Unicode(
@@ -290,9 +279,11 @@ class Authentication(LoggingConfigurable):
         config=True,
     )
 
-    authentication_db = Instance(SQLAlchemySession, 
-              help="SQLAlchemy session to query DB. Used for role mapping",
-              config=False )
+    authentication_db = Instance(
+        SQLAlchemySession,
+        help="SQLAlchemy session to query DB. Used for role mapping",
+        config=False,
+    )
 
     @property
     def router(self):
@@ -370,7 +361,9 @@ form.addEventListener('submit', loginHandler);
     def authorization(self):
         if hasattr(self, "_authorization"):
             return self._authorization
-        self._authorization = self.authorization_backend(parent=self, log=self.log, authentication_db=self.authentication_db)
+        self._authorization = self.authorization_backend(
+            parent=self, log=self.log, authentication_db=self.authentication_db
+        )
         return self._authorization
 
     @property
@@ -476,9 +469,7 @@ form.addEventListener('submit', loginHandler);
 
     def entity_bindings(self, entity):
 
-        return self.authorization.get_entity_bindings(
-            entity
-        )
+        return self.authorization.get_entity_bindings(entity)
 
     def authorize_request(self, request: Request, arn, permissions, require=False):
 
@@ -486,11 +477,6 @@ form.addEventListener('submit', loginHandler);
             self.authenticate_request(request)
 
         if not hasattr(request.state, "authorized"):
-            role_bindings = (
-                {}
-                if (request.state.entity is None)
-                else request.state.entity.role_bindings
-            )
             request.state.authorized = self.authorization.authorize(
                 request.state.entity, arn, permissions
             )

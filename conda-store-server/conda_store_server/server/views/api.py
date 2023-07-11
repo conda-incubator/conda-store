@@ -132,9 +132,7 @@ def api_get_permissions(
     entity=Depends(dependencies.get_entity),
 ):
     authenticated = entity is not None
-    entity_binding_roles = auth.authorization.get_entity_bindings(
-        entity
-    )
+    entity_binding_roles = auth.authorization.get_entity_bindings(entity)
 
     entity_binding_permissions = auth.authorization.get_entity_binding_permissions(
         entity
@@ -221,13 +219,11 @@ def api_post_token(
     new_entity = schema.AuthenticationToken(
         exp=entity.exp,
         primary_namespace=entity.primary_namespace,
-        role_bindings= new_role_bindings
+        role_bindings=new_role_bindings,
     )
     new_expiration = expiration or current_expiration
 
-    if not auth.authorization.is_subset_entity_permissions(
-        entity, new_entity
-    ):
+    if not auth.authorization.is_subset_entity_permissions(entity, new_entity):
         raise HTTPException(
             status_code=400,
             detail="Requested role_bindings are not a subset of current permissions",
