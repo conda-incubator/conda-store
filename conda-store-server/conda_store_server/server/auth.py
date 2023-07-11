@@ -242,7 +242,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
         result = self.authentication_db.execute(
             """SELECT nrm.entity, nrm.role
                                                 FROM namespace n
-                                                LEFT JOIN namespace_role_mapping nrm ON nrm.namespace_id = n.id
+                                                RIGHT JOIN namespace_role_mapping nrm ON nrm.namespace_id = n.id
                                                 WHERE n.name = :primary_namespace
                                                 """,
             {"primary_namespace": entity.primary_namespace},
