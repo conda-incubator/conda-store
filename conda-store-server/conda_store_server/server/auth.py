@@ -160,66 +160,35 @@ class RBACAuthorizationBackend(LoggingConfigurable):
         )
         return (arn_1_matches_arn_2 and arn_2_matches_arn_1) or arn_2_matches_arn_1
 
-    def get_entity_bindings(self, entity_bindings, authenticated: bool = False):
+    def get_entity_bindings(self, entity):  
         
-        #TODO : 
-        # pass the whole entity object 
-        # use entity.primary_namespace in the SQL query
-
-        
-        # database_role_bindings
-        # {
-        #     "default/*": {"viewer"},
-        #     "filesystem/*": {"viewer"},
-        # },
-        result = self.authentication_db.execute("""SELECT nrm.entity, nrm.role
-                                                   FROM namespace_role_mapping nrm
-                                                
-                                                """)
-        raw_role_mappings = result.mappings().all()
-
-        db_role_mappings = {}
-        for row in raw_role_mappings:
-            if row['entity'] not in db_role_mappings:
-                db_role_mappings[ row['entity'] ] = []
-            db_role_mappings[ row['entity'] ].append(  row['role'] )
-        
-        db_role_mappings = { k:set(v) for k,v in db_role_mappings.items() }
-        breakpoint()
-        # in the table : 
-        #[ {'name': 'filesystem', 'entity': 'filesystem/*', 'role': 'admin'}, 
-        # {'name': 'filesystem', 'entity': 'filesystem/*', 'role': 'viewer'}, 
-        # {'name': 'default', 'entity': 'default/*', 'role': 'viewer'}]
-
-        # db_role_mappings : 
-        # { 'filesystem/*': {'viewer', 'admin'}, 
-        #   'default/*': {'viewer'}
-        # }
-
+        authenticated = entity is not None
+        entity_role_bindings = {} if entity is None else entity.role_bindings
 
         if authenticated:
+            
+            db_role_bindings = self.database_role_bindings(entity)
+            
             return {
                 **self.authenticated_role_bindings,
-                **entity_bindings,
+                **entity_role_bindings,
+                **db_role_bindings
             }
         else:
             return {
                 **self.unauthenticated_role_bindings,
-                **entity_bindings,
+                **entity_role_bindings,
             }
-
+        
     def convert_roles_to_permissions(self, roles):
         permissions = set()
         for role in roles:
             permissions = permissions | self.role_mappings[role]
         return permissions
 
-    def get_entity_binding_permissions(
-        self, entity_bindings, authenticated: bool = False
-    ):
-        breakpoint()
+    def get_entity_binding_permissions(self, entity):
         entity_bindings = self.get_entity_bindings(
-            entity_bindings=entity_bindings, authenticated=authenticated
+            entity
         )
         return {
             entity_arn: self.convert_roles_to_permissions(roles=entity_roles)
@@ -227,7 +196,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
         }
 
     def get_entity_permissions(
-        self, entity_bindings, arn: str, authenticated: bool = False
+        self, entity, arn: str
     ):
         """Get set of permissions for given ARN given AUTHENTICATION
         state and entity_bindings
@@ -238,7 +207,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
         ROLES is a set of roles defined in `RBACAuthorizationBackend.role_mappings`
         """
         entity_binding_permissions = self.get_entity_binding_permissions(
-            entity_bindings=entity_bindings, authenticated=authenticated
+            entity
         )
         permissions = set()
         for entity_arn, entity_permissions in entity_binding_permissions.items():
@@ -247,7 +216,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
         return permissions
 
     def is_subset_entity_permissions(
-        self, entity_bindings, new_entity_bindings, authenticated=False
+        self, entity, new_entity
     ):
         """Determine if new_entity_bindings is a strict subset of entity_bindings
 
@@ -256,10 +225,10 @@ class RBACAuthorizationBackend(LoggingConfigurable):
         permissions.
         """
         entity_binding_permissions = self.get_entity_binding_permissions(
-            entity_bindings=entity_bindings, authenticated=authenticated
+            entity
         )
         new_entity_binding_permissions = self.get_entity_binding_permissions(
-            entity_bindings=new_entity_bindings, authenticated=authenticated
+            new_entity
         )
         for (
             new_entity_binding,
@@ -275,30 +244,32 @@ class RBACAuthorizationBackend(LoggingConfigurable):
         return True
 
     def authorize(
-        self, entity_bindings, arn, required_permissions, authenticated=False
+        self, entity, arn, required_permissions
     ):
         return required_permissions <= self.get_entity_permissions(
-            entity_bindings=entity_bindings, arn=arn, authenticated=authenticated
+            entity=entity, arn=arn
         )
     
 
 
-    def database_role_bindings(self):
+    def database_role_bindings(self, entity):
+        result = self.authentication_db.execute("""SELECT nrm.entity, nrm.role
+                                                FROM namespace n
+                                                LEFT JOIN namespace_role_mapping nrm ON nrm.namespace_id = n.id
+                                                WHERE n.name = :primary_namespace
+                                                """, {'primary_namespace':entity.primary_namespace})
+        raw_role_mappings = result.mappings().all()
 
-        self.authentication_db
-        return {
-            "default/*": {"admin"},
-            "filesystem/*": {"admin"},
-        },
-        return {}
+        db_role_mappings = {}
+        for row in raw_role_mappings:
+            if row['entity'] not in db_role_mappings:
+                db_role_mappings[ row['entity'] ] = []
+            db_role_mappings[ row['entity'] ].append(  row['role'] )
 
-    # def get_namespace_role_bindings(namespace: str, db):
-        
-    #     breakpoint()
+        db_role_mappings = { k:set(v) for k,v in db_role_mappings.items() }
 
-
-    #     return None
-
+        return db_role_mappings
+    
 
 class Authentication(LoggingConfigurable):
     cookie_name = Unicode(
@@ -504,17 +475,13 @@ form.addEventListener('submit', loginHandler);
         return request.state.entity
 
     def entity_bindings(self, entity):
-        breakpoint()
 
-        #entity.primary_namespace
         return self.authorization.get_entity_bindings(
-            {} if entity is None else entity.role_bindings, 
-            entity is not None
+            entity
         )
 
     def authorize_request(self, request: Request, arn, permissions, require=False):
 
-        breakpoint()
         if not hasattr(request.state, "entity"):
             self.authenticate_request(request)
 
@@ -525,7 +492,7 @@ form.addEventListener('submit', loginHandler);
                 else request.state.entity.role_bindings
             )
             request.state.authorized = self.authorization.authorize(
-                role_bindings, arn, permissions, request.state.entity is not None
+                request.state.entity, arn, permissions
             )
 
         if require and not request.state.authorized:
@@ -557,11 +524,6 @@ form.addEventListener('submit', loginHandler);
         )
 
     def filter_environments(self, entity, query):
-        breakpoint()
-
-        # self.authorization_backend.get_namespace_role_bindings(namespace, 
-        #                                                        self.authentication_db
-        #                                                        )
 
         cases = []
         for entity_arn, entity_roles in self.entity_bindings(entity).items():
@@ -578,12 +540,6 @@ form.addEventListener('submit', loginHandler);
         return query.join(orm.Environment.namespace).filter(or_(*cases))
 
     def filter_namespaces(self, entity, query):
-        breakpoint()
-
-        # self.authorization_backend.get_namespace_role_bindings(namespace, 
-        #                                                        self.authentication_db
-        #                                                        )
-
         cases = []
         for entity_arn, entity_roles in self.entity_bindings(entity).items():
             namespace, name = self.authorization.compile_arn_sql_like(entity_arn)

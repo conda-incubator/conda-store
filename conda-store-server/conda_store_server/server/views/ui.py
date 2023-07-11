@@ -222,7 +222,7 @@ def ui_get_user(
         return RedirectResponse(request.url_for("get_login_method"))
 
     entity_binding_permissions = auth.authorization.get_entity_binding_permissions(
-        entity.role_bindings, authenticated=True
+        entity
     )
 
     orm_namespaces = auth.filter_namespaces(

@@ -133,11 +133,11 @@ def api_get_permissions(
 ):
     authenticated = entity is not None
     entity_binding_roles = auth.authorization.get_entity_bindings(
-        entity.role_bindings if authenticated else {}, authenticated=authenticated
+        entity
     )
 
     entity_binding_permissions = auth.authorization.get_entity_binding_permissions(
-        entity.role_bindings if authenticated else {}, authenticated=authenticated
+        entity
     )
 
     # convert Dict[str, set[enum]] -> Dict[str, List[str]]
@@ -204,9 +204,6 @@ def api_post_token(
     entity=Depends(dependencies.get_entity),
 ):
     authenticated = entity is not None
-    current_role_bindings = auth.authorization.get_entity_bindings(
-        entity.role_bindings if authenticated else {}, authenticated=authenticated
-    )
     current_namespace = (
         entity.primary_namespace if authenticated else conda_store.default_namespace
     )
@@ -219,11 +216,17 @@ def api_post_token(
     )
 
     new_namespace = primary_namespace or current_namespace
-    new_role_bindings = role_bindings or current_role_bindings
+
+    new_role_bindings = role_bindings or auth.authorization.get_entity_bindings(entity)
+    new_entity = schema.AuthenticationToken(
+        exp=entity.exp,
+        primary_namespace=entity.primary_namespace,
+        role_bindings= new_role_bindings
+    )
     new_expiration = expiration or current_expiration
 
     if not auth.authorization.is_subset_entity_permissions(
-        current_role_bindings, new_role_bindings, authenticated
+        entity, new_entity
     ):
         raise HTTPException(
             status_code=400,
