@@ -11,7 +11,7 @@ from traitlets import Dict, Unicode, Type, default, Bool, Union, Callable, Insta
 from fastapi import APIRouter, Request, Response, HTTPException, Depends
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import RedirectResponse, JSONResponse, HTMLResponse
-from sqlalchemy import or_, and_
+from sqlalchemy import or_, and_, text
 import yarl
 
 from conda_store_server import schema, orm, utils
@@ -240,11 +240,13 @@ class RBACAuthorizationBackend(LoggingConfigurable):
 
     def database_role_bindings(self, entity):
         result = self.authentication_db.execute(
-            """SELECT nrm.entity, nrm.role
+            text(
+                """SELECT nrm.entity, nrm.role
                                                 FROM namespace n
                                                 RIGHT JOIN namespace_role_mapping nrm ON nrm.namespace_id = n.id
                                                 WHERE n.name = :primary_namespace
-                                                """,
+                                                """
+            ),
             {"primary_namespace": entity.primary_namespace},
         )
         raw_role_mappings = result.mappings().all()
