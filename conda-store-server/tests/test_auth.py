@@ -189,7 +189,8 @@ def test_is_arn_subset(arn_1, arn_2, value):
 
 
 @pytest.mark.parametrize(
-    "entity_bindings, new_entity_bindings, authenticated, value",
+    #"entity_bindings, new_entity_bindings, authenticated, value",
+    "entity_bindings, new_entity_bindings, value",
     [
         # */* viewer is a subset of admin
         (
