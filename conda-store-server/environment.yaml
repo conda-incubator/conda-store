@@ -21,7 +21,7 @@ dependencies:
   - pyyaml
   - uvicorn
   - fastapi
-  - pydantic
+  - pydantic < 2.0
   - traitlets
   - yarl
   - pyjwt

@@ -132,12 +132,10 @@ def api_get_permissions(
     entity=Depends(dependencies.get_entity),
 ):
     authenticated = entity is not None
-    entity_binding_roles = auth.authorization.get_entity_bindings(
-        entity.role_bindings if authenticated else {}, authenticated=authenticated
-    )
+    entity_binding_roles = auth.authorization.get_entity_bindings(entity)
 
     entity_binding_permissions = auth.authorization.get_entity_binding_permissions(
-        entity.role_bindings if authenticated else {}, authenticated=authenticated
+        entity
     )
 
     # convert Dict[str, set[enum]] -> Dict[str, List[str]]
@@ -203,48 +201,35 @@ def api_post_token(
     auth=Depends(dependencies.get_auth),
     entity=Depends(dependencies.get_entity),
 ):
-    authenticated = entity is not None
-    current_role_bindings = auth.authorization.get_entity_bindings(
-        entity.role_bindings if authenticated else {}, authenticated=authenticated
-    )
-    current_namespace = (
-        entity.primary_namespace if authenticated else conda_store.default_namespace
-    )
-    current_expiration = (
-        entity.exp
-        if authenticated
-        else (
-            datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(days=1)
+    if entity is None:
+        entity = schema.AuthenticationToken(
+            exp=datetime.datetime.now(tz=datetime.timezone.utc)
+            + datetime.timedelta(days=1),
+            primary_namespace=conda_store.default_namespace,
+            role_bindings={},
         )
+
+    new_entity = schema.AuthenticationToken(
+        exp=expiration or entity.exp,
+        primary_namespace=primary_namespace or entity.primary_namespace,
+        role_bindings=role_bindings or auth.authorization.get_entity_bindings(entity),
     )
 
-    new_namespace = primary_namespace or current_namespace
-    new_role_bindings = role_bindings or current_role_bindings
-    new_expiration = expiration or current_expiration
-
-    if not auth.authorization.is_subset_entity_permissions(
-        current_role_bindings, new_role_bindings, authenticated
-    ):
+    if not auth.authorization.is_subset_entity_permissions(entity, new_entity):
         raise HTTPException(
             status_code=400,
             detail="Requested role_bindings are not a subset of current permissions",
         )
 
-    if new_expiration > current_expiration:
+    if new_entity.exp > entity.exp:
         raise HTTPException(
             status_code=400,
             detail="Requested expiration of token is greater than current permissions",
         )
 
-    token = schema.AuthenticationToken(
-        primary_namespace=new_namespace,
-        role_bindings=new_role_bindings,
-        exp=new_expiration,
-    )
-
     return {
         "status": "ok",
-        "data": {"token": auth.authentication.encrypt_token(token)},
+        "data": {"token": auth.authentication.encrypt_token(new_entity)},
     }
 
 

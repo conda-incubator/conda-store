@@ -34,7 +34,7 @@ dependencies = [
   "fastapi",
   "pyyaml",
   "redis",
-  "pydantic",
+  "pydantic<2",
   "minio",
   "traitlets",
   "pyjwt",

@@ -127,12 +127,20 @@ def test_expired_token():
         ),
     ],
 )
-def test_authorization(entity_bindings, arn, permissions, authorized):
-    authorization = RBACAuthorizationBackend()
-    assert authorized == authorization.authorize(entity_bindings, arn, permissions)
+def test_authorization(conda_store, entity_bindings, arn, permissions, authorized):
+
+    authorization = RBACAuthorizationBackend(
+            authentication_db=conda_store.db
+        )
+
+    entity = AuthenticationToken(
+                primary_namespace='example_namespace',
+                role_bindings=entity_bindings)
+
+    assert authorized == authorization.authorize(entity, arn, permissions)
 
 
-def test_end_to_end_auth_flow():
+def test_end_to_end_auth_flow(conda_store):
     authentication = AuthenticationBackend()
     authentication.secret = "supersecret"
 
@@ -148,15 +156,17 @@ def test_end_to_end_auth_flow():
 
     token_model = authentication.authenticate(token)
 
-    authorization = RBACAuthorizationBackend()
+    authorization = RBACAuthorizationBackend(
+        authentication_db=conda_store.db
+    )
     assert authorization.authorize(
-        token_model.role_bindings,
+        AuthenticationToken(primary_namespace=token_model.primary_namespace,
+                            role_bindings= token_model.role_bindings),
         "example-namespace/example-name",
         {
             Permissions.ENVIRONMENT_DELETE,
             Permissions.ENVIRONMENT_READ,
         },
-        authenticated=True,
     )
 
 
@@ -179,77 +189,154 @@ def test_is_arn_subset(arn_1, arn_2, value):
 
 
 @pytest.mark.parametrize(
-    "entity_bindings, new_entity_bindings, authenticated, value",
+    #"entity_bindings, new_entity_bindings, authenticated, value",
+    "entity_bindings, new_entity_bindings, value",
     [
         # */* viewer is a subset of admin
-        ({"*/*": ["admin"]}, {"*/*": ["viewer"]}, False, True),
-        ({"*/*": ["admin"]}, {"*/*": ["viewer"]}, True, True),
+        (
+            {"*/*": ["admin"]},
+            {"*/*": ["viewer"]},
+            # False,
+            True),
+        (
+            {"*/*": ["admin"]},
+            {"*/*": ["viewer"]},
+            # True,
+            True
+        ),
         # */* admin is not a subset of viewer
-        ({"*/*": ["viewer"]}, {"*/*": ["admin"]}, False, False),
-        ({"*/*": ["viewer"]}, {"*/*": ["admin"]}, True, False),
+        (
+            {"*/*": ["viewer"]},
+            {"*/*": ["admin"]},
+            # False,
+            False
+        ),
+        (
+            {"*/*": ["viewer"]},
+            {"*/*": ["admin"]},
+            # True,
+            False
+        ),
         # a/b viewer is a subset of admin
-        ({"a/b": ["admin"]}, {"a/b": ["viewer"]}, False, True),
-        ({"a/b": ["admin"]}, {"a/b": ["viewer"]}, True, True),
+        (
+            {"a/b": ["admin"]},
+            {"a/b": ["viewer"]},
+            # False,
+            True
+        ),
+        (
+            {"a/b": ["admin"]},
+            {"a/b": ["viewer"]},
+            # True,
+            True
+        ),
         # a/b admin is not a subset of viewer
-        ({"a/b": ["viewer"]}, {"a/b": ["admin"]}, False, False),
-        ({"a/b": ["viewer"]}, {"a/b": ["admin"]}, True, False),
+        (
+            {"a/b": ["viewer"]},
+            {"a/b": ["admin"]},
+            # False,
+            False
+        ),
+        (
+            {"a/b": ["viewer"]},
+            {"a/b": ["admin"]},
+            # True,
+            False
+        ),
         # default/* vs. */*
-        ({"*/*": ["viewer"]}, {"default/*": ["viewer"]}, False, True),
-        ({"*/*": ["viewer"]}, {"default/*": ["viewer"]}, True, True),
+        (
+            {"*/*": ["viewer"]},
+            {"default/*": ["viewer"]},
+            # False,
+            True
+        ),
+        (
+            {"*/*": ["viewer"]},
+            {"default/*": ["viewer"]},
+            # True,
+            True
+        ),
         # efault/* vs. d*/*
-        ({"d*/*": ["viewer"]}, {"efault/*": ["viewer"]}, False, False),
-        ({"d*/*": ["viewer"]}, {"efault/*": ["viewer"]}, True, False),
+        (
+            {"d*/*": ["viewer"]},
+            {"efault/*": ["viewer"]},
+            # False,
+            False
+        ),
+        (
+            {"d*/*": ["viewer"]},
+            {"efault/*": ["viewer"]},
+            # True,
+            False
+        ),
         # multiple entities keys
         (
             {"d*/*": ["viewer"], "de*/*": ["admin"]},
             {"default/*": ["developer"]},
-            False,
+            # False,
             True,
         ),
         (
             {"d*/*": ["viewer"], "de*/*": ["admin"]},
             {"default/*": ["developer"]},
-            True,
+            # True,
             True,
         ),
         # multiple entities keys
         (
             {"d*/*": ["viewer"], "de*/*": ["admin"]},
             {"dcefault/*": ["developer"]},
-            False,
+            # False,
             False,
         ),
         (
             {"d*/*": ["viewer"], "de*/*": ["admin"]},
             {"dcefault/*": ["developer"]},
-            True,
+            # True,
             False,
         ),
         # multiple entities keys
-        ({"d*/*": ["viewer"]}, {"d*/*": ["viewer"], "dc*/*": ["viewer"]}, False, True),
-        ({"d*/*": ["viewer"]}, {"d*/*": ["viewer"], "dc*/*": ["viewer"]}, True, True),
+        (  {"d*/*": ["viewer"]}, {"d*/*": ["viewer"],
+            "dc*/*": ["viewer"]},
+            #False,
+            True),
+        (  {"d*/*": ["viewer"]}, {"d*/*": ["viewer"],
+            "dc*/*": ["viewer"]},
+            #True,
+            True),
         # multiple entities keys
         (
             {"d*/*": ["viewer"]},
             {"d*/*": ["viewer"], "dc*/*": ["developer"]},
-            False,
+            # False,
             False,
         ),
         (
             {"d*/*": ["viewer"]},
             {"d*/*": ["viewer"], "dc*/*": ["developer"]},
-            True,
+            # True,
             False,
         ),
     ],
 )
-def test_is_subset_entity_permissions(
-    entity_bindings, new_entity_bindings, authenticated, value
+def test_is_subset_entity_permissions(conda_store,
+    entity_bindings,
+    new_entity_bindings,
+    #authenticated,
+    value
 ):
-    authorization = RBACAuthorizationBackend()
+    authorization = RBACAuthorizationBackend(
+        authentication_db=conda_store.db
+    )
+
+    entity = AuthenticationToken(role_bindings= entity_bindings)
+    new_entity = AuthenticationToken(role_bindings= new_entity_bindings )
+
     assert (
         authorization.is_subset_entity_permissions(
-            entity_bindings, new_entity_bindings, authenticated
+            entity, new_entity
         )
         == value
     )
+
+

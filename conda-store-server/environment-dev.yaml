@@ -20,7 +20,7 @@ dependencies:
   - requests
   - uvicorn
   - fastapi
-  - pydantic
+  - pydantic < 2.0
   - pyyaml
   - traitlets
   - yarl
