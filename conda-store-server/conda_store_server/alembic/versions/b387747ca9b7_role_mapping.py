@@ -30,9 +30,7 @@ def upgrade():
         sa.PrimaryKeyConstraint("id"),
     )
 
-    op.add_column(
-        "namespace", sa.Column("metadata_", sa.JSON(), nullable=True)
-    )
+    op.add_column("namespace", sa.Column("metadata_", sa.JSON(), nullable=True))
 
 
 def downgrade():
