@@ -4,7 +4,6 @@ import re
 from sqlalchemy import func, null, or_, distinct
 
 from conda_store_server import orm, schema, utils
-from conda_store_server.conda import conda_platform
 
 
 def list_namespaces(db, show_soft_deleted: bool = False):

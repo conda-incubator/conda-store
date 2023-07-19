@@ -3,6 +3,7 @@ import pytest
 
 from conda_store_server.orm import NamespaceRoleMapping
 
+
 def test_namespace_crud(conda_store):
     namespace_name = "pytest-namespace"
 
@@ -51,35 +52,24 @@ def test_namespace_role_mapping(conda_store):
     # check that only one namespace exists
     assert len(api.list_namespaces(conda_store.db).all()) == 1
 
-
     # create a Role Mapping, with a failing entity
     with pytest.raises(Exception):
-        nrm = NamespaceRoleMapping(namespace=namespace,
-                                namespace_id=namespace.id,
-                                entity="invalid_entity_name"
-                                )
+        NamespaceRoleMapping(
+            namespace=namespace, namespace_id=namespace.id, entity="invalid_entity_name"
+        )
 
     # Creates role mappings with valid entity names
-    nrm = NamespaceRoleMapping(namespace=namespace,
-                            namespace_id=namespace.id,
-                            entity="org/*"
-                            )
+    NamespaceRoleMapping(namespace=namespace, namespace_id=namespace.id, entity="org/*")
 
-    nrm = NamespaceRoleMapping(namespace=namespace,
-                            namespace_id=namespace.id,
-                            entity="*/team"
-                            )
+    NamespaceRoleMapping(
+        namespace=namespace, namespace_id=namespace.id, entity="*/team"
+    )
 
-    nrm = NamespaceRoleMapping(namespace=namespace,
-                            namespace_id=namespace.id,
-                            entity="org/team"
-                            )
+    NamespaceRoleMapping(
+        namespace=namespace, namespace_id=namespace.id, entity="org/team"
+    )
 
-    nrm = NamespaceRoleMapping(namespace=namespace,
-                            namespace_id=namespace.id,
-                            entity="*/*"
-                            )
-
+    NamespaceRoleMapping(namespace=namespace, namespace_id=namespace.id, entity="*/*")
 
 
 def test_environment_crud(conda_store):

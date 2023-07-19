@@ -5,8 +5,6 @@ import tempfile
 import traceback
 import json
 
-from typing import Dict, Union
-
 import yaml
 
 from conda_store_server import conda, orm, utils, schema, action
