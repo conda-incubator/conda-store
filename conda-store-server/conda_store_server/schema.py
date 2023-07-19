@@ -241,7 +241,7 @@ class Settings(BaseModel):
     )
 
     conda_solve_platforms: List[str] = Field(
-        [conda.conda_platform()],
+        [conda_platform()],
         description="Conda platforms to solve environments for via conda-lock. Must include current platform.",
         metadata={"global": False},
     )
