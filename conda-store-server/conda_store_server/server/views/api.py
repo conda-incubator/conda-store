@@ -203,7 +203,8 @@ def api_post_token(
 ):
     if entity is None:
         entity = schema.AuthenticationToken(
-            exp=datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(days=1),
+            exp=datetime.datetime.now(tz=datetime.timezone.utc)
+            + datetime.timedelta(days=1),
             primary_namespace=conda_store.default_namespace,
             role_bindings={},
         )
