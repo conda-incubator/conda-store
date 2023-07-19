@@ -45,6 +45,23 @@ def test_solve_lockfile(conda_store, specification, request):
     assert len(context.result["package"]) != 0
 
 
+@pytest.mark.parametrize(
+    "specification",
+    [
+        "simple_specification",
+        "simple_specification_with_pip",
+    ],
+)
+def test_solve_lockfile_multiple_platforms(conda_store, specification, request):
+    specification = request.getfixturevalue(specification)
+    context = action.action_solve_lockfile(
+        conda_command=conda_store.conda_command,
+        specification=specification,
+        platforms=['osx-64', 'linux-64', 'win-64', 'osx-arm64'],
+    )
+    assert len(context.result["package"]) != 0
+
+
 def test_fetch_and_extract_conda_packages(tmp_path, simple_conda_lock):
     context = action.action_fetch_and_extract_conda_packages(
         conda_lock_spec=simple_conda_lock,

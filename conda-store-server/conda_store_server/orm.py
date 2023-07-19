@@ -236,6 +236,10 @@ class Build(Base):
         return f"logs/{self.build_key}.log"
 
     @property
+    def conda_lock_key(self):
+        return f"lockfile/{self.build_key}.yml"
+
+    @property
     def conda_env_export_key(self):
         return f"yaml/{self.build_key}.yml"
 

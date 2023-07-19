@@ -105,6 +105,12 @@ class CondaStore(LoggingConfigurable):
         config=True,
     )
 
+    conda_solve_platforms = List(
+        [conda.conda_platform()],
+        description="Conda platforms to solve environments for via conda-lock. Must include current platform.",
+        config=True,
+    )
+
     conda_channel_alias = Unicode(
         "https://conda.anaconda.org",
         help="The prepended url location to associate with channel names",
@@ -436,6 +442,7 @@ class CondaStore(LoggingConfigurable):
             conda_max_solve_time=self.conda_max_solve_time,
             conda_indexed_channels=self.conda_indexed_channels,
             build_artifacts_kept_on_deletion=self.build_artifacts_kept_on_deletion,
+            conda_solve_platforms=self.conda_solve_platforms,
             conda_channel_alias=self.conda_channel_alias,
             conda_default_channels=self.conda_default_channels,
             conda_allowed_channels=self.conda_allowed_channels,
