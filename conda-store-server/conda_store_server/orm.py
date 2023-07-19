@@ -25,6 +25,7 @@ from sqlalchemy.orm import (
     scoped_session,
     backref,
     declarative_base,
+    validates,
 )
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import create_engine
@@ -32,11 +33,14 @@ from sqlalchemy import create_engine
 from conda_store_server import utils, schema
 from conda_store_server.environment import validate_environment
 from conda_store_server.conda import download_repodata
+import re
 import logging
 
 logger = logging.getLogger("orm")
 
 Base = declarative_base()
+
+ARN_ALLOWED_REGEX = re.compile(schema.ARN_ALLOWED)
 
 
 class Namespace(Base):
@@ -66,10 +70,18 @@ class NamespaceRoleMapping(Base):
     namespace = relationship(Namespace, back_populates="roles_mappings")
 
     # arn e.g. <namespace>/<name> like `quansight-*/*` or `quansight-devops/*`
+    # The entity must match with ARN_ALLOWED defined in schema.py
     entity = Column(Unicode(255), nullable=False)
 
     # e.g. viewer
     role = Column(Unicode(255), nullable=False)
+
+    @validates("entity")
+    def validate_entity(self, key, entity):
+        if not ARN_ALLOWED_REGEX.match(entity):
+            raise ValueError(f"invalid entity={entity}")
+
+        return entity
 
 
 class Specification(Base):
