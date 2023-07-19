@@ -4,6 +4,7 @@ import datetime
 from typing import Optional
 import base64
 
+from collections import defaultdict
 import jwt
 import requests
 from traitlets.config import LoggingConfigurable
@@ -251,13 +252,9 @@ class RBACAuthorizationBackend(LoggingConfigurable):
         )
         raw_role_mappings = result.mappings().all()
 
-        db_role_mappings = {}
+        db_role_mappings = defaultdict(set)
         for row in raw_role_mappings:
-            if row["entity"] not in db_role_mappings:
-                db_role_mappings[row["entity"]] = []
-            db_role_mappings[row["entity"]].append(row["role"])
-
-        db_role_mappings = {k: set(v) for k, v in db_role_mappings.items()}
+            db_role_mappings[row["entity"]].add(row["role"])
 
         return db_role_mappings
 
