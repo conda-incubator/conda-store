@@ -31,10 +31,10 @@ def upgrade():
     )
 
     op.add_column(
-        "namespace", sa.Column("role_mapping_metadata", sa.JSON(), nullable=True)
+        "namespace", sa.Column("metadata_", sa.JSON(), nullable=True)
     )
 
 
 def downgrade():
-    op.drop_column("namespace", "role_mapping_metadata")
+    op.drop_column("namespace", "metadata_")
     op.drop_table("namespace_role_mapping")
