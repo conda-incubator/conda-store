@@ -341,7 +341,9 @@ class CondaChannel(Base):
         logger.info(f"update packages {self.name} ")
 
         logger.info("Downloading repodata ...  ")
-        repodata = conda_utils.download_repodata(self.name, self.last_update, subdirs=subdirs)
+        repodata = conda_utils.download_repodata(
+            self.name, self.last_update, subdirs=subdirs
+        )
         logger.info("repodata downloaded ")
 
         # Hint : you can store the file locally for later debug
