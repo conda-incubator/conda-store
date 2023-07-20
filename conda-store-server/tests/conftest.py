@@ -24,7 +24,7 @@ def conda_store_config(tmp_path):
     filename = pathlib.Path(tmp_path) / "database.sqlite"
 
     with utils.chdir(tmp_path):
-        yield Config(CondaStore=dict(database_url=f"sqlite:///{filename}"))
+        yield Config(CondaStore=dict(database_url=f"sqlite:///{filename}?check_same_thread=False"))
 
 
 @pytest.fixture
