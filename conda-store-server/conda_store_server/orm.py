@@ -32,7 +32,7 @@ from sqlalchemy import create_engine
 
 from conda_store_server import utils, schema
 from conda_store_server.environment import validate_environment
-from conda_store_server.conda import download_repodata
+from conda_store_server import conda_utils
 import re
 import logging
 
@@ -341,7 +341,7 @@ class CondaChannel(Base):
         logger.info(f"update packages {self.name} ")
 
         logger.info("Downloading repodata ...  ")
-        repodata = download_repodata(self.name, self.last_update, subdirs=subdirs)
+        repodata = conda_utils.download_repodata(self.name, self.last_update, subdirs=subdirs)
         logger.info("repodata downloaded ")
 
         # Hint : you can store the file locally for later debug

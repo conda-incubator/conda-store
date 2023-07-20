@@ -25,7 +25,7 @@ from conda_store_server import (
     storage,
     schema,
     api,
-    conda,
+    conda_utils,
     environment,
     registry,
 )
@@ -106,7 +106,7 @@ class CondaStore(LoggingConfigurable):
     )
 
     conda_solve_platforms = List(
-        [conda.conda_platform()],
+        [conda_utils.conda_platform()],
         description="Conda platforms to solve environments for via conda-lock. Must include current platform.",
         config=True,
     )
@@ -118,7 +118,7 @@ class CondaStore(LoggingConfigurable):
     )
 
     conda_platforms = List(
-        [conda.conda_platform(), "noarch"],
+        [conda_utils.conda_platform(), "noarch"],
         help="Conda platforms to download package repodata.json from. By default includes current architecture and noarch",
         config=True,
     )
@@ -472,7 +472,7 @@ class CondaStore(LoggingConfigurable):
         settings = self.get_settings()
 
         for channel in settings.conda_indexed_channels:
-            normalized_channel = conda.normalize_channel_name(
+            normalized_channel = conda_utils.normalize_channel_name(
                 settings.conda_channel_alias, channel
             )
             api.ensure_conda_channel(self.db, normalized_channel)

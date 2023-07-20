@@ -3,7 +3,7 @@ import pathlib
 import yaml
 import pydantic
 
-from conda_store_server import schema, conda
+from conda_store_server import schema, conda_utils
 
 
 def validate_environment(specification):
@@ -42,12 +42,12 @@ def validate_environment_channels(
         specification.channels = settings.conda_default_channels.copy()
 
     normalized_conda_channels = set(
-        conda.normalize_channel_name(settings.conda_channel_alias, _)
+        conda_utils.normalize_channel_name(settings.conda_channel_alias, _)
         for _ in specification.channels
     )
 
     normalized_conda_allowed_channels = set(
-        conda.normalize_channel_name(settings.conda_channel_alias, _)
+        conda_utils.normalize_channel_name(settings.conda_channel_alias, _)
         for _ in settings.conda_allowed_channels
     )
 

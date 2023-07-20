@@ -4,7 +4,7 @@ import json
 
 import yaml
 
-from conda_store_server import schema, conda, action
+from conda_store_server import schema, conda_utils, action
 
 from conda_lock.conda_lock import run_lock
 
@@ -14,7 +14,7 @@ def action_solve_lockfile(
     context,
     conda_command: str,
     specification: schema.CondaSpecification,
-    platforms: typing.List[str] = [conda.conda_platform()],
+    platforms: typing.List[str] = [conda_utils.conda_platform()],
 ):
     environment_filename = pathlib.Path.cwd() / "environment.yaml"
     lockfile_filename = pathlib.Path.cwd() / "conda-lock.yaml"

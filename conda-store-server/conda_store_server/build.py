@@ -7,7 +7,7 @@ import json
 
 import yaml
 
-from conda_store_server import conda, orm, utils, schema, action
+from conda_store_server import conda_utils, orm, utils, schema, action
 
 
 def set_build_started(conda_store, build):
@@ -107,7 +107,7 @@ def build_conda_environment(conda_store, build):
 
             context = action.action_fetch_and_extract_conda_packages(
                 conda_lock_spec=conda_lock_spec,
-                pkgs_dir=conda.conda_root_package_dir(),
+                pkgs_dir=conda_utils.conda_root_package_dir(),
             )
             append_to_logs(
                 conda_store,
@@ -169,7 +169,7 @@ def solve_conda_environment(conda_store, solve):
     context = action.action_solve_lockfile(
         conda_command=settings.conda_command,
         specification=schema.CondaSpecification.parse_obj(solve.specification.spec),
-        platforms=[conda.conda_platform()],
+        platforms=[conda_utils.conda_platform()],
     )
     conda_lock_spec = context.result
 

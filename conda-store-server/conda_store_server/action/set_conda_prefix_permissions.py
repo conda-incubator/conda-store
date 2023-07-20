@@ -1,7 +1,7 @@
 import pathlib
 import stat
 
-from conda_store_server import conda, utils, action
+from conda_store_server import conda_utils, utils, action
 
 
 @action.action
@@ -15,7 +15,7 @@ def action_set_conda_prefix_permissions(
     conda_prefix = conda_prefix.resolve()
 
     # safeguard to try and prevent destructive actions
-    if not conda.is_conda_prefix(conda_prefix):
+    if not conda_utils.is_conda_prefix(conda_prefix):
         raise ValueError("not a valid conda prefix")
 
     stat_info = conda_prefix.stat()
