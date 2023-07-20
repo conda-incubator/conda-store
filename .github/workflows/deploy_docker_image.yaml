@@ -61,11 +61,8 @@ jobs:
             quansight/${{ matrix.docker-image }}
             quay.io/quansight/${{ matrix.docker-image }}
           tags: |
-            # formal tagged releases:
             type=ref,event=tag
-            # Branches... if this workflow is triggered for the branch
             type=ref,event=branch
-            # short githash for reproducibility:
             type=sha
 
       - name: Build docker
@@ -79,5 +76,3 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-
