@@ -24,7 +24,7 @@ def append_to_logs(conda_store, build, logs: typing.Union[str, bytes]):
         current_logs = b""
 
     if isinstance(logs, str):
-        logs = logs.encode('utf-8')
+        logs = logs.encode("utf-8")
 
     conda_store.storage.set(
         conda_store.db,
