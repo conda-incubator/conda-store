@@ -1,3 +1,4 @@
+import typing
 import datetime
 import pathlib
 import subprocess
@@ -16,17 +17,20 @@ def set_build_started(conda_store, build):
     conda_store.db.commit()
 
 
-def append_to_logs(conda_store, build, logs: str):
+def append_to_logs(conda_store, build, logs: typing.Union[str, bytes]):
     try:
         current_logs = conda_store.storage.get(build.log_key)
     except Exception:
         current_logs = b""
 
+    if isinstance(logs, str):
+        logs = logs.encode('utf-8')
+
     conda_store.storage.set(
         conda_store.db,
         build.id,
         build.log_key,
-        current_logs + logs.encode("utf-8"),
+        current_logs + logs,
         content_type="text/plain",
         artifact_type=schema.BuildArtifactType.LOGS,
     )
