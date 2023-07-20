@@ -129,13 +129,11 @@ def test_expired_token():
 )
 def test_authorization(conda_store, entity_bindings, arn, permissions, authorized):
 
-    authorization = RBACAuthorizationBackend(
-            authentication_db=conda_store.db
-        )
+    authorization = RBACAuthorizationBackend(authentication_db=conda_store.db)
 
     entity = AuthenticationToken(
-                primary_namespace='example_namespace',
-                role_bindings=entity_bindings)
+        primary_namespace="example_namespace", role_bindings=entity_bindings
+    )
 
     assert authorized == authorization.authorize(entity, arn, permissions)
 
@@ -156,12 +154,12 @@ def test_end_to_end_auth_flow(conda_store):
 
     token_model = authentication.authenticate(token)
 
-    authorization = RBACAuthorizationBackend(
-        authentication_db=conda_store.db
-    )
+    authorization = RBACAuthorizationBackend(authentication_db=conda_store.db)
     assert authorization.authorize(
-        AuthenticationToken(primary_namespace=token_model.primary_namespace,
-                            role_bindings= token_model.role_bindings),
+        AuthenticationToken(
+            primary_namespace=token_model.primary_namespace,
+            role_bindings=token_model.role_bindings,
+        ),
         "example-namespace/example-name",
         {
             Permissions.ENVIRONMENT_DELETE,
@@ -189,7 +187,7 @@ def test_is_arn_subset(arn_1, arn_2, value):
 
 
 @pytest.mark.parametrize(
-    #"entity_bindings, new_entity_bindings, authenticated, value",
+    # "entity_bindings, new_entity_bindings, authenticated, value",
     "entity_bindings, new_entity_bindings, value",
     [
         # */* viewer is a subset of admin
@@ -197,77 +195,78 @@ def test_is_arn_subset(arn_1, arn_2, value):
             {"*/*": ["admin"]},
             {"*/*": ["viewer"]},
             # False,
-            True),
+            True,
+        ),
         (
             {"*/*": ["admin"]},
             {"*/*": ["viewer"]},
             # True,
-            True
+            True,
         ),
         # */* admin is not a subset of viewer
         (
             {"*/*": ["viewer"]},
             {"*/*": ["admin"]},
             # False,
-            False
+            False,
         ),
         (
             {"*/*": ["viewer"]},
             {"*/*": ["admin"]},
             # True,
-            False
+            False,
         ),
         # a/b viewer is a subset of admin
         (
             {"a/b": ["admin"]},
             {"a/b": ["viewer"]},
             # False,
-            True
+            True,
         ),
         (
             {"a/b": ["admin"]},
             {"a/b": ["viewer"]},
             # True,
-            True
+            True,
         ),
         # a/b admin is not a subset of viewer
         (
             {"a/b": ["viewer"]},
             {"a/b": ["admin"]},
             # False,
-            False
+            False,
         ),
         (
             {"a/b": ["viewer"]},
             {"a/b": ["admin"]},
             # True,
-            False
+            False,
         ),
         # default/* vs. */*
         (
             {"*/*": ["viewer"]},
             {"default/*": ["viewer"]},
             # False,
-            True
+            True,
         ),
         (
             {"*/*": ["viewer"]},
             {"default/*": ["viewer"]},
             # True,
-            True
+            True,
         ),
         # efault/* vs. d*/*
         (
             {"d*/*": ["viewer"]},
             {"efault/*": ["viewer"]},
             # False,
-            False
+            False,
         ),
         (
             {"d*/*": ["viewer"]},
             {"efault/*": ["viewer"]},
             # True,
-            False
+            False,
         ),
         # multiple entities keys
         (
@@ -296,14 +295,18 @@ def test_is_arn_subset(arn_1, arn_2, value):
             False,
         ),
         # multiple entities keys
-        (  {"d*/*": ["viewer"]}, {"d*/*": ["viewer"],
-            "dc*/*": ["viewer"]},
-            #False,
-            True),
-        (  {"d*/*": ["viewer"]}, {"d*/*": ["viewer"],
-            "dc*/*": ["viewer"]},
-            #True,
-            True),
+        (
+            {"d*/*": ["viewer"]},
+            {"d*/*": ["viewer"], "dc*/*": ["viewer"]},
+            # False,
+            True,
+        ),
+        (
+            {"d*/*": ["viewer"]},
+            {"d*/*": ["viewer"], "dc*/*": ["viewer"]},
+            # True,
+            True,
+        ),
         # multiple entities keys
         (
             {"d*/*": ["viewer"]},
@@ -319,24 +322,16 @@ def test_is_arn_subset(arn_1, arn_2, value):
         ),
     ],
 )
-def test_is_subset_entity_permissions(conda_store,
+def test_is_subset_entity_permissions(
+    conda_store,
     entity_bindings,
     new_entity_bindings,
-    #authenticated,
-    value
+    # authenticated,
+    value,
 ):
-    authorization = RBACAuthorizationBackend(
-        authentication_db=conda_store.db
-    )
+    authorization = RBACAuthorizationBackend(authentication_db=conda_store.db)
 
-    entity = AuthenticationToken(role_bindings= entity_bindings)
-    new_entity = AuthenticationToken(role_bindings= new_entity_bindings )
+    entity = AuthenticationToken(role_bindings=entity_bindings)
+    new_entity = AuthenticationToken(role_bindings=new_entity_bindings)
 
-    assert (
-        authorization.is_subset_entity_permissions(
-            entity, new_entity
-        )
-        == value
-    )
-
-
+    assert authorization.is_subset_entity_permissions(entity, new_entity) == value

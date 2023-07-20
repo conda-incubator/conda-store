@@ -3,7 +3,7 @@ import pytest
 import pathlib
 import sys
 
-from conda_store_server import action, conda, utils, schema, api
+from conda_store_server import action, conda_utils, utils, schema, api
 
 
 def test_action_decorator():
@@ -40,7 +40,7 @@ def test_solve_lockfile(conda_store, specification, request):
     context = action.action_solve_lockfile(
         conda_command=conda_store.conda_command,
         specification=specification,
-        platforms=[conda.conda_platform()],
+        platforms=[conda_utils.conda_platform()],
     )
     assert len(context.result["package"]) != 0
 
@@ -57,7 +57,7 @@ def test_solve_lockfile_multiple_platforms(conda_store, specification, request):
     context = action.action_solve_lockfile(
         conda_command=conda_store.conda_command,
         specification=specification,
-        platforms=['osx-64', 'linux-64', 'win-64', 'osx-arm64'],
+        platforms=["osx-64", "linux-64", "win-64", "osx-arm64"],
     )
     assert len(context.result["package"]) != 0
 
@@ -80,7 +80,7 @@ def test_install_specification(tmp_path, conda_store, simple_specification):
         conda_prefix=conda_prefix,
     )
 
-    assert conda.is_conda_prefix(conda_prefix)
+    assert conda_utils.is_conda_prefix(conda_prefix)
 
 
 def test_install_lockfile(tmp_path, conda_store, simple_conda_lock):
@@ -90,7 +90,7 @@ def test_install_lockfile(tmp_path, conda_store, simple_conda_lock):
         conda_lock_spec=simple_conda_lock, conda_prefix=conda_prefix
     )
 
-    assert conda.is_conda_prefix(conda_prefix)
+    assert conda_utils.is_conda_prefix(conda_prefix)
 
 
 def test_generate_conda_export(conda_store, current_prefix):
@@ -139,11 +139,11 @@ def test_remove_conda_prefix(tmp_path, simple_conda_lock):
         conda_lock_spec=simple_conda_lock, conda_prefix=conda_prefix
     )
 
-    assert conda.is_conda_prefix(conda_prefix)
+    assert conda_utils.is_conda_prefix(conda_prefix)
 
     action.action_remove_conda_prefix(conda_prefix)
 
-    assert not conda.is_conda_prefix(conda_prefix)
+    assert not conda_utils.is_conda_prefix(conda_prefix)
     assert not conda_prefix.exists()
 
 
