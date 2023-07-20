@@ -81,6 +81,8 @@ conda-store. [S3](https://en.wikipedia.org/wiki/Amazon_S3) storage is
 the default. File based storage is also supported but not nearly as
 well tested.
 
+`CondaStore.conda_solve_platforms` configures which platforms to solve environments for, via conda-lock. It must include the current platform conda-store is running on. By default, contains only the platform on which conda-store is running.
+
 `CondaStore.store_directory` is the directory used for conda-store to
 build the environments. 
 
