@@ -350,7 +350,9 @@ class CondaSpecificationPip(BaseModel):
             try:
                 Requirement.parse(v)
             except Exception:
-                raise ValueError(f"Invalid pypi package dependency {v}")
+                raise ValueError(
+                    f'Invalid pypi package dependency "{v}" ensure it follows peps https://peps.python.org/pep-0508/ and https://peps.python.org/pep-0440/'
+                )
 
         return v
 
