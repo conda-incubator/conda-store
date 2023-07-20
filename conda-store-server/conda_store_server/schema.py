@@ -7,6 +7,8 @@ import functools
 
 from pydantic import BaseModel, Field, constr, validator
 
+from conda_store_server import conda_utils
+
 
 def _datetime_factory(offset: datetime.timedelta):
     """utcnow datetime + timezone as string"""
@@ -208,7 +210,7 @@ class Settings(BaseModel):
     )
 
     conda_platforms: List[str] = Field(
-        ...,
+        ["noarch", conda_utils.conda_platform()],
         description="Conda platforms to download package repodata.json from. By default includes current architecture and noarch",
         metadata={"global": True},
     )
@@ -236,6 +238,12 @@ class Settings(BaseModel):
         ],
         description="artifacts to keep on build deletion",
         metadata={"global": True},
+    )
+
+    conda_solve_platforms: List[str] = Field(
+        [conda_utils.conda_platform()],
+        description="Conda platforms to solve environments for via conda-lock. Must include current platform.",
+        metadata={"global": False},
     )
 
     conda_channel_alias: str = Field(

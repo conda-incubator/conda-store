@@ -50,3 +50,6 @@ dependencies:
   - pydata-sphinx-theme
   - playwright
   - docker-compose
+
+  - pip:
+     - pytest-playwright

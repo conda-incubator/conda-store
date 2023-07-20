@@ -4,7 +4,7 @@ import shutil
 
 import filelock
 
-from conda_store_server import conda, action
+from conda_store_server import conda_utils, action
 import conda_package_handling.api
 import conda_package_streaming.url
 
@@ -14,7 +14,7 @@ def action_fetch_and_extract_conda_packages(
     context,
     conda_lock_spec: typing.Dict,
     pkgs_dir: pathlib.Path,
-    platforms: typing.List[str] = [conda.conda_platform(), "noarch"],
+    platforms: typing.List[str] = [conda_utils.conda_platform(), "noarch"],
 ):
     """Download packages from a conda-lock specification using filelocks"""
     packages_searched = 1

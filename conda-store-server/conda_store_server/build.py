@@ -3,12 +3,11 @@ import pathlib
 import subprocess
 import tempfile
 import traceback
-
-from typing import Dict, Union
+import json
 
 import yaml
 
-from conda_store_server import conda, orm, utils, schema, action
+from conda_store_server import conda_utils, orm, utils, schema, action
 
 
 def set_build_started(conda_store, build):
@@ -43,44 +42,16 @@ def set_build_completed(conda_store, build):
     build.status = schema.BuildStatus.COMPLETED
     build.ended_on = datetime.datetime.utcnow()
 
-    # add records for lockfile and directory build artifacts
-    lockfile_build_artifact = orm.BuildArtifact(
-        build_id=build.id, artifact_type=schema.BuildArtifactType.LOCKFILE, key=""
-    )
     directory_build_artifact = orm.BuildArtifact(
         build_id=build.id,
         artifact_type=schema.BuildArtifactType.DIRECTORY,
         key=str(build.build_path(conda_store)),
     )
-    conda_store.db.add(lockfile_build_artifact)
     conda_store.db.add(directory_build_artifact)
 
     build.environment.current_build = build
     build.environment.specification = build.specification
     conda_store.db.commit()
-
-
-def set_conda_environment_variables(
-    conda_prefix: pathlib.Path, environment_variables: Dict[str, Union[str, int]]
-):
-    """Takes an input of the conda prefix and the, variables defined in the environment yaml
-    specification. Then, generates the files neccesary to "activate" these when an environment
-    is activated.
-    """
-    for item in ("activate", "deactivate"):
-        folderpath = conda_prefix.joinpath("etc", "conda", f"{item}.d")
-        folderpath.mkdir(parents=True, exist_ok=False)
-        env_vars_file = folderpath.joinpath("env_vars.sh")
-        env_vars_file.touch()
-        with open(env_vars_file, "w") as f:
-            f.write("#!/bin/bash\n")
-            if item == "activate":
-                for key in environment_variables:
-                    f.write(f"export {key}={environment_variables[key]}\n")
-            elif item == "deactivate":
-                for key in environment_variables.keys():
-                    f.write(f"unset {key}\n")
-    return
 
 
 def build_conda_environment(conda_store, build):
@@ -113,7 +84,18 @@ def build_conda_environment(conda_store, build):
                 specification=schema.CondaSpecification.parse_obj(
                     build.specification.spec
                 ),
+                platforms=settings.conda_solve_platforms,
             )
+
+            conda_store.storage.set(
+                conda_store.db,
+                build.id,
+                build.conda_lock_key,
+                json.dumps(context.result, indent=4).encode("utf-8"),
+                content_type="text/json",
+                artifact_type=schema.BuildArtifactType.LOCKFILE,
+            )
+
             append_to_logs(
                 conda_store,
                 build,
@@ -125,7 +107,7 @@ def build_conda_environment(conda_store, build):
 
             context = action.action_fetch_and_extract_conda_packages(
                 conda_lock_spec=conda_lock_spec,
-                pkgs_dir=conda.conda_root_package_dir(),
+                pkgs_dir=conda_utils.conda_root_package_dir(),
             )
             append_to_logs(
                 conda_store,
@@ -146,12 +128,6 @@ def build_conda_environment(conda_store, build):
                 + context.stdout.getvalue()
                 + "\n::endgroup::\n",
             )
-
-            #     if build.specification.spec.get("variables") is not None:
-            #         set_conda_environment_variables(
-            #             pathlib.Path(conda_prefix),
-            #             build.specification.spec["variables"],
-            #         )
 
         utils.symlink(conda_prefix, environment_prefix)
 
@@ -193,7 +169,7 @@ def solve_conda_environment(conda_store, solve):
     context = action.action_solve_lockfile(
         conda_command=settings.conda_command,
         specification=schema.CondaSpecification.parse_obj(solve.specification.spec),
-        platforms=[conda.conda_platform()],
+        platforms=[conda_utils.conda_platform()],
     )
     conda_lock_spec = context.result
 

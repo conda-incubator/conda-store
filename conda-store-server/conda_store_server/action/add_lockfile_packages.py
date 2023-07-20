@@ -2,12 +2,12 @@ import typing
 
 from conda.models.dist import Dist
 
-from conda_store_server import action, api, conda
+from conda_store_server import action, api, conda_utils
 
 
 def list_lockfile_packages(conda_lock_spec: typing.Dict):
     conda_packages = []
-    platform = conda.conda_platform()
+    platform = conda_utils.conda_platform()
 
     for package in conda_lock_spec["package"]:
         if package["manager"] == "conda" and package["platform"] == platform:

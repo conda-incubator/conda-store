@@ -7,7 +7,6 @@ import yaml
 from conda_store_server import api
 from conda_store_server.server import dependencies
 from conda_store_server.schema import Permissions
-from conda_store_server.conda import conda_platform
 
 router_ui = APIRouter(tags=["ui"])
 
@@ -203,7 +202,6 @@ def ui_get_build(
         "build": build,
         "registry_external_url": server.registry_external_url,
         "entity": entity,
-        "platform": conda_platform(),
         "spec": yaml.dump(build.specification.spec),
     }
 

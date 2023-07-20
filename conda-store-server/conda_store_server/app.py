@@ -25,7 +25,7 @@ from conda_store_server import (
     storage,
     schema,
     api,
-    conda,
+    conda_utils,
     environment,
     registry,
 )
@@ -105,6 +105,12 @@ class CondaStore(LoggingConfigurable):
         config=True,
     )
 
+    conda_solve_platforms = List(
+        [conda_utils.conda_platform()],
+        description="Conda platforms to solve environments for via conda-lock. Must include current platform.",
+        config=True,
+    )
+
     conda_channel_alias = Unicode(
         "https://conda.anaconda.org",
         help="The prepended url location to associate with channel names",
@@ -112,7 +118,7 @@ class CondaStore(LoggingConfigurable):
     )
 
     conda_platforms = List(
-        [conda.conda_platform(), "noarch"],
+        [conda_utils.conda_platform(), "noarch"],
         help="Conda platforms to download package repodata.json from. By default includes current architecture and noarch",
         config=True,
     )
@@ -436,6 +442,7 @@ class CondaStore(LoggingConfigurable):
             conda_max_solve_time=self.conda_max_solve_time,
             conda_indexed_channels=self.conda_indexed_channels,
             build_artifacts_kept_on_deletion=self.build_artifacts_kept_on_deletion,
+            conda_solve_platforms=self.conda_solve_platforms,
             conda_channel_alias=self.conda_channel_alias,
             conda_default_channels=self.conda_default_channels,
             conda_allowed_channels=self.conda_allowed_channels,
@@ -465,7 +472,7 @@ class CondaStore(LoggingConfigurable):
         settings = self.get_settings()
 
         for channel in settings.conda_indexed_channels:
-            normalized_channel = conda.normalize_channel_name(
+            normalized_channel = conda_utils.normalize_channel_name(
                 settings.conda_channel_alias, channel
             )
             api.ensure_conda_channel(self.db, normalized_channel)

@@ -224,8 +224,6 @@ def delete_build_artifact(conda_store, build_artifact):
         # # container registry tag deletion is not generally implemented
         # # the underlying library `python_docker` is already capable
         # conda_store.container_registry.delete_image(build_artifact.key)
-    elif build_artifact.artifact_type == schema.BuildArtifactType.LOCKFILE:
-        pass
     else:
         conda_store.log.info(f"deleting {build_artifact.key}")
         conda_store.storage.delete(

@@ -4,7 +4,6 @@ import re
 from sqlalchemy import func, null, or_, distinct
 
 from conda_store_server import orm, schema, utils
-from conda_store_server.conda import conda_platform
 
 
 def list_namespaces(db, show_soft_deleted: bool = False):
@@ -287,20 +286,6 @@ def get_build_packages(
         .join(orm.CondaPackageBuild.package)
         .join(orm.CondaPackage.channel)
         .filter(*filters)
-    )
-
-
-def get_build_lockfile(db, build_id: int):
-    build = db.query(orm.Build).filter(orm.Build.id == build_id).first()
-    packages = [
-        f"{row.package.channel.name}/{row.subdir}/{row.package.name}-{row.package.version}-{row.build}.tar.bz2#{row.md5}"
-        for row in build.package_builds
-    ]
-    return """#platform: {0}
-@EXPLICIT
-{1}
-""".format(
-        conda_platform(), "\n".join(packages)
     )
 
 

@@ -824,8 +824,7 @@ def api_get_build_lockfile(
         require=True,
     )
 
-    lockfile = api.get_build_lockfile(conda_store.db, build_id)
-    return lockfile
+    return RedirectResponse(conda_store.storage.get_url(build.conda_lock_key))
 
 
 @router_api.get("/build/{build_id}/archive/")
