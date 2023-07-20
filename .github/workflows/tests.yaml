@@ -92,6 +92,7 @@ jobs:
 
       - name: Run integration tests
         run: |
+          export PYTHONPATH=$PYTHONPATH:$PWD
           pytest ../tests/test_api.py ../tests/test_metrics.py
 
       - name: Docker logs
