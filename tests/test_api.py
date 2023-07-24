@@ -453,6 +453,92 @@ def test_create_namespace_auth(testclient):
     assert r.data.name == namespace
 
 
+
+def test_update_namespace_noauth(testclient):
+    namespace = f"filesystem"
+    # namespace = f"pytest-{uuid.uuid4()}"
+
+    test_role_mappings = {f"{namespace}/*":['viewer'],
+                          f"{namespace}/admin":['admin'],
+                          f"{namespace}/test":['admin', 'viewer', 'developer'],
+                        }
+
+    # Updates the metadata only
+    response = testclient.put(f"api/v1/namespace/{namespace}/", json={
+        "metadata": {"test_key1":"test_value1", "test_key2":"test_value2"},
+
+    })
+    assert response.status_code == 403
+
+    r = schema.APIResponse.parse_obj(response.json())
+    assert r.status == schema.APIStatus.ERROR
+
+
+    # Updates the role mappings only
+    response = testclient.put(f"api/v1/namespace/{namespace}", json={
+        "role_mappings": test_role_mappings
+    })
+    assert response.status_code == 403
+
+    r = schema.APIResponse.parse_obj(response.json())
+    assert r.status == schema.APIStatus.ERROR
+
+
+    # Updates both the metadata and the role mappings
+    response = testclient.put(f"api/v1/namespace/{namespace}", json={
+        "metadata": {"test_key1":"test_value1", "test_key2":"test_value2"},
+        "role_mappings": test_role_mappings
+    })
+    assert response.status_code == 403
+
+    r = schema.APIResponse.parse_obj(response.json())
+    assert r.status == schema.APIStatus.ERROR
+
+
+
+def test_update_namespace_auth(testclient):
+    namespace = f"filesystem"
+
+    testclient.login()
+
+
+
+    test_role_mappings = {f"{namespace}/*":['viewer'],
+                          f"{namespace}/admin":['admin'],
+                          f"{namespace}/test":['admin', 'viewer', 'developer'],
+                        }
+
+    # Updates both the metadata and the role mappings
+    response = testclient.put(f"api/v1/namespace/{namespace}", json={
+        "metadata": {"test_key1":"test_value1", "test_key2":"test_value2"},
+        "role_mappings": test_role_mappings,
+    })
+
+    r = schema.APIResponse.parse_obj(response.json())
+    assert r.status == schema.APIStatus.OK
+
+
+    # Updates the metadata only
+    response = testclient.put(f"api/v1/namespace/{namespace}/", json={
+        "metadata": {"test_key1":"test_value1", "test_key2":"test_value2"},
+
+    })
+    response.raise_for_status()
+
+    r = schema.APIResponse.parse_obj(response.json())
+    assert r.status == schema.APIStatus.OK
+
+
+    # Updates the role mappings only
+    response = testclient.put(f"api/v1/namespace/{namespace}", json={
+        "role_mappings": test_role_mappings
+    })
+
+    r = schema.APIResponse.parse_obj(response.json())
+    assert r.status == schema.APIStatus.OK
+
+
+
 def test_create_get_delete_namespace_auth(testclient):
     namespace = f"pytest-delete-namespace-{uuid.uuid4()}"
 

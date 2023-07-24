@@ -36,6 +36,7 @@ from conda_store_server.conda import download_repodata
 import re
 import logging
 
+
 logger = logging.getLogger("orm")
 
 Base = declarative_base()
@@ -82,6 +83,13 @@ class NamespaceRoleMapping(Base):
             raise ValueError(f"invalid entity={entity}")
 
         return entity
+
+    @validates("role")
+    def validate_role(self, key, role):
+        if role not in ["admin", "viewer", "developer"]:
+            raise ValueError(f"invalid entity={role}")
+
+        return role
 
 
 class Specification(Base):

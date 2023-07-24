@@ -1,4 +1,4 @@
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 import re
 
 from sqlalchemy import func, null, or_, distinct
@@ -23,7 +23,9 @@ def ensure_namespace(db, name: str):
     return namespace
 
 
-def get_namespace(db, name: str = None, id: int = None, show_soft_deleted: bool = True):
+def get_namespace(
+    db, name: str = None, id: int = None, show_soft_deleted: bool = True
+) -> orm.Namespace:
     filters = []
     if name:
         filters.append(orm.Namespace.name == name)
@@ -42,6 +44,47 @@ def create_namespace(db, name: str):
 
     namespace = orm.Namespace(name=name)
     db.add(namespace)
+    return namespace
+
+
+def update_namespace(
+    db,
+    name: str,
+    metadata_: Optional[Dict] | None = None,
+    role_mappings: Optional[Dict[str, List[str]]] | None = None,
+):
+
+    namespace = get_namespace(db, name)
+    if namespace is None:
+        raise ValueError(f"Namespace='{name}' not found")
+
+    if metadata_ is not None:
+        namespace.metadata_ = metadata_
+
+    if role_mappings is not None:
+
+        # deletes all the existing role mappings ...
+        for rm in namespace.roles_mappings:
+            db.delete(rm)
+
+        # ... before adding all the new ones
+        mappings_orm = []
+        for entity, roles in role_mappings.items():
+            for r in roles:
+
+                mapping_orm = orm.NamespaceRoleMapping(
+                    namespace_id=namespace.id,
+                    namespace=namespace,
+                    entity=entity,
+                    role=r,
+                )
+
+                mappings_orm.append(mapping_orm)
+
+        namespace.roles_mappings = mappings_orm
+
+    db.commit()
+
     return namespace
 
 

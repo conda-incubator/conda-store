@@ -84,6 +84,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
                 schema.Permissions.NAMESPACE_CREATE,
                 schema.Permissions.NAMESPACE_DELETE,
                 schema.Permissions.NAMESPACE_READ,
+                schema.Permissions.NAMESPACE_UPDATE,
                 schema.Permissions.SETTING_READ,
                 schema.Permissions.SETTING_UPDATE,
             },
