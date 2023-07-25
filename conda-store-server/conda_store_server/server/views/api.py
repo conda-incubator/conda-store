@@ -1,4 +1,4 @@
-from typing import List, Dict, Optional, Any
+from typing import List, Dict, Optional, Any, Union
 import datetime
 
 import pydantic
@@ -314,8 +314,8 @@ def api_create_namespace(
 def api_update_namespace(
     namespace: str,
     request: Request,
-    metadata: Optional[Dict | List] | None = None,
-    role_mappings: Optional[Dict[str, List[str]]] | None = None,
+    metadata: Union[Optional[Dict | List], None] = None,
+    role_mappings: Union[Optional[Dict[str, List[str]]], None] = None,
     conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
 ):

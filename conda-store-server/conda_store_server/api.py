@@ -1,4 +1,4 @@
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Union
 import re
 
 from sqlalchemy import func, null, or_, distinct
@@ -50,8 +50,8 @@ def create_namespace(db, name: str):
 def update_namespace(
     db,
     name: str,
-    metadata_: Optional[Dict] | None = None,
-    role_mappings: Optional[Dict[str, List[str]]] | None = None,
+    metadata_: Union[Optional[Dict], None] = None,
+    role_mappings: Union[Optional[Dict[str, List[str]]], None] = None,
 ):
 
     namespace = get_namespace(db, name)
