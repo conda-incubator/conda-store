@@ -321,7 +321,14 @@ def api_update_namespace(
 ):
 
     auth.authorize_request(
-        request, namespace, {Permissions.NAMESPACE_UPDATE}, require=True
+        request,
+        namespace,
+        {
+            Permissions.NAMESPACE_UPDATE,
+            Permissions.NAMESPACE_ROLE_MAPPING_CREATE,
+            Permissions.NAMESPACE_ROLE_MAPPING_DELETE,
+        },
+        require=True,
     )
 
     namespace_orm = api.get_namespace(conda_store.db, namespace)
