@@ -269,6 +269,13 @@ class Authentication(LoggingConfigurable):
         config=True,
     )
 
+    cookie_domain = Unicode(
+        None,
+        help="Use when wanting to set a subdomain wide cookie. For example setting this to `example.com` would allow the cookie to be valid for `example.com` along with `*.example.com`.",
+        allow_none=True,
+        config=True,
+    )
+
     authentication_backend = Type(
         AuthenticationBackend,
         help="class for authentication implementation",
@@ -429,6 +436,7 @@ form.addEventListener('submit', loginHandler);
             self.authentication.encrypt_token(authentication_token),
             httponly=True,
             samesite="strict",
+            domain=self.cookie_domain,
             # set cookie to expire at same time as jwt
             max_age=(authentication_token.exp - datetime.datetime.utcnow()).seconds,
         )

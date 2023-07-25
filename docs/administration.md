@@ -331,6 +331,8 @@ bindings that an authenticated user assumes.
 `Authentication.cookie_name` is the name for the browser cookie used
 to authenticate users.
 
+`Authentication.cookie_domain` use when wanting to set a subdomain wide cookie. For example setting this to `example.com` would allow the cookie to be valid for `example.com` along with `*.example.com`.
+
 `Authentication.authentication_backend` is the class to use for
 authentication logic. The default is `AuthenticationBackend` and will
 likely not need to change.
