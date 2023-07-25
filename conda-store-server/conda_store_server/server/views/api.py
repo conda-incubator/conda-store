@@ -1,4 +1,4 @@
-from typing import List, Dict, Optional, Any
+from typing import List, Dict, Optional, Any, Union
 import datetime
 
 import pydantic
@@ -301,6 +301,42 @@ def api_create_namespace(
 
     try:
         api.create_namespace(conda_store.db, namespace)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e.args[0]))
+    conda_store.db.commit()
+    return {"status": "ok"}
+
+
+@router_api.put(
+    "/namespace/{namespace}/",
+    response_model=schema.APIAckResponse,
+)
+def api_update_namespace(
+    namespace: str,
+    request: Request,
+    metadata: Union[Optional[Dict | List], None] = None,
+    role_mappings: Union[Optional[Dict[str, List[str]]], None] = None,
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
+):
+
+    auth.authorize_request(
+        request,
+        namespace,
+        {
+            Permissions.NAMESPACE_UPDATE,
+            Permissions.NAMESPACE_ROLE_MAPPING_CREATE,
+            Permissions.NAMESPACE_ROLE_MAPPING_DELETE,
+        },
+        require=True,
+    )
+
+    namespace_orm = api.get_namespace(conda_store.db, namespace)
+    if namespace_orm is None:
+        raise HTTPException(status_code=404, detail="namespace does not exist")
+
+    try:
+        api.update_namespace(conda_store.db, namespace, metadata, role_mappings)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e.args[0]))
     conda_store.db.commit()

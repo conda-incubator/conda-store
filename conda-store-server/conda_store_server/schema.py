@@ -36,7 +36,11 @@ class Permissions(enum.Enum):
     BUILD_DELETE = "build::delete"
     NAMESPACE_CREATE = "namespace::create"
     NAMESPACE_READ = "namespace::read"
+    NAMESPACE_UPDATE = "namespace::update"
     NAMESPACE_DELETE = "namespace::delete"
+    NAMESPACE_ROLE_MAPPING_READ = "namespace-role-mapping::read"
+    NAMESPACE_ROLE_MAPPING_CREATE = "namespace-role-mapping::create"
+    NAMESPACE_ROLE_MAPPING_DELETE = "namespace-role-mapping::delete"
     SETTING_READ = "setting::read"
     SETTING_UPDATE = "setting::update"
 
