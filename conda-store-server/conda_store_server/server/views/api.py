@@ -1,4 +1,4 @@
-from typing import List, Dict, Optional, Any, Union
+from typing import List, Dict, Optional, Any
 import datetime
 
 import pydantic
