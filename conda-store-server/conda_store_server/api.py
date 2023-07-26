@@ -49,8 +49,8 @@ def create_namespace(db, name: str):
 def update_namespace(
     db,
     name: str,
-    metadata_: Union[Optional[Dict], None] = None,
-    role_mappings: Union[Optional[Dict[str, List[str]]], None] = None,
+    metadata_: Dict[str, Any] = None,
+    role_mappings: Dict[str, List[str]] = None,
 ):
 
     namespace = get_namespace(db, name)
@@ -63,24 +63,22 @@ def update_namespace(
     if role_mappings is not None:
 
         # deletes all the existing role mappings ...
-        for rm in namespace.roles_mappings:
+        for rm in namespace.role_mappings:
             db.delete(rm)
 
         # ... before adding all the new ones
         mappings_orm = []
         for entity, roles in role_mappings.items():
-            for r in roles:
-
+            for role in roles:
                 mapping_orm = orm.NamespaceRoleMapping(
                     namespace_id=namespace.id,
                     namespace=namespace,
                     entity=entity,
-                    role=r,
+                    role=role,
                 )
-
                 mappings_orm.append(mapping_orm)
 
-        namespace.roles_mappings = mappings_orm
+        namespace.role_mappings = mappings_orm
 
     db.commit()
 

@@ -103,7 +103,6 @@ def paginated_api_response(
         .limit(paginated_args["limit"])
         .offset(paginated_args["offset"])
     )
-
     return {
         "status": "ok",
         "data": [object_schema.from_orm(_).dict(exclude=exclude) for _ in query.all()],
@@ -236,6 +235,8 @@ def api_post_token(
 @router_api.get(
     "/namespace/",
     response_model=schema.APIListNamespace,
+    # don't send metadata_ and role_mappings
+    response_model_exclude_defaults=True,
 )
 def api_list_namespaces(
     conda_store=Depends(dependencies.get_conda_store),
@@ -250,6 +251,7 @@ def api_list_namespaces(
         orm_namespaces,
         paginated_args,
         schema.Namespace,
+        exclude={"role_mappings", "metadata_"},
         allowed_sort_bys={
             "name": orm.Namespace.name,
         },
@@ -314,8 +316,8 @@ def api_create_namespace(
 def api_update_namespace(
     namespace: str,
     request: Request,
-    metadata: Union[Optional[Dict | List], None] = None,
-    role_mappings: Union[Optional[Dict[str, List[str]]], None] = None,
+    metadata: Dict[str, Any] = None,
+    role_mappings: Dict[str, List[str]] = None,
     conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
 ):
