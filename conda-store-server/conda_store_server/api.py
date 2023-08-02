@@ -228,14 +228,6 @@ def get_specification(db, sha256: str):
     return db.query(orm.Specification).filter(*filters).first()
 
 
-def post_specification(conda_store, specification, namespace=None):
-    return conda_store.register_environment(specification, namespace, force=True)
-
-
-def post_solve(conda_store, specification: schema.CondaSpecification):
-    return conda_store.register_solve(specification)
-
-
 def create_solve(db, specification_id: int):
     solve = orm.Solve(specification_id=specification_id)
     db.add(solve)

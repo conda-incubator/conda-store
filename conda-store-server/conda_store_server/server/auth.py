@@ -17,7 +17,7 @@ import yarl
 
 from conda_store_server import schema, orm, utils
 from conda_store_server.server import dependencies
-from sqlalchemy.orm.session import Session as SQLAlchemySession
+from sqlalchemy.orm import scoped_session
 
 
 ARN_ALLOWED_REGEX = re.compile(schema.ARN_ALLOWED)
@@ -113,7 +113,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
     )
 
     authentication_db = Instance(
-        SQLAlchemySession,
+        scoped_session,
         help="SQLAlchemy session to query DB. Used for role mapping",
         config=False,
     )
@@ -243,17 +243,19 @@ class RBACAuthorizationBackend(LoggingConfigurable):
         )
 
     def database_role_bindings(self, entity):
-        result = self.authentication_db.execute(
-            text(
-                """SELECT nrm.entity, nrm.role
-                                                FROM namespace n
-                                                RIGHT JOIN namespace_role_mapping nrm ON nrm.namespace_id = n.id
-                                                WHERE n.name = :primary_namespace
-                                                """
-            ),
-            {"primary_namespace": entity.primary_namespace},
-        )
-        raw_role_mappings = result.mappings().all()
+        with self.authentication_db() as db:
+            result = db.execute(
+                text(
+                    """
+                    SELECT nrm.entity, nrm.role
+                    FROM namespace n
+                    RIGHT JOIN namespace_role_mapping nrm ON nrm.namespace_id = n.id
+                    WHERE n.name = :primary_namespace
+                    """
+                ),
+                {"primary_namespace": entity.primary_namespace},
+            )
+            raw_role_mappings = result.mappings().all()
 
         db_role_mappings = defaultdict(set)
         for row in raw_role_mappings:
@@ -289,7 +291,7 @@ class Authentication(LoggingConfigurable):
     )
 
     authentication_db = Instance(
-        SQLAlchemySession,
+        scoped_session,
         help="SQLAlchemy session to query DB. Used for role mapping",
         config=False,
     )
