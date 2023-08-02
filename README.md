@@ -57,12 +57,12 @@ Learn more, including how to install, use, and contribute to conda-store in our 
 
 ## Related repositories
 
-- We are working on a new UI for conda-store at: [`Quansight/conda-store-ui`](https://github.com/Quansight/conda-store-ui), and
-- a JupyterLab extension at: [`Quansight/jupyterlab-conda-store`](https://github.com/Quansight/jupyterlab-conda-store).
+- We are working on a new UI for conda-store at: [`conda-incubator/conda-store-ui`](https://github.com/conda-incubator/conda-store-ui), and
+- a JupyterLab extension at: [`conda-incubator/jupyterlab-conda-store`](https://github.com/conda-incubator/jupyterlab-conda-store).
 
 ## Code of Conduct
 
-To guarantee a welcoming and friendly community, we require all community members to follow our [Code of Conduct](https://github.com/Quansight/.github/blob/master/CODE_OF_CONDUCT.md).
+To guarantee a welcoming and friendly community, we require all community members to follow our [Code of Conduct](https://github.com/conda-incubator/governance/blob/main/CODE_OF_CONDUCT.md).
 
 ## License
 

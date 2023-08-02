@@ -24,7 +24,7 @@ html_theme_options = {
     "icon_links": [
         {
             "name": "GitHub",
-            "url": "https://github.com/Quansight/conda-store",
+            "url": "https://github.com/conda-incubator/conda-store",
             "icon": "fa-brands fa-github",
         }
    ],
