@@ -227,7 +227,7 @@ def upgrade():
 
     # One case of data inconsistency has been identified, that makes the migration fail :
     #   Dangling build artifacts : rows in table `build_artifact` with a `build_id`` that doesn't exists anymore.
-    #   see issue https://github.com/Quansight/conda-store/issues/476
+    #   see issue https://github.com/conda-incubator/conda-store/issues/476
     # Fix : delete dangling artifacts
     op.execute(
         """ DELETE FROM build_artifact
