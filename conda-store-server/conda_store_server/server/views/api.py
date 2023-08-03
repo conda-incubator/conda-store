@@ -117,7 +117,7 @@ def paginated_api_response(
     "/",
     response_model=schema.APIGetStatus,
 )
-def api_status():
+async def api_status():
     return {"status": "ok", "data": {"version": __version__}}
 
 
@@ -125,7 +125,7 @@ def api_status():
     "/permission/",
     response_model=schema.APIGetPermission,
 )
-def api_get_permissions(
+async def api_get_permissions(
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
@@ -163,7 +163,7 @@ def api_get_permissions(
     "/usage/",
     response_model=schema.APIGetUsage,
 )
-def api_get_usage(
+async def api_get_usage(
     request: Request,
     auth=Depends(dependencies.get_auth),
     entity=Depends(dependencies.get_entity),
@@ -192,7 +192,7 @@ def api_get_usage(
     "/token/",
     response_model=schema.APIPostToken,
 )
-def api_post_token(
+async def api_post_token(
     request: Request,
     primary_namespace: Optional[str] = Body(None),
     expiration: Optional[datetime.datetime] = Body(None),
@@ -239,7 +239,7 @@ def api_post_token(
     # don't send metadata_ and role_mappings
     response_model_exclude_defaults=True,
 )
-def api_list_namespaces(
+async def api_list_namespaces(
     auth=Depends(dependencies.get_auth),
     entity=Depends(dependencies.get_entity),
     paginated_args: Dict = Depends(get_paginated_args),
@@ -264,7 +264,7 @@ def api_list_namespaces(
     "/namespace/{namespace}/",
     response_model=schema.APIGetNamespace,
 )
-def api_get_namespace(
+async def api_get_namespace(
     namespace: str,
     request: Request,
     auth=Depends(dependencies.get_auth),
@@ -288,7 +288,7 @@ def api_get_namespace(
     "/namespace/{namespace}/",
     response_model=schema.APIAckResponse,
 )
-def api_create_namespace(
+async def api_create_namespace(
     namespace: str,
     request: Request,
     auth=Depends(dependencies.get_auth),
@@ -314,7 +314,7 @@ def api_create_namespace(
     "/namespace/{namespace}/",
     response_model=schema.APIAckResponse,
 )
-def api_update_namespace(
+async def api_update_namespace(
     namespace: str,
     request: Request,
     metadata: Dict[str, Any] = None,
@@ -347,7 +347,7 @@ def api_update_namespace(
 
 
 @router_api.delete("/namespace/{namespace}/", response_model=schema.APIAckResponse)
-def api_delete_namespace(
+async def api_delete_namespace(
     namespace: str,
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
@@ -374,7 +374,7 @@ def api_delete_namespace(
     "/environment/",
     response_model=schema.APIListEnvironment,
 )
-def api_list_environments(
+async def api_list_environments(
     search: Optional[str] = None,
     namespace: Optional[str] = None,
     name: Optional[str] = None,
@@ -416,7 +416,7 @@ def api_list_environments(
     "/environment/{namespace}/{environment_name}/",
     response_model=schema.APIGetEnvironment,
 )
-def api_get_environment(
+async def api_get_environment(
     namespace: str,
     environment_name: str,
     request: Request,
@@ -448,7 +448,7 @@ def api_get_environment(
     "/environment/{namespace}/{name}/",
     response_model=schema.APIAckResponse,
 )
-def api_update_environment_build(
+async def api_update_environment_build(
     namespace: str,
     name: str,
     request: Request,
@@ -479,7 +479,7 @@ def api_update_environment_build(
     "/environment/{namespace}/{name}/",
     response_model=schema.APIAckResponse,
 )
-def api_delete_environment(
+async def api_delete_environment(
     namespace: str,
     name: str,
     request: Request,
@@ -502,7 +502,7 @@ def api_delete_environment(
 @router_api.get(
     "/specification/",
 )
-def api_get_specification(
+async def api_get_specification(
     request: Request,
     channel: List[str] = Query([]),
     conda: List[str] = Query([]),
@@ -541,7 +541,7 @@ def api_get_specification(
     "/specification/",
     response_model=schema.APIPostSpecification,
 )
-def api_post_specification(
+async def api_post_specification(
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
     db: Session = Depends(dependencies.get_db),
@@ -587,7 +587,7 @@ def api_post_specification(
 
 
 @router_api.get("/build/", response_model=schema.APIListBuild)
-def api_list_builds(
+async def api_list_builds(
     status: Optional[schema.BuildStatus] = None,
     packages: Optional[List[str]] = Query([]),
     artifact: Optional[schema.BuildArtifactType] = None,
@@ -629,7 +629,7 @@ def api_list_builds(
 
 
 @router_api.get("/build/{build_id}/", response_model=schema.APIGetBuild)
-def api_get_build(
+async def api_get_build(
     build_id: int,
     request: Request,
     db: Session = Depends(dependencies.get_db),
@@ -656,7 +656,7 @@ def api_get_build(
     "/build/{build_id}/",
     response_model=schema.APIPostSpecification,
 )
-def api_put_build(
+async def api_put_build(
     build_id: int,
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
@@ -692,7 +692,7 @@ def api_put_build(
     "/build/{build_id}/",
     response_model=schema.APIAckResponse,
 )
-def api_delete_build(
+async def api_delete_build(
     build_id: int,
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
@@ -722,7 +722,7 @@ def api_delete_build(
     "/build/{build_id}/packages/",
     response_model=schema.APIListCondaPackage,
 )
-def api_get_build_packages(
+async def api_get_build_packages(
     build_id: int,
     request: Request,
     search: Optional[str] = None,
@@ -759,7 +759,7 @@ def api_get_build_packages(
 
 
 @router_api.get("/build/{build_id}/logs/")
-def api_get_build_logs(
+async def api_get_build_logs(
     build_id: int,
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
@@ -784,7 +784,7 @@ def api_get_build_logs(
     "/channel/",
     response_model=schema.APIListCondaChannel,
 )
-def api_list_channels(
+async def api_list_channels(
     db: Session = Depends(dependencies.get_db),
     paginated_args=Depends(get_paginated_args),
 ):
@@ -802,7 +802,7 @@ def api_list_channels(
     "/package/",
     response_model=schema.APIListCondaPackage,
 )
-def api_list_packages(
+async def api_list_packages(
     search: Optional[str] = None,
     exact: Optional[str] = None,
     build: Optional[str] = None,
@@ -838,7 +838,7 @@ def api_list_packages(
 
 
 @router_api.get("/build/{build_id}/yaml/")
-def api_get_build_yaml(
+async def api_get_build_yaml(
     build_id: int,
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
@@ -859,7 +859,7 @@ def api_get_build_yaml(
 
 
 @router_api.get("/build/{build_id}/lockfile/", response_class=PlainTextResponse)
-def api_get_build_lockfile(
+async def api_get_build_lockfile(
     build_id: int,
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
@@ -878,7 +878,7 @@ def api_get_build_lockfile(
 
 
 @router_api.get("/build/{build_id}/archive/")
-def api_get_build_archive(
+async def api_get_build_archive(
     build_id: int,
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
@@ -897,7 +897,7 @@ def api_get_build_archive(
 
 
 @router_api.get("/build/{build_id}/docker/")
-def api_get_build_docker_image_url(
+async def api_get_build_docker_image_url(
     build_id: int,
     request: Request,
     db: Session = Depends(dependencies.get_db),
@@ -935,7 +935,7 @@ def api_get_build_docker_image_url(
     "/setting/{namespace}/{environment_name}/",
     response_model=schema.APIGetSetting,
 )
-def api_get_settings(
+async def api_get_settings(
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
     db: Session = Depends(dependencies.get_db),
@@ -976,7 +976,7 @@ def api_get_settings(
     "/setting/{namespace}/{environment_name}/",
     response_model=schema.APIPutSetting,
 )
-def api_put_settings(
+async def api_put_settings(
     request: Request,
     data: Dict[str, Any],
     conda_store=Depends(dependencies.get_conda_store),

@@ -57,7 +57,7 @@ def conda_store_validate_action(
     action: schema.Permissions,
 ) -> None:
     settings = conda_store.get_settings(db)
-    system_metrics = api.get_system_metrics(conda_store.db)
+    system_metrics = api.get_system_metrics(db)
 
     if action in (
         schema.Permissions.ENVIRONMENT_CREATE,
@@ -346,16 +346,16 @@ class CondaStore(LoggingConfigurable):
             return self._session_factory
 
         self._session_factory = orm.new_session_factory(
-            url=self.database_url, poolclass=QueuePool
+            url=self.database_url, poolclass=QueuePool, echo=True,
         )
         return self._session_factory
 
-    @property
-    def db(self):
-        # we are using a scoped_session which always returns the same
-        # session if within the same thread
-        # https://docs.sqlalchemy.org/en/14/orm/contextual.html
-        return self.session_factory()
+    # @property
+    # def db(self):
+    #     # we are using a scoped_session which always returns the same
+    #     # session if within the same thread
+    #     # https://docs.sqlalchemy.org/en/14/orm/contextual.html
+    #     return self.session_factory()
 
     @property
     def redis(self):
@@ -366,8 +366,8 @@ class CondaStore(LoggingConfigurable):
         self._redis = redis.Redis.from_url(self.redis_url)
         return self._redis
 
-    def configuration(self):
-        return orm.CondaStoreConfiguration.configuration(self.db)
+    def configuration(self, db: Session):
+        return orm.CondaStoreConfiguration.configuration(db)
 
     @property
     def storage(self):
@@ -426,7 +426,7 @@ class CondaStore(LoggingConfigurable):
         self._celery_app.config_from_object(self.celery_config)
         return self._celery_app
 
-    def ensure_settings(self):
+    def ensure_settings(self, db: Session):
         """Ensure that conda-store traitlets settings are applied"""
         settings = schema.Settings(
             default_namespace=self.default_namespace,
@@ -453,27 +453,27 @@ class CondaStore(LoggingConfigurable):
             build_artifacts=self.build_artifacts,
             # default_docker_base_image=self.default_docker_base_image,
         )
-        api.set_kvstore_key_values(self.db, "setting", settings.dict(), update=False)
+        api.set_kvstore_key_values(db, "setting", settings.dict(), update=False)
 
-    def ensure_namespace(self):
+    def ensure_namespace(self, db: Session):
         """Ensure that conda-store default namespaces exists"""
-        api.ensure_namespace(self.db, self.default_namespace)
+        api.ensure_namespace(db, self.default_namespace)
 
     def ensure_directories(self):
         """Ensure that conda-store filesystem directories exist"""
         os.makedirs(self.store_directory, exist_ok=True)
 
-    def ensure_conda_channels(self):
+    def ensure_conda_channels(self, db: Session):
         """Ensure that conda-store indexed channels and packages are in database"""
         self.log.info("updating conda store channels")
 
-        settings = self.get_settings(self.db)
+        settings = self.get_settings(db)
 
         for channel in settings.conda_indexed_channels:
             normalized_channel = conda_utils.normalize_channel_name(
                 settings.conda_channel_alias, channel
             )
-            api.ensure_conda_channel(self.db, normalized_channel)
+            api.ensure_conda_channel(db, normalized_channel)
 
     def set_settings(
         self,
@@ -585,6 +585,7 @@ class CondaStore(LoggingConfigurable):
         )
 
         specification_model = self.validate_specification(
+            db=db,
             conda_store=self,
             namespace=namespace.name,
             specification=schema.CondaSpecification.parse_obj(specification),

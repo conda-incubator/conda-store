@@ -691,5 +691,6 @@ class KeyValueStore(Base):
 def new_session_factory(url="sqlite:///:memory:", reset=False, **kwargs):
     engine = create_engine(url, **kwargs)
 
-    session_factory = scoped_session(sessionmaker(bind=engine))
+    session_factory = sessionmaker(bind=engine)
+    # session_factory = scoped_session(sessionmaker(bind=engine))
     return session_factory

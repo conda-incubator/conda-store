@@ -13,7 +13,7 @@ router_ui = APIRouter(tags=["ui"])
 
 
 @router_ui.get("/create/")
-def ui_create_get_environment(
+async def ui_create_get_environment(
     request: Request,
     templates=Depends(dependencies.get_templates),
     conda_store=Depends(dependencies.get_conda_store),
@@ -45,7 +45,7 @@ def ui_create_get_environment(
 
 
 @router_ui.get("/")
-def ui_list_environments(
+async def ui_list_environments(
     request: Request,
     search: Optional[str] = None,
     templates=Depends(dependencies.get_templates),
@@ -70,7 +70,7 @@ def ui_list_environments(
 
 
 @router_ui.get("/namespace/")
-def ui_list_namespaces(
+async def ui_list_namespaces(
     request: Request,
     templates=Depends(dependencies.get_templates),
     db: Session = Depends(dependencies.get_db),
@@ -91,7 +91,7 @@ def ui_list_namespaces(
 
 
 @router_ui.get("/environment/{namespace}/{environment_name}/")
-def ui_get_environment(
+async def ui_get_environment(
     namespace: str,
     environment_name: str,
     request: Request,
@@ -131,7 +131,7 @@ def ui_get_environment(
 
 
 @router_ui.get("/environment/{namespace}/{environment_name}/edit/")
-def ui_edit_environment(
+async def ui_edit_environment(
     namespace: str,
     environment_name: str,
     request: Request,
@@ -172,7 +172,7 @@ def ui_edit_environment(
 
 
 @router_ui.get("/build/{build_id}/")
-def ui_get_build(
+async def ui_get_build(
     build_id: int,
     request: Request,
     templates=Depends(dependencies.get_templates),
@@ -211,7 +211,7 @@ def ui_get_build(
 
 
 @router_ui.get("/user/")
-def ui_get_user(
+async def ui_get_user(
     request: Request,
     templates=Depends(dependencies.get_templates),
     db: Session = Depends(dependencies.get_db),
@@ -249,10 +249,11 @@ def ui_get_user(
 @router_ui.get("/setting/")
 @router_ui.get("/setting/{namespace}/")
 @router_ui.get("/setting/{namespace}/{environment_name}/")
-def ui_get_setting(
+async def ui_get_setting(
     request: Request,
     templates=Depends(dependencies.get_templates),
     auth=Depends(dependencies.get_auth),
+    db: Session = Depends(dependencies.get_db),
     conda_store=Depends(dependencies.get_conda_store),
     namespace: str = None,
     environment_name: str = None,
@@ -283,6 +284,7 @@ def ui_get_setting(
         "environment_name": environment_name,
         "api_settings_url": api_setting_url,
         "settings": conda_store.get_settings(
+            db,
             namespace=namespace, environment_name=environment_name
         ),
     }

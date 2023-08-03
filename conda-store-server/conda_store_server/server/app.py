@@ -320,9 +320,10 @@ class CondaStoreServer(Application):
     def start(self):
         fastapi_app = self.init_fastapi_app()
 
-        self.conda_store.ensure_settings()
-        self.conda_store.ensure_namespace()
-        self.conda_store.ensure_conda_channels()
+        with self.conda_store.session_factory() as db:
+            self.conda_store.ensure_settings(db)
+            self.conda_store.ensure_namespace(db)
+            self.conda_store.ensure_conda_channels(db)
 
         # start worker if in standalone mode
         if self.standalone:
