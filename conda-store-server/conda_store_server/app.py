@@ -351,7 +351,6 @@ class CondaStore(LoggingConfigurable):
         self._session_factory = orm.new_session_factory(
             url=self.database_url,
             poolclass=QueuePool,
-            echo=True,
         )
         return self._session_factory
 
