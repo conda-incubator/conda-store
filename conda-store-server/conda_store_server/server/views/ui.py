@@ -107,9 +107,7 @@ async def ui_get_environment(
         require=True,
     )
 
-    environment = api.get_environment(
-        db, namespace=namespace, name=environment_name
-    )
+    environment = api.get_environment(db, namespace=namespace, name=environment_name)
     if environment is None:
         return templates.TemplateResponse(
             "404.html",
@@ -147,9 +145,7 @@ async def ui_edit_environment(
         require=True,
     )
 
-    environment = api.get_environment(
-        db, namespace=namespace, name=environment_name
-    )
+    environment = api.get_environment(db, namespace=namespace, name=environment_name)
     if environment is None:
         return templates.TemplateResponse(
             "404.html",
@@ -284,8 +280,7 @@ async def ui_get_setting(
         "environment_name": environment_name,
         "api_settings_url": api_setting_url,
         "settings": conda_store.get_settings(
-            db,
-            namespace=namespace, environment_name=environment_name
+            db, namespace=namespace, environment_name=environment_name
         ),
     }
     return templates.TemplateResponse("setting.html", context)

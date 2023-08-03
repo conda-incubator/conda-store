@@ -430,9 +430,7 @@ async def api_get_environment(
         require=True,
     )
 
-    environment = api.get_environment(
-        db, namespace=namespace, name=environment_name
-    )
+    environment = api.get_environment(db, namespace=namespace, name=environment_name)
     if environment is None:
         raise HTTPException(status_code=404, detail="environment does not exist")
 
@@ -577,7 +575,9 @@ async def api_post_specification(
     )
 
     try:
-        build_id = conda_store.register_environment(db, specification, namespace_name, force=True)
+        build_id = conda_store.register_environment(
+            db, specification, namespace_name, force=True
+        )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e.args[0]))
     except utils.CondaStoreError as e:
@@ -810,9 +810,7 @@ async def api_list_packages(
     db: Session = Depends(dependencies.get_db),
     distinct_on: List[str] = Query([]),
 ):
-    orm_packages = api.list_conda_packages(
-        db, search=search, exact=exact, build=build
-    )
+    orm_packages = api.list_conda_packages(db, search=search, exact=exact, build=build)
     required_sort_bys, distinct_orm_packages = filter_distinct_on(
         orm_packages,
         distinct_on=distinct_on,

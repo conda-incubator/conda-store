@@ -183,7 +183,7 @@ def task_build_conda_environment(self, build_id):
 def task_build_conda_env_export(self, build_id):
     conda_store = self.worker.conda_store
     with conda_store.session_factory() as db:
-        build = api.get_build(conda_store.db, build_id)
+        build = api.get_build(db, build_id)
         build_conda_env_export(conda_store, build)
 
 
@@ -235,9 +235,7 @@ def delete_build_artifact(db: Session, conda_store, build_artifact):
         # conda_store.container_registry.delete_image(build_artifact.key)
     else:
         conda_store.log.info(f"deleting {build_artifact.key}")
-        conda_store.storage.delete(
-            db, build_artifact.build.id, build_artifact.key
-        )
+        conda_store.storage.delete(db, build_artifact.build.id, build_artifact.key)
 
 
 @shared_task(base=WorkerTask, name="task_delete_build", bind=True)

@@ -288,7 +288,9 @@ def build_conda_docker(db: Session, conda_store, build: orm.Build):
             image = context.result
 
             if schema.BuildArtifactType.DOCKER_MANIFEST in settings.build_artifacts:
-                conda_store.container_registry.store_image(db, conda_store, build, image)
+                conda_store.container_registry.store_image(
+                    db, conda_store, build, image
+                )
 
             if schema.BuildArtifactType.CONTAINER_REGISTRY in settings.build_artifacts:
                 conda_store.container_registry.push_image(db, build, image)

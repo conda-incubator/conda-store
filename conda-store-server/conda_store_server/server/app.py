@@ -187,7 +187,9 @@ class CondaStoreServer(Application):
             dbutil.upgrade(self.conda_store.database_url)
 
         self.authentication = self.authentication_class(
-            parent=self, log=self.log, authentication_db=self.conda_store.session_factory
+            parent=self,
+            log=self.log,
+            authentication_db=self.conda_store.session_factory,
         )
 
         # ensure checks on redis_url

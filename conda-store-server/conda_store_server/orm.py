@@ -22,7 +22,6 @@ from sqlalchemy import (
 from sqlalchemy.orm import (
     sessionmaker,
     relationship,
-    scoped_session,
     backref,
     declarative_base,
     validates,

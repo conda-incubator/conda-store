@@ -33,7 +33,10 @@ from conda_store_server import (
 
 
 def conda_store_validate_specification(
-    db: Session, conda_store: "CondaStore", namespace: str, specification: schema.CondaSpecification
+    db: Session,
+    conda_store: "CondaStore",
+    namespace: str,
+    specification: schema.CondaSpecification,
 ) -> schema.CondaSpecification:
     settings = conda_store.get_settings(
         db, namespace=namespace, environment_name=specification.name
@@ -346,7 +349,9 @@ class CondaStore(LoggingConfigurable):
             return self._session_factory
 
         self._session_factory = orm.new_session_factory(
-            url=self.database_url, poolclass=QueuePool, echo=True,
+            url=self.database_url,
+            poolclass=QueuePool,
+            echo=True,
         )
         return self._session_factory
 
@@ -569,7 +574,11 @@ class CondaStore(LoggingConfigurable):
         return task_id, solve.id
 
     def register_environment(
-            self, db: Session, specification: dict, namespace: str = None, force: bool = True
+        self,
+        db: Session,
+        specification: dict,
+        namespace: str = None,
+        force: bool = True,
     ):
         """Register a given specification to conda store with given namespace/name."""
         settings = self.get_settings(db)
@@ -605,9 +614,7 @@ class CondaStore(LoggingConfigurable):
 
         specification = api.ensure_specification(db, specification_model)
         environment_was_empty = (
-            api.get_environment(
-                db, name=specification.name, namespace_id=namespace.id
-            )
+            api.get_environment(db, name=specification.name, namespace_id=namespace.id)
             is None
         )
         environment = api.ensure_environment(
@@ -689,7 +696,9 @@ class CondaStore(LoggingConfigurable):
 
         return build
 
-    def update_environment_build(self, db: Session, namespace: str, name: str, build_id: int):
+    def update_environment_build(
+        self, db: Session, namespace: str, name: str, build_id: int
+    ):
         self.validate_action(
             db=db,
             conda_store=self,
@@ -726,7 +735,9 @@ class CondaStore(LoggingConfigurable):
 
         tasks.task_update_environment_build.si(environment.id).apply_async()
 
-    def update_environment_description(self, db: Session, namespace: str, name: str, description: str):
+    def update_environment_description(
+        self, db: Session, namespace: str, name: str, description: str
+    ):
         environment = api.get_environment(db, namespace=namespace, name=name)
         if environment is None:
             raise utils.CondaStoreError(
