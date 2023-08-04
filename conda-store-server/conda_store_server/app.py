@@ -354,13 +354,6 @@ class CondaStore(LoggingConfigurable):
         )
         return self._session_factory
 
-    # @property
-    # def db(self):
-    #     # we are using a scoped_session which always returns the same
-    #     # session if within the same thread
-    #     # https://docs.sqlalchemy.org/en/14/orm/contextual.html
-    #     return self.session_factory()
-
     @property
     def redis(self):
         import redis
