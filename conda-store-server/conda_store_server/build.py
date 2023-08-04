@@ -7,17 +7,12 @@ import traceback
 import json
 
 import yaml
+from sqlalchemy.orm import Session
 
 from conda_store_server import conda_utils, orm, utils, schema, action
 
 
-def set_build_started(conda_store, build):
-    build.status = schema.BuildStatus.BUILDING
-    build.started_on = datetime.datetime.utcnow()
-    conda_store.db.commit()
-
-
-def append_to_logs(conda_store, build, logs: typing.Union[str, bytes]):
+def append_to_logs(db: Session, conda_store, build, logs: typing.Union[str, bytes]):
     try:
         current_logs = conda_store.storage.get(build.log_key)
     except Exception:
@@ -27,7 +22,7 @@ def append_to_logs(conda_store, build, logs: typing.Union[str, bytes]):
         logs = logs.encode("utf-8")
 
     conda_store.storage.set(
-        conda_store.db,
+        db,
         build.id,
         build.log_key,
         current_logs + logs,
@@ -36,13 +31,19 @@ def append_to_logs(conda_store, build, logs: typing.Union[str, bytes]):
     )
 
 
-def set_build_failed(conda_store, build):
+def set_build_started(db: Session, build: orm.Build):
+    build.status = schema.BuildStatus.BUILDING
+    build.started_on = datetime.datetime.utcnow()
+    db.commit()
+
+
+def set_build_failed(db: Session, build: orm.Build):
     build.status = schema.BuildStatus.FAILED
     build.ended_on = datetime.datetime.utcnow()
-    conda_store.db.commit()
+    db.commit()
 
 
-def set_build_completed(conda_store, build):
+def set_build_completed(db: Session, conda_store, build: orm.Build):
     build.status = schema.BuildStatus.COMPLETED
     build.ended_on = datetime.datetime.utcnow()
 
@@ -51,26 +52,28 @@ def set_build_completed(conda_store, build):
         artifact_type=schema.BuildArtifactType.DIRECTORY,
         key=str(build.build_path(conda_store)),
     )
-    conda_store.db.add(directory_build_artifact)
+    db.add(directory_build_artifact)
 
     build.environment.current_build = build
     build.environment.specification = build.specification
-    conda_store.db.commit()
+    db.commit()
 
 
-def build_conda_environment(conda_store, build):
+def build_conda_environment(db: Session, conda_store, build):
     """Build a conda environment with set uid/gid/and permissions and
     symlink the build to a named environment
 
     """
-    set_build_started(conda_store, build)
+    set_build_started(db, build)
     append_to_logs(
+        db,
         conda_store,
         build,
         f"starting build of conda environment {datetime.datetime.utcnow()} UTC\n",
     )
 
     settings = conda_store.get_settings(
+        db=db,
         namespace=build.environment.namespace.name,
         environment_name=build.environment.name,
     )
@@ -92,15 +95,16 @@ def build_conda_environment(conda_store, build):
             )
 
             conda_store.storage.set(
-                conda_store.db,
+                db,
                 build.id,
                 build.conda_lock_key,
                 json.dumps(context.result, indent=4).encode("utf-8"),
-                content_type="text/json",
+                content_type="application/json",
                 artifact_type=schema.BuildArtifactType.LOCKFILE,
             )
 
             append_to_logs(
+                db,
                 conda_store,
                 build,
                 "::group::action_solve_lockfile\n"
@@ -114,6 +118,7 @@ def build_conda_environment(conda_store, build):
                 pkgs_dir=conda_utils.conda_root_package_dir(),
             )
             append_to_logs(
+                db,
                 conda_store,
                 build,
                 "::group::action_fetch_and_extract_conda_packages\n"
@@ -126,6 +131,7 @@ def build_conda_environment(conda_store, build):
                 conda_prefix=conda_prefix,
             )
             append_to_logs(
+                db,
                 conda_store,
                 build,
                 "::group::action_install_lockfile\n"
@@ -143,7 +149,7 @@ def build_conda_environment(conda_store, build):
         )
 
         action.action_add_conda_prefix_packages(
-            db=conda_store.db,
+            db=db,
             conda_prefix=conda_prefix,
             build_id=build.id,
         )
@@ -151,24 +157,24 @@ def build_conda_environment(conda_store, build):
         context = action.action_get_conda_prefix_stats(conda_prefix)
         build.size = context.result["disk_usage"]
 
-        set_build_completed(conda_store, build)
+        set_build_completed(db, conda_store, build)
     except subprocess.CalledProcessError as e:
         conda_store.log.exception(e)
-        append_to_logs(conda_store, build, e.output)
-        set_build_failed(conda_store, build)
+        append_to_logs(db, conda_store, build, e.output)
+        set_build_failed(db, build)
         raise e
     except Exception as e:
         conda_store.log.exception(e)
-        append_to_logs(conda_store, build, traceback.format_exc())
-        set_build_failed(conda_store, build)
+        append_to_logs(db, conda_store, build, traceback.format_exc())
+        set_build_failed(db, build)
         raise e
 
 
-def solve_conda_environment(conda_store, solve):
-    settings = conda_store.get_settings()
+def solve_conda_environment(db: Session, conda_store, solve: orm.Solve):
+    settings = conda_store.get_settings(db=db)
 
     solve.started_on = datetime.datetime.utcnow()
-    conda_store.db.commit()
+    db.commit()
 
     context = action.action_solve_lockfile(
         conda_command=settings.conda_command,
@@ -178,18 +184,19 @@ def solve_conda_environment(conda_store, solve):
     conda_lock_spec = context.result
 
     action.action_add_lockfile_packages(
-        db=conda_store.db,
+        db=db,
         conda_lock_spec=conda_lock_spec,
         solve_id=solve.id,
     )
 
     solve.ended_on = datetime.datetime.utcnow()
-    conda_store.db.commit()
+    db.commit()
 
 
-def build_conda_env_export(conda_store, build):
+def build_conda_env_export(db: Session, conda_store, build: orm.Build):
     conda_prefix = build.build_path(conda_store)
     settings = conda_store.get_settings(
+        db=db,
         namespace=build.environment.namespace.name,
         environment_name=build.environment.name,
     )
@@ -198,6 +205,7 @@ def build_conda_env_export(conda_store, build):
         conda_command=settings.conda_command, conda_prefix=conda_prefix
     )
     append_to_logs(
+        db,
         conda_store,
         build,
         "::group::action_generate_conda_export\n"
@@ -208,7 +216,7 @@ def build_conda_env_export(conda_store, build):
     conda_prefix_export = yaml.dump(context.result).encode("utf-8")
 
     conda_store.storage.set(
-        conda_store.db,
+        db,
         build.id,
         build.conda_env_export_key,
         conda_prefix_export,
@@ -217,7 +225,7 @@ def build_conda_env_export(conda_store, build):
     )
 
 
-def build_conda_pack(conda_store, build):
+def build_conda_pack(db: Session, conda_store, build: orm.Build):
     conda_prefix = build.build_path(conda_store)
 
     with utils.timer(
@@ -229,6 +237,7 @@ def build_conda_pack(conda_store, build):
                 conda_prefix=conda_prefix, output_filename=output_filename
             )
             append_to_logs(
+                db,
                 conda_store,
                 build,
                 "::group::action_generate_conda_pack\n"
@@ -236,7 +245,7 @@ def build_conda_pack(conda_store, build):
                 + "\n::endgroup::\n",
             )
             conda_store.storage.fset(
-                conda_store.db,
+                db,
                 build.id,
                 build.conda_pack_key,
                 output_filename,
@@ -245,9 +254,10 @@ def build_conda_pack(conda_store, build):
             )
 
 
-def build_conda_docker(conda_store, build):
+def build_conda_docker(db: Session, conda_store, build: orm.Build):
     conda_prefix = build.build_path(conda_store)
     settings = conda_store.get_settings(
+        db=db,
         namespace=build.environment.namespace.name,
         environment_name=build.environment.name,
     )
@@ -267,6 +277,7 @@ def build_conda_docker(conda_store, build):
                 output_image_tag=build.build_key,
             )
             append_to_logs(
+                db,
                 conda_store,
                 build,
                 "::group::action_generate_conda_docker\n"
@@ -277,11 +288,13 @@ def build_conda_docker(conda_store, build):
             image = context.result
 
             if schema.BuildArtifactType.DOCKER_MANIFEST in settings.build_artifacts:
-                conda_store.container_registry.store_image(conda_store, build, image)
+                conda_store.container_registry.store_image(
+                    db, conda_store, build, image
+                )
 
             if schema.BuildArtifactType.CONTAINER_REGISTRY in settings.build_artifacts:
-                conda_store.container_registry.push_image(conda_store, build, image)
+                conda_store.container_registry.push_image(db, build, image)
     except Exception as e:
         conda_store.log.exception(e)
-        append_to_logs(conda_store, build, traceback.format_exc())
+        append_to_logs(db, conda_store, build, traceback.format_exc())
         raise e

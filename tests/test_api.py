@@ -20,7 +20,7 @@ from conda_store_server import schema
 
 
 def test_api_status_unauth(testclient):
-    response = testclient.get('api/v1/')
+    response = testclient.get("api/v1/")
     response.raise_for_status()
 
     r = schema.APIGetStatus.parse_obj(response.json())
@@ -29,7 +29,7 @@ def test_api_status_unauth(testclient):
 
 
 def test_api_permissions_unauth(testclient):
-    response = testclient.get('api/v1/permission/')
+    response = testclient.get("api/v1/permission/")
     response.raise_for_status()
 
     r = schema.APIGetPermission.parse_obj(response.json())
@@ -37,16 +37,16 @@ def test_api_permissions_unauth(testclient):
     assert r.data.authenticated == False
     assert r.data.primary_namespace == "default"
     assert r.data.entity_permissions == {
-            "default/*": [
-                schema.Permissions.ENVIRONMENT_READ.value,
-                schema.Permissions.NAMESPACE_READ.value,
-            ]
+        "default/*": [
+            schema.Permissions.ENVIRONMENT_READ.value,
+            schema.Permissions.NAMESPACE_READ.value,
+        ]
     }
 
 
 def test_api_permissions_auth(testclient):
     testclient.login()
-    response = testclient.get('api/v1/permission/')
+    response = testclient.get("api/v1/permission/")
     response.raise_for_status()
 
     r = schema.APIGetPermission.parse_obj(response.json())
@@ -54,35 +54,41 @@ def test_api_permissions_auth(testclient):
     assert r.data.authenticated == True
     assert r.data.primary_namespace == "username"
     assert r.data.entity_permissions == {
-        "*/*": sorted([
-            schema.Permissions.ENVIRONMENT_CREATE.value,
-            schema.Permissions.ENVIRONMENT_READ.value,
-            schema.Permissions.ENVIRONMENT_UPDATE.value,
-            schema.Permissions.ENVIRONMENT_DELETE.value,
-            schema.Permissions.ENVIRONMENT_SOLVE.value,
-            schema.Permissions.BUILD_DELETE.value,
-            schema.Permissions.NAMESPACE_CREATE.value,
-            schema.Permissions.NAMESPACE_READ.value,
-            schema.Permissions.NAMESPACE_DELETE.value,
-            schema.Permissions.NAMESPACE_UPDATE.value,
-            schema.Permissions.NAMESPACE_ROLE_MAPPING_CREATE.value,
-            schema.Permissions.NAMESPACE_ROLE_MAPPING_DELETE.value,
-            schema.Permissions.SETTING_READ.value,
-            schema.Permissions.SETTING_UPDATE.value,
-        ]),
-        "default/*": sorted([
-            schema.Permissions.ENVIRONMENT_READ.value,
-            schema.Permissions.NAMESPACE_READ.value,
-        ]),
-        "filesystem/*": sorted([
-            schema.Permissions.ENVIRONMENT_READ.value,
-            schema.Permissions.NAMESPACE_READ.value,
-        ])
+        "*/*": sorted(
+            [
+                schema.Permissions.ENVIRONMENT_CREATE.value,
+                schema.Permissions.ENVIRONMENT_READ.value,
+                schema.Permissions.ENVIRONMENT_UPDATE.value,
+                schema.Permissions.ENVIRONMENT_DELETE.value,
+                schema.Permissions.ENVIRONMENT_SOLVE.value,
+                schema.Permissions.BUILD_DELETE.value,
+                schema.Permissions.NAMESPACE_CREATE.value,
+                schema.Permissions.NAMESPACE_READ.value,
+                schema.Permissions.NAMESPACE_DELETE.value,
+                schema.Permissions.NAMESPACE_UPDATE.value,
+                schema.Permissions.NAMESPACE_ROLE_MAPPING_CREATE.value,
+                schema.Permissions.NAMESPACE_ROLE_MAPPING_DELETE.value,
+                schema.Permissions.SETTING_READ.value,
+                schema.Permissions.SETTING_UPDATE.value,
+            ]
+        ),
+        "default/*": sorted(
+            [
+                schema.Permissions.ENVIRONMENT_READ.value,
+                schema.Permissions.NAMESPACE_READ.value,
+            ]
+        ),
+        "filesystem/*": sorted(
+            [
+                schema.Permissions.ENVIRONMENT_READ.value,
+                schema.Permissions.NAMESPACE_READ.value,
+            ]
+        ),
     }
 
 
 def test_api_list_namespace_unauth(testclient):
-    response = testclient.get('api/v1/namespace')
+    response = testclient.get("api/v1/namespace")
     response.raise_for_status()
 
     r = schema.APIListNamespace.parse_obj(response.json())
@@ -93,7 +99,7 @@ def test_api_list_namespace_unauth(testclient):
 
 def test_api_list_namespace_auth(testclient):
     testclient.login()
-    response = testclient.get('api/v1/namespace')
+    response = testclient.get("api/v1/namespace")
     response.raise_for_status()
 
     r = schema.APIListNamespace.parse_obj(response.json())
@@ -104,7 +110,7 @@ def test_api_list_namespace_auth(testclient):
 
 
 def test_api_get_namespace_unauth(testclient):
-    response = testclient.get('api/v1/namespace/default')
+    response = testclient.get("api/v1/namespace/default")
     response.raise_for_status()
 
     r = schema.APIGetNamespace.parse_obj(response.json())
@@ -113,7 +119,7 @@ def test_api_get_namespace_unauth(testclient):
 
 
 def test_api_get_namespace_unauth_no_exist(testclient):
-    response = testclient.get('api/v1/namespace/wrong')
+    response = testclient.get("api/v1/namespace/wrong")
     assert response.status_code == 403
 
     r = schema.APIResponse.parse_obj(response.json())
@@ -122,7 +128,7 @@ def test_api_get_namespace_unauth_no_exist(testclient):
 
 def test_api_get_namespace_auth(testclient):
     testclient.login()
-    response = testclient.get('api/v1/namespace/filesystem')
+    response = testclient.get("api/v1/namespace/filesystem")
     response.raise_for_status()
 
     r = schema.APIGetNamespace.parse_obj(response.json())
@@ -132,7 +138,7 @@ def test_api_get_namespace_auth(testclient):
 
 def test_api_get_namespace_auth_no_exist(testclient):
     testclient.login()
-    response = testclient.get('api/v1/namespace/wrong')
+    response = testclient.get("api/v1/namespace/wrong")
 
     assert response.status_code == 404
     r = schema.APIResponse.parse_obj(response.json())
@@ -140,7 +146,7 @@ def test_api_get_namespace_auth_no_exist(testclient):
 
 
 def test_api_list_environments_unauth(testclient):
-    response = testclient.get('api/v1/environment')
+    response = testclient.get("api/v1/environment")
     response.raise_for_status()
 
     r = schema.APIListEnvironment.parse_obj(response.json())
@@ -149,7 +155,7 @@ def test_api_list_environments_unauth(testclient):
 
 def test_api_list_environments_auth(testclient):
     testclient.login()
-    response = testclient.get('api/v1/environment')
+    response = testclient.get("api/v1/environment")
     response.raise_for_status()
 
     r = schema.APIListEnvironment.parse_obj(response.json())
@@ -158,7 +164,7 @@ def test_api_list_environments_auth(testclient):
 
 
 def test_api_get_environment_unauth(testclient):
-    response = testclient.get('api/v1/environment/filesystem/python-flask-env')
+    response = testclient.get("api/v1/environment/filesystem/python-flask-env")
     assert response.status_code == 403
 
     r = schema.APIResponse.parse_obj(response.json())
@@ -167,7 +173,7 @@ def test_api_get_environment_unauth(testclient):
 
 def test_api_get_environment_auth_existing(testclient):
     testclient.login()
-    response = testclient.get('api/v1/environment/filesystem/python-flask-env')
+    response = testclient.get("api/v1/environment/filesystem/python-flask-env")
     response.raise_for_status()
 
     r = schema.APIGetEnvironment.parse_obj(response.json())
@@ -178,7 +184,7 @@ def test_api_get_environment_auth_existing(testclient):
 
 def test_api_get_environment_auth_not_existing(testclient):
     testclient.login()
-    response = testclient.get('api/v1/environment/filesystem/wrong')
+    response = testclient.get("api/v1/environment/filesystem/wrong")
     assert response.status_code == 404
 
     r = schema.APIResponse.parse_obj(response.json())
@@ -186,7 +192,7 @@ def test_api_get_environment_auth_not_existing(testclient):
 
 
 def test_api_list_builds_unauth(testclient):
-    response = testclient.get('api/v1/build')
+    response = testclient.get("api/v1/build")
     response.raise_for_status()
 
     r = schema.APIListBuild.parse_obj(response.json())
@@ -195,7 +201,7 @@ def test_api_list_builds_unauth(testclient):
 
 def test_api_list_builds_auth(testclient):
     testclient.login()
-    response = testclient.get('api/v1/build')
+    response = testclient.get("api/v1/build")
     response.raise_for_status()
 
     r = schema.APIListBuild.parse_obj(response.json())
@@ -204,7 +210,7 @@ def test_api_list_builds_auth(testclient):
 
 
 def test_api_get_build_one_unauth(testclient):
-    response = testclient.get('api/v1/build/1')
+    response = testclient.get("api/v1/build/1")
     assert response.status_code == 403
 
     r = schema.APIResponse.parse_obj(response.json())
@@ -213,7 +219,7 @@ def test_api_get_build_one_unauth(testclient):
 
 def test_api_get_build_one_auth(testclient):
     testclient.login()
-    response = testclient.get('api/v1/build/1')
+    response = testclient.get("api/v1/build/1")
     response.raise_for_status()
 
     r = schema.APIGetBuild.parse_obj(response.json())
@@ -224,7 +230,7 @@ def test_api_get_build_one_auth(testclient):
 
 
 def test_api_get_build_one_unauth_packages(testclient):
-    response = testclient.get('api/v1/build/1/packages')
+    response = testclient.get("api/v1/build/1/packages")
     assert response.status_code == 403
 
     r = schema.APIResponse.parse_obj(response.json())
@@ -233,7 +239,7 @@ def test_api_get_build_one_unauth_packages(testclient):
 
 def test_api_get_build_one_auth_packages(testclient):
     testclient.login()
-    response = testclient.get('api/v1/build/1/packages?size=5')
+    response = testclient.get("api/v1/build/1/packages?size=5")
     response.raise_for_status()
 
     r = schema.APIListCondaPackage.parse_obj(response.json())
@@ -243,7 +249,7 @@ def test_api_get_build_one_auth_packages(testclient):
 
 def test_api_get_build_auth_packages_no_exist(testclient):
     testclient.login()
-    response = testclient.get('api/v1/build/101010101/packages')
+    response = testclient.get("api/v1/build/101010101/packages")
     assert response.status_code == 404
 
     r = schema.APIResponse.parse_obj(response.json())
@@ -251,7 +257,7 @@ def test_api_get_build_auth_packages_no_exist(testclient):
 
 
 def test_api_get_build_one_unauth_logs(testclient):
-    response = testclient.get('api/v1/build/1/logs')
+    response = testclient.get("api/v1/build/1/logs")
     assert response.status_code == 403
 
     r = schema.APIResponse.parse_obj(response.json())
@@ -260,31 +266,68 @@ def test_api_get_build_one_unauth_logs(testclient):
 
 def test_api_get_build_one_auth_logs(testclient):
     testclient.login()
-    response = testclient.get('api/v1/build/1/logs')
+    response = testclient.get("api/v1/build/1/logs")
     response.raise_for_status()
 
-    logs = response.content.decode('utf-8')
+    logs = response.content.decode("utf-8")
     assert "Preparing transaction:" in logs
     assert "Executing transaction:" in logs
 
 
 def test_api_get_build_auth_logs_no_exist(testclient):
     testclient.login()
-    response = testclient.get('api/v1/build/10101010101/logs')
+    response = testclient.get("api/v1/build/10101010101/logs")
     assert response.status_code == 404
 
 
+@pytest.mark.parametrize(
+    "url",
+    [
+        "api/v1/environment/filesystem/python-flask-env/lockfile/",
+        "api/v1/environment/filesystem/python-flask-env/conda-lock.yml",
+        "api/v1/environment/filesystem/python-flask-env/conda-lock.yaml",
+        "api/v1/build/1/lockfile/",
+        "api/v1/build/1/conda-lock.yml",
+        "api/v1/build/1/conda-lock.yaml",
+    ],
+)
+def test_api_get_build_one_unauth_lockfile(testclient, url):
+    response = testclient.get(url)
+    assert response.status_code == 403
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "api/v1/environment/filesystem/python-flask-env/lockfile/",
+        "api/v1/environment/filesystem/python-flask-env/conda-lock.yml",
+        "api/v1/environment/filesystem/python-flask-env/conda-lock.yaml",
+        "api/v1/build/1/lockfile/",
+        "api/v1/build/1/conda-lock.yml",
+        "api/v1/build/1/conda-lock.yaml",
+    ],
+)
+def test_api_get_build_one_auth_lockfil(testclient, url):
+    testclient.login()
+    response = testclient.get(url)
+    response.raise_for_status()
+
+    lockfile = json.loads(response.content.decode("utf-8"))
+    assert "metadata" in lockfile
+    assert "package" in lockfile
+
+
 def test_api_get_build_one_unauth_yaml(testclient):
-    response = testclient.get('api/v1/build/1/yaml/')
+    response = testclient.get("api/v1/build/1/yaml/")
     assert response.status_code == 403
 
 
 def test_api_get_build_one_auth_yaml(testclient):
     testclient.login()
-    response = testclient.get('api/v1/build/1/yaml/')
+    response = testclient.get("api/v1/build/1/yaml/")
     response.raise_for_status()
 
-    environment_yaml = response.content.decode('utf-8')
+    environment_yaml = response.content.decode("utf-8")
     assert "name:" in environment_yaml
     assert "channels:" in environment_yaml
     assert "dependencies:" in environment_yaml
@@ -292,7 +335,7 @@ def test_api_get_build_one_auth_yaml(testclient):
 
 def test_api_get_build_two_auth(testclient):
     testclient.login()
-    response = testclient.get('api/v1/build/1010101010101')
+    response = testclient.get("api/v1/build/1010101010101")
     response.status_code == 404
 
     r = schema.APIResponse.parse_obj(response.json())
@@ -300,21 +343,21 @@ def test_api_get_build_two_auth(testclient):
 
 
 def test_api_list_conda_channels_unauth(testclient):
-    response = testclient.get('api/v1/channel')
+    response = testclient.get("api/v1/channel")
     response.raise_for_status()
 
     r = schema.APIListCondaChannel.parse_obj(response.json())
     assert r.status == schema.APIStatus.OK
     api_channels = set(_.name for _ in r.data)
     assert api_channels == {
-        'https://conda.anaconda.org/main',
-        'https://repo.anaconda.com/pkgs/main',
-        'https://conda.anaconda.org/conda-forge',
+        "https://conda.anaconda.org/main",
+        "https://repo.anaconda.com/pkgs/main",
+        "https://conda.anaconda.org/conda-forge",
     }
 
 
 def test_api_list_conda_packages_unauth(testclient):
-    response = testclient.get('api/v1/package?size=15')
+    response = testclient.get("api/v1/package?size=15")
     response.raise_for_status()
 
     r = schema.APIListCondaPackage.parse_obj(response.json())
@@ -324,16 +367,18 @@ def test_api_list_conda_packages_unauth(testclient):
 
 # ============ MODIFICATION =============
 
-def test_create_specification_uauth(testclient):
-    namespace = 'default'
-    environment_name = f'pytest-{uuid.uuid4()}'
 
-    response = testclient.post('api/v1/specification', json={
-        'namespace': namespace,
-        'specification': json.dumps({
-            'name': environment_name
-        })
-    })
+def test_create_specification_uauth(testclient):
+    namespace = "default"
+    environment_name = f"pytest-{uuid.uuid4()}"
+
+    response = testclient.post(
+        "api/v1/specification",
+        json={
+            "namespace": namespace,
+            "specification": json.dumps({"name": environment_name}),
+        },
+    )
     assert response.status_code == 403
 
     r = schema.APIResponse.parse_obj(response.json())
@@ -341,23 +386,24 @@ def test_create_specification_uauth(testclient):
 
 
 def test_create_specification_auth(testclient):
-    namespace = 'default'
-    environment_name = f'pytest-{uuid.uuid4()}'
+    namespace = "default"
+    environment_name = f"pytest-{uuid.uuid4()}"
 
     testclient.login()
-    response = testclient.post('api/v1/specification', json={
-        'namespace': namespace,
-        'specification': json.dumps({
-            'name': environment_name
-        })
-    })
+    response = testclient.post(
+        "api/v1/specification",
+        json={
+            "namespace": namespace,
+            "specification": json.dumps({"name": environment_name}),
+        },
+    )
     response.raise_for_status()
 
     r = schema.APIPostSpecification.parse_obj(response.json())
     assert r.status == schema.APIStatus.OK
 
     # check for the given build
-    response = testclient.get(f'api/v1/build/{r.data.build_id}')
+    response = testclient.get(f"api/v1/build/{r.data.build_id}")
     response.raise_for_status()
 
     r = schema.APIGetBuild.parse_obj(response.json())
@@ -365,7 +411,7 @@ def test_create_specification_auth(testclient):
     assert r.data.specification.name == environment_name
 
     # check for the given environment
-    response = testclient.get(f'api/v1/environment/{namespace}/{environment_name}')
+    response = testclient.get(f"api/v1/environment/{namespace}/{environment_name}")
     response.raise_for_status()
 
     r = schema.APIGetEnvironment.parse_obj(response.json())
@@ -373,22 +419,21 @@ def test_create_specification_auth(testclient):
 
 
 def test_create_specification_auth_no_namespace_specified(testclient):
-    namespace = 'username' # same as login username
-    environment_name = f'pytest-{uuid.uuid4()}'
+    namespace = "username"  # same as login username
+    environment_name = f"pytest-{uuid.uuid4()}"
 
     testclient.login()
-    response = testclient.post('api/v1/specification', json={
-        'specification': json.dumps({
-            'name': environment_name
-        })
-    })
+    response = testclient.post(
+        "api/v1/specification",
+        json={"specification": json.dumps({"name": environment_name})},
+    )
     response.raise_for_status()
 
     r = schema.APIPostSpecification.parse_obj(response.json())
     assert r.status == schema.APIStatus.OK
 
     # check for the given build
-    response = testclient.get(f'api/v1/build/{r.data.build_id}')
+    response = testclient.get(f"api/v1/build/{r.data.build_id}")
     response.raise_for_status()
 
     r = schema.APIGetBuild.parse_obj(response.json())
@@ -396,7 +441,7 @@ def test_create_specification_auth_no_namespace_specified(testclient):
     assert r.data.specification.name == environment_name
 
     # check for the given environment
-    response = testclient.get(f'api/v1/environment/{namespace}/{environment_name}')
+    response = testclient.get(f"api/v1/environment/{namespace}/{environment_name}")
     response.raise_for_status()
 
     r = schema.APIGetEnvironment.parse_obj(response.json())
@@ -406,7 +451,7 @@ def test_create_specification_auth_no_namespace_specified(testclient):
 def test_put_build_trigger_build_noauth(testclient):
     build_id = 1
 
-    response = testclient.put(f'api/v1/build/{build_id}')
+    response = testclient.put(f"api/v1/build/{build_id}")
     assert response.status_code == 403
 
     r = schema.APIResponse.parse_obj(response.json())
@@ -417,11 +462,11 @@ def test_put_build_trigger_build_auth(testclient):
     build_id = 1
 
     testclient.login()
-    response = testclient.put(f'api/v1/build/{build_id}')
+    response = testclient.put(f"api/v1/build/{build_id}")
     r = schema.APIPostSpecification.parse_obj(response.json())
     assert r.status == schema.APIStatus.OK
 
-    response = testclient.get(f'api/v1/build/{r.data.build_id}')
+    response = testclient.get(f"api/v1/build/{r.data.build_id}")
     response.raise_for_status()
 
     r = schema.APIGetBuild.parse_obj(response.json())
@@ -456,47 +501,49 @@ def test_create_namespace_auth(testclient):
     assert r.data.name == namespace
 
 
-
 def test_update_namespace_noauth(testclient):
     namespace = f"filesystem"
     # namespace = f"pytest-{uuid.uuid4()}"
 
-    test_role_mappings = {f"{namespace}/*":['viewer'],
-                          f"{namespace}/admin":['admin'],
-                          f"{namespace}/test":['admin', 'viewer', 'developer'],
-                        }
+    test_role_mappings = {
+        f"{namespace}/*": ["viewer"],
+        f"{namespace}/admin": ["admin"],
+        f"{namespace}/test": ["admin", "viewer", "developer"],
+    }
 
     # Updates the metadata only
-    response = testclient.put(f"api/v1/namespace/{namespace}/", json={
-        "metadata": {"test_key1":"test_value1", "test_key2":"test_value2"},
-
-    })
+    response = testclient.put(
+        f"api/v1/namespace/{namespace}/",
+        json={
+            "metadata": {"test_key1": "test_value1", "test_key2": "test_value2"},
+        },
+    )
     assert response.status_code == 403
 
     r = schema.APIResponse.parse_obj(response.json())
     assert r.status == schema.APIStatus.ERROR
-
 
     # Updates the role mappings only
-    response = testclient.put(f"api/v1/namespace/{namespace}", json={
-        "role_mappings": test_role_mappings
-    })
+    response = testclient.put(
+        f"api/v1/namespace/{namespace}", json={"role_mappings": test_role_mappings}
+    )
     assert response.status_code == 403
 
     r = schema.APIResponse.parse_obj(response.json())
     assert r.status == schema.APIStatus.ERROR
-
 
     # Updates both the metadata and the role mappings
-    response = testclient.put(f"api/v1/namespace/{namespace}", json={
-        "metadata": {"test_key1":"test_value1", "test_key2":"test_value2"},
-        "role_mappings": test_role_mappings
-    })
+    response = testclient.put(
+        f"api/v1/namespace/{namespace}",
+        json={
+            "metadata": {"test_key1": "test_value1", "test_key2": "test_value2"},
+            "role_mappings": test_role_mappings,
+        },
+    )
     assert response.status_code == 403
 
     r = schema.APIResponse.parse_obj(response.json())
     assert r.status == schema.APIStatus.ERROR
-
 
 
 def test_update_namespace_auth(testclient):
@@ -504,42 +551,43 @@ def test_update_namespace_auth(testclient):
 
     testclient.login()
 
-
-
-    test_role_mappings = {f"{namespace}/*":['viewer'],
-                          f"{namespace}/admin":['admin'],
-                          f"{namespace}/test":['admin', 'viewer', 'developer'],
-                        }
+    test_role_mappings = {
+        f"{namespace}/*": ["viewer"],
+        f"{namespace}/admin": ["admin"],
+        f"{namespace}/test": ["admin", "viewer", "developer"],
+    }
 
     # Updates both the metadata and the role mappings
-    response = testclient.put(f"api/v1/namespace/{namespace}", json={
-        "metadata": {"test_key1":"test_value1", "test_key2":"test_value2"},
-        "role_mappings": test_role_mappings,
-    })
+    response = testclient.put(
+        f"api/v1/namespace/{namespace}",
+        json={
+            "metadata": {"test_key1": "test_value1", "test_key2": "test_value2"},
+            "role_mappings": test_role_mappings,
+        },
+    )
 
     r = schema.APIResponse.parse_obj(response.json())
     assert r.status == schema.APIStatus.OK
 
-
     # Updates the metadata only
-    response = testclient.put(f"api/v1/namespace/{namespace}/", json={
-        "metadata": {"test_key1":"test_value1", "test_key2":"test_value2"},
-
-    })
+    response = testclient.put(
+        f"api/v1/namespace/{namespace}/",
+        json={
+            "metadata": {"test_key1": "test_value1", "test_key2": "test_value2"},
+        },
+    )
     response.raise_for_status()
 
     r = schema.APIResponse.parse_obj(response.json())
     assert r.status == schema.APIStatus.OK
 
-
     # Updates the role mappings only
-    response = testclient.put(f"api/v1/namespace/{namespace}", json={
-        "role_mappings": test_role_mappings
-    })
+    response = testclient.put(
+        f"api/v1/namespace/{namespace}", json={"role_mappings": test_role_mappings}
+    )
 
     r = schema.APIResponse.parse_obj(response.json())
     assert r.status == schema.APIStatus.OK
-
 
 
 def test_create_get_delete_namespace_auth(testclient):
@@ -577,9 +625,9 @@ def test_update_environment_build_unauth(testclient):
     name = "python-flask-env"
     build_id = 1
 
-    response = testclient.put(f'api/v1/environment/{namespace}/{name}', json={
-        "build_id": build_id
-    })
+    response = testclient.put(
+        f"api/v1/environment/{namespace}/{name}", json={"build_id": build_id}
+    )
     assert response.status_code == 403
 
     r = schema.APIResponse.parse_obj(response.json())
@@ -592,15 +640,15 @@ def test_update_environment_build_auth(testclient):
     build_id = 1
 
     testclient.login()
-    response = testclient.put(f'api/v1/environment/{namespace}/{name}', json={
-        "build_id": build_id
-    })
+    response = testclient.put(
+        f"api/v1/environment/{namespace}/{name}", json={"build_id": build_id}
+    )
     response.raise_for_status()
 
     r = schema.APIAckResponse.parse_obj(response.json())
     assert r.status == schema.APIStatus.OK
 
-    response = testclient.get(f'api/v1/environment/{namespace}/{name}')
+    response = testclient.get(f"api/v1/environment/{namespace}/{name}")
     response.raise_for_status()
 
     r = schema.APIGetEnvironment.parse_obj(response.json())
@@ -612,7 +660,7 @@ def test_delete_environment_unauth(testclient):
     namespace = "filesystem"
     name = "python-flask-env"
 
-    response = testclient.delete(f'api/v1/environment/{namespace}/{name}')
+    response = testclient.delete(f"api/v1/environment/{namespace}/{name}")
     assert response.status_code == 403
 
     r = schema.APIResponse.parse_obj(response.json())
@@ -620,22 +668,23 @@ def test_delete_environment_unauth(testclient):
 
 
 def test_delete_environment_auth(testclient):
-    namespace = 'default'
-    environment_name = f'pytest-delete-environment-{uuid.uuid4()}'
+    namespace = "default"
+    environment_name = f"pytest-delete-environment-{uuid.uuid4()}"
 
     testclient.login()
-    response = testclient.post('api/v1/specification', json={
-        'namespace': namespace,
-        'specification': json.dumps({
-            'name': environment_name
-        })
-    })
+    response = testclient.post(
+        "api/v1/specification",
+        json={
+            "namespace": namespace,
+            "specification": json.dumps({"name": environment_name}),
+        },
+    )
     response.raise_for_status()
 
     r = schema.APIAckResponse.parse_obj(response.json())
     assert r.status == schema.APIStatus.OK
 
-    response = testclient.delete(f'api/v1/environment/{namespace}/{environment_name}')
+    response = testclient.delete(f"api/v1/environment/{namespace}/{environment_name}")
     response.raise_for_status()
 
     r = schema.APIAckResponse.parse_obj(response.json())
@@ -645,7 +694,7 @@ def test_delete_environment_auth(testclient):
 def test_delete_build_unauth(testclient):
     build_id = 1
 
-    response = testclient.delete(f'api/v1/build/{build_id}')
+    response = testclient.delete(f"api/v1/build/{build_id}")
     assert response.status_code == 403
 
     r = schema.APIResponse.parse_obj(response.json())
@@ -656,13 +705,13 @@ def test_delete_build_auth(testclient):
     build_id = 1
 
     testclient.login()
-    response = testclient.put(f'api/v1/build/{build_id}')
+    response = testclient.put(f"api/v1/build/{build_id}")
     r = schema.APIPostSpecification.parse_obj(response.json())
     assert r.status == schema.APIStatus.OK
 
     new_build_id = r.data.build_id
 
-    response = testclient.get(f'api/v1/build/{new_build_id}')
+    response = testclient.get(f"api/v1/build/{new_build_id}")
     response.raise_for_status()
 
     r = schema.APIGetBuild.parse_obj(response.json())
@@ -670,7 +719,7 @@ def test_delete_build_auth(testclient):
 
     # currently you cannot delete a build before it succeeds or fails
     # realistically you should be able to delete a build
-    response = testclient.delete(f'api/v1/build/{new_build_id}')
+    response = testclient.delete(f"api/v1/build/{new_build_id}")
     assert response.status_code == 400
 
     # r = schema.APIAckResponse.parse_obj(response.json())

@@ -2,6 +2,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import RedirectResponse
+from sqlalchemy.orm import Session
 import yaml
 
 from conda_store_server import api
@@ -12,15 +13,16 @@ router_ui = APIRouter(tags=["ui"])
 
 
 @router_ui.get("/create/")
-def ui_create_get_environment(
+async def ui_create_get_environment(
     request: Request,
     templates=Depends(dependencies.get_templates),
     conda_store=Depends(dependencies.get_conda_store),
+    db: Session = Depends(dependencies.get_db),
     auth=Depends(dependencies.get_auth),
     entity=Depends(dependencies.get_entity),
 ):
     orm_namespaces = auth.filter_namespaces(
-        entity, api.list_namespaces(conda_store.db, show_soft_deleted=False)
+        entity, api.list_namespaces(db, show_soft_deleted=False)
     )
 
     default_namespace = (
@@ -43,18 +45,18 @@ def ui_create_get_environment(
 
 
 @router_ui.get("/")
-def ui_list_environments(
+async def ui_list_environments(
     request: Request,
     search: Optional[str] = None,
     templates=Depends(dependencies.get_templates),
-    conda_store=Depends(dependencies.get_conda_store),
+    db: Session = Depends(dependencies.get_db),
     auth=Depends(dependencies.get_auth),
     server=Depends(dependencies.get_server),
     entity=Depends(dependencies.get_entity),
 ):
     orm_environments = auth.filter_environments(
         entity,
-        api.list_environments(conda_store.db, search=search, show_soft_deleted=False),
+        api.list_environments(db, search=search, show_soft_deleted=False),
     )
 
     context = {
@@ -68,15 +70,15 @@ def ui_list_environments(
 
 
 @router_ui.get("/namespace/")
-def ui_list_namespaces(
+async def ui_list_namespaces(
     request: Request,
     templates=Depends(dependencies.get_templates),
-    conda_store=Depends(dependencies.get_conda_store),
+    db: Session = Depends(dependencies.get_db),
     auth=Depends(dependencies.get_auth),
     entity=Depends(dependencies.get_entity),
 ):
     orm_namespaces = auth.filter_namespaces(
-        entity, api.list_namespaces(conda_store.db, show_soft_deleted=False)
+        entity, api.list_namespaces(db, show_soft_deleted=False)
     )
 
     context = {
@@ -89,12 +91,12 @@ def ui_list_namespaces(
 
 
 @router_ui.get("/environment/{namespace}/{environment_name}/")
-def ui_get_environment(
+async def ui_get_environment(
     namespace: str,
     environment_name: str,
     request: Request,
     templates=Depends(dependencies.get_templates),
-    conda_store=Depends(dependencies.get_conda_store),
+    db: Session = Depends(dependencies.get_db),
     auth=Depends(dependencies.get_auth),
     entity=Depends(dependencies.get_entity),
 ):
@@ -105,9 +107,7 @@ def ui_get_environment(
         require=True,
     )
 
-    environment = api.get_environment(
-        conda_store.db, namespace=namespace, name=environment_name
-    )
+    environment = api.get_environment(db, namespace=namespace, name=environment_name)
     if environment is None:
         return templates.TemplateResponse(
             "404.html",
@@ -129,12 +129,12 @@ def ui_get_environment(
 
 
 @router_ui.get("/environment/{namespace}/{environment_name}/edit/")
-def ui_edit_environment(
+async def ui_edit_environment(
     namespace: str,
     environment_name: str,
     request: Request,
     templates=Depends(dependencies.get_templates),
-    conda_store=Depends(dependencies.get_conda_store),
+    db: Session = Depends(dependencies.get_db),
     auth=Depends(dependencies.get_auth),
     entity=Depends(dependencies.get_entity),
 ):
@@ -145,9 +145,7 @@ def ui_edit_environment(
         require=True,
     )
 
-    environment = api.get_environment(
-        conda_store.db, namespace=namespace, name=environment_name
-    )
+    environment = api.get_environment(db, namespace=namespace, name=environment_name)
     if environment is None:
         return templates.TemplateResponse(
             "404.html",
@@ -170,16 +168,16 @@ def ui_edit_environment(
 
 
 @router_ui.get("/build/{build_id}/")
-def ui_get_build(
+async def ui_get_build(
     build_id: int,
     request: Request,
     templates=Depends(dependencies.get_templates),
-    conda_store=Depends(dependencies.get_conda_store),
+    db: Session = Depends(dependencies.get_db),
     auth=Depends(dependencies.get_auth),
     server=Depends(dependencies.get_server),
     entity=Depends(dependencies.get_entity),
 ):
-    build = api.get_build(conda_store.db, build_id)
+    build = api.get_build(db, build_id)
     if build is None:
         return templates.TemplateResponse(
             "404.html",
@@ -209,10 +207,10 @@ def ui_get_build(
 
 
 @router_ui.get("/user/")
-def ui_get_user(
+async def ui_get_user(
     request: Request,
     templates=Depends(dependencies.get_templates),
-    conda_store=Depends(dependencies.get_conda_store),
+    db: Session = Depends(dependencies.get_db),
     auth=Depends(dependencies.get_auth),
     entity=Depends(dependencies.get_entity),
 ):
@@ -224,13 +222,13 @@ def ui_get_user(
     )
 
     orm_namespaces = auth.filter_namespaces(
-        entity, api.list_namespaces(conda_store.db, show_soft_deleted=False)
+        entity, api.list_namespaces(db, show_soft_deleted=False)
     )
 
-    system_metrics = api.get_system_metrics(conda_store.db)
+    system_metrics = api.get_system_metrics(db)
 
     namespace_usage_metrics = auth.filter_namespaces(
-        entity, api.get_namespace_metrics(conda_store.db)
+        entity, api.get_namespace_metrics(db)
     )
 
     context = {
@@ -247,10 +245,11 @@ def ui_get_user(
 @router_ui.get("/setting/")
 @router_ui.get("/setting/{namespace}/")
 @router_ui.get("/setting/{namespace}/{environment_name}/")
-def ui_get_setting(
+async def ui_get_setting(
     request: Request,
     templates=Depends(dependencies.get_templates),
     auth=Depends(dependencies.get_auth),
+    db: Session = Depends(dependencies.get_db),
     conda_store=Depends(dependencies.get_conda_store),
     namespace: str = None,
     environment_name: str = None,
@@ -281,7 +280,7 @@ def ui_get_setting(
         "environment_name": environment_name,
         "api_settings_url": api_setting_url,
         "settings": conda_store.get_settings(
-            namespace=namespace, environment_name=environment_name
+            db, namespace=namespace, environment_name=environment_name
         ),
     }
     return templates.TemplateResponse("setting.html", context)

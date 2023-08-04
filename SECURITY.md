@@ -8,11 +8,11 @@ You should feel comfortable upgrading if you're using our documented public APIs
 
 ## Reporting a Vulnerability
 
-If you think you found a vulnerability, please report it at [conda-store/security](https://github.com/Quansight/conda-store/security).
+If you think you found a vulnerability, please report it at [conda-store/security](https://github.com/conda-incubator/conda-store/security).
 
 ## Coverage
 
 This policy covers the following repositories:
-- [conda-store](https://github.com/Quansight/conda-store)
-- [conda-store-ui](https://github.com/Quansight/conda-store-ui)
-- [jupyterlab-conda-store](https://github.com/Quansight/jupyterlab-conda-store)
+- [conda-store](https://github.com/conda-incubator/conda-store)
+- [conda-store-ui](https://github.com/conda-incubator/conda-store-ui)
+- [jupyterlab-conda-store](https://github.com/conda-incubator/jupyterlab-conda-store)

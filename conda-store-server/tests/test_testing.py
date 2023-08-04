@@ -1,7 +1,7 @@
 from conda_store_server import schema, testing, api
 
 
-def test_testing_initialize_database(conda_store):
+def test_testing_initialize_database(db, conda_store):
     config = {
         "namespace1": {
             "name1": schema.CondaSpecification(
@@ -24,10 +24,10 @@ def test_testing_initialize_database(conda_store):
         },
     }
 
-    testing.seed_conda_store(conda_store, config)
+    testing.seed_conda_store(db, conda_store, config)
 
-    assert len(api.list_namespaces(conda_store.db).all()) == 2
-    assert len(api.list_environments(conda_store.db).all()) == 3
-    assert len(api.list_builds(conda_store.db).all()) == 3
-    assert len(api.list_solves(conda_store.db).all()) == 3
-    assert len(api.list_conda_packages(conda_store.db).all()) == 3
+    assert len(api.list_namespaces(db).all()) == 2
+    assert len(api.list_environments(db).all()) == 3
+    assert len(api.list_builds(db).all()) == 3
+    assert len(api.list_solves(db).all()) == 3
+    assert len(api.list_conda_packages(db).all()) == 3

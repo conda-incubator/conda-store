@@ -36,7 +36,7 @@ dynamic = ["version"]
 
 [project.urls]
 Homepage = "https://conda.store/"
-Source = "https://github.com/Quansight/conda-store"
+Source = "https://github.com/conda-incubator/conda-store"
 
 [project.optional-dependencies]
 dev = [

@@ -5,6 +5,7 @@ import urllib.parse
 from traitlets.config import LoggingConfigurable
 from traitlets import Dict, Callable, default
 from python_docker.registry import Image, Registry
+from sqlalchemy.orm import Session
 
 from conda_store_server import schema, orm, utils
 
@@ -40,7 +41,7 @@ class ContainerRegistry(LoggingConfigurable):
 
         return _container_registry_image_tag
 
-    def store_image(self, conda_store, build: orm.Build, image: Image):
+    def store_image(self, db: Session, conda_store, build: orm.Build, image: Image):
         self.log.info("storing container image locally")
         with utils.timer(self.log, "storing container image locally"):
             # https://docs.docker.com/registry/spec/manifest-v2-2/#example-image-manifest
@@ -59,7 +60,7 @@ class ContainerRegistry(LoggingConfigurable):
                 content_compressed = gzip.compress(layer.content)
                 content_compressed_hash = hashlib.sha256(content_compressed).hexdigest()
                 conda_store.storage.set(
-                    conda_store.db,
+                    db,
                     build.id,
                     build.docker_blob_key(content_compressed_hash),
                     content_compressed,
@@ -89,7 +90,7 @@ class ContainerRegistry(LoggingConfigurable):
             docker_manifest_hash = hashlib.sha256(docker_manifest_content).hexdigest()
 
             conda_store.storage.set(
-                conda_store.db,
+                db,
                 build.id,
                 build.docker_blob_key(docker_config_hash),
                 docker_config_content,
@@ -101,7 +102,7 @@ class ContainerRegistry(LoggingConfigurable):
             # is sort of hack to avoid having to figure out which sha256
             # refers to which manifest.
             conda_store.storage.set(
-                conda_store.db,
+                db,
                 build.id,
                 f"docker/manifest/sha256:{docker_manifest_hash}",
                 docker_manifest_content,
@@ -110,7 +111,7 @@ class ContainerRegistry(LoggingConfigurable):
             )
 
             conda_store.storage.set(
-                conda_store.db,
+                db,
                 build.id,
                 build.docker_manifest_key,
                 docker_manifest_content,
@@ -154,7 +155,7 @@ class ContainerRegistry(LoggingConfigurable):
 
         return registry.pull_image(name, tag)
 
-    def push_image(self, conda_store, build, image: Image):
+    def push_image(self, db, build, image: Image):
         for registry_url, configure_registry in self.container_registries.items():
             self.log.info(f"beginning upload of image to registry {registry_url}")
             with utils.timer(self.log, f"uploading image to registry {registry_url}"):
@@ -168,8 +169,8 @@ class ContainerRegistry(LoggingConfigurable):
                     artifact_type=schema.BuildArtifactType.CONTAINER_REGISTRY,
                     key=f"{registry_url}/{image.name}:{image.tag}",
                 )
-                conda_store.db.add(registry_build_artifact)
-                conda_store.db.commit()
+                db.add(registry_build_artifact)
+                db.commit()
 
     def delete_image(self, image_name: str):
         registry_url, name, tag = self.parse_image_uri(image_name)

@@ -93,9 +93,20 @@ class CondaPackage(BaseModel):
         orm_mode = True
 
 
+class NamespaceRoleMapping(BaseModel):
+    id: int
+    entity: str
+    role: str
+
+    class Config:
+        orm_mode = True
+
+
 class Namespace(BaseModel):
     id: int
     name: constr(regex=f"^[{ALLOWED_CHARACTERS}]+$")  # noqa: F722
+    metadata_: Dict[str, Any] = None
+    role_mappings: List[NamespaceRoleMapping] = []
 
     class Config:
         orm_mode = True

@@ -16,7 +16,8 @@ from traitlets import (
     Union,
 )
 from traitlets.config import LoggingConfigurable
-from sqlalchemy.pool import NullPool
+from sqlalchemy.pool import QueuePool
+from sqlalchemy.orm import Session
 import pydantic
 
 from conda_store_server import (
@@ -32,10 +33,13 @@ from conda_store_server import (
 
 
 def conda_store_validate_specification(
-    conda_store: "CondaStore", namespace: str, specification: schema.CondaSpecification
+    db: Session,
+    conda_store: "CondaStore",
+    namespace: str,
+    specification: schema.CondaSpecification,
 ) -> schema.CondaSpecification:
     settings = conda_store.get_settings(
-        namespace=namespace, environment_name=specification.name
+        db, namespace=namespace, environment_name=specification.name
     )
 
     specification = environment.validate_environment_channels(specification, settings)
@@ -50,12 +54,13 @@ def conda_store_validate_specification(
 
 
 def conda_store_validate_action(
+    db: Session,
     conda_store: "CondaStore",
     namespace: str,
     action: schema.Permissions,
 ) -> None:
-    settings = conda_store.get_settings()
-    system_metrics = api.get_system_metrics(conda_store.db)
+    settings = conda_store.get_settings(db)
+    system_metrics = api.get_system_metrics(db)
 
     if action in (
         schema.Permissions.ENVIRONMENT_CREATE,
@@ -343,20 +348,11 @@ class CondaStore(LoggingConfigurable):
         if hasattr(self, "_session_factory"):
             return self._session_factory
 
-        # https://docs.sqlalchemy.org/en/14/core/pooling.html#using-connection-pools-with-multiprocessing-or-os-fork
-        # This is the most simplistic, one shot system that prevents
-        # the Engine from using any connection more than once
         self._session_factory = orm.new_session_factory(
-            url=self.database_url, poolclass=NullPool
+            url=self.database_url,
+            poolclass=QueuePool,
         )
         return self._session_factory
-
-    @property
-    def db(self):
-        # we are using a scoped_session which always returns the same
-        # session if within the same thread
-        # https://docs.sqlalchemy.org/en/14/orm/contextual.html
-        return self.session_factory()
 
     @property
     def redis(self):
@@ -367,9 +363,8 @@ class CondaStore(LoggingConfigurable):
         self._redis = redis.Redis.from_url(self.redis_url)
         return self._redis
 
-    @property
-    def configuration(self):
-        return orm.CondaStoreConfiguration.configuration(self.db)
+    def configuration(self, db: Session):
+        return orm.CondaStoreConfiguration.configuration(db)
 
     @property
     def storage(self):
@@ -421,14 +416,14 @@ class CondaStore(LoggingConfigurable):
 
     @property
     def celery_app(self):
-        if hasattr(self, "_celery_app"):
-            return self._celery_app
+        # if hasattr(self, "_celery_app"):
+        #     return self._celery_app
 
         self._celery_app = Celery("tasks")
         self._celery_app.config_from_object(self.celery_config)
         return self._celery_app
 
-    def ensure_settings(self):
+    def ensure_settings(self, db: Session):
         """Ensure that conda-store traitlets settings are applied"""
         settings = schema.Settings(
             default_namespace=self.default_namespace,
@@ -455,30 +450,31 @@ class CondaStore(LoggingConfigurable):
             build_artifacts=self.build_artifacts,
             # default_docker_base_image=self.default_docker_base_image,
         )
-        api.set_kvstore_key_values(self.db, "setting", settings.dict(), update=False)
+        api.set_kvstore_key_values(db, "setting", settings.dict(), update=False)
 
-    def ensure_namespace(self):
+    def ensure_namespace(self, db: Session):
         """Ensure that conda-store default namespaces exists"""
-        api.ensure_namespace(self.db, self.default_namespace)
+        api.ensure_namespace(db, self.default_namespace)
 
     def ensure_directories(self):
         """Ensure that conda-store filesystem directories exist"""
         os.makedirs(self.store_directory, exist_ok=True)
 
-    def ensure_conda_channels(self):
+    def ensure_conda_channels(self, db: Session):
         """Ensure that conda-store indexed channels and packages are in database"""
         self.log.info("updating conda store channels")
 
-        settings = self.get_settings()
+        settings = self.get_settings(db)
 
         for channel in settings.conda_indexed_channels:
             normalized_channel = conda_utils.normalize_channel_name(
                 settings.conda_channel_alias, channel
             )
-            api.ensure_conda_channel(self.db, normalized_channel)
+            api.ensure_conda_channel(db, normalized_channel)
 
     def set_settings(
         self,
+        db: Session,
         namespace: str = None,
         environment_name: str = None,
         data: Dict[str, Any] = {},
@@ -512,10 +508,10 @@ class CondaStore(LoggingConfigurable):
         else:
             prefix = "setting"
 
-        api.set_kvstore_key_values(self.db, prefix, data)
+        api.set_kvstore_key_values(db, prefix, data)
 
     def get_settings(
-        self, namespace: str = None, environment_name: str = None
+        self, db: Session, namespace: str = None, environment_name: str = None
     ) -> schema.Settings:
         # setting logic is intentionally done in python code
         # rather than using the database for merges and ordering
@@ -530,29 +526,31 @@ class CondaStore(LoggingConfigurable):
 
         settings = {}
         for prefix in prefixes:
-            settings.update(api.get_kvstore_key_values(self.db, prefix))
+            settings.update(api.get_kvstore_key_values(db, prefix))
 
         return schema.Settings(**settings)
 
-    def register_solve(self, specification: schema.CondaSpecification):
+    def register_solve(self, db: Session, specification: schema.CondaSpecification):
         """Registers a solve for a given specification"""
-        settings = self.get_settings()
+        settings = self.get_settings(db)
 
         self.validate_action(
+            db=db,
             conda_store=self,
             namespace="solve",
             action=schema.Permissions.ENVIRONMENT_SOLVE,
         )
 
         specification_model = self.validate_specification(
+            db=db,
             conda_store=self,
             namespace="solve",
             specification=specification,
         )
 
-        specification_orm = api.ensure_specification(self.db, specification_model)
-        solve = api.create_solve(self.db, specification_orm.id)
-        self.db.commit()
+        specification_orm = api.ensure_specification(db, specification_model)
+        solve = api.create_solve(db, specification_orm.id)
+        db.commit()
 
         self.celery_app
 
@@ -568,28 +566,34 @@ class CondaStore(LoggingConfigurable):
         return task_id, solve.id
 
     def register_environment(
-        self, specification: dict, namespace: str = None, force: bool = True
+        self,
+        db: Session,
+        specification: dict,
+        namespace: str = None,
+        force: bool = True,
     ):
         """Register a given specification to conda store with given namespace/name."""
-        settings = self.get_settings()
+        settings = self.get_settings(db)
 
         namespace = namespace or settings.default_namespace
-        namespace = api.ensure_namespace(self.db, name=namespace)
+        namespace = api.ensure_namespace(db, name=namespace)
 
         self.validate_action(
+            db=db,
             conda_store=self,
             namespace=namespace.name,
             action=schema.Permissions.ENVIRONMENT_CREATE,
         )
 
         specification_model = self.validate_specification(
+            db=db,
             conda_store=self,
             namespace=namespace.name,
             specification=schema.CondaSpecification.parse_obj(specification),
         )
 
         spec_sha256 = utils.datastructure_hash(specification_model.dict())
-        matching_specification = api.get_specification(self.db, sha256=spec_sha256)
+        matching_specification = api.get_specification(db, sha256=spec_sha256)
         if (
             matching_specification is not None
             and not force
@@ -600,45 +604,44 @@ class CondaStore(LoggingConfigurable):
         ):
             return None
 
-        specification = api.ensure_specification(self.db, specification_model)
+        specification = api.ensure_specification(db, specification_model)
         environment_was_empty = (
-            api.get_environment(
-                self.db, name=specification.name, namespace_id=namespace.id
-            )
+            api.get_environment(db, name=specification.name, namespace_id=namespace.id)
             is None
         )
         environment = api.ensure_environment(
-            self.db,
+            db,
             name=specification.name,
             namespace_id=namespace.id,
             description=specification.spec["description"],
         )
 
-        build = self.create_build(environment.id, specification.sha256)
+        build = self.create_build(db, environment.id, specification.sha256)
 
         if environment_was_empty:
             environment.current_build = build
-            self.db.commit()
+            db.commit()
 
         return build.id
 
-    def create_build(self, environment_id: int, specification_sha256: str):
-        environment = api.get_environment(self.db, id=environment_id)
+    def create_build(self, db: Session, environment_id: int, specification_sha256: str):
+        environment = api.get_environment(db, id=environment_id)
         self.validate_action(
+            db=db,
             conda_store=self,
             namespace=environment.namespace.name,
             action=schema.Permissions.ENVIRONMENT_UPDATE,
         )
 
         settings = self.get_settings(
-            namespace=environment.namespace.name, environment_name=environment.name
+            db, namespace=environment.namespace.name, environment_name=environment.name
         )
 
-        specification = api.get_specification(self.db, specification_sha256)
+        specification = api.get_specification(db, specification_sha256)
         build = api.create_build(
-            self.db, environment_id=environment_id, specification_id=specification.id
+            db, environment_id=environment_id, specification_id=specification.id
         )
-        self.db.commit()
+        db.commit()
 
         self.celery_app
 
@@ -685,18 +688,21 @@ class CondaStore(LoggingConfigurable):
 
         return build
 
-    def update_environment_build(self, namespace: str, name: str, build_id: int):
+    def update_environment_build(
+        self, db: Session, namespace: str, name: str, build_id: int
+    ):
         self.validate_action(
+            db=db,
             conda_store=self,
             namespace=namespace,
             action=schema.Permissions.ENVIRONMENT_UPDATE,
         )
 
-        build = api.get_build(self.db, build_id)
+        build = api.get_build(db, build_id)
         if build is None:
             raise utils.CondaStoreError(f"build id={build_id} does not exist")
 
-        environment = api.get_environment(self.db, namespace=namespace, name=name)
+        environment = api.get_environment(db, namespace=namespace, name=name)
         if environment is None:
             raise utils.CondaStoreError(
                 f"environment namespace={namespace} name={name} does not exist"
@@ -713,7 +719,7 @@ class CondaStore(LoggingConfigurable):
             )
 
         environment.current_build_id = build.id
-        self.db.commit()
+        db.commit()
 
         self.celery_app
         # must import tasks after a celery app has been initialized
@@ -721,24 +727,27 @@ class CondaStore(LoggingConfigurable):
 
         tasks.task_update_environment_build.si(environment.id).apply_async()
 
-    def update_environment_description(self, namespace, name, description):
-        environment = api.get_environment(self.db, namespace=namespace, name=name)
+    def update_environment_description(
+        self, db: Session, namespace: str, name: str, description: str
+    ):
+        environment = api.get_environment(db, namespace=namespace, name=name)
         if environment is None:
             raise utils.CondaStoreError(
                 f"environment namespace={namespace} name={name} does not exist"
             )
 
         environment.description = description
-        self.db.commit()
+        db.commit()
 
-    def delete_namespace(self, namespace: str):
+    def delete_namespace(self, db: Session, namespace: str):
         self.validate_action(
+            db=db,
             conda_store=self,
             namespace=namespace,
             action=schema.Permissions.NAMESPACE_DELETE,
         )
 
-        namespace = api.get_namespace(self.db, name=namespace)
+        namespace = api.get_namespace(db, name=namespace)
         if namespace is None:
             raise utils.CondaStoreError(f"namespace={namespace} does not exist")
 
@@ -748,7 +757,7 @@ class CondaStore(LoggingConfigurable):
             environment_orm.deleted_on = utcnow
             for build in environment_orm.builds:
                 build.deleted_on = utcnow
-        self.db.commit()
+        db.commit()
 
         self.celery_app
 
@@ -757,14 +766,15 @@ class CondaStore(LoggingConfigurable):
 
         tasks.task_delete_namespace.si(namespace.id).apply_async()
 
-    def delete_environment(self, namespace: str, name: str):
+    def delete_environment(self, db: Session, namespace: str, name: str):
         self.validate_action(
+            db=db,
             conda_store=self,
             namespace=namespace,
             action=schema.Permissions.ENVIRONMENT_DELETE,
         )
 
-        environment = api.get_environment(self.db, namespace=namespace, name=name)
+        environment = api.get_environment(db, namespace=namespace, name=name)
         if environment is None:
             raise utils.CondaStoreError(
                 f"environment namespace={namespace} name={name} does not exist"
@@ -774,7 +784,7 @@ class CondaStore(LoggingConfigurable):
         environment.deleted_on = utcnow
         for build in environment.builds:
             build.deleted_on = utcnow
-        self.db.commit()
+        db.commit()
 
         self.celery_app
 
@@ -783,10 +793,11 @@ class CondaStore(LoggingConfigurable):
 
         tasks.task_delete_environment.si(environment.id).apply_async()
 
-    def delete_build(self, build_id: int):
-        build = api.get_build(self.db, build_id)
+    def delete_build(self, db: Session, build_id: int):
+        build = api.get_build(db, build_id)
 
         self.validate_action(
+            db=db,
             conda_store=self,
             namespace=build.environment.namespace.name,
             action=schema.Permissions.BUILD_DELETE,
@@ -801,7 +812,7 @@ class CondaStore(LoggingConfigurable):
             )
 
         build.deleted_on = datetime.datetime.utcnow()
-        self.db.commit()
+        db.commit()
 
         self.celery_app
 

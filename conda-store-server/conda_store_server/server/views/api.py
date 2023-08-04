@@ -1,10 +1,11 @@
-from typing import List, Dict, Optional, Any, Union
+from typing import List, Dict, Optional, Any
 import datetime
 
 import pydantic
 import yaml
 from fastapi import APIRouter, Request, Depends, HTTPException, Query, Body
 from fastapi.responses import RedirectResponse, PlainTextResponse
+from sqlalchemy.orm import Session
 
 from conda_store_server import api, orm, schema, utils, __version__
 from conda_store_server.server import dependencies
@@ -103,7 +104,6 @@ def paginated_api_response(
         .limit(paginated_args["limit"])
         .offset(paginated_args["offset"])
     )
-
     return {
         "status": "ok",
         "data": [object_schema.from_orm(_).dict(exclude=exclude) for _ in query.all()],
@@ -117,7 +117,7 @@ def paginated_api_response(
     "/",
     response_model=schema.APIGetStatus,
 )
-def api_status():
+async def api_status():
     return {"status": "ok", "data": {"version": __version__}}
 
 
@@ -125,7 +125,7 @@ def api_status():
     "/permission/",
     response_model=schema.APIGetPermission,
 )
-def api_get_permissions(
+async def api_get_permissions(
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
@@ -163,14 +163,14 @@ def api_get_permissions(
     "/usage/",
     response_model=schema.APIGetUsage,
 )
-def api_get_usage(
+async def api_get_usage(
     request: Request,
-    conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
     entity=Depends(dependencies.get_entity),
+    db=Depends(dependencies.get_db),
 ):
     namespace_usage_metrics = auth.filter_namespaces(
-        entity, api.get_namespace_metrics(conda_store.db)
+        entity, api.get_namespace_metrics(db)
     )
 
     data = {}
@@ -192,7 +192,7 @@ def api_get_usage(
     "/token/",
     response_model=schema.APIPostToken,
 )
-def api_post_token(
+async def api_post_token(
     request: Request,
     primary_namespace: Optional[str] = Body(None),
     expiration: Optional[datetime.datetime] = Body(None),
@@ -236,20 +236,23 @@ def api_post_token(
 @router_api.get(
     "/namespace/",
     response_model=schema.APIListNamespace,
+    # don't send metadata_ and role_mappings
+    response_model_exclude_defaults=True,
 )
-def api_list_namespaces(
-    conda_store=Depends(dependencies.get_conda_store),
+async def api_list_namespaces(
     auth=Depends(dependencies.get_auth),
     entity=Depends(dependencies.get_entity),
     paginated_args: Dict = Depends(get_paginated_args),
+    db: Session = Depends(dependencies.get_db),
 ):
     orm_namespaces = auth.filter_namespaces(
-        entity, api.list_namespaces(conda_store.db, show_soft_deleted=False)
+        entity, api.list_namespaces(db, show_soft_deleted=False)
     )
     return paginated_api_response(
         orm_namespaces,
         paginated_args,
         schema.Namespace,
+        exclude={"role_mappings", "metadata_"},
         allowed_sort_bys={
             "name": orm.Namespace.name,
         },
@@ -261,17 +264,17 @@ def api_list_namespaces(
     "/namespace/{namespace}/",
     response_model=schema.APIGetNamespace,
 )
-def api_get_namespace(
+async def api_get_namespace(
     namespace: str,
     request: Request,
-    conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
+    db: Session = Depends(dependencies.get_db),
 ):
     auth.authorize_request(
         request, namespace, {Permissions.NAMESPACE_READ}, require=True
     )
 
-    namespace = api.get_namespace(conda_store.db, namespace, show_soft_deleted=False)
+    namespace = api.get_namespace(db, namespace, show_soft_deleted=False)
     if namespace is None:
         raise HTTPException(status_code=404, detail="namespace does not exist")
 
@@ -285,25 +288,25 @@ def api_get_namespace(
     "/namespace/{namespace}/",
     response_model=schema.APIAckResponse,
 )
-def api_create_namespace(
+async def api_create_namespace(
     namespace: str,
     request: Request,
-    conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
+    db: Session = Depends(dependencies.get_db),
 ):
     auth.authorize_request(
         request, namespace, {Permissions.NAMESPACE_CREATE}, require=True
     )
 
-    namespace_orm = api.get_namespace(conda_store.db, namespace)
+    namespace_orm = api.get_namespace(db, namespace)
     if namespace_orm:
         raise HTTPException(status_code=409, detail="namespace already exists")
 
     try:
-        api.create_namespace(conda_store.db, namespace)
+        api.create_namespace(db, namespace)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e.args[0]))
-    conda_store.db.commit()
+    db.commit()
     return {"status": "ok"}
 
 
@@ -311,13 +314,13 @@ def api_create_namespace(
     "/namespace/{namespace}/",
     response_model=schema.APIAckResponse,
 )
-def api_update_namespace(
+async def api_update_namespace(
     namespace: str,
     request: Request,
-    metadata: Union[Optional[Dict | List], None] = None,
-    role_mappings: Union[Optional[Dict[str, List[str]]], None] = None,
-    conda_store=Depends(dependencies.get_conda_store),
+    metadata: Dict[str, Any] = None,
+    role_mappings: Dict[str, List[str]] = None,
     auth=Depends(dependencies.get_auth),
+    db: Session = Depends(dependencies.get_db),
 ):
 
     auth.authorize_request(
@@ -331,35 +334,36 @@ def api_update_namespace(
         require=True,
     )
 
-    namespace_orm = api.get_namespace(conda_store.db, namespace)
+    namespace_orm = api.get_namespace(db, namespace)
     if namespace_orm is None:
         raise HTTPException(status_code=404, detail="namespace does not exist")
 
     try:
-        api.update_namespace(conda_store.db, namespace, metadata, role_mappings)
+        api.update_namespace(db, namespace, metadata, role_mappings)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e.args[0]))
-    conda_store.db.commit()
+    db.commit()
     return {"status": "ok"}
 
 
 @router_api.delete("/namespace/{namespace}/", response_model=schema.APIAckResponse)
-def api_delete_namespace(
+async def api_delete_namespace(
     namespace: str,
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
+    db: Session = Depends(dependencies.get_db),
 ):
     auth.authorize_request(
         request, namespace, {Permissions.NAMESPACE_DELETE}, require=True
     )
 
-    namespace_orm = api.get_namespace(conda_store.db, namespace)
+    namespace_orm = api.get_namespace(db, namespace)
     if namespace_orm is None:
         raise HTTPException(status_code=404, detail="namespace does not exist")
 
     try:
-        conda_store.delete_namespace(namespace)
+        conda_store.delete_namespace(db, namespace)
     except utils.CondaStoreError as e:
         raise HTTPException(status_code=400, detail=e.message)
 
@@ -370,22 +374,22 @@ def api_delete_namespace(
     "/environment/",
     response_model=schema.APIListEnvironment,
 )
-def api_list_environments(
+async def api_list_environments(
     search: Optional[str] = None,
     namespace: Optional[str] = None,
     name: Optional[str] = None,
     status: Optional[schema.BuildStatus] = None,
     packages: Optional[List[str]] = Query([]),
     artifact: Optional[schema.BuildArtifactType] = None,
-    conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
     entity=Depends(dependencies.get_entity),
     paginated_args=Depends(get_paginated_args),
+    db: Session = Depends(dependencies.get_db),
 ):
     orm_environments = auth.filter_environments(
         entity,
         api.list_environments(
-            conda_store.db,
+            db,
             search=search,
             namespace=namespace,
             name=name,
@@ -412,12 +416,12 @@ def api_list_environments(
     "/environment/{namespace}/{environment_name}/",
     response_model=schema.APIGetEnvironment,
 )
-def api_get_environment(
+async def api_get_environment(
     namespace: str,
     environment_name: str,
     request: Request,
-    conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
+    db: Session = Depends(dependencies.get_db),
 ):
     auth.authorize_request(
         request,
@@ -426,9 +430,7 @@ def api_get_environment(
         require=True,
     )
 
-    environment = api.get_environment(
-        conda_store.db, namespace=namespace, name=environment_name
-    )
+    environment = api.get_environment(db, namespace=namespace, name=environment_name)
     if environment is None:
         raise HTTPException(status_code=404, detail="environment does not exist")
 
@@ -444,12 +446,13 @@ def api_get_environment(
     "/environment/{namespace}/{name}/",
     response_model=schema.APIAckResponse,
 )
-def api_update_environment_build(
+async def api_update_environment_build(
     namespace: str,
     name: str,
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
+    db: Session = Depends(dependencies.get_db),
     build_id: int = Body(None, embed=True),
     description: str = Body(None, embed=True),
 ):
@@ -459,10 +462,10 @@ def api_update_environment_build(
 
     try:
         if build_id is not None:
-            conda_store.update_environment_build(namespace, name, build_id)
+            conda_store.update_environment_build(db, namespace, name, build_id)
 
         if description is not None:
-            conda_store.update_environment_description(namespace, name, description)
+            conda_store.update_environment_description(db, namespace, name, description)
 
     except utils.CondaStoreError as e:
         raise HTTPException(status_code=400, detail=e.message)
@@ -474,11 +477,12 @@ def api_update_environment_build(
     "/environment/{namespace}/{name}/",
     response_model=schema.APIAckResponse,
 )
-def api_delete_environment(
+async def api_delete_environment(
     namespace: str,
     name: str,
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
+    db: Session = Depends(dependencies.get_db),
     auth=Depends(dependencies.get_auth),
 ):
     auth.authorize_request(
@@ -486,7 +490,7 @@ def api_delete_environment(
     )
 
     try:
-        conda_store.delete_environment(namespace, name)
+        conda_store.delete_environment(db, namespace, name)
     except utils.CondaStoreError as e:
         raise HTTPException(status_code=400, detail=e.message)
 
@@ -496,7 +500,7 @@ def api_delete_environment(
 @router_api.get(
     "/specification/",
 )
-def api_get_specification(
+async def api_get_specification(
     request: Request,
     channel: List[str] = Query([]),
     conda: List[str] = Query([]),
@@ -505,6 +509,7 @@ def api_get_specification(
         schema.APIGetSpecificationFormat.YAML
     ),
     conda_store=Depends(dependencies.get_conda_store),
+    db: Session = Depends(dependencies.get_db),
     auth=Depends(dependencies.get_auth),
     entity=Depends(dependencies.get_entity),
 ):
@@ -520,12 +525,12 @@ def api_get_specification(
     )
 
     try:
-        task, solve_id = api.post_solve(conda_store, specification)
+        task, solve_id = conda_store.register_solve(db, specification)
         task.wait()
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e.args[0]))
 
-    solve = api.get_solve(conda_store.db, solve_id)
+    solve = api.get_solve(db, solve_id)
 
     return {"solve": solve.packages}
 
@@ -534,9 +539,10 @@ def api_get_specification(
     "/specification/",
     response_model=schema.APIPostSpecification,
 )
-def api_post_specification(
+async def api_post_specification(
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
+    db: Session = Depends(dependencies.get_db),
     auth=Depends(dependencies.get_auth),
     entity=Depends(dependencies.get_entity),
     specification: str = Body(""),
@@ -549,7 +555,7 @@ def api_post_specification(
     )
 
     namespace_name = namespace or default_namespace
-    namespace = api.get_namespace(conda_store.db, namespace_name)
+    namespace = api.get_namespace(db, namespace_name)
     if namespace is None:
         permissions.add(Permissions.NAMESPACE_CREATE)
 
@@ -569,7 +575,9 @@ def api_post_specification(
     )
 
     try:
-        build_id = api.post_specification(conda_store, specification, namespace_name)
+        build_id = conda_store.register_environment(
+            db, specification, namespace_name, force=True
+        )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e.args[0]))
     except utils.CondaStoreError as e:
@@ -579,7 +587,7 @@ def api_post_specification(
 
 
 @router_api.get("/build/", response_model=schema.APIListBuild)
-def api_list_builds(
+async def api_list_builds(
     status: Optional[schema.BuildStatus] = None,
     packages: Optional[List[str]] = Query([]),
     artifact: Optional[schema.BuildArtifactType] = None,
@@ -587,6 +595,7 @@ def api_list_builds(
     name: Optional[str] = None,
     namespace: Optional[str] = None,
     conda_store=Depends(dependencies.get_conda_store),
+    db: Session = Depends(dependencies.get_db),
     auth=Depends(dependencies.get_auth),
     entity=Depends(dependencies.get_entity),
     paginated_args=Depends(get_paginated_args),
@@ -594,7 +603,7 @@ def api_list_builds(
     orm_builds = auth.filter_builds(
         entity,
         api.list_builds(
-            conda_store.db,
+            db,
             status=status,
             packages=packages,
             artifact=artifact,
@@ -620,13 +629,13 @@ def api_list_builds(
 
 
 @router_api.get("/build/{build_id}/", response_model=schema.APIGetBuild)
-def api_get_build(
+async def api_get_build(
     build_id: int,
     request: Request,
-    conda_store=Depends(dependencies.get_conda_store),
+    db: Session = Depends(dependencies.get_db),
     auth=Depends(dependencies.get_auth),
 ):
-    build = api.get_build(conda_store.db, build_id)
+    build = api.get_build(db, build_id)
     if build is None:
         raise HTTPException(status_code=404, detail="build id does not exist")
 
@@ -647,13 +656,14 @@ def api_get_build(
     "/build/{build_id}/",
     response_model=schema.APIPostSpecification,
 )
-def api_put_build(
+async def api_put_build(
     build_id: int,
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
+    db: Session = Depends(dependencies.get_db),
     auth=Depends(dependencies.get_auth),
 ):
-    build = api.get_build(conda_store.db, build_id)
+    build = api.get_build(db, build_id)
     if build is None:
         raise HTTPException(status_code=404, detail="build id does not exist")
 
@@ -666,7 +676,7 @@ def api_put_build(
 
     try:
         new_build = conda_store.create_build(
-            build.environment_id, build.specification.sha256
+            db, build.environment_id, build.specification.sha256
         )
     except utils.CondaStoreError as e:
         raise HTTPException(status_code=400, detail=e.message)
@@ -682,13 +692,14 @@ def api_put_build(
     "/build/{build_id}/",
     response_model=schema.APIAckResponse,
 )
-def api_delete_build(
+async def api_delete_build(
     build_id: int,
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
+    db: Session = Depends(dependencies.get_db),
     auth=Depends(dependencies.get_auth),
 ):
-    build = api.get_build(conda_store.db, build_id)
+    build = api.get_build(db, build_id)
     if build is None:
         raise HTTPException(status_code=404, detail="build id does not exist")
 
@@ -700,7 +711,7 @@ def api_delete_build(
     )
 
     try:
-        conda_store.delete_build(build_id)
+        conda_store.delete_build(db, build_id)
     except utils.CondaStoreError as e:
         raise HTTPException(status_code=400, detail=e.message)
 
@@ -711,17 +722,17 @@ def api_delete_build(
     "/build/{build_id}/packages/",
     response_model=schema.APIListCondaPackage,
 )
-def api_get_build_packages(
+async def api_get_build_packages(
     build_id: int,
     request: Request,
     search: Optional[str] = None,
     exact: Optional[str] = None,
     build: Optional[str] = None,
-    conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
+    db: Session = Depends(dependencies.get_db),
     paginated_args=Depends(get_paginated_args),
 ):
-    build_orm = api.get_build(conda_store.db, build_id)
+    build_orm = api.get_build(db, build_id)
     if build_orm is None:
         raise HTTPException(status_code=404, detail="build id does not exist")
 
@@ -732,7 +743,7 @@ def api_get_build_packages(
         require=True,
     )
     orm_packages = api.get_build_packages(
-        conda_store.db, build_orm.id, search=search, exact=exact, build=build
+        db, build_orm.id, search=search, exact=exact, build=build
     )
     return paginated_api_response(
         orm_packages,
@@ -748,13 +759,14 @@ def api_get_build_packages(
 
 
 @router_api.get("/build/{build_id}/logs/")
-def api_get_build_logs(
+async def api_get_build_logs(
     build_id: int,
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
+    db: Session = Depends(dependencies.get_db),
     auth=Depends(dependencies.get_auth),
 ):
-    build = api.get_build(conda_store.db, build_id)
+    build = api.get_build(db, build_id)
     if build is None:
         raise HTTPException(status_code=404, detail="build id does not exist")
 
@@ -772,11 +784,11 @@ def api_get_build_logs(
     "/channel/",
     response_model=schema.APIListCondaChannel,
 )
-def api_list_channels(
-    conda_store=Depends(dependencies.get_conda_store),
+async def api_list_channels(
+    db: Session = Depends(dependencies.get_db),
     paginated_args=Depends(get_paginated_args),
 ):
-    orm_channels = api.list_conda_channels(conda_store.db)
+    orm_channels = api.list_conda_channels(db)
     return paginated_api_response(
         orm_channels,
         paginated_args,
@@ -790,17 +802,15 @@ def api_list_channels(
     "/package/",
     response_model=schema.APIListCondaPackage,
 )
-def api_list_packages(
+async def api_list_packages(
     search: Optional[str] = None,
     exact: Optional[str] = None,
     build: Optional[str] = None,
     paginated_args=Depends(get_paginated_args),
-    conda_store=Depends(dependencies.get_conda_store),
+    db: Session = Depends(dependencies.get_db),
     distinct_on: List[str] = Query([]),
 ):
-    orm_packages = api.list_conda_packages(
-        conda_store.db, search=search, exact=exact, build=build
-    )
+    orm_packages = api.list_conda_packages(db, search=search, exact=exact, build=build)
     required_sort_bys, distinct_orm_packages = filter_distinct_on(
         orm_packages,
         distinct_on=distinct_on,
@@ -826,13 +836,14 @@ def api_list_packages(
 
 
 @router_api.get("/build/{build_id}/yaml/")
-def api_get_build_yaml(
+async def api_get_build_yaml(
     build_id: int,
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
+    db: Session = Depends(dependencies.get_db),
     auth=Depends(dependencies.get_auth),
 ):
-    build = api.get_build(conda_store.db, build_id)
+    build = api.get_build(db, build_id)
     if build is None:
         raise HTTPException(status_code=404, detail="build id does not exist")
 
@@ -845,14 +856,47 @@ def api_get_build_yaml(
     return RedirectResponse(conda_store.storage.get_url(build.conda_env_export_key))
 
 
+@router_api.get(
+    "/environment/{namespace}/{environment_name}/conda-lock.yml",
+    response_class=PlainTextResponse,
+)
+@router_api.get(
+    "/environment/{namespace}/{environment_name}/conda-lock.yaml",
+    response_class=PlainTextResponse,
+)
+@router_api.get(
+    "/environment/{namespace}/{environment_name}/lockfile/",
+    response_class=PlainTextResponse,
+)
+@router_api.get("/build/{build_id}/conda-lock.yml", response_class=PlainTextResponse)
+@router_api.get(
+    "/build/{build_id}/conda-lock.yaml",
+    name="api_get_build_conda_lock_file",
+    response_class=PlainTextResponse,
+)
 @router_api.get("/build/{build_id}/lockfile/", response_class=PlainTextResponse)
-def api_get_build_lockfile(
-    build_id: int,
+async def api_get_build_lockfile(
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
+    db: Session = Depends(dependencies.get_db),
     auth=Depends(dependencies.get_auth),
+    namespace: str = None,
+    environment_name: str = None,
+    build_id: int = None,
 ):
-    build = api.get_build(conda_store.db, build_id)
+    if build_id is None:
+        environment = api.get_environment(
+            db, namespace=namespace, name=environment_name
+        )
+        if environment is None:
+            raise HTTPException(status_code=404, detail="environment does not exist")
+        build = environment.current_build
+    else:
+        build = api.get_build(db, build_id)
+
+    if build is None:
+        raise HTTPException(status_code=404, detail="build id does not exist")
+
     auth.authorize_request(
         request,
         f"{build.environment.namespace.name}/{build.environment.name}",
@@ -864,13 +908,14 @@ def api_get_build_lockfile(
 
 
 @router_api.get("/build/{build_id}/archive/")
-def api_get_build_archive(
+async def api_get_build_archive(
     build_id: int,
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
+    db: Session = Depends(dependencies.get_db),
     auth=Depends(dependencies.get_auth),
 ):
-    build = api.get_build(conda_store.db, build_id)
+    build = api.get_build(db, build_id)
     auth.authorize_request(
         request,
         f"{build.environment.namespace.name}/{build.environment.name}",
@@ -882,14 +927,14 @@ def api_get_build_archive(
 
 
 @router_api.get("/build/{build_id}/docker/")
-def api_get_build_docker_image_url(
+async def api_get_build_docker_image_url(
     build_id: int,
     request: Request,
-    conda_store=Depends(dependencies.get_conda_store),
+    db: Session = Depends(dependencies.get_db),
     server=Depends(dependencies.get_server),
     auth=Depends(dependencies.get_auth),
 ):
-    build = api.get_build(conda_store.db, build_id)
+    build = api.get_build(db, build_id)
     auth.authorize_request(
         request,
         f"{build.environment.namespace.name}/{build.environment.name}",
@@ -920,9 +965,10 @@ def api_get_build_docker_image_url(
     "/setting/{namespace}/{environment_name}/",
     response_model=schema.APIGetSetting,
 )
-def api_get_settings(
+async def api_get_settings(
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
+    db: Session = Depends(dependencies.get_db),
     auth=Depends(dependencies.get_auth),
     namespace: str = None,
     environment_name: str = None,
@@ -943,7 +989,7 @@ def api_get_settings(
 
     return {
         "status": "ok",
-        "data": conda_store.get_settings(namespace, environment_name).dict(),
+        "data": conda_store.get_settings(db, namespace, environment_name).dict(),
         "message": None,
     }
 
@@ -960,10 +1006,11 @@ def api_get_settings(
     "/setting/{namespace}/{environment_name}/",
     response_model=schema.APIPutSetting,
 )
-def api_put_settings(
+async def api_put_settings(
     request: Request,
     data: Dict[str, Any],
     conda_store=Depends(dependencies.get_conda_store),
+    db: Session = Depends(dependencies.get_db),
     auth=Depends(dependencies.get_auth),
     namespace: str = None,
     environment_name: str = None,
@@ -983,7 +1030,7 @@ def api_put_settings(
     )
 
     try:
-        conda_store.set_settings(namespace, environment_name, data)
+        conda_store.set_settings(db, namespace, environment_name, data)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e.args[0]))
 
