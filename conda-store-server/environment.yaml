@@ -4,7 +4,7 @@ channels:
 dependencies:
   - python ==3.10
   # conda environment builds
-  - conda
+  - conda ==23.5.2
   - conda-docker >= 0.1.2
   - conda-pack
   - conda-lock >=1.0.5
