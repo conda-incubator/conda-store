@@ -121,7 +121,7 @@ easier to contribute to the documentation.
 
 ### Testing
 
-The `conda-store` repository is two packages. 
+The `conda-store` repository is two packages.
  - `conda-store-server/` which is the worker + web server responsible for the `conda-store` service
  - `conda-store/` is the client which interacts with the service
 
@@ -163,7 +163,7 @@ $ cd conda-store-server
 $ hatch env run -e dev lint
 ```
 
-Checking that package builds 
+Checking that package builds
 
 ```shell
 $ cd conda-store-server
@@ -174,7 +174,7 @@ Running unit tests
 
 ```shell
 $ cd conda-store-server
-$ pytest 
+$ pytest
 ```
 
 Running integration tests. These tests are stateful! So you will need
@@ -211,7 +211,7 @@ Once those changes have been made make a commit titled `bump to
 version <version>`.
 
 Finally create a [new release within the GitHub
-interface](https://github.com/Quansight/conda-store/releases/new). Do
+interface](https://github.com/conda-incubator/conda-store/releases/new). Do
 this instead of a git TAG since you can include release notes on the
 repository. The Release should be titled `Release <version> -
 <month>/<day>/<year>` with the description being the changelog
@@ -256,7 +256,7 @@ options were used but eventually we learned that there were too many
 options for the user. Traitlets provides a python configuration file
 that you can use to configure values of the applications. It is used
 for both the server and worker. See
-[`tests/assets/conda_store_config.py`](https://github.com/Quansight/conda-store/blob/main/tests/assets/conda_store_config.py)
+[`tests/assets/conda_store_config.py`](https://github.com/conda-incubator/conda-store/blob/main/tests/assets/conda_store_config.py)
 for a full example.
 
 ### Workers and server
@@ -580,7 +580,7 @@ eralchemy -i "postgresql+psycopg2://admin:password@localhost:5432/conda-store"  
 conda-store relies on [SQLAlchemy](https://www.sqlalchemy.org/) for ORM mapping, and on [Alembic](https://alembic.sqlalchemy.org/en/latest/) for DB migrations.
 
 The procedure to modify the database is the following :
-- First, modify [the ORM Model](https://github.com/Quansight/conda-store/blob/main/conda-store-server/conda_store_server/orm.py) according to the changes you want to make
+- First, modify [the ORM Model](https://github.com/conda-incubator/conda-store/blob/main/conda-store-server/conda_store_server/orm.py) according to the changes you want to make
 - edit the file `conda-store-server/alembic.ini` and replace the value for entry `sqlalchemy.url` to match the connection URL of your database.
 
 - in your command line, run the following :
