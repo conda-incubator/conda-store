@@ -31,10 +31,10 @@ jobs:
           method: jwt
           url: "https://quansight-vault-public-vault-b2379fa7.d415e30e.z1.hashicorp.cloud:8200"
           namespace: "admin/quansight"
-          role: "repository-quansight-conda-store-role"
+          role: "repository-conda-incubator-conda-store-role"
           secrets: |
-            kv/data/repository/Quansight/conda-store/shared_secrets PYPI_USERNAME | HATCH_INDEX_USER;
-            kv/data/repository/Quansight/conda-store/shared_secrets PYPI_PASSWORD | HATCH_INDEX_AUTH;
+            kv/data/repository/conda-incubator/conda-store/shared_secrets PYPI_USERNAME | HATCH_INDEX_USER;
+            kv/data/repository/conda-incubator/conda-store/shared_secrets PYPI_PASSWORD | HATCH_INDEX_AUTH;
 
       - name: Set up Python
         uses: actions/setup-python@v2
