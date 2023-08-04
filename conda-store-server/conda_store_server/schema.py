@@ -105,7 +105,7 @@ class NamespaceRoleMapping(BaseModel):
 class Namespace(BaseModel):
     id: int
     name: constr(regex=f"^[{ALLOWED_CHARACTERS}]+$")  # noqa: F722
-    metadata_: Dict[str, Any] = {}
+    metadata_: Dict[str, Any] = None
     role_mappings: List[NamespaceRoleMapping] = []
 
     class Config:
