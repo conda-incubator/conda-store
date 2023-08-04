@@ -22,7 +22,6 @@ from sqlalchemy import (
 from sqlalchemy.orm import (
     sessionmaker,
     relationship,
-    scoped_session,
     backref,
     declarative_base,
     validates,
@@ -56,9 +55,9 @@ class Namespace(Base):
 
     deleted_on = Column(DateTime, default=None)
 
-    metadata_ = Column(JSON)
+    metadata_ = Column(JSON, default=dict)
 
-    roles_mappings = relationship("NamespaceRoleMapping", back_populates="namespace")
+    role_mappings = relationship("NamespaceRoleMapping", back_populates="namespace")
 
 
 class NamespaceRoleMapping(Base):
@@ -68,7 +67,7 @@ class NamespaceRoleMapping(Base):
 
     id = Column(Integer, primary_key=True)
     namespace_id = Column(Integer, ForeignKey("namespace.id"), nullable=False)
-    namespace = relationship(Namespace, back_populates="roles_mappings")
+    namespace = relationship(Namespace, back_populates="role_mappings")
 
     # arn e.g. <namespace>/<name> like `quansight-*/*` or `quansight-devops/*`
     # The entity must match with ARN_ALLOWED defined in schema.py
@@ -691,5 +690,5 @@ class KeyValueStore(Base):
 def new_session_factory(url="sqlite:///:memory:", reset=False, **kwargs):
     engine = create_engine(url, **kwargs)
 
-    session_factory = scoped_session(sessionmaker(bind=engine))
+    session_factory = sessionmaker(bind=engine)
     return session_factory

@@ -129,7 +129,9 @@ def test_expired_token():
 )
 def test_authorization(conda_store, entity_bindings, arn, permissions, authorized):
 
-    authorization = RBACAuthorizationBackend(authentication_db=conda_store.db)
+    authorization = RBACAuthorizationBackend(
+        authentication_db=conda_store.session_factory
+    )
 
     entity = AuthenticationToken(
         primary_namespace="example_namespace", role_bindings=entity_bindings
@@ -154,7 +156,9 @@ def test_end_to_end_auth_flow(conda_store):
 
     token_model = authentication.authenticate(token)
 
-    authorization = RBACAuthorizationBackend(authentication_db=conda_store.db)
+    authorization = RBACAuthorizationBackend(
+        authentication_db=conda_store.session_factory
+    )
     assert authorization.authorize(
         AuthenticationToken(
             primary_namespace=token_model.primary_namespace,
@@ -329,7 +333,9 @@ def test_is_subset_entity_permissions(
     # authenticated,
     value,
 ):
-    authorization = RBACAuthorizationBackend(authentication_db=conda_store.db)
+    authorization = RBACAuthorizationBackend(
+        authentication_db=conda_store.session_factory
+    )
 
     entity = AuthenticationToken(role_bindings=entity_bindings)
     new_entity = AuthenticationToken(role_bindings=new_entity_bindings)

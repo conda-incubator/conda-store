@@ -175,31 +175,33 @@ def test_get_conda_prefix_stats(tmp_path, conda_store, simple_conda_lock):
     assert context.result["disk_usage"] > 0
 
 
-def test_add_conda_prefix_packages(conda_store, simple_specification, current_prefix):
+def test_add_conda_prefix_packages(
+    db, conda_store, simple_specification, current_prefix
+):
     build_id = conda_store.register_environment(
-        specification=simple_specification, namespace="pytest"
+        db, specification=simple_specification, namespace="pytest"
     )
 
     action.action_add_conda_prefix_packages(
-        db=conda_store.db,
+        db=db,
         conda_prefix=current_prefix,
         build_id=build_id,
     )
 
-    build = api.get_build(conda_store.db, build_id=build_id)
+    build = api.get_build(db, build_id=build_id)
     assert len(build.package_builds) > 0
 
 
 def test_add_lockfile_packages(
-    conda_store, simple_specification, simple_conda_lock, current_prefix
+    db, conda_store, simple_specification, simple_conda_lock, current_prefix
 ):
-    task, solve_id = conda_store.register_solve(specification=simple_specification)
+    task, solve_id = conda_store.register_solve(db, specification=simple_specification)
 
     action.action_add_lockfile_packages(
-        db=conda_store.db,
+        db=db,
         conda_lock_spec=simple_conda_lock,
         solve_id=solve_id,
     )
 
-    solve = api.get_solve(conda_store.db, solve_id=solve_id)
+    solve = api.get_solve(db, solve_id=solve_id)
     assert len(solve.package_builds) > 0

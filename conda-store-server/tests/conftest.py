@@ -31,26 +31,28 @@ def conda_store_config(tmp_path):
 def conda_store_server(conda_store_config):
     _conda_store_server = server_app.CondaStoreServer(config=conda_store_config)
     _conda_store_server.initialize()
+
     _conda_store = _conda_store_server.conda_store
 
     pathlib.Path(_conda_store.store_directory).mkdir(exist_ok=True)
 
     dbutil.upgrade(_conda_store.database_url)
 
-    _conda_store.ensure_settings()
-    _conda_store.celery_app
+    with _conda_store.session_factory() as db:
+        _conda_store.ensure_settings(db)
+        _conda_store.configuration(db).update_storage_metrics(
+            db, _conda_store.store_directory
+        )
 
-    # must import tasks after a celery app has been initialized
-    import conda_store_server.worker.tasks  # noqa
+        _conda_store.celery_app
 
-    # ensure that models are created
-    from celery.backends.database.session import ResultModelBase
+        # must import tasks after a celery app has been initialized
+        import conda_store_server.worker.tasks  # noqa
 
-    ResultModelBase.metadata.create_all(_conda_store.db.get_bind())
+        # ensure that models are created
+        from celery.backends.database.session import ResultModelBase
 
-    _conda_store.configuration.update_storage_metrics(
-        _conda_store.db, _conda_store.store_directory
-    )
+        ResultModelBase.metadata.create_all(db.get_bind())
 
     yield _conda_store_server
 
@@ -69,8 +71,9 @@ def authenticate(testclient):
 
 
 @pytest.fixture
-def seed_conda_store(conda_store):
+def seed_conda_store(db, conda_store):
     testing.seed_conda_store(
+        db,
         conda_store,
         {
             "default": {
@@ -103,11 +106,11 @@ def seed_conda_store(conda_store):
     )
 
     # for testing purposes make build 4 complete
-    build = api.get_build(conda_store.db, build_id=4)
+    build = api.get_build(db, build_id=4)
     build.started_on = datetime.datetime.utcnow()
     build.ended_on = datetime.datetime.utcnow()
     build.status = schema.BuildStatus.COMPLETED
-    conda_store.db.commit()
+    db.commit()
 
 
 @pytest.fixture
@@ -118,22 +121,29 @@ def conda_store(conda_store_config):
 
     dbutil.upgrade(_conda_store.database_url)
 
-    _conda_store.ensure_settings()
-    _conda_store.celery_app
+    with _conda_store.session_factory() as db:
+        _conda_store.ensure_settings(db)
+        _conda_store.configuration(db).update_storage_metrics(
+            db, _conda_store.store_directory
+        )
 
-    # must import tasks after a celery app has been initialized
-    import conda_store_server.worker.tasks  # noqa
+        _conda_store.celery_app
 
-    # ensure that models are created
-    from celery.backends.database.session import ResultModelBase
+        # must import tasks after a celery app has been initialized
+        import conda_store_server.worker.tasks  # noqa
 
-    ResultModelBase.metadata.create_all(_conda_store.db.get_bind())
+        # ensure that models are created
+        from celery.backends.database.session import ResultModelBase
 
-    _conda_store.configuration.update_storage_metrics(
-        _conda_store.db, _conda_store.store_directory
-    )
+        ResultModelBase.metadata.create_all(db.get_bind())
 
     yield _conda_store
+
+
+@pytest.fixture
+def db(conda_store):
+    with conda_store.session_factory() as _db:
+        yield _db
 
 
 @pytest.fixture

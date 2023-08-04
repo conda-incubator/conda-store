@@ -187,7 +187,9 @@ class CondaStoreServer(Application):
             dbutil.upgrade(self.conda_store.database_url)
 
         self.authentication = self.authentication_class(
-            parent=self, log=self.log, authentication_db=self.conda_store.db
+            parent=self,
+            log=self.log,
+            authentication_db=self.conda_store.session_factory,
         )
 
         # ensure checks on redis_url
@@ -230,14 +232,11 @@ class CondaStoreServer(Application):
 
         @app.middleware("http")
         async def conda_store_middleware(request: Request, call_next):
-            try:
-                request.state.conda_store = self.conda_store
-                request.state.server = self
-                request.state.authentication = self.authentication
-                request.state.templates = self.templates
-                response = await call_next(request)
-            finally:
-                request.state.conda_store.session_factory.remove()
+            request.state.conda_store = self.conda_store
+            request.state.server = self
+            request.state.authentication = self.authentication
+            request.state.templates = self.templates
+            response = await call_next(request)
             return response
 
         @app.exception_handler(HTTPException)
@@ -323,9 +322,10 @@ class CondaStoreServer(Application):
     def start(self):
         fastapi_app = self.init_fastapi_app()
 
-        self.conda_store.ensure_settings()
-        self.conda_store.ensure_namespace()
-        self.conda_store.ensure_conda_channels()
+        with self.conda_store.session_factory() as db:
+            self.conda_store.ensure_settings(db)
+            self.conda_store.ensure_namespace(db)
+            self.conda_store.ensure_conda_channels(db)
 
         # start worker if in standalone mode
         if self.standalone:

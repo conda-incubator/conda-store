@@ -15,6 +15,7 @@ from conda_store_server.build import (
     solve_conda_environment,
 )
 
+from sqlalchemy.orm import Session
 from celery.execute import send_task
 from filelock import FileLock
 
@@ -28,10 +29,6 @@ def at_start(sender, **k):
 
 
 class WorkerTask(Task):
-    def after_return(self, *args, **kwargs):
-        if hasattr(self, "_worker"):
-            self._worker.conda_store.session_factory.remove()
-
     @property
     def worker(self):
         if not hasattr(self, "_worker"):
@@ -52,28 +49,32 @@ class WorkerTask(Task):
 @shared_task(base=WorkerTask, name="task_watch_paths", bind=True)
 def task_watch_paths(self):
     conda_store = self.worker.conda_store
-    settings = conda_store.get_settings()
 
-    conda_store.configuration.update_storage_metrics(
-        conda_store.db, conda_store.store_directory
-    )
+    with conda_store.session_factory() as db:
+        settings = conda_store.get_settings(db)
 
-    environment_paths = environment.discover_environments(self.worker.watch_paths)
-    for path in environment_paths:
-        with open(path) as f:
-            conda_store.register_environment(
-                specification=yaml.safe_load(f),
-                namespace=settings.filesystem_namespace,
-                force=False,
-            )
+        conda_store.configuration(db).update_storage_metrics(
+            db, conda_store.store_directory
+        )
+
+        environment_paths = environment.discover_environments(self.worker.watch_paths)
+        for path in environment_paths:
+            with open(path) as f:
+                conda_store.register_environment(
+                    db,
+                    specification=yaml.safe_load(f),
+                    namespace=settings.filesystem_namespace,
+                    force=False,
+                )
 
 
 @shared_task(base=WorkerTask, name="task_update_storage_metrics", bind=True)
 def task_update_storage_metrics(self):
     conda_store = self.worker.conda_store
-    conda_store.configuration.update_storage_metrics(
-        conda_store.db, conda_store.store_directory
-    )
+    with conda_store.session_factory() as db:
+        conda_store.configuration(db).update_storage_metrics(
+            db, conda_store.store_directory
+        )
 
 
 """
@@ -98,118 +99,126 @@ https://stackoverflow.com/questions/12003221/celery-task-schedule-ensuring-a-tas
 @shared_task(base=WorkerTask, name="task_update_conda_channels", bind=True)
 def task_update_conda_channels(self):
     conda_store = self.worker.conda_store
-
-    conda_store.ensure_conda_channels()
-    for channel in api.list_conda_channels(conda_store.db):
-        send_task("task_update_conda_channel", args=[channel.name], kwargs={})
+    with conda_store.session_factory() as db:
+        conda_store.ensure_conda_channels(db)
+        for channel in api.list_conda_channels(db):
+            send_task("task_update_conda_channel", args=[channel.name], kwargs={})
 
 
 @shared_task(base=WorkerTask, name="task_update_conda_channel", bind=True)
 def task_update_conda_channel(self, channel_name):
-
     conda_store = self.worker.conda_store
-    settings = conda_store.get_settings()
+    with conda_store.session_factory() as db:
+        settings = conda_store.get_settings(db)
 
-    # sanitize the channel name as it's an URL, and it's used for the lock.
-    sanitizing = {
-        "https": "",
-        "http": "",
-        ":": "",
-        "/": "_",
-        "?": "",
-        "&": "_",
-        "=": "_",
-    }
-    channel_name_sanitized = channel_name
-    for k, v in sanitizing.items():
-        channel_name_sanitized = channel_name_sanitized.replace(k, v)
+        # sanitize the channel name as it's an URL, and it's used for the lock.
+        sanitizing = {
+            "https": "",
+            "http": "",
+            ":": "",
+            "/": "_",
+            "?": "",
+            "&": "_",
+            "=": "_",
+        }
+        channel_name_sanitized = channel_name
+        for k, v in sanitizing.items():
+            channel_name_sanitized = channel_name_sanitized.replace(k, v)
 
-    task_key = f"lock_{self.name}_{channel_name_sanitized}"
+        task_key = f"lock_{self.name}_{channel_name_sanitized}"
 
-    is_locked = False
+        is_locked = False
 
-    if conda_store.redis_url is not None:
-        lock = conda_store.redis.lock(task_key, timeout=60 * 15)  # timeout 15min
-    else:
-        lockfile_path = os.path.join(f"/tmp/task_lock_{task_key}")
-        lock = FileLock(lockfile_path, timeout=60 * 15)
-
-    try:
-        is_locked = lock.acquire(blocking=False)
-
-        if is_locked:
-            channel = api.get_conda_channel(conda_store.db, channel_name)
-
-            conda_store.log.debug(f"updating packages for channel {channel.name}")
-            channel.update_packages(conda_store.db, subdirs=settings.conda_platforms)
-
+        if conda_store.redis_url is not None:
+            lock = conda_store.redis.lock(task_key, timeout=60 * 15)  # timeout 15min
         else:
-            conda_store.log.debug(
-                f"skipping updating packages for channel {channel_name} - already in progress"
-            )
+            lockfile_path = os.path.join(f"/tmp/task_lock_{task_key}")
+            lock = FileLock(lockfile_path, timeout=60 * 15)
 
-    except TimeoutError:
-        if conda_store.redis_url is None:
-            conda_store.log.warning(
-                f"Timeout when acquiring lock with key {task_key} - We assume the task is already being run"
-            )
-            is_locked = False
+        try:
+            is_locked = lock.acquire(blocking=False)
 
-    finally:
-        if is_locked:
-            lock.release()
+            if is_locked:
+                channel = api.get_conda_channel(db, channel_name)
+
+                conda_store.log.debug(f"updating packages for channel {channel.name}")
+                channel.update_packages(db, subdirs=settings.conda_platforms)
+
+            else:
+                conda_store.log.debug(
+                    f"skipping updating packages for channel {channel_name} - already in progress"
+                )
+
+        except TimeoutError:
+            if conda_store.redis_url is None:
+                conda_store.log.warning(
+                    f"Timeout when acquiring lock with key {task_key} - We assume the task is already being run"
+                )
+                is_locked = False
+
+        finally:
+            if is_locked:
+                lock.release()
 
 
 @shared_task(base=WorkerTask, name="task_solve_conda_environment", bind=True)
 def task_solve_conda_environment(self, solve_id):
     conda_store = self.worker.conda_store
-    solve = api.get_solve(conda_store.db, solve_id)
-    solve_conda_environment(conda_store, solve)
+
+    with conda_store.session_factory() as db:
+        solve = api.get_solve(db, solve_id)
+        solve_conda_environment(db, conda_store, solve)
 
 
 @shared_task(base=WorkerTask, name="task_build_conda_environment", bind=True)
 def task_build_conda_environment(self, build_id):
     conda_store = self.worker.conda_store
-    build = api.get_build(conda_store.db, build_id)
-    build_conda_environment(conda_store, build)
+
+    with conda_store.session_factory() as db:
+        build = api.get_build(db, build_id)
+        build_conda_environment(db, conda_store, build)
 
 
 @shared_task(base=WorkerTask, name="task_build_conda_env_export", bind=True)
 def task_build_conda_env_export(self, build_id):
     conda_store = self.worker.conda_store
-    build = api.get_build(conda_store.db, build_id)
-    build_conda_env_export(conda_store, build)
+    with conda_store.session_factory() as db:
+        build = api.get_build(db, build_id)
+        build_conda_env_export(db, conda_store, build)
 
 
 @shared_task(base=WorkerTask, name="task_build_conda_pack", bind=True)
 def task_build_conda_pack(self, build_id):
     conda_store = self.worker.conda_store
-    build = api.get_build(conda_store.db, build_id)
-    build_conda_pack(conda_store, build)
+    with conda_store.session_factory() as db:
+        build = api.get_build(db, build_id)
+        build_conda_pack(db, conda_store, build)
 
 
 @shared_task(base=WorkerTask, name="task_build_conda_docker", bind=True)
 def task_build_conda_docker(self, build_id):
     conda_store = self.worker.conda_store
-    build = api.get_build(conda_store.db, build_id)
-    build_conda_docker(conda_store, build)
+    with conda_store.session_factory() as db:
+        build = api.get_build(db, build_id)
+        build_conda_docker(db, conda_store, build)
 
 
 @shared_task(base=WorkerTask, name="task_update_environment_build", bind=True)
 def task_update_environment_build(self, environment_id):
     conda_store = self.worker.conda_store
-    environment = api.get_environment(conda_store.db, id=environment_id)
+    with conda_store.session_factory() as db:
+        environment = api.get_environment(db, id=environment_id)
 
-    conda_prefix = environment.current_build.build_path(conda_store)
-    environment_prefix = environment.current_build.environment_path(conda_store)
+        conda_prefix = environment.current_build.build_path(conda_store)
+        environment_prefix = environment.current_build.environment_path(conda_store)
 
-    utils.symlink(conda_prefix, environment_prefix)
+        utils.symlink(conda_prefix, environment_prefix)
 
-    if conda_store.post_update_environment_build_hook:
-        conda_store.post_update_environment_build_hook(conda_store, environment)
+        if conda_store.post_update_environment_build_hook:
+            conda_store.post_update_environment_build_hook(conda_store, environment)
 
 
-def delete_build_artifact(conda_store, build_artifact):
+def delete_build_artifact(db: Session, conda_store, build_artifact):
     if build_artifact.artifact_type == schema.BuildArtifactType.DIRECTORY:
         # ignore key
         conda_prefix = build_artifact.build.build_path(conda_store)
@@ -218,7 +227,7 @@ def delete_build_artifact(conda_store, build_artifact):
             conda_prefix
         ):
             shutil.rmtree(conda_prefix)
-            conda_store.db.delete(build_artifact)
+            db.delete(build_artifact)
     elif build_artifact.artifact_type == schema.BuildArtifactType.CONTAINER_REGISTRY:
         pass
         # # container registry tag deletion is not generally implemented
@@ -226,58 +235,59 @@ def delete_build_artifact(conda_store, build_artifact):
         # conda_store.container_registry.delete_image(build_artifact.key)
     else:
         conda_store.log.info(f"deleting {build_artifact.key}")
-        conda_store.storage.delete(
-            conda_store.db, build_artifact.build.id, build_artifact.key
-        )
+        conda_store.storage.delete(db, build_artifact.build.id, build_artifact.key)
 
 
 @shared_task(base=WorkerTask, name="task_delete_build", bind=True)
 def task_delete_build(self, build_id):
     conda_store = self.worker.conda_store
-    settings = conda_store.get_settings()
+    with conda_store.session_factory() as db:
+        settings = conda_store.get_settings(db)
 
-    build = api.get_build(conda_store.db, build_id)
+        build = api.get_build(db, build_id)
 
-    conda_store.log.info(f"deleting artifacts for build={build.id}")
-    for build_artifact in api.list_build_artifacts(
-        conda_store.db,
-        build_id=build_id,
-        excluded_artifact_types=settings.build_artifacts_kept_on_deletion,
-    ).all():
-        delete_build_artifact(conda_store, build_artifact)
-    conda_store.db.commit()
+        conda_store.log.info(f"deleting artifacts for build={build.id}")
+        for build_artifact in api.list_build_artifacts(
+            db,
+            build_id=build_id,
+            excluded_artifact_types=settings.build_artifacts_kept_on_deletion,
+        ).all():
+            delete_build_artifact(db, conda_store, build_artifact)
+        conda_store.db.commit()
 
 
 @shared_task(base=WorkerTask, name="task_delete_environment", bind=True)
 def task_delete_environment(self, environment_id):
     conda_store = self.worker.conda_store
-    environment = api.get_environment(conda_store.db, id=environment_id)
+    with conda_store.session_factory() as db:
+        environment = api.get_environment(db, id=environment_id)
 
-    for build in environment.builds:
-        conda_store.log.info(f"deleting artifacts for build={build.id}")
-        for build_artifact in api.list_build_artifacts(
-            conda_store.db,
-            build_id=build.id,
-        ).all():
-            delete_build_artifact(conda_store, build_artifact)
+        for build in environment.builds:
+            conda_store.log.info(f"deleting artifacts for build={build.id}")
+            for build_artifact in api.list_build_artifacts(
+                db,
+                build_id=build.id,
+            ).all():
+                delete_build_artifact(db, conda_store, build_artifact)
 
-    conda_store.db.delete(environment)
-    conda_store.db.commit()
+        db.delete(environment)
+        db.commit()
 
 
 @shared_task(base=WorkerTask, name="task_delete_namespace", bind=True)
 def task_delete_namespace(self, namespace_id):
     conda_store = self.worker.conda_store
-    namespace = api.get_namespace(conda_store.db, id=namespace_id)
+    with conda_store.session_factory() as db:
+        namespace = api.get_namespace(db, id=namespace_id)
 
-    for environment_orm in namespace.environments:
-        for build in environment_orm.builds:
-            conda_store.log.info(f"deleting artifacts for build={build.id}")
-            for build_artifact in api.list_build_artifacts(
-                conda_store.db,
-                build_id=build.id,
-            ).all():
-                delete_build_artifact(conda_store, build_artifact)
-        conda_store.db.delete(environment_orm)
-    conda_store.db.delete(namespace)
-    conda_store.db.commit()
+        for environment_orm in namespace.environments:
+            for build in environment_orm.builds:
+                conda_store.log.info(f"deleting artifacts for build={build.id}")
+                for build_artifact in api.list_build_artifacts(
+                    db,
+                    build_id=build.id,
+                ).all():
+                    delete_build_artifact(db, conda_store, build_artifact)
+            db.delete(environment_orm)
+        db.delete(namespace)
+        db.commit()

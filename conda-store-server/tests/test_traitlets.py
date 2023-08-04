@@ -128,18 +128,20 @@ def test_conda_store_server_additional_routes(conda_store_server):
     assert response.json() == {"data": "Hello World c d"}
 
 
-def test_conda_store_settings_conda_channels_packages_validate_valid(conda_store):
+def test_conda_store_settings_conda_channels_packages_validate_valid(db, conda_store):
     conda_store.set_settings(
+        db,
         data={
             "conda_allowed_channels": ["conda-forge"],
             "conda_included_packages": ["ipykernel"],
             "conda_required_packages": ["flask"],
             "pypi_included_packages": ["scipy"],
             "pypi_required_packages": ["numpy"],
-        }
+        },
     )
 
     global_specification = conda_store.validate_specification(
+        db,
         conda_store,
         namespace="default",
         specification=schema.CondaSpecification(
@@ -159,6 +161,7 @@ def test_conda_store_settings_conda_channels_packages_validate_valid(conda_store
     ]
 
     conda_store.set_settings(
+        db,
         namespace="default",
         data={
             "conda_allowed_channels": ["conda-forge"],
@@ -170,6 +173,7 @@ def test_conda_store_settings_conda_channels_packages_validate_valid(conda_store
     )
 
     namespace_specification = conda_store.validate_specification(
+        db,
         conda_store,
         namespace="default",
         specification=schema.CondaSpecification(
@@ -190,6 +194,7 @@ def test_conda_store_settings_conda_channels_packages_validate_valid(conda_store
     ]
 
     conda_store.set_settings(
+        db,
         namespace="default",
         environment_name="test",
         data={
@@ -202,6 +207,7 @@ def test_conda_store_settings_conda_channels_packages_validate_valid(conda_store
     )
 
     environment_specification = conda_store.validate_specification(
+        db,
         conda_store,
         namespace="default",
         specification=schema.CondaSpecification(
@@ -224,6 +230,7 @@ def test_conda_store_settings_conda_channels_packages_validate_valid(conda_store
     # not allowed channel name
     with pytest.raises(ValueError):
         conda_store.validate_specification(
+            db,
             conda_store,
             namespace="default",
             specification=schema.CondaSpecification(
@@ -236,6 +243,7 @@ def test_conda_store_settings_conda_channels_packages_validate_valid(conda_store
     # missing required conda package
     with pytest.raises(ValueError):
         conda_store.validate_specification(
+            db,
             conda_store,
             namespace="default",
             specification=schema.CondaSpecification(
@@ -246,6 +254,7 @@ def test_conda_store_settings_conda_channels_packages_validate_valid(conda_store
     # missing required pip package
     with pytest.raises(ValueError):
         conda_store.validate_specification(
+            db,
             conda_store,
             namespace="default",
             specification=schema.CondaSpecification(

@@ -6,7 +6,7 @@ router_conda_store_ui = APIRouter(tags=["conda-store-ui"])
 
 
 @router_conda_store_ui.get("/")
-def get_conda_store_ui(
+async def get_conda_store_ui(
     request: Request,
     templates=Depends(dependencies.get_templates),
 ):
