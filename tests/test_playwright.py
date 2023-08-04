@@ -15,32 +15,32 @@ def test_integration(page: Page):
     # expect(page).to_have_url("http://localhost:5000/conda-store/login/")
 
     # Click [placeholder="Username"]
-    page.locator("[placeholder=\"Username\"]").click()
+    page.locator('[placeholder="Username"]').click()
 
     # Fill [placeholder="Username"]
-    page.locator("[placeholder=\"Username\"]").fill("username")
+    page.locator('[placeholder="Username"]').fill("username")
 
     # Press Tab
-    page.locator("[placeholder=\"Username\"]").press("Tab")
+    page.locator('[placeholder="Username"]').press("Tab")
 
     # Fill [placeholder="Password"]
-    page.locator("[placeholder=\"Password\"]").fill("password")
+    page.locator('[placeholder="Password"]').fill("password")
 
     # Click button:has-text("Sign In")
     # with page.expect_navigation(url="http://localhost:5000/conda-store/"):
     with page.expect_navigation():
-        page.locator("button:has-text(\"Sign In\")").click()
+        page.locator('button:has-text("Sign In")').click()
 
     page.screenshot(path="test-results/conda-store-authenticated.png")
 
     # Click [placeholder="Search"]
-    page.locator("[placeholder=\"Search\"]").click()
+    page.locator('[placeholder="Search"]').click()
 
     # Fill [placeholder="Search"]
-    page.locator("[placeholder=\"Search\"]").fill("python")
+    page.locator('[placeholder="Search"]').fill("python")
 
     # Press Enter
-    page.locator("[placeholder=\"Search\"]").press("Enter")
+    page.locator('[placeholder="Search"]').press("Enter")
     # expect(page).to_have_url("http://localhost:5000/conda-store/?search=python")
 
     # Click text=filesystem/python-flask-env

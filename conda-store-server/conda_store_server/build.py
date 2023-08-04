@@ -99,7 +99,7 @@ def build_conda_environment(db: Session, conda_store, build):
                 build.id,
                 build.conda_lock_key,
                 json.dumps(context.result, indent=4).encode("utf-8"),
-                content_type="text/json",
+                content_type="application/json",
                 artifact_type=schema.BuildArtifactType.LOCKFILE,
             )
 
