@@ -856,15 +856,41 @@ async def api_get_build_yaml(
     return RedirectResponse(conda_store.storage.get_url(build.conda_env_export_key))
 
 
+@router_api.get(
+    "/environment/{namespace}/{environment_name}/conda-lock.yml",
+    response_class=PlainTextResponse,
+)
+@router_api.get(
+    "/environment/{namespace}/{environment_name}/conda-lock.yaml",
+    response_class=PlainTextResponse,
+)
+@router_api.get(
+    "/environment/{namespace}/{environment_name}/lockfile/",
+    response_class=PlainTextResponse,
+)
+@router_api.get("/build/{build_id}/conda-lock.yml", response_class=PlainTextResponse)
+@router_api.get("/build/{build_id}/conda-lock.yaml", name="api_get_build_conda_lock_file", response_class=PlainTextResponse)
 @router_api.get("/build/{build_id}/lockfile/", response_class=PlainTextResponse)
 async def api_get_build_lockfile(
-    build_id: int,
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
     db: Session = Depends(dependencies.get_db),
     auth=Depends(dependencies.get_auth),
+    namespace: str = None,
+    environment_name: str = None,
+    build_id: int = None,
 ):
-    build = api.get_build(db, build_id)
+    if build_id is None:
+        environment = api.get_environment(db, namespace=namespace, name=environment_name)
+        if environment is None:
+            raise HTTPException(status_code=404, detail="environment does not exist")
+        build = environment.current_build
+    else:
+        build = api.get_build(db, build_id)
+
+    if build is None:
+        raise HTTPException(status_code=404, detail="build id does not exist")
+
     auth.authorize_request(
         request,
         f"{build.environment.namespace.name}/{build.environment.name}",
