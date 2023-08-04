@@ -5,6 +5,7 @@ dependencies:
   - python ==3.10
   # conda environment builds
   - conda ==23.5.2
+  - python-docker
   - conda-docker >= 0.1.2
   - conda-pack
   - conda-lock >=1.0.5
