@@ -184,7 +184,7 @@ def task_build_conda_env_export(self, build_id):
     conda_store = self.worker.conda_store
     with conda_store.session_factory() as db:
         build = api.get_build(db, build_id)
-        build_conda_env_export(conda_store, build)
+        build_conda_env_export(db, conda_store, build)
 
 
 @shared_task(base=WorkerTask, name="task_build_conda_pack", bind=True)

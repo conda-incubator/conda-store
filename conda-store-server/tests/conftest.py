@@ -44,15 +44,15 @@ def conda_store_server(conda_store_config):
             db, _conda_store.store_directory
         )
 
-    # _conda_store.celery_app
+        _conda_store.celery_app
 
-    # # must import tasks after a celery app has been initialized
-    # import conda_store_server.worker.tasks  # noqa
+        # must import tasks after a celery app has been initialized
+        import conda_store_server.worker.tasks  # noqa
 
-    # # ensure that models are created
-    # from celery.backends.database.session import ResultModelBase
+        # ensure that models are created
+        from celery.backends.database.session import ResultModelBase
 
-    # ResultModelBase.metadata.create_all(_conda_store.db.get_bind())
+        ResultModelBase.metadata.create_all(db.get_bind())
 
     yield _conda_store_server
 
@@ -127,15 +127,15 @@ def conda_store(conda_store_config):
             db, _conda_store.store_directory
         )
 
-    # _conda_store.celery_app
+        _conda_store.celery_app
 
-    # # must import tasks after a celery app has been initialized
-    # import conda_store_server.worker.tasks  # noqa
+        # must import tasks after a celery app has been initialized
+        import conda_store_server.worker.tasks  # noqa
 
-    # # ensure that models are created
-    # from celery.backends.database.session import ResultModelBase
+        # ensure that models are created
+        from celery.backends.database.session import ResultModelBase
 
-    # ResultModelBase.metadata.create_all(_conda_store.db.get_bind())
+        ResultModelBase.metadata.create_all(db.get_bind())
 
     yield _conda_store
 
