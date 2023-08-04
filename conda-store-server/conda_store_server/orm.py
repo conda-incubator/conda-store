@@ -55,7 +55,7 @@ class Namespace(Base):
 
     deleted_on = Column(DateTime, default=None)
 
-    metadata_ = Column(JSON, default=dict)
+    metadata_ = Column(JSON, default=dict, nullable=True)
 
     role_mappings = relationship("NamespaceRoleMapping", back_populates="namespace")
 
