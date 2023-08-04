@@ -10,18 +10,16 @@ c.CondaStore.storage_class = S3Storage
 c.CondaStore.store_directory = "/var/lib/conda-store/"
 c.CondaStore.environment_directory = "/opt/conda-store/envs/{namespace}-{name}"
 # c.CondaStore.database_url = "mysql+pymysql://admin:password@mysql/conda-store"
-c.CondaStore.database_url = "postgresql+psycopg2://postgres:password@postgres/conda-store"
+c.CondaStore.database_url = (
+    "postgresql+psycopg2://postgres:password@postgres/conda-store"
+)
 c.CondaStore.redis_url = "redis://:password@redis:6379/0"
 c.CondaStore.default_uid = 1000
 c.CondaStore.default_gid = 1000
 c.CondaStore.default_permissions = "775"
-c.CondaStore.conda_included_packages = [
-    'ipykernel'
-]
+c.CondaStore.conda_included_packages = ["ipykernel"]
 
-c.CondaStore.pypi_included_packages = [
-    'nothing'
-]
+c.CondaStore.pypi_included_packages = ["nothing"]
 
 
 c.S3Storage.internal_endpoint = "minio:9000"
