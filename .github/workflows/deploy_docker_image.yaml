@@ -30,12 +30,12 @@ jobs:
           method: jwt
           url: "https://quansight-vault-public-vault-b2379fa7.d415e30e.z1.hashicorp.cloud:8200"
           namespace: "admin/quansight"
-          role: "repository-quansight-conda-store-role"
+          role: "repository-conda-incubator-conda-store-role"
           secrets: |
-            kv/data/repository/Quansight/conda-store/shared_secrets DOCKER_QUANSIGHT_USERNAME | DOCKER_USERNAME;
-            kv/data/repository/Quansight/conda-store/shared_secrets DOCKER_QUANSIGHT_PASSWORD | DOCKER_PASSWORD;
-            kv/data/repository/Quansight/conda-store/shared_secrets QUAY_QUANSIGHT_USERNAME | QUAY_USERNAME;
-            kv/data/repository/Quansight/conda-store/shared_secrets QUAY_QUANSIGHT_PASSWORD | QUAY_PASSWORD;
+            kv/data/repository/conda-incubator/conda-store/shared_secrets DOCKER_QUANSIGHT_USERNAME | DOCKER_USERNAME;
+            kv/data/repository/conda-incubator/conda-store/shared_secrets DOCKER_QUANSIGHT_PASSWORD | DOCKER_PASSWORD;
+            kv/data/repository/conda-incubator/conda-store/shared_secrets QUAY_QUANSIGHT_USERNAME | QUAY_USERNAME;
+            kv/data/repository/conda-incubator/conda-store/shared_secrets QUAY_QUANSIGHT_PASSWORD | QUAY_PASSWORD;
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
