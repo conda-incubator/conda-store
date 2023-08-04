@@ -94,11 +94,17 @@ def test_install_lockfile(tmp_path, conda_store, simple_conda_lock):
 
 
 def test_generate_conda_export(conda_store, current_prefix):
-    context = action.action_generate_conda_export(
-        conda_command=conda_store.conda_command, conda_prefix=current_prefix
-    )
+    import subprocess
 
-    schema.CondaSpecification.parse_obj(context.result)
+    try:
+        context = action.action_generate_conda_export(
+            conda_command=conda_store.conda_command, conda_prefix=current_prefix
+        )
+
+        schema.CondaSpecification.parse_obj(context.result)
+    except subprocess.CalledProcessError as e:
+        print(e, e.returncode, e.cmd, e.output, e.stdout, e.stderr)
+        raise e
 
 
 def test_generate_conda_pack(tmp_path, current_prefix):
