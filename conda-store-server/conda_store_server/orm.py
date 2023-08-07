@@ -28,6 +28,7 @@ from sqlalchemy.orm import (
 )
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import create_engine
+from sqlalchemy.orm import scoped_session
 
 from conda_store_server import utils, schema
 from conda_store_server.environment import validate_environment
@@ -690,5 +691,5 @@ class KeyValueStore(Base):
 def new_session_factory(url="sqlite:///:memory:", reset=False, **kwargs):
     engine = create_engine(url, **kwargs)
 
-    session_factory = sessionmaker(bind=engine)
+    session_factory = scoped_session(sessionmaker(bind=engine))
     return session_factory

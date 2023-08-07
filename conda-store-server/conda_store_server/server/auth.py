@@ -17,7 +17,7 @@ import yarl
 
 from conda_store_server import schema, orm, utils
 from conda_store_server.server import dependencies
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import scoped_session
 
 
 ARN_ALLOWED_REGEX = re.compile(schema.ARN_ALLOWED)
@@ -113,7 +113,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
     )
 
     authentication_db = Instance(
-        sessionmaker,
+        scoped_session,
         help="SQLAlchemy session to query DB. Used for role mapping",
         config=False,
     )
@@ -291,7 +291,7 @@ class Authentication(LoggingConfigurable):
     )
 
     authentication_db = Instance(
-        sessionmaker,
+        scoped_session,
         help="SQLAlchemy session to query DB. Used for role mapping",
         config=False,
     )
