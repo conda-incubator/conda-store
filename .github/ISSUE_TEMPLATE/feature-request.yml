@@ -9,7 +9,7 @@ body:
       value: |
         # Welcome 👋
 
-        Thanks for using Conda Store and taking some time to contribute to this project.
+        Thanks for using conda-store and taking some time to contribute to this project.
   - type: textarea
     attributes:
       label: Feature description

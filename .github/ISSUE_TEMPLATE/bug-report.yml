@@ -1,5 +1,5 @@
 name: "Bug report 🐛"
-description: "Create a report to help us reproduce and correct the bug"
+description: "Create a report to help us fix something that is currently broken."
 title: "[BUG] - <title>"
 labels: ["type: bug 🐛"]
 
@@ -9,7 +9,7 @@ body:
       value: |
         # Welcome 👋
 
-        Thanks for using Conda Store and taking some time to contribute to this project.
+        Thanks for using conda-store and taking some time to contribute to this project.
 
         Please fill out each section below. This info allows maintainers to diagnose (and fix!) your issue as
         quickly as possible.

@@ -11,19 +11,13 @@ This pull request:
 - b
 - c
 
-## Questions or Notes
-<!-- Any special questions or comments for reviewers of this pull request? -->
-
-No.
-
-## Other
-<!-- Any other information relevant to this pull request? This may include screenshots, references, and/or implementation notes. -->
-
-No.
-
-## PR Checklist
+## Pull request checklist
 <!-- Quick checklist to ensure high-quality Pull Request. -->
 
 - [ ] Did you test this change locally?
 - [ ] Did you update the documentaion (if required)?
 - [ ] Did you add/update relevant tests for this change (if required)?
+
+## Additional information
+<!-- Do you have any other information about this pull request? This may include screenshots, references, and/or implementation notes. -->
+No.
