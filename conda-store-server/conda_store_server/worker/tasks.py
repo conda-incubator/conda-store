@@ -24,8 +24,8 @@ from filelock import FileLock
 def at_start(sender, **k):
     with sender.app.connection():
         sender.app.send_task("task_update_conda_channels")
-        # sender.app.send_task("task_update_storage_metrics")
         sender.app.send_task("task_watch_paths")
+        sender.app.send_task("task_cleanup_builds")
 
 
 class WorkerTask(Task):
@@ -75,6 +75,12 @@ def task_update_storage_metrics(self):
         conda_store.configuration(db).update_storage_metrics(
             db, conda_store.store_directory
         )
+
+
+
+@shared_task(base=WorkerTask, name="task_cleanup_builds")
+def task_cleanup_builds(self):
+    conda_store = self.worker.conda_store
 
 
 """
