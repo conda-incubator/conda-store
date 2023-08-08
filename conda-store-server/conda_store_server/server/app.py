@@ -5,7 +5,7 @@ import sys
 import uvicorn
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import RedirectResponse, JSONResponse
+from fastapi.responses import RedirectResponse, JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi.templating import Jinja2Templates
@@ -296,6 +296,16 @@ class CondaStoreServer(Application):
                 @app.get("/")
                 def redirect_home(request: Request):
                     return RedirectResponse(request.url_for("get_conda_store_ui"))
+
+            @app.get("/favicon.ico", include_in_schema=False)
+            async def favicon():
+                return FileResponse(
+                    os.path.join(
+                        os.path.dirname(conda_store_server.server.__file__),
+                        "static",
+                        "favicon.ico",
+                    )
+                )
 
         if self.enable_metrics:
             app.include_router(
