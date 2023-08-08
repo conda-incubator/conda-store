@@ -974,6 +974,12 @@ async def api_put_build_cancel(
         signal="SIGTERM",
     )
 
+    from conda_store_server.worker import tasks
+
+    tasks.task_cleanup_builds.si(build_ids=[build_id], reason=f"""
+build {build_id} marked as FAILED due to being canceled from the REST API
+""").apply_async(countdown=5)
+
     return {
         "status": "ok",
         "message": f"build {build_id} canceled",
