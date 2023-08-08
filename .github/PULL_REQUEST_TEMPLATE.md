@@ -20,4 +20,3 @@ This pull request:
 
 ## Additional information
 <!-- Do you have any other information about this pull request? This may include screenshots, references, and/or implementation notes. -->
-No.
