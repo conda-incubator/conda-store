@@ -958,7 +958,10 @@ async def api_put_build_cancel(
     )
 
     if conda_store.celery_app.control.inspect().ping() is None:
-        raise HTTPException(status_code=409, detail="conda-store celery broker does not support task cancelation. Use redis or rabbitmq message queues. See docs for a more detailed explanation")
+        raise HTTPException(
+            status_code=409,
+            detail="conda-store celery broker does not support task cancelation. Use redis or rabbitmq message queues. See docs for a more detailed explanation",
+        )
 
     conda_store.celery_app.control.revoke(
         [
