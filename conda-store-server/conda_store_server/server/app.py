@@ -303,7 +303,6 @@ class CondaStoreServer(Application):
                     os.path.join(
                         os.path.dirname(conda_store_server.server.__file__),
                         "static",
-                        "conda-store-ui",
                         "favicon.ico",
                     )
                 )
