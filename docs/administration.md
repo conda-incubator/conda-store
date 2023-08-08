@@ -536,3 +536,16 @@ File "/opt/conda/envs/conda-store-server/lib/python3.9/site-packages/billiard/po
 
 billiard.exceptions.WorkerLostError: Worker exited prematurely: signal 9 (SIGKILL) Job: 348.
 ```
+
+### Why are environment builds stuck in building state?
+
+Recently conda-store added a feature to cleanup builds which are stuck
+in the BUILDING state and are not currently running on the
+workers. This feature only works for certain brokers
+e.g. redis. Database celery brokers are not supported.
+
+This issue occurs when the worker spontaineously dies. This can happen
+for several reasons:
+ - worker is killed due to consuming too much memory (conda solver/builds can consume a lot of memory)
+ - worker was killed for other reasons e.g. forced restart
+ - bugs in conda-store

@@ -8,6 +8,7 @@ import yaml
 from conda_store_server.worker.app import CondaStoreWorker
 from conda_store_server import api, environment, utils, schema
 from conda_store_server.build import (
+    build_cleanup,
     build_conda_environment,
     build_conda_env_export,
     build_conda_pack,
@@ -24,8 +25,8 @@ from filelock import FileLock
 def at_start(sender, **k):
     with sender.app.connection():
         sender.app.send_task("task_update_conda_channels")
-        # sender.app.send_task("task_update_storage_metrics")
         sender.app.send_task("task_watch_paths")
+        sender.app.send_task("task_cleanup_builds")
 
 
 class WorkerTask(Task):
@@ -75,6 +76,13 @@ def task_update_storage_metrics(self):
         conda_store.configuration(db).update_storage_metrics(
             db, conda_store.store_directory
         )
+
+
+@shared_task(base=WorkerTask, name="task_cleanup_builds", bind=True)
+def task_cleanup_builds(self):
+    conda_store = self.worker.conda_store
+    with conda_store.session_factory() as db:
+        build_cleanup(db, conda_store)
 
 
 """
