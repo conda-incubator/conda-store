@@ -8,6 +8,7 @@ import yaml
 from conda_store_server.worker.app import CondaStoreWorker
 from conda_store_server import api, environment, utils, schema
 from conda_store_server.build import (
+    build_cleanup,
     build_conda_environment,
     build_conda_env_export,
     build_conda_pack,
@@ -77,10 +78,11 @@ def task_update_storage_metrics(self):
         )
 
 
-
-@shared_task(base=WorkerTask, name="task_cleanup_builds")
+@shared_task(base=WorkerTask, name="task_cleanup_builds", bind=True)
 def task_cleanup_builds(self):
     conda_store = self.worker.conda_store
+    with conda_store.session_factory() as db:
+        build_cleanup(db, conda_store)
 
 
 """
