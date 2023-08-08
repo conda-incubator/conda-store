@@ -1,0 +1,835 @@
+
+
+<!DOCTYPE html>
+
+
+<html >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>User Guide &#8212; conda-store 0.4.15 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=e353d410970836974a52" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
+    <link rel="stylesheet" type="text/css" href="_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" />
+    <link rel="stylesheet" type="text/css" href="_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
+    <link rel="stylesheet" type="text/css" href="_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=e353d410970836974a52" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52" />
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/clipboard.min.js"></script>
+    <script src="_static/copybutton.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'user_guide';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Administration" href="administration.html" />
+    <link rel="prev" title="Installation" href="installation.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="None"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+<div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+    <span class="fa-solid fa-bars"></span>
+  </label>
+  
+  <div class="navbar-header-items__start">
+    
+      <div class="navbar-item">
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/conda-store-logo-symbol.svg" class="logo__image only-light" alt="Logo image"/>
+    <script>document.write(`<img src="_static/conda-store-logo-symbol.svg" class="logo__image only-dark" alt="Logo image"/>`);</script>
+  
+  
+    <p class="title logo__title">conda-store</p>
+  
+</a></div>
+    
+  </div>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item"><nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="installation.html">
+                        Installation
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item current active">
+                      <a class="nav-link nav-internal" href="#">
+                        User Guide
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="administration.html">
+                        Administration
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="contributing.html">
+                        Contributing
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="api.html">
+                        REST API
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+        </div>
+      
+      
+        <div class="navbar-item">
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/conda-incubator/conda-store" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-brands fa-github"></i></span>
+            <label class="sr-only">GitHub</label></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+    </div>
+  
+
+  
+    <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+    </label>
+  
+</div>
+
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          <div class="navbar-item"><nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="installation.html">
+                        Installation
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item current active">
+                      <a class="nav-link nav-internal" href="#">
+                        User Guide
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="administration.html">
+                        Administration
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="contributing.html">
+                        Contributing
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="api.html">
+                        REST API
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/conda-incubator/conda-store" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-brands fa-github"></i></span>
+            <label class="sr-only">GitHub</label></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumbs">
+  <ul class="bd-breadcrumbs" role="navigation" aria-label="Breadcrumb">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">User Guide</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="user-guide">
+<h1>User Guide<a class="headerlink" href="#user-guide" title="Permalink to this headline">#</a></h1>
+<section id="environments">
+<h2>Environments<a class="headerlink" href="#environments" title="Permalink to this headline">#</a></h2>
+<p>Below is an image of a single environment. The following will describe
+what the <code class="docutils literal notranslate"><span class="pre">yaml</span></code>, <code class="docutils literal notranslate"><span class="pre">lockfile</span></code>, <code class="docutils literal notranslate"><span class="pre">archive</span></code>, and <code class="docutils literal notranslate"><span class="pre">docker</span></code> represent.</p>
+<p><img alt="YAML button" src="_images/conda-store-single-environment.png" /></p>
+<section id="pinned-yaml">
+<h3>Pinned YAML<a class="headerlink" href="#pinned-yaml" title="Permalink to this headline">#</a></h3>
+<p>A pinned YAML file is generated for each environment is built. This
+includes pinning of the pip packages as well. Note that there are
+cases where the completely pinned packages do not solve. Packages are
+routinely marked as broken and removed. Note however
+<a class="reference external" href="https://conda-forge.org/docs/maintainer/updating_pkgs.html#packages-on-conda-forge-are-immutable">conda-forge</a>
+has a policy that packages are never removed but are marked as
+broken. Most channels do not obey this policy. When you click the
+<code class="docutils literal notranslate"><span class="pre">yaml</span></code> button a YAML file will then be downloaded. To install the
+environment locally run the following.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>env<span class="w"> </span>create<span class="w"> </span>-f<span class="w"> </span>&lt;environment-filename&gt;
+</pre></div>
+</div>
+</section>
+<section id="conda-lockfile">
+<h3>Conda lockfile<a class="headerlink" href="#conda-lockfile" title="Permalink to this headline">#</a></h3>
+<p>A Conda lockfile is a representation of only the Conda dependencies in
+a given environment. The lockfile feature was inspired from
+<a class="reference external" href="https://github.com/conda-incubator/conda-lock">conda-lock</a>. This file
+will not reproduce the pip dependencies in a given environment. When
+working with Conda it is generally not a good idea to mix Conda and
+pip dependencies. Click the <code class="docutils literal notranslate"><span class="pre">lockfile</span></code> icon to download the
+lockfile. First install <code class="docutils literal notranslate"><span class="pre">conda-lock</span></code> if it is not already installed.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>lockfile<span class="w"> </span>
+</pre></div>
+</div>
+<p>Install the locked environment file from conda-store.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>conda-lock<span class="w"> </span>install<span class="w"> </span>&lt;lockfile-filename&gt;
+</pre></div>
+</div>
+</section>
+<section id="conda-pack-archive">
+<h3>Conda-Pack archive<a class="headerlink" href="#conda-pack-archive" title="Permalink to this headline">#</a></h3>
+<p><a class="reference external" href="https://conda.github.io/conda-pack/">Conda-Pack</a> is a package for
+creating tarballs of given Conda environments. Creating a Conda archive
+is not as simple as packing and unpacking a given directory. This is
+due to the base path for the environment that may
+change. <a class="reference external" href="https://conda.github.io/conda-pack/">Conda-Pack</a> handles all
+of these issues. Click the <code class="docutils literal notranslate"><span class="pre">archive</span></code> button and download the given
+environment. The size of the archive will be less than the size seen
+on the environment UI element due to compression.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>conda-pack
+</pre></div>
+</div>
+<p>Install the Conda-Pack tarball. The directions are <a class="reference external" href="https://conda.github.io/conda-pack/#commandline-usage">slightly
+complex</a>. Note
+that <code class="docutils literal notranslate"><span class="pre">my_env</span></code> can be any name in any given prefix.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>mkdir<span class="w"> </span>-p<span class="w"> </span>my_env
+tar<span class="w"> </span>-xzf<span class="w"> </span>&lt;conda-pack-tarfile&gt;.tar.gz<span class="w"> </span>-C<span class="w"> </span>my_env
+
+<span class="nb">source</span><span class="w"> </span>my_env/bin/activate
+
+conda-unpack
+</pre></div>
+</div>
+</section>
+<section id="docker-registry">
+<h3>Docker Registry<a class="headerlink" href="#docker-registry" title="Permalink to this headline">#</a></h3>
+<p>conda-store acts as a docker registry which allows for interesting
+ways to handle Conda environment. In addition this registry leverages
+<a class="reference external" href="https://github.com/conda-incubator/conda-docker">conda-docker</a> which
+builds docker images without docker allowing for advanced caching,
+reduced image sizes, and does not require elevated privileges. Click
+on the <code class="docutils literal notranslate"><span class="pre">docker</span></code> link this will copy a url to your clipboard. Note the
+beginning of the url for example <code class="docutils literal notranslate"><span class="pre">localhost:5000/</span></code>. This is required to tell
+docker where the docker registry is located. Otherwise by default it
+will try and user docker hub. Your url will likely be different.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">conda-store</span></code> docker registry requires authentication via any
+username with password set to a token that is generated by visiting
+the user page to generate a token. Alternatively in the
+<code class="docutils literal notranslate"><span class="pre">conda_store_config.py</span></code> you can set
+<code class="docutils literal notranslate"><span class="pre">c.AuthenticationBackend.predefined_tokens</span></code> which have environment
+read permissions on the given docker images needed for pulling.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">docker</span> <span class="n">login</span> <span class="o">-</span><span class="n">u</span> <span class="n">token</span> <span class="o">-</span><span class="n">p</span> <span class="o">&lt;</span><span class="n">conda</span><span class="o">-</span><span class="n">store</span><span class="o">-</span><span class="n">token</span><span class="o">&gt;</span>
+<span class="n">docker</span> <span class="n">pull</span> <span class="o">&lt;</span><span class="n">docker</span><span class="o">-</span><span class="n">url</span><span class="o">&gt;</span>
+<span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">it</span> <span class="o">&lt;</span><span class="n">docker</span><span class="o">-</span><span class="n">url</span><span class="o">&gt;</span> <span class="n">python</span>
+</pre></div>
+</div>
+<section id="general-usage">
+<h4>General usage<a class="headerlink" href="#general-usage" title="Permalink to this headline">#</a></h4>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>run<span class="w"> </span>-it<span class="w"> </span>localhost:5000/&lt;namespace&gt;/&lt;environment-name&gt;
+</pre></div>
+</div>
+<p>If you want to use a specific build (say one that was built in the
+past and is not the current environment) you can visit the specific
+build that you want in the UI and copy its docker registry tag
+name. The tag name is a combination of <code class="docutils literal notranslate"><span class="pre">&lt;specification-sha256&gt;-&lt;build</span> <span class="pre">date&gt;-&lt;build</span> <span class="pre">id&gt;-&lt;environment</span> <span class="pre">name&gt;</span></code> that we will refer to as build
+key. An example would be
+<code class="docutils literal notranslate"><span class="pre">localhost:5000/filesystem/python-numpy-env:583dd55140491c6b4cfa46e36c203e10280fe7e180190aa28c13f6fc35702f8f-20210825-180211-244815-3-python-numpy-env</span></code>.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>run<span class="w"> </span>-it<span class="w"> </span>localhost:5000/&lt;namespace&gt;/&lt;environment-name&gt;:&lt;build_key&gt;
+</pre></div>
+</div>
+</section>
+<section id="on-demand-docker-image">
+<h4>On Demand Docker Image<a class="headerlink" href="#on-demand-docker-image" title="Permalink to this headline">#</a></h4>
+<p>conda-store has an additional feature which allow for specifying the
+packages within the docker image name itself without requiring an
+actual environment to be created on the conda-store UI side.</p>
+<p>The following convention is used
+<code class="docutils literal notranslate"><span class="pre">&lt;registry-url&gt;:&lt;registry-port&gt;/conda-store-dynamic/</span></code>. After
+<code class="docutils literal notranslate"><span class="pre">conda-store-dynamic</span></code> you specify packages needed separated by
+slashes. Additionally you may specify package constraints
+for example <code class="docutils literal notranslate"><span class="pre">&lt;=1.10</span></code> as <code class="docutils literal notranslate"><span class="pre">.lt.1.10</span></code>.</p>
+<p>As full example support we want python less than <code class="docutils literal notranslate"><span class="pre">3.8</span></code> and NumPy
+greater than <code class="docutils literal notranslate"><span class="pre">1.0</span></code>. This would be the following docker image
+name. <code class="docutils literal notranslate"><span class="pre">&lt;registry-url&gt;:&lt;registry-port&gt;/conda-store-dynamic/python.lt.3.8/numpy.gt.1.0</span></code>. conda-store
+will then create the following environment and the docker image will
+download upon the docker image being built.</p>
+</section>
+</section>
+</section>
+<section id="conda-store-ui">
+<h2>conda-store UI<a class="headerlink" href="#conda-store-ui" title="Permalink to this headline">#</a></h2>
+<section id="home-page">
+<h3><code class="docutils literal notranslate"><span class="pre">/</span></code> Home Page<a class="headerlink" href="#home-page" title="Permalink to this headline">#</a></h3>
+<p><img alt="conda-store Homepage" src="_images/conda-store-authenticated.png" /></p>
+<p>The home page shows all of the available environments in the form
+<code class="docutils literal notranslate"><span class="pre">&lt;namespace&gt;/&lt;environment-name&gt;</span></code>. If you are authenticated there with
+be a <code class="docutils literal notranslate"><span class="pre">User</span></code> button in the top right hand corner to view information
+about the currently logged in user. Otherwise there is a <code class="docutils literal notranslate"><span class="pre">login</span></code>
+button and few if any environments will be visible. Additionally there
+is a convenient <code class="docutils literal notranslate"><span class="pre">Create</span> <span class="pre">Environment</span></code> button to easily create a given
+environment. There is a <code class="docutils literal notranslate"><span class="pre">Docs</span></code> button that will take you to this
+documentation at any time.</p>
+<p>Shortcuts are available below each of the available environments that allow you
+to download or view the <a class="reference external" href="https://github.com/conda-incubator/conda-lock">Conda
+lockfile</a>,
+<a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-from-an-environment-yml-file">YAML</a>, or
+<a class="reference external" href="https://github.com/conda/conda-pack">Conda-Pack</a> files.</p>
+</section>
+<section id="login-login">
+<h3><code class="docutils literal notranslate"><span class="pre">/login/</span></code> Login<a class="headerlink" href="#login-login" title="Permalink to this headline">#</a></h3>
+<p><img alt="conda-store Login" src="_images/conda-store-login-jupyterhub-oauth.png" /></p>
+<p>If you are unauthenticated there is a <code class="docutils literal notranslate"><span class="pre">login</span></code> button on the top
+navigation bar. This will direct you to the login page. The example
+above shows what you will get with JupyterHub authentication.</p>
+</section>
+<section id="user-user">
+<h3><code class="docutils literal notranslate"><span class="pre">/user/</span></code> User<a class="headerlink" href="#user-user" title="Permalink to this headline">#</a></h3>
+<p><img alt="conda-store User" src="_images/conda-store-user.png" /></p>
+<p>Once a user has completed the authentication flow they will be
+directed to the user page. This page gives information about the
+current authenticated user along with the permissions.</p>
+</section>
+<section id="create-create-environment">
+<h3><code class="docutils literal notranslate"><span class="pre">/create/</span></code> Create Environment<a class="headerlink" href="#create-create-environment" title="Permalink to this headline">#</a></h3>
+<p><img alt="conda-store Create Environment" src="_images/conda-store-create-environment.png" /></p>
+<p>A user authenticated or unauthenticated has set permissions that allow
+the user to create environments in a given namespace. Currently the
+create page allows for dragging and uploading of current
+<code class="docutils literal notranslate"><span class="pre">environment.yaml</span></code> files in the UI. The specification is the format of
+a traditional <code class="docutils literal notranslate"><span class="pre">environment.yaml</span></code> and will report errors if there are
+issues with the format of the environment file.</p>
+</section>
+<section id="environment-namespace-name-environments">
+<h3><code class="docutils literal notranslate"><span class="pre">/environment/&lt;namespace&gt;/&lt;name&gt;/</span></code> Environments<a class="headerlink" href="#environment-namespace-name-environments" title="Permalink to this headline">#</a></h3>
+<p><img alt="conda-store Environment" src="_images/conda-store-environment.png" /></p>
+<p>The environment page contains a lot of information for the
+developer. First we see the environment name and namespace along with
+the disk space that the environment consumes. Right below this
+information is the full <code class="docutils literal notranslate"><span class="pre">environment.yaml</span></code> specification of the
+currently active build. Users can quickly edit this existing
+environment by clicking the <code class="docutils literal notranslate"><span class="pre">edit</span></code> button. Additionally the entire
+environment can be deleted via the <code class="docutils literal notranslate"><span class="pre">delete</span></code> button.</p>
+<p>Below this is a list of the current builds of the given
+environment. The environment highlighted in <code class="docutils literal notranslate"><span class="pre">green</span></code> is the current
+build for the given environment that is active. The environment
+highlighted in <code class="docutils literal notranslate"><span class="pre">grey</span></code> indicates that the build was deleted. Even
+though a build may be deleted the logs, lockfile, and a other build
+information is preserved for the record.</p>
+<p>For each build several options are available to the user:</p>
+<ul class="simple">
+<li><p>The <code class="docutils literal notranslate"><span class="pre">checkmark</span></code> icon allow the user to switch that given build to the
+active build for the environment. This may be useful if you need
+to rollback a given environment if the new build environment caused
+some scripts to fail.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">refresh</span></code> icon indicates that a user would like the given
+environment to build again. Conda <code class="docutils literal notranslate"><span class="pre">environment.yaml</span></code> files are not
+reproducible thus this will likely lead to an entirely new
+solve. This is useful when you would like to update all the
+packages in a given environment without having to change the
+specification.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">trashcan</span> <span class="pre">icon</span></code> marks the given build for
+deletion. <code class="docutils literal notranslate"><span class="pre">CondaStore.build_artifacts_kept_on_deletion</span></code> allows some
+artifacts to be kept on deletion. These include logs, YAML, etc.</p></li>
+</ul>
+</section>
+<section id="build-build-id-builds">
+<h3><code class="docutils literal notranslate"><span class="pre">/build/&lt;build_id&gt;</span></code> builds<a class="headerlink" href="#build-build-id-builds" title="Permalink to this headline">#</a></h3>
+<p><img alt="conda-store Build" src="_images/conda-store-build-complete.png" /></p>
+<p>The build page gives all the information about a given build in
+conda-store. At the top we see high level build metadata.</p>
+<p>conda-store downloads Conda channel data so that it fully understands
+the packages that exist within a given environment. A list is provided
+to the user of all packages within that environment.</p>
+<p>Below this are all artifacts associated with a given build e.g
+lockfile, pinned YAML specification, Conda-Pack, and docker image.</p>
+<p>Finally a log of the given build regardless of whether the build
+succeeded or failed.</p>
+</section>
+<section id="namespace-manage-namespaces">
+<h3><code class="docutils literal notranslate"><span class="pre">/namespace/</span></code> manage namespaces<a class="headerlink" href="#namespace-manage-namespaces" title="Permalink to this headline">#</a></h3>
+<p><img alt="conda-store Namespace" src="_images/conda-store-namespace.png" /></p>
+<p>This namespace page allows a user with correct permissions to list,
+create, and delete namespaces. Note that the deletion of a namespace
+is destructive and deletes all environments and builds within that
+namespace.</p>
+</section>
+</section>
+<section id="conda-store-cli">
+<h2>conda-store cli<a class="headerlink" href="#conda-store-cli" title="Permalink to this headline">#</a></h2>
+<p>The conda-store client can be easily installed via pip and conda.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>conda-store
+conda<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>conda-store
+</pre></div>
+</div>
+<p>The base cli is inspired by tools such as
+<a class="reference external" href="https://docs.conda.io/en/latest/">conda</a>,
+<a class="reference external" href="https://kubernetes.io/docs/reference/kubectl/">kubectl</a>, and
+<a class="reference external" href="https://docs.docker.com/get-docker/">docker</a>. The base commands are
+<code class="docutils literal notranslate"><span class="pre">download</span></code>, <code class="docutils literal notranslate"><span class="pre">info</span></code>, <code class="docutils literal notranslate"><span class="pre">list</span></code>, <code class="docutils literal notranslate"><span class="pre">run</span></code>, <code class="docutils literal notranslate"><span class="pre">wait</span></code>.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>conda-store<span class="w"> </span>--help
+Usage:<span class="w"> </span>conda-store<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
+
+Options:
+<span class="w">  </span>--conda-store-url<span class="w"> </span>TEXT<span class="w">     </span>conda-store<span class="w"> </span>base<span class="w"> </span>url<span class="w"> </span>including<span class="w"> </span>prefix
+<span class="w">  </span>--auth<span class="w"> </span><span class="o">[</span>none<span class="p">|</span>token<span class="p">|</span>basic<span class="o">]</span><span class="w">  </span>conda-store<span class="w"> </span>authentication<span class="w"> </span>to<span class="w"> </span>use
+<span class="w">  </span>--no-verify-ssl<span class="w">            </span>Disable<span class="w"> </span>tls<span class="w"> </span>verification<span class="w"> </span>on<span class="w"> </span>API<span class="w"> </span>requests
+<span class="w">  </span>--help<span class="w">                     </span>Show<span class="w"> </span>this<span class="w"> </span>message<span class="w"> </span>and<span class="w"> </span>exit.
+
+Commands:
+<span class="w">  </span>download<span class="w">  </span>Download<span class="w"> </span>artifacts<span class="w"> </span><span class="k">for</span><span class="w"> </span>given<span class="w"> </span>build
+<span class="w">  </span>info<span class="w">      </span>Get<span class="w"> </span>current<span class="w"> </span>permissions<span class="w"> </span>and<span class="w"> </span>default<span class="w"> </span>namespace
+<span class="w">  </span>list
+<span class="w">  </span>run<span class="w">       </span>Execute<span class="w"> </span>given<span class="w"> </span>environment<span class="w"> </span>specified<span class="w"> </span>as<span class="w"> </span>a<span class="w"> </span>URI<span class="w"> </span>with<span class="w"> </span>COMMAND
+<span class="w">  </span>solve<span class="w">     </span>Remotely<span class="w"> </span>solve<span class="w"> </span>given<span class="w"> </span>environment.yaml
+<span class="w">  </span><span class="nb">wait</span><span class="w">      </span>Wait<span class="w"> </span><span class="k">for</span><span class="w"> </span>given<span class="w"> </span>URI<span class="w"> </span>to<span class="w"> </span><span class="nb">complete</span><span class="w"> </span>or<span class="w"> </span>fail<span class="w"> </span>building
+</pre></div>
+</div>
+<section id="conda-store-run">
+<h3><code class="docutils literal notranslate"><span class="pre">conda-store</span> <span class="pre">run</span></code><a class="headerlink" href="#conda-store-run" title="Permalink to this headline">#</a></h3>
+<p>One of the motivating features of the <code class="docutils literal notranslate"><span class="pre">conda-store</span></code> cli is that you
+can directly execute conda-store environments that exist remotely.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>conda-store<span class="w"> </span>run<span class="w"> </span>devops/datascience<span class="w"> </span>--<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;print(1)&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="conda-store-solve">
+<h3><code class="docutils literal notranslate"><span class="pre">conda-store</span> <span class="pre">solve</span></code><a class="headerlink" href="#conda-store-solve" title="Permalink to this headline">#</a></h3>
+<p>conda-store is capable to remote solves of environment files. If
+requested conda-store can perform intelligent solves with caching.</p>
+</section>
+<section id="conda-store-download">
+<h3><code class="docutils literal notranslate"><span class="pre">conda-store</span> <span class="pre">download</span></code><a class="headerlink" href="#conda-store-download" title="Permalink to this headline">#</a></h3>
+</section>
+<section id="conda-store-info">
+<h3><code class="docutils literal notranslate"><span class="pre">conda-store</span> <span class="pre">info</span></code><a class="headerlink" href="#conda-store-info" title="Permalink to this headline">#</a></h3>
+</section>
+<section id="conda-store-wait">
+<h3><code class="docutils literal notranslate"><span class="pre">conda-store</span> <span class="pre">wait</span></code><a class="headerlink" href="#conda-store-wait" title="Permalink to this headline">#</a></h3>
+</section>
+<section id="conda-store-list-namespace-environment-build">
+<h3><code class="docutils literal notranslate"><span class="pre">conda-store</span> <span class="pre">list</span> <span class="pre">[namespace|environment|build]</span></code><a class="headerlink" href="#conda-store-list-namespace-environment-build" title="Permalink to this headline">#</a></h3>
+</section>
+</section>
+<section id="conda-store-shebang">
+<h2>conda-store shebang<a class="headerlink" href="#conda-store-shebang" title="Permalink to this headline">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">conda-store</span></code> can be used as a
+<a class="reference external" href="https://en.wikipedia.org/wiki/Shebang_(Unix)">shebang</a> within Linux
+allowing users to embed Conda environments within scripts for
+reproducibility. Basic usage is as follows. Notice that the
+<code class="docutils literal notranslate"><span class="pre">conda-store</span> <span class="pre">run</span></code> command is just the normal usage of the command.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env conda-store</span>
+<span class="c1">#! conda-store run &lt;namespace&gt;/&lt;environment-name&gt;:&lt;build-id&gt; -- python</span>
+
+print<span class="o">(</span><span class="s1">&#39;script running within the conda-store environnent&#39;</span><span class="o">)</span>
+</pre></div>
+</div>
+<p>The first line must begin with the shebang <code class="docutils literal notranslate"><span class="pre">#!</span></code> along with ending in
+<code class="docutils literal notranslate"><span class="pre">conda-store</span></code>. You cannot put arguments on the first line due to
+limits in the shebang specification. Additional lines are then added
+starting with <code class="docutils literal notranslate"><span class="pre">#!</span> <span class="pre">conda-store</span> <span class="pre">run</span> <span class="pre">...</span></code> with are then used as arguments
+to <code class="docutils literal notranslate"><span class="pre">conda-store</span> <span class="pre">run</span></code>.</p>
+<p>The path to the script being run is always appended as the last
+argument to the command so the example above is interpreted as:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span><span class="o">-</span><span class="n">store</span> <span class="n">run</span> <span class="o">&lt;</span><span class="n">namespace</span><span class="o">&gt;/&lt;</span><span class="n">environment</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="n">build</span><span class="o">-</span><span class="nb">id</span><span class="o">&gt;</span> <span class="o">--</span> <span class="n">python</span> <span class="o">&lt;</span><span class="n">shebang</span><span class="o">-</span><span class="n">filename</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>This feature was heavily inspired by <a class="reference external" href="https://nixos.wiki/wiki/Nix-shell_shebang"><code class="docutils literal notranslate"><span class="pre">nix-shell</span></code>
+shebangs</a>.</p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+                <footer class="bd-footer-article">
+                  
+<div class="footer-article-items footer-article__inner">
+  
+    <div class="footer-article-item"><!-- Previous / next buttons -->
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="installation.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Installation</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="administration.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Administration</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div></div>
+  
+</div>
+
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#environments">Environments</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pinned-yaml">Pinned YAML</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#conda-lockfile">Conda lockfile</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#conda-pack-archive">Conda-Pack archive</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#docker-registry">Docker Registry</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#general-usage">General usage</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#on-demand-docker-image">On Demand Docker Image</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conda-store-ui">conda-store UI</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#home-page"><code class="docutils literal notranslate"><span class="pre">/</span></code> Home Page</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#login-login"><code class="docutils literal notranslate"><span class="pre">/login/</span></code> Login</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#user-user"><code class="docutils literal notranslate"><span class="pre">/user/</span></code> User</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#create-create-environment"><code class="docutils literal notranslate"><span class="pre">/create/</span></code> Create Environment</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#environment-namespace-name-environments"><code class="docutils literal notranslate"><span class="pre">/environment/&lt;namespace&gt;/&lt;name&gt;/</span></code> Environments</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#build-build-id-builds"><code class="docutils literal notranslate"><span class="pre">/build/&lt;build_id&gt;</span></code> builds</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#namespace-manage-namespaces"><code class="docutils literal notranslate"><span class="pre">/namespace/</span></code> manage namespaces</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conda-store-cli">conda-store cli</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#conda-store-run"><code class="docutils literal notranslate"><span class="pre">conda-store</span> <span class="pre">run</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#conda-store-solve"><code class="docutils literal notranslate"><span class="pre">conda-store</span> <span class="pre">solve</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#conda-store-download"><code class="docutils literal notranslate"><span class="pre">conda-store</span> <span class="pre">download</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#conda-store-info"><code class="docutils literal notranslate"><span class="pre">conda-store</span> <span class="pre">info</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#conda-store-wait"><code class="docutils literal notranslate"><span class="pre">conda-store</span> <span class="pre">wait</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#conda-store-list-namespace-environment-build"><code class="docutils literal notranslate"><span class="pre">conda-store</span> <span class="pre">list</span> <span class="pre">[namespace|environment|build]</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conda-store-shebang">conda-store shebang</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div class="tocsection sourcelink">
+    <a href="_sources/user_guide.md.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=e353d410970836974a52"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+  <p class="copyright">
+    
+      © Copyright 2022, Quansight.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.5.0.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item"><p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.13.3.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

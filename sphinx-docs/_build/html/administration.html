@@ -1,0 +1,995 @@
+
+
+<!DOCTYPE html>
+
+
+<html >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Administration &#8212; conda-store 0.4.15 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=e353d410970836974a52" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" />
+    <link rel="stylesheet" type="text/css" href="_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" />
+    <link rel="stylesheet" type="text/css" href="_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" />
+    <link rel="stylesheet" type="text/css" href="_static/css/custom.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=e353d410970836974a52" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52" />
+
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/clipboard.min.js"></script>
+    <script src="_static/copybutton.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'administration';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Contributing" href="contributing.html" />
+    <link rel="prev" title="User Guide" href="user_guide.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="None"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+<div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+    <span class="fa-solid fa-bars"></span>
+  </label>
+  
+  <div class="navbar-header-items__start">
+    
+      <div class="navbar-item">
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/conda-store-logo-symbol.svg" class="logo__image only-light" alt="Logo image"/>
+    <script>document.write(`<img src="_static/conda-store-logo-symbol.svg" class="logo__image only-dark" alt="Logo image"/>`);</script>
+  
+  
+    <p class="title logo__title">conda-store</p>
+  
+</a></div>
+    
+  </div>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item"><nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="installation.html">
+                        Installation
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="user_guide.html">
+                        User Guide
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item current active">
+                      <a class="nav-link nav-internal" href="#">
+                        Administration
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="contributing.html">
+                        Contributing
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="api.html">
+                        REST API
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+        </div>
+      
+      
+        <div class="navbar-item">
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/conda-incubator/conda-store" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-brands fa-github"></i></span>
+            <label class="sr-only">GitHub</label></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+    </div>
+  
+
+  
+    <label class="sidebar-toggle secondary-toggle" for="__secondary">
+      <span class="fa-solid fa-outdent"></span>
+    </label>
+  
+</div>
+
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar hide-on-wide">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          <div class="navbar-item"><nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="installation.html">
+                        Installation
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="user_guide.html">
+                        User Guide
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item current active">
+                      <a class="nav-link nav-internal" href="#">
+                        Administration
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="contributing.html">
+                        Contributing
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="api.html">
+                        REST API
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/conda-incubator/conda-store" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-brands fa-github"></i></span>
+            <label class="sr-only">GitHub</label></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumbs">
+  <ul class="bd-breadcrumbs" role="navigation" aria-label="Breadcrumb">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page">Administration</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="administration">
+<h1>Administration<a class="headerlink" href="#administration" title="Permalink to this headline">#</a></h1>
+<section id="resource-requirements">
+<h2>Resource Requirements<a class="headerlink" href="#resource-requirements" title="Permalink to this headline">#</a></h2>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">conda-store-server</span></code> is simply a web server and should not require
+any specific resources. 1 GB of RAM and 1 CPU should be plenty.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">conda-store-worker</span></code> does the actual builds of the Conda
+environments. Solving for Conda environments can take a lot of
+memory in some circumstances. So make sure to allocate at least 4
+GB of RAM to the worker along with at least one CPU.</p></li>
+</ul>
+</section>
+<section id="performance">
+<h2>Performance<a class="headerlink" href="#performance" title="Permalink to this headline">#</a></h2>
+<p>There are several parts of conda-store to consider for performance. We
+have tried to list them in order of performance impact that may be
+seen.</p>
+<section id="worker-storage">
+<h3>Worker Storage<a class="headerlink" href="#worker-storage" title="Permalink to this headline">#</a></h3>
+<p>When conda-store builds a given environment it has to locally install
+the environment in the directory specified in the
+<a class="reference external" href="https://traitlets.readthedocs.io/en/stable/using_traitlets.html">Traitlets</a>
+configuration <code class="docutils literal notranslate"><span class="pre">CondaStore.store_directroy</span></code>. Conda environments consist
+of many hardlinks to small files. This means that the
+<code class="docutils literal notranslate"><span class="pre">store_directory</span></code> is limited to the number of
+<a class="reference external" href="https://en.wikipedia.org/wiki/IOPS">IOPS</a> the directory can
+perform. Many cloud providers have high performance storage
+options. These include:</p>
+<p>If you do not need to mount the environments via NFS into the
+containers we highly recommend not using NFS and using traditional
+block storage. Not only is it significantly cheaper but the IOPs
+performance will be better as well.</p>
+<p>If you want to mount the environments in containers or running VMs NFS
+may be a good option for you. With NFS many cloud providers provide a
+high performance filesystem option at a significant premium in
+cost. Example of these include <a class="reference external" href="https://cloud.google.com/filestore/docs/performance#expected_performance">GCP
+Filestore</a>,
+<a class="reference external" href="https://aws.amazon.com/efs/features/">AWS EFS</a>, and <a class="reference external" href="https://docs.microsoft.com/en-us/azure/storage/files/understanding-billing#provisioning-method">Azure
+files</a>. Choosing
+an nfs storage option with low IOPS will result in long environment
+install times.</p>
+</section>
+<section id="network-speed">
+<h3>Network Speed<a class="headerlink" href="#network-speed" title="Permalink to this headline">#</a></h3>
+<p>While Conda does its best to cache packages, it will have to reach out
+to download the <code class="docutils literal notranslate"><span class="pre">repodata.json</span></code> along with the packages as well. Thus
+network speeds may be important. Typically cloud environments have
+plenty fast Internet.</p>
+</section>
+<section id="s3-storage">
+<h3>S3 Storage<a class="headerlink" href="#s3-storage" title="Permalink to this headline">#</a></h3>
+<p>All build artifacts from conda-store are stored in object storage that
+behaves S3 like. S3 traditionally has great performance if you use the
+cloud provider implementation.</p>
+</section>
+</section>
+<section id="configuration">
+<h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">#</a></h2>
+<p>conda-store is configured via
+<a class="reference external" href="https://traitlets.readthedocs.io/en/stable/">Traitlets</a>. Originally
+this configuration was done via command line options but as the
+options grew this seems untenable. conda-store server and worker can
+be launched via configuration easily.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>conda-store-server<span class="w"> </span>--config<span class="w"> </span>&lt;path-to-conda-store-config.py&gt;
+</pre></div>
+</div>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>conda-store-worker<span class="w"> </span>--config<span class="w"> </span>&lt;path-to-conda-store-config.py&gt;
+</pre></div>
+</div>
+<p>Below we outline the options for conda-store.</p>
+<section id="conda-store-server-app-condastore">
+<h3><code class="docutils literal notranslate"><span class="pre">conda_store_server.app.CondaStore</span></code><a class="headerlink" href="#conda-store-server-app-condastore" title="Permalink to this headline">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStore.storage_class</span></code> configures the storage backend to use for
+storing build artifacts from
+conda-store. <a class="reference external" href="https://en.wikipedia.org/wiki/Amazon_S3">S3</a> storage is
+the default. File based storage is also supported but not nearly as
+well tested.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStore.conda_solve_platforms</span></code> configures which platforms to solve environments for, via conda-lock. It must include the current platform conda-store is running on. By default, contains only the platform on which conda-store is running.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStore.store_directory</span></code> is the directory used for conda-store to
+build the environments.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStore.build_directory</span></code> template used to form the directory for
+storing Conda environment builds. Available keys: <code class="docutils literal notranslate"><span class="pre">store_directory</span></code>,
+<code class="docutils literal notranslate"><span class="pre">namespace</span></code>, <code class="docutils literal notranslate"><span class="pre">name</span></code>. The default will put all built environments in the
+same namespace within the same directory.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStore.environment_directory</span></code> template used to form the directory
+for symlinking Conda environment builds. Available keys:
+store_directory, namespace, name. The default will put all
+environments in the same namespace within the same directory.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStore.validate_specification</span></code> callable function taking
+<code class="docutils literal notranslate"><span class="pre">conda_store</span></code> and <code class="docutils literal notranslate"><span class="pre">specification</span></code> as input arguments to apply for
+validating and modifying a given specification. If there are
+validation issues with the environment ValueError with message will be
+raised.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStore.validate_action</span></code> callable function taking conda_store,
+namespace, and action. If there are issues with performing the given
+action raise a CondaStoreError should be raised.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStore.conda_command</span></code> is the <code class="docutils literal notranslate"><span class="pre">command</span></code> to use for creation of
+Conda environments. Currently <code class="docutils literal notranslate"><span class="pre">mamba</span></code> is the default which will
+usually result in lower peak memory usage and faster builds.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStore.conda_channel_alias</span></code> is the url to prepend to all
+shorthand Conda channels that do not specify a url. The default is
+<code class="docutils literal notranslate"><span class="pre">https://conda.anaconda.org</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStore.conda_platforms</span></code> are the platforms to download package
+repodata.json from. By default includes current architecture and
+<code class="docutils literal notranslate"><span class="pre">noarch</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStore.conda_default_channels</span></code> is a list of Conda channels that
+are by default added if channels within the specification is empty.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStore.conda_allowed_channels</span></code> is a list of Conda channels that
+are allowed. This also tells conda-store which channels to prefetch
+the channel <code class="docutils literal notranslate"><span class="pre">repodata</span></code> and <code class="docutils literal notranslate"><span class="pre">channeldata</span></code> from. The default is <code class="docutils literal notranslate"><span class="pre">main</span></code>
+and <code class="docutils literal notranslate"><span class="pre">conda-forge</span></code>. If <code class="docutils literal notranslate"><span class="pre">conda_allowed_channels</span></code> is an empty list all
+Channels are accepted by users.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStore.conda_indexed_channels</span></code> tells conda-store which channels to prefetch
+the channel <code class="docutils literal notranslate"><span class="pre">repodata</span></code> and <code class="docutils literal notranslate"><span class="pre">channeldata</span></code> from. The default is <code class="docutils literal notranslate"><span class="pre">main</span></code>
+and <code class="docutils literal notranslate"><span class="pre">conda-forge</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStore.conda_default_packages</span></code> is a list of Conda packages that
+are included by default if none are specified within the specification
+dependencies.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStore.conda_required_packages</span></code> is a list of Conda packages that
+are required upon validation of the specification dependencies. This
+will not auto add the packages but instead throw an error that they
+are missing.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStore.conda_included_packages</span></code> is a list of Conda packages that
+if not specified within the specification dependencies will be auto
+added.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStore.pypi_default_packages</span></code> is a list of PyPi packages that
+are included by default if none are specified within the specification
+dependencies.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStore.pypi_required_packages</span></code> is a list of PyPi packages that
+are required upon validation of the specification dependencies. This
+will not auto add the packages but instead throw an error that they
+are missing.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStore.pypi_included_packages</span></code> is a list of PyPi packages that
+if not specified within the specification dependencies will be auto
+added.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStore.storage_thresold</span></code> storage threshold in bytes of minimum
+available storage required in order to perform builds.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStore.database_url</span></code> is the url string for connecting to the
+database. Behind the scenes <a class="reference external" href="https://www.sqlalchemy.org/">SQLAlchemy</a>
+is used for the connection so <a class="reference external" href="https://docs.sqlalchemy.org/en/14/core/engines.html">consult their
+docs</a> for
+connecting to your specific database. conda-store will automatically
+create the tables if they do not already exist.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStore.redis_url</span></code> is an optional argument to a running Redis
+instance. This was removed as a dependency as of release <code class="docutils literal notranslate"><span class="pre">0.4.10</span></code> due
+to the need to have a simple deployment option for conda-store. See
+<a class="reference external" href="https://github.com/redis/redis-py/#connecting-to-redis">documentation</a>
+for proper specification. This url is used by default for the Celery
+broker and results backend.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStore.celery_broker_url</span></code> is the broker use to use for
+celery. Celery supports a <a class="reference external" href="https://docs.celeryproject.org/en/stable/getting-started/backends-and-brokers/index.html">wide range of
+brokers</a>
+each with different guarantees. By default the Redis based broker is
+used if a <code class="docutils literal notranslate"><span class="pre">CondaStore.redis_url</span></code> if provided otherwise defaults to
+sqlalchemy. It is production ready and has worked well in
+practice. The url must be provided in a format that celery
+understands. The default value is <code class="docutils literal notranslate"><span class="pre">CondaStore.redis_url</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStore.build_artifacts</span></code> is the list of artifacts for conda-store
+to build. By default it is all the artifacts that conda-store is
+capable of building. These are the
+<a class="reference external" href="https://github.com/conda-incubator/conda-lock">lockfile</a>,
+<a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#create-env-file-manually">YAML</a>,
+<a class="reference external" href="https://conda.github.io/conda-pack/">Conda-Pack</a>, and
+<a class="reference external" href="https://github.com/conda-incubator/conda-docker">Docker</a>. Currently
+the <code class="docutils literal notranslate"><span class="pre">lockfile</span></code> one is ignored since it is always created upon build.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStore.build_artifacts_kept_on_deletion</span></code> is a list of artifacts
+to keep after a given build is deleted. Often an administrator will
+want to keep around the logs etc. of a build and the Conda solve for
+the given build.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStore.celery_results_backend</span></code> is the backend to use for storing
+all results from celery task execution. conda-store currently does not
+leverage the backend results but it may be needed for future work
+using celery. The backend defaults to using the Redis backend if
+<code class="docutils literal notranslate"><span class="pre">CondaStore.redis_url</span></code> is specified otherwise uses the
+<code class="docutils literal notranslate"><span class="pre">CondaStore.database_url</span></code>. This choice works great in
+production. Please consult the <a class="reference external" href="https://docs.celeryproject.org/en/stable/getting-started/backends-and-brokers/index.html">celery docs on
+backend</a>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStore.default_namespace</span></code> is the default namespace for
+conda-store to use. All environments are built behind a given
+namespace.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStore.filesystem_namespace</span></code> is the namespace to use for
+environments picked up via <code class="docutils literal notranslate"><span class="pre">CondaStoreWorker.watch_paths</span></code> on the
+filesystem.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStore.default_uid</span></code> is the uid (user id) to assign to all
+files and directories in a given built environment. This setting is
+useful if you want to protect environments from modification from
+certain users and groups.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStore.default_gid</span></code> is the gid (group id) to assign to all
+files and directories in a given built environment. This setting is
+useful if you want to protect environments from modification from
+certain users and groups.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStore.default_permissions</span></code> is the filesystem permissions to
+assign to all files and directories in a given built environment. This
+setting is useful if you want to protect environments from
+modification from certain users and groups.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStore.default_docker_base_image</span></code> default base image used for the
+Dockerized environments. Make sure to have a proper glibc within image
+(highly discourage alpine/musl based images). Can also be callable
+function which takes the <code class="docutils literal notranslate"><span class="pre">orm.Build</span></code> object as input which has access
+to all attributes about the build such as installed packages, requested
+packages, name, namespace, etc. This package at a minimum should have
+the <a class="reference external" href="https://docs.anaconda.com/anaconda/install/linux/">following packages
+installed</a>. Often
+times for non-graphic and non-gpu environments glibc is enough. Hence
+the default docker image <code class="docutils literal notranslate"><span class="pre">library/debian:sid-slim</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStore.serialize_builds</span></code> DEPRECATED no longer has any effect</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStore.post_update_environment_build_hook</span></code> is an optional configurable to
+allow for custom behavior that will run after an environment’s current build changes.</p>
+</section>
+<section id="conda-store-server-storage-s3storage">
+<h3><code class="docutils literal notranslate"><span class="pre">conda_store_server.storage.S3Storage</span></code><a class="headerlink" href="#conda-store-server-storage-s3storage" title="Permalink to this headline">#</a></h3>
+<p>conda-store uses <a class="reference external" href="https://github.com/minio/minio-py">minio-py</a> as a
+client to connect to S3 “like” object stores.</p>
+<p><code class="docutils literal notranslate"><span class="pre">S3Storage.internal_endpoint</span></code> is the internal endpoint for conda-store
+reaching out to s3 bucket. This is the url that conda-store use for
+get/set s3 blobs. For AWS S3 use the endpoint <code class="docutils literal notranslate"><span class="pre">s3.amazonaws.com</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">S3Storage.external_endpoint</span></code> is the external s3 endpoint for users to
+reach out to in the presigned url. This is the url that users use
+for fetching s3 blobs. For AWS S3 use the endpoint <code class="docutils literal notranslate"><span class="pre">s3.amazonaws.com</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">S3Storage.access_key</span></code> is the access key for S3 bucket.</p>
+<p><code class="docutils literal notranslate"><span class="pre">S3Storage.secret_key</span></code> is the secret key for S3 bucket.</p>
+<p><code class="docutils literal notranslate"><span class="pre">S3Storage.region</span></code> is the region to use for connecting to the S3
+bucket. The default is <code class="docutils literal notranslate"><span class="pre">us-east-1</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">S3Storage.bucket_name</span></code> is the bucket name to use for connecting to
+the S3 bucket.</p>
+<p><code class="docutils literal notranslate"><span class="pre">S3Storage.internal_secure</span></code> Boolean to indicate if connecting via
+<code class="docutils literal notranslate"><span class="pre">http</span></code> (False) or <code class="docutils literal notranslate"><span class="pre">https</span></code> (True) internally. The internal connection
+is the url that will be exclusively used by conda-store and not shared
+with users.</p>
+<p><code class="docutils literal notranslate"><span class="pre">S3Storage.external_secure</span></code> Boolean to indicate if connecting via
+<code class="docutils literal notranslate"><span class="pre">http</span></code> (False) or <code class="docutils literal notranslate"><span class="pre">https</span></code> (True) internally. The external connection
+is the url that will be served to users of conda-store.</p>
+<p><code class="docutils literal notranslate"><span class="pre">S3Storage.credentials</span></code> provider to use to get credentials for s3
+access. see examples
+https://github.com/minio/minio-py/tree/master/examples and
+documentation
+https://github.com/minio/minio-py/blob/master/docs/API.md#1-constructor. An
+example of this could be to use <code class="docutils literal notranslate"><span class="pre">minio.credentials.IamAwsProvider</span></code> to
+get S3 credentials via IAM.</p>
+<p><code class="docutils literal notranslate"><span class="pre">S3Storage.credentials_args</span></code> arguments to pass for creation of
+credentials class.</p>
+<p><code class="docutils literal notranslate"><span class="pre">S3Storage.credentials_kwargs</span></code> keyword arguments to pass for creation
+of credentials class.</p>
+</section>
+<section id="conda-store-server-storage-localstorage">
+<h3><code class="docutils literal notranslate"><span class="pre">conda_store_server.storage.LocalStorage</span></code><a class="headerlink" href="#conda-store-server-storage-localstorage" title="Permalink to this headline">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">LocalStorage.storage_path</span></code> is the base directory to use for storing
+build artifacts.</p>
+<p><code class="docutils literal notranslate"><span class="pre">LocalStorage.storage_url</span></code> is the base url for serving of build
+artifacts. This url assumes that the base will be a static server
+serving <code class="docutils literal notranslate"><span class="pre">LocalStorage.storage_path</span></code>.</p>
+</section>
+<section id="conda-store-server-server-auth-authenticationbackend">
+<h3><code class="docutils literal notranslate"><span class="pre">conda_store_server.server.auth.AuthenticationBackend</span></code><a class="headerlink" href="#conda-store-server-server-auth-authenticationbackend" title="Permalink to this headline">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">AuthenticationBackend.secret</span></code> is the symmetric secret to use for
+encrypting tokens.</p>
+<p><code class="docutils literal notranslate"><span class="pre">AuthenticationBackend.jwt_algorithm</span></code> is the algorithm for encrypting
+the JSON Web Tokens.</p>
+<p><code class="docutils literal notranslate"><span class="pre">AuthenticationBackend.predefined_tokens</span></code> is a set of tokens with
+predefined permission. This is useful for setting up service accounts
+in a similar manner to how things are done with jupyterhub. Format for
+the values is a dictionary with keys being the tokens and values being
+the <code class="docutils literal notranslate"><span class="pre">schema.AuthenticaitonToken</span></code> all fields are optional.</p>
+</section>
+<section id="conda-store-server-server-auth-authorizationbackend">
+<h3><code class="docutils literal notranslate"><span class="pre">conda_store_server.server.auth.AuthorizationBackend</span></code><a class="headerlink" href="#conda-store-server-server-auth-authorizationbackend" title="Permalink to this headline">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">AuthorizationBackend.role_mappings</span></code> is a dictionary that maps <code class="docutils literal notranslate"><span class="pre">roles</span></code>
+to application <code class="docutils literal notranslate"><span class="pre">permissions</span></code>. There are three default roles at the
+moment <code class="docutils literal notranslate"><span class="pre">viewer</span></code>, <code class="docutils literal notranslate"><span class="pre">developer</span></code>, and <code class="docutils literal notranslate"><span class="pre">admin</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">AuthorizationBackend.unauthenticated_role_bindings</span></code> are the role
+bindings that an unauthenticated user assumes.</p>
+<p><code class="docutils literal notranslate"><span class="pre">AuthorizationBackend.authenticated_role_bindings</span></code> are the base role
+bindings that an authenticated user assumes.</p>
+</section>
+<section id="conda-store-server-server-auth-authentication">
+<h3><code class="docutils literal notranslate"><span class="pre">conda_store_server.server.auth.Authentication</span></code><a class="headerlink" href="#conda-store-server-server-auth-authentication" title="Permalink to this headline">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">Authentication.cookie_name</span></code> is the name for the browser cookie used
+to authenticate users.</p>
+<p><code class="docutils literal notranslate"><span class="pre">Authentication.cookie_domain</span></code> use when wanting to set a subdomain wide cookie. For example setting this to <code class="docutils literal notranslate"><span class="pre">example.com</span></code> would allow the cookie to be valid for <code class="docutils literal notranslate"><span class="pre">example.com</span></code> along with <code class="docutils literal notranslate"><span class="pre">*.example.com</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">Authentication.authentication_backend</span></code> is the class to use for
+authentication logic. The default is <code class="docutils literal notranslate"><span class="pre">AuthenticationBackend</span></code> and will
+likely not need to change.</p>
+<p><code class="docutils literal notranslate"><span class="pre">Authentication.authorization_backend</span></code> is the class to use for
+authentication logic. The default is <code class="docutils literal notranslate"><span class="pre">AuthorizationBackend</span></code> and will
+likely not need to change.</p>
+<p><code class="docutils literal notranslate"><span class="pre">Authentication.login_html</span></code> is the HTML to display for a given user as
+the login form.</p>
+</section>
+<section id="conda-store-server-server-auth-dummyauthentication">
+<h3><code class="docutils literal notranslate"><span class="pre">conda_store_server.server.auth.DummyAuthentication</span></code><a class="headerlink" href="#conda-store-server-server-auth-dummyauthentication" title="Permalink to this headline">#</a></h3>
+<p>Has all the configuration settings of <code class="docutils literal notranslate"><span class="pre">Authetication</span></code>. This class is
+modeled after the <a class="reference external" href="https://github.com/jupyterhub/jupyterhub/blob/9f3663769e96d2e4f665fd6ef485c101704c4645/jupyterhub/auth.py#L1142">JupyterHub DummyAuthentication
+class</a>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">DummyAuthentication.password</span></code> sets a global password for all users to
+login with. Effectively a static password. This rarely if ever should
+be used outside of testing.</p>
+</section>
+<section id="conda-store-server-server-auth-genericoauthauthentication">
+<h3><code class="docutils literal notranslate"><span class="pre">conda_store_server.server.auth.GenericOAuthAuthentication</span></code><a class="headerlink" href="#conda-store-server-server-auth-genericoauthauthentication" title="Permalink to this headline">#</a></h3>
+<p>A provider-agnostic OAuth authentication provider. Configure
+endpoints, secrets and other parameters to enable any OAuth-compatible
+platform. This class is modeled after the <a class="reference external" href="https://github.com/jupyterhub/oauthenticator">OAuthenticator OAuth2
+classes</a>. All
+configuration settings of <code class="docutils literal notranslate"><span class="pre">Authentication</span></code> are available.</p>
+<p><code class="docutils literal notranslate"><span class="pre">GenericOAuthAuthentication.access_token_url</span></code> is the URL used to
+request an access token once app has been authorized.</p>
+<p><code class="docutils literal notranslate"><span class="pre">GenericOAuthAuthentication.authorizie_url</span></code> is the URL used to request
+authorization to OAuth provider.</p>
+<p><code class="docutils literal notranslate"><span class="pre">GenericOAuthAuthentication.client_id</span></code> is the unique string that
+identifies the app against the OAuth provider.</p>
+<p><code class="docutils literal notranslate"><span class="pre">GenericOAuthAuthentication.client_secret</span></code> is the secret string used
+to authenticate the app against the OAuth provider.</p>
+<p><code class="docutils literal notranslate"><span class="pre">GenericOauthAuthentication.access_scope</span></code> is the permissions that will
+be requested to OAuth2 provider. This is space separated list of
+scopes. Generally only one scope is requested.</p>
+<p><code class="docutils literal notranslate"><span class="pre">GenericOauthAuthentication.user_data_url</span></code> is the API endpoint for
+OAuth provider that returns a JSON dict with user data after the user
+has successfully authenticated.</p>
+<p><code class="docutils literal notranslate"><span class="pre">GenericOauthAuthentication.user_data_key</span></code> is the key in the payload
+returned by <code class="docutils literal notranslate"><span class="pre">user_data_url</span></code> endpoint that provides the <code class="docutils literal notranslate"><span class="pre">username</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">GenericOAuthAuthentication.oauth_callback_url</span></code> custom callback url
+especially useful when web service is behind a proxy.</p>
+<p><code class="docutils literal notranslate"><span class="pre">GenericOAuthAuthentication.tls_verify</span></code> to optionally turn of TLS
+verification useful for custom signed certificates.</p>
+</section>
+<section id="conda-store-server-server-auth-githuboauthauthentication">
+<h3><code class="docutils literal notranslate"><span class="pre">conda_store_server.server.auth.GithubOAuthAuthentication</span></code><a class="headerlink" href="#conda-store-server-server-auth-githuboauthauthentication" title="Permalink to this headline">#</a></h3>
+<p>Inherits from <code class="docutils literal notranslate"><span class="pre">Authentication</span></code> and <code class="docutils literal notranslate"><span class="pre">GenericOAuthAuthentication</span></code> so
+should be fully configurable from those options.</p>
+<p><code class="docutils literal notranslate"><span class="pre">GithubOAuthAuthentication.github_url</span></code> is the url for GitHub. Default
+is <code class="docutils literal notranslate"><span class="pre">https://github.com</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">GithubOAuthAuthentication.github_api</span></code> is the REST API url for
+GitHub. Default is <code class="docutils literal notranslate"><span class="pre">https://api.github.com</span></code>.</p>
+</section>
+<section id="conda-store-server-server-auth-jupyterhuboauthauthentication">
+<h3><code class="docutils literal notranslate"><span class="pre">conda_store_server.server.auth.JupyterHubOAuthAuthentication</span></code><a class="headerlink" href="#conda-store-server-server-auth-jupyterhuboauthauthentication" title="Permalink to this headline">#</a></h3>
+<p>Inherits from <code class="docutils literal notranslate"><span class="pre">Authentication</span></code> and <code class="docutils literal notranslate"><span class="pre">GenericOAuthAuthentication</span></code> so
+should be fully configurable from those options.</p>
+<p><code class="docutils literal notranslate"><span class="pre">GithubOAuthAuthentication.jupyterhub_url</span></code> is the url for connecting
+to JupyterHub. The URL should not include the <code class="docutils literal notranslate"><span class="pre">/hub/</span></code>.</p>
+</section>
+<section id="conda-store-server-server-app-condastoreserver">
+<h3><code class="docutils literal notranslate"><span class="pre">conda_store_server.server.app.CondaStoreServer</span></code><a class="headerlink" href="#conda-store-server-server-app-condastoreserver" title="Permalink to this headline">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStoreServer.log_level</span></code> is the level for all server
+logging. Default is <code class="docutils literal notranslate"><span class="pre">INFO</span></code>. Common options are <code class="docutils literal notranslate"><span class="pre">DEBUG</span></code>, <code class="docutils literal notranslate"><span class="pre">INFO</span></code>,
+<code class="docutils literal notranslate"><span class="pre">WARNING</span></code>, and <code class="docutils literal notranslate"><span class="pre">ERROR</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStoreServer.enable_ui</span></code> a Boolean on whether to expose the UI
+endpoints. Default True.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStoreServer.enable_api</span></code> a Boolean on whether to expose the API
+endpoints. Default True.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStoreServer.enable_registry</span></code> a Boolean on whether to expose the
+registry endpoints. Default True.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStoreServer.enable_metrics</span></code> a Boolean on whether to expose the
+metrics endpoints. Default True.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStoreServer.address</span></code> is the address for the server to bind
+to. The default is all IP addresses <code class="docutils literal notranslate"><span class="pre">0.0.0.0</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStoreServer.port</span></code> is the port for conda-store server to
+use. Default is <code class="docutils literal notranslate"><span class="pre">5000</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStoreServer.registry_external_url</span></code> is the external hostname and
+port to access docker registry cannot contain <code class="docutils literal notranslate"><span class="pre">http://</span></code> or <code class="docutils literal notranslate"><span class="pre">https://</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStoreServer.url_prefix</span></code> is the prefix URL (subdirectory) for the
+entire application. All but the registry routes obey this. This is due
+to the docker registry API specification not supporting url prefixes.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStoreServer.authentication_class</span></code> is the authentication class
+for the web server to use. Default is <code class="docutils literal notranslate"><span class="pre">DummyAuthentication</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStoreServer.secret_key</span></code> is a secret key needed for some
+authentication methods, session storage, etc. TODO: remove at some
+point since also used in <code class="docutils literal notranslate"><span class="pre">AuthenticationBackend</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStoreServer.max_page_size</span></code> is maximum number of items to return
+in a single UI page or API response.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStoreServer.behind_proxy</span></code> indicates if server is behind web
+reverse proxy such as Nginx, Traefik, Apache. Will use
+<code class="docutils literal notranslate"><span class="pre">X-Forward-...</span></code> headers to determine scheme. Do not set to true if not
+behind proxy since Flask will trust any <code class="docutils literal notranslate"><span class="pre">X-Forward-...</span></code> header.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStoreServer.template</span></code> initialized
+<code class="docutils literal notranslate"><span class="pre">fastapi.templating.Jinja2Templates</span></code> to use for html templates.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStoreServer.template_vars</span></code> extra variables to be passed into
+jinja templates for page rendering.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStoreServer.additional_routes</span></code> additional routes for conda-store
+to serve in form <code class="docutils literal notranslate"><span class="pre">[(path,</span> <span class="pre">method,</span> <span class="pre">function),</span> <span class="pre">...]</span></code>. <code class="docutils literal notranslate"><span class="pre">path</span></code> is a
+string, <code class="docutils literal notranslate"><span class="pre">method</span></code> is <code class="docutils literal notranslate"><span class="pre">get</span></code>, <code class="docutils literal notranslate"><span class="pre">post</span></code>, <code class="docutils literal notranslate"><span class="pre">put</span></code>, <code class="docutils literal notranslate"><span class="pre">delete</span></code> etc. and function
+is a regular python fastapi function.</p>
+</section>
+<section id="conda-store-server-worker-app-condastoreworker">
+<h3><code class="docutils literal notranslate"><span class="pre">conda_store_server.worker.app.CondaStoreWorker</span></code><a class="headerlink" href="#conda-store-server-worker-app-condastoreworker" title="Permalink to this headline">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStoreWorker.log_level</span></code> is the level for all server
+logging. Default is <code class="docutils literal notranslate"><span class="pre">INFO</span></code>. Common options are <code class="docutils literal notranslate"><span class="pre">DEBUG</span></code>, <code class="docutils literal notranslate"><span class="pre">INFO</span></code>,
+<code class="docutils literal notranslate"><span class="pre">WARNING</span></code>, and <code class="docutils literal notranslate"><span class="pre">ERROR</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStoreWorker.watch_paths</span></code> is a list of paths for conda-store to
+watch for changes to directories of <code class="docutils literal notranslate"><span class="pre">environment.yaml</span></code> files or a
+single filename to watch.</p>
+<p><code class="docutils literal notranslate"><span class="pre">CondaStoreWorker.concurrency</span></code> by default is not set and defaults to
+the number of threads on your given machine. If set will limit the
+number of concurrent celery tasks to the integer.</p>
+</section>
+<section id="conda-store-server-registry-containerregistry">
+<h3><code class="docutils literal notranslate"><span class="pre">conda_store_server.registry.ContainerRegistry</span></code><a class="headerlink" href="#conda-store-server-registry-containerregistry" title="Permalink to this headline">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">ContainerRegistry.container_registries</span></code> dictionary of registries_url
+to upload built container images with callable function to configure
+registry instance with credentials. Example configuration shown
+bellow. Some registries are more complex to setup such as ECR, GCR,
+etc. <code class="docutils literal notranslate"><span class="pre">password</span></code> is often the token generated from the AWS, GCP, Azure,
+and Digital Ocean clients.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">python_docker.registry</span> <span class="kn">import</span> <span class="n">Registry</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="k">def</span> <span class="nf">_configure_docker_registry</span><span class="p">(</span><span class="n">registry_url</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">Registry</span><span class="p">(</span>
+        <span class="s2">&quot;https://registry-1.docker.io&quot;</span><span class="p">,</span>
+        <span class="n">username</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;DOCKER_USERNAME&#39;</span><span class="p">),</span>
+        <span class="n">password</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;DOCKER_PASSWORD&#39;</span><span class="p">))</span>
+
+<span class="n">c</span><span class="o">.</span><span class="n">ContainerRegistry</span><span class="o">.</span><span class="n">container_registries</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;https://registry-1.docker.io&#39;</span><span class="p">:</span> <span class="n">_configure_docker_registry</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">ContainerRegistry.container_registry_image_name</span></code> image name
+to assign to docker image pushed for particular registry via a
+callable function with arguments of registry and build.</p>
+<p><code class="docutils literal notranslate"><span class="pre">ContainerRegistry.container_registry_image_tag</span></code> image tag
+to assign to docker image pushed for particular registry via a
+callable function with arguments of registry and build.</p>
+</section>
+</section>
+<section id="frequently-asked-questions">
+<h2>Frequently Asked Questions<a class="headerlink" href="#frequently-asked-questions" title="Permalink to this headline">#</a></h2>
+<section id="conda-store-fails-to-build-conda-environment-and-worker-is-spontaneously-killed-9-sigkill">
+<h3>conda-store fails to build Conda environment and worker is spontaneously killed (9 SIGKILL)<a class="headerlink" href="#conda-store-fails-to-build-conda-environment-and-worker-is-spontaneously-killed-9-sigkill" title="Permalink to this headline">#</a></h3>
+<p>The following error most likely indicates that you have not allocated
+enough memory to <code class="docutils literal notranslate"><span class="pre">conda-store-workers</span></code> for solving and building the
+given environment. Solve this by increasing the memory allocated to
+the container.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>Process<span class="w"> </span><span class="s1">&#39;ForkPoolWorker-31&#39;</span><span class="w"> </span>pid:90<span class="w"> </span>exited<span class="w"> </span>with<span class="w"> </span><span class="s1">&#39;signal 9 (SIGKILL)&#39;</span>
+
+Task<span class="w"> </span>handler<span class="w"> </span>raised<span class="w"> </span>error:<span class="w"> </span>WorkerLostError<span class="o">(</span><span class="s1">&#39;Worker exited prematurely: signal 9 (SIGKILL) Job: 348.&#39;</span><span class="o">)</span>
+
+Traceback<span class="w"> </span><span class="o">(</span>most<span class="w"> </span>recent<span class="w"> </span>call<span class="w"> </span>last<span class="o">)</span>:
+File<span class="w"> </span><span class="s2">&quot;/opt/conda/envs/conda-store-server/lib/python3.9/site-packages/billiard/pool.py&quot;</span>,<span class="w"> </span>line<span class="w"> </span><span class="m">1265</span>,<span class="w"> </span><span class="k">in</span><span class="w"> </span>mark_as_worker_lost
+
+<span class="w">    </span>raise<span class="w"> </span>WorkerLostError<span class="o">(</span>
+
+billiard.exceptions.WorkerLostError:<span class="w"> </span>Worker<span class="w"> </span>exited<span class="w"> </span>prematurely:<span class="w"> </span>signal<span class="w"> </span><span class="m">9</span><span class="w"> </span><span class="o">(</span>SIGKILL<span class="o">)</span><span class="w"> </span>Job:<span class="w"> </span><span class="m">348</span>.
+</pre></div>
+</div>
+</section>
+<section id="why-are-environment-builds-stuck-in-building-state">
+<h3>Why are environment builds stuck in building state?<a class="headerlink" href="#why-are-environment-builds-stuck-in-building-state" title="Permalink to this headline">#</a></h3>
+<p>Recently conda-store added a feature to cleanup builds which are stuck
+in the BUILDING state and are not currently running on the
+workers. This feature only works for certain brokers
+e.g. redis. Database celery brokers are not supported.</p>
+<p>This issue occurs when the worker spontaineously dies. This can happen
+for several reasons:</p>
+<ul class="simple">
+<li><p>worker is killed due to consuming too much memory (conda solver/builds can consume a lot of memory)</p></li>
+<li><p>worker was killed for other reasons e.g. forced restart</p></li>
+<li><p>bugs in conda-store</p></li>
+</ul>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+                <footer class="bd-footer-article">
+                  
+<div class="footer-article-items footer-article__inner">
+  
+    <div class="footer-article-item"><!-- Previous / next buttons -->
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="user_guide.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">User Guide</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="contributing.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Contributing</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div></div>
+  
+</div>
+
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#resource-requirements">Resource Requirements</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#performance">Performance</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#worker-storage">Worker Storage</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#network-speed">Network Speed</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#s3-storage">S3 Storage</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#configuration">Configuration</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#conda-store-server-app-condastore"><code class="docutils literal notranslate"><span class="pre">conda_store_server.app.CondaStore</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#conda-store-server-storage-s3storage"><code class="docutils literal notranslate"><span class="pre">conda_store_server.storage.S3Storage</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#conda-store-server-storage-localstorage"><code class="docutils literal notranslate"><span class="pre">conda_store_server.storage.LocalStorage</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#conda-store-server-server-auth-authenticationbackend"><code class="docutils literal notranslate"><span class="pre">conda_store_server.server.auth.AuthenticationBackend</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#conda-store-server-server-auth-authorizationbackend"><code class="docutils literal notranslate"><span class="pre">conda_store_server.server.auth.AuthorizationBackend</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#conda-store-server-server-auth-authentication"><code class="docutils literal notranslate"><span class="pre">conda_store_server.server.auth.Authentication</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#conda-store-server-server-auth-dummyauthentication"><code class="docutils literal notranslate"><span class="pre">conda_store_server.server.auth.DummyAuthentication</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#conda-store-server-server-auth-genericoauthauthentication"><code class="docutils literal notranslate"><span class="pre">conda_store_server.server.auth.GenericOAuthAuthentication</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#conda-store-server-server-auth-githuboauthauthentication"><code class="docutils literal notranslate"><span class="pre">conda_store_server.server.auth.GithubOAuthAuthentication</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#conda-store-server-server-auth-jupyterhuboauthauthentication"><code class="docutils literal notranslate"><span class="pre">conda_store_server.server.auth.JupyterHubOAuthAuthentication</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#conda-store-server-server-app-condastoreserver"><code class="docutils literal notranslate"><span class="pre">conda_store_server.server.app.CondaStoreServer</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#conda-store-server-worker-app-condastoreworker"><code class="docutils literal notranslate"><span class="pre">conda_store_server.worker.app.CondaStoreWorker</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#conda-store-server-registry-containerregistry"><code class="docutils literal notranslate"><span class="pre">conda_store_server.registry.ContainerRegistry</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#frequently-asked-questions">Frequently Asked Questions</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#conda-store-fails-to-build-conda-environment-and-worker-is-spontaneously-killed-9-sigkill">conda-store fails to build Conda environment and worker is spontaneously killed (9 SIGKILL)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#why-are-environment-builds-stuck-in-building-state">Why are environment builds stuck in building state?</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div class="tocsection sourcelink">
+    <a href="_sources/administration.md.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=e353d410970836974a52"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+  <p class="copyright">
+    
+      © Copyright 2022, Quansight.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.5.0.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item"><p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.13.3.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
