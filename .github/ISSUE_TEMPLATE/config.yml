@@ -6,3 +6,9 @@ contact_links:
   - name: issues
     about: Did you find an error? Report your findings here.
     url: https://https://github.com/conda-incubator/conda-store/issues/new/choose
+  - name: conda-store discussions - our user forum
+    url: https://github.com/conda-incubator/conda-store/discussions
+    about: Ask questions, discuss RFDs and help other conda-store users
+  - name: (maintainers only) - Blank issue
+    url: https://github.com/conda-incubator/conda-store/issues/new
+    about: For maintainers only - should be used sparingly
