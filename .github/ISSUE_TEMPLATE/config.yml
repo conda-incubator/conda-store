@@ -3,12 +3,6 @@ contact_links:
   - name: conda-store documentation
     url: https://conda.store/en/latest/
     about: Check out the conda-store documentation
-  - name: issues
-    about: Did you find an error? Report your findings here.
+  - name: conda-store issue tracker
+    about: Did you find a bug or want to make a suggestion? Open an issue on our tracker.
     url: https://https://github.com/conda-incubator/conda-store/issues/new/choose
-  - name: conda-store discussions - our user forum
-    url: https://github.com/conda-incubator/conda-store/discussions
-    about: Ask questions, discuss RFDs and help other conda-store users
-  - name: (maintainers only) - Blank issue
-    url: https://github.com/conda-incubator/conda-store/issues/new
-    about: For maintainers only - should be used sparingly
