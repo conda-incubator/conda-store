@@ -32,6 +32,11 @@ const config = {
     locales: ['en'],
   },
 
+  // Plugings need installing first then add here
+  plugins: [
+    require.resolve("docusaurus-lunr-search"),
+  ],
+
   presets: [
     [
       'classic',
@@ -55,7 +60,6 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       // Replace with your project's social card
-      image: 'img/docusaurus-social-card.jpg',
       navbar: {
         title: 'conda-store',
         logo: {
