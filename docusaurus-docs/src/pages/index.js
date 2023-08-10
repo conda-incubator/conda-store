@@ -5,6 +5,7 @@ import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
 import HomepageFeatures from '@site/src/components/HomepageFeatures';
 import CondaStoreLogo from '@site/static/img/logo.svg';
+import useBaseUrl, {useBaseUrlUtils} from '@docusaurus/useBaseUrl';
 
 import styles from './index.module.css';
 
@@ -31,6 +32,21 @@ function HomepageHeader() {
   );
 }
 
+function HomepageVideo() {
+  const {siteConfig} = useDocusaurusContext();
+  return (
+    <header className={clsx('hero hero--primary', styles.heroBanner)}>
+      <div className="container">
+        <img
+          src={useBaseUrl('/img/conda-store-ui.webp')}
+          className={styles.video}
+        />
+        <br></br>
+      </div>
+    </header>
+  );
+}
+
 export default function Home() {
   const {siteConfig} = useDocusaurusContext();
   return (
@@ -40,6 +56,7 @@ export default function Home() {
       <HomepageHeader />
       <main>
         <HomepageFeatures />
+        <HomepageVideo />
       </main>
     </Layout>
   );
