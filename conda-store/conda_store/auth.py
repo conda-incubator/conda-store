@@ -1,6 +1,8 @@
 import aiohttp
 import yarl
 
+from conda_store import utils
+
 
 async def none_authentication(verify_ssl: bool = True):
     return aiohttp.ClientSession(
@@ -24,7 +26,7 @@ async def basic_authentication(
     )
 
     response = await session.post(
-        yarl.URL(conda_store_url) / "login",
+        utils.ensure_slash(yarl.URL(conda_store_url) / "login"),
         json={
             "username": username,
             "password": password,
