@@ -1,6 +1,5 @@
 /**
- * CSS files with the .module.css suffix will be treated as CSS modules
- * and scoped locally.
+ * CSS files for index, a.k.a home page
  */
 
 .heroBanner {
@@ -20,6 +19,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.features {
+  display: flex;
+  align-items: center;
+  padding: 2rem 0;
+  width: 100%;
 }
 
 .logo {

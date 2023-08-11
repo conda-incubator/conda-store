@@ -10,16 +10,14 @@ const config = {
   tagline: 'Data science environments, for collaboration',
   favicon: 'img/favicon.ico',
 
-  // Set the production url of your site here
+  // Set production url
   url: 'https://conda.store',
-  // Set the /<baseUrl>/ pathname under which your site is served
-  // For GitHub pages deployment, it is often '/<projectName>/'
+  // Set /<baseUrl>/ pathname under which your site is served
   baseUrl: '/',
 
-  // // GitHub pages deployment config.
-  // // If you aren't using GitHub pages, you don't need these.
-  // organizationName: 'facebook', // Usually your GitHub org/user name.
-  // projectName: 'docusaurus', // Usually your repo name.
+  // GitHub pages deployment config - Remove after deployment mechanism is decided.
+  // organizationName: 'conda-incubator',
+  // projectName: 'conda-store',
 
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
@@ -32,7 +30,7 @@ const config = {
     locales: ['en'],
   },
 
-  // Plugings need installing first then add here
+  // Install plugings, then add here
   plugins: [
     require.resolve("docusaurus-lunr-search"),
   ],
@@ -44,8 +42,6 @@ const config = {
       ({
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
-          // Please change this to your repo.
-          // Remove this to remove the "edit this page" links.
           editUrl:
             'https://github.com/conda-incubator/conda-store/tree/main/docs',
         },
@@ -59,7 +55,6 @@ const config = {
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
-      // Replace with your project's social card
       navbar: {
         title: 'conda-store',
         logo: {
