@@ -68,15 +68,32 @@ const config = {
         },
         items: [
           {
-            type: 'docSidebar',
-            sidebarId: 'tutorialSidebar',
+            label: 'Docs',
+            to: 'docs/intro',
             position: 'right',
-            label: 'Tutorial',
           },
           {
-            href: 'https://github.com/conda-incubator/conda-store',
-            label: 'GitHub',
+            label: 'Community',
+            to: 'docs/community',
             position: 'right',
+          },
+          {
+            label: "GitHub",
+            position: "right",
+            items: [
+              {
+                label: "conda-store",
+                href: "https://github.com/conda-incubator/conda-store",
+              },
+              {
+                label: "conda-store-ui",
+                href: "https://github.com/conda-incubator/conda-store-ui",
+              },
+              {
+                label: "jupyterlab-conda-store",
+                href: "https://github.com/conda-incubator/jupyterlab-conda-store",
+              },
+            ]
           },
         ],
       },
@@ -84,46 +101,35 @@ const config = {
         style: 'dark',
         links: [
           {
-            title: 'Documentation',
             items: [
               {
-                label: 'TODO',
-                to: '/',
+                label: 'Code of Conduct',
+                href: 'https://github.com/conda-incubator/governance/blob/main/CODE_OF_CONDUCT.md',
+              },
+              {
+                label: 'Governance',
+                to: 'docs/community/governance',
+              },
+              {
+                label: 'Support',
+                href: 'docs/community/support',
               },
             ],
           },
           {
-            title: 'Repositories',
             items: [
               {
-                label: 'conda-store',
-                href: 'https://github.com/conda-incubator/conda-store',
+                label: 'Brand guidelines',
+                to: 'docs/community/design',
               },
               {
-                label: 'conda-store-ui',
-                href: 'https://github.com/conda-incubator/conda-store-ui',
-              },
-              {
-                label: 'jupyterlab-conda-store',
-                href: 'https://github.com/conda-incubator/jupyterlab-conda-store',
-              },
-            ],
-          },
-          {
-            title: 'More',
-            items: [
-              {
-                label: 'TODO',
-                to: '/',
-              },
-              {
-                label: 'TODO',
-                href: '/',
+                label: 'Changelog',
+                to: 'docs/community/design',
               },
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} | Made with 💚 by conda-store dev team`,
+        copyright: `Copyright © ${new Date().getFullYear()} | Made with 💚 by conda-store development team`,
       },
       prism: {
         theme: lightCodeTheme,
