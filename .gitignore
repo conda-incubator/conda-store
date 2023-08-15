@@ -36,3 +36,24 @@ test-results
 
 # conda-store-ui
 conda-store-server/conda_store_server/server/static/conda-store-ui/
+
+# Docusaurus dependencies
+/node_modules
+
+# Docusaurus production
+/build
+
+# Docusaurus generated files
+.docusaurus
+.cache-loader
+
+# Docusaurus misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
