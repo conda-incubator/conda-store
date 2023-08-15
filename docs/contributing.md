@@ -204,8 +204,8 @@ All docker images within `docker/kubernetes` should be updated to the
 release version. `spec.template.spec.containers[0].image` is the path
 within the YAML files.
 
-Update the version number in `conda-store-server/setup.py` and
-`conda-store/setup.py` to reflect the release version.
+Update the version number in `conda-store-server/conda_store_server/__init__.py` and
+`conda-store/conda_store/__init__.py` to reflect the release version.
 
 Once those changes have been made make a commit titled `bump to
 version <version>`.
