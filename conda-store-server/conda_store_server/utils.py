@@ -1,3 +1,4 @@
+import sys
 import os
 import re
 import subprocess
@@ -50,7 +51,12 @@ def chdir(directory: pathlib.Path):
 
 
 def disk_usage(path: pathlib.Path):
-    return subprocess.check_output(["du", "-sb", str(path)], encoding="utf-8").split()[
+    if sys.platform == "darwin":
+        cmd = ["du", "-sAB1", str(path)]
+    else:
+        cmd = ["du", "-sb", str(path)]
+
+    return subprocess.check_output(cmd, encoding="utf-8").split()[
         0
     ]
 
