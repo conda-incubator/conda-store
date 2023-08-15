@@ -20,7 +20,7 @@ Navigate to `docusaurus-docs` repository, and run:
 npm install
 ```
 
-You cna then start a development server with:
+You can then start a development server with the following:
 
 ```
 $ npm start
