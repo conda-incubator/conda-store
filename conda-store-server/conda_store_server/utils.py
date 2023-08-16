@@ -56,9 +56,7 @@ def disk_usage(path: pathlib.Path):
     else:
         cmd = ["du", "-sb", str(path)]
 
-    return subprocess.check_output(cmd, encoding="utf-8").split()[
-        0
-    ]
+    return subprocess.check_output(cmd, encoding="utf-8").split()[0]
 
 
 @contextlib.contextmanager
