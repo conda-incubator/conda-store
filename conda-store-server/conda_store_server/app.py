@@ -1,4 +1,5 @@
 import os
+import sys
 import datetime
 from typing import Any, Dict
 
@@ -240,8 +241,14 @@ class CondaStore(LoggingConfigurable):
             schema.BuildArtifactType.LOCKFILE,
             schema.BuildArtifactType.YAML,
             schema.BuildArtifactType.CONDA_PACK,
-            schema.BuildArtifactType.DOCKER_MANIFEST,
-            schema.BuildArtifactType.CONTAINER_REGISTRY,
+            *(
+                [
+                    schema.BuildArtifactType.DOCKER_MANIFEST,
+                    schema.BuildArtifactType.CONTAINER_REGISTRY,
+                ]
+                if sys.platform == "linux"
+                else []
+            ),
         ],
         help="artifacts to build in conda-store. By default all of the artifacts",
         config=True,
@@ -665,6 +672,7 @@ class CondaStore(LoggingConfigurable):
                     immutable=True,
                 )
             )
+
         if (
             schema.BuildArtifactType.DOCKER_MANIFEST in settings.build_artifacts
             or schema.BuildArtifactType.CONTAINER_REGISTRY in settings.build_artifacts
