@@ -972,15 +972,20 @@ def test_api_cancel_build(testclient):
     new_build_id = r.data.build_id
 
     # delay to ensure the build kicks off
+    build_timeout = 300
     building = False
-    while building is False:
-        time.sleep(30)
+    start = time.time()
+    while time.time() - start < build_timeout:
         response = testclient.get(f"api/v1/build/{new_build_id}")
         response.raise_for_status()
 
         r = schema.APIGetBuild.parse_obj(response.json())
         if r.data.status == schema.BuildStatus.BUILDING.value:
             building = True
+            break
+        time.sleep(30)
+
+    assert building is True
 
     # The new build should have kicked off, so now we will request to cancel it
     response = testclient.put(f"api/v1/build/{new_build_id}/cancel")
@@ -991,7 +996,7 @@ def test_api_cancel_build(testclient):
     assert "canceled" in r.message
 
     # delay to ensure the build is marked as failed
-    time.sleep(120)
+    time.sleep(10)
 
     # Ensure status is Failed
     response = testclient.get(f"api/v1/build/{new_build_id}")
