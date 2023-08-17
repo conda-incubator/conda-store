@@ -445,7 +445,7 @@ form.addEventListener('submit', loginHandler);
     def post_logout_method(self, request: Request, next: Optional[str] = None):
         redirect_url = next or request.url_for("ui_list_environments")
         response = RedirectResponse(redirect_url, status_code=303)
-        response.set_cookie(self.cookie_name, "", domain="", expires=0)
+        response.set_cookie(self.cookie_name, "", domain=self.cookie_domain, expires=0)
         return response
 
     def authenticate_request(self, request: Request, require=False):
