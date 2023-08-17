@@ -985,5 +985,5 @@ def test_api_cancel_build(testclient):
 
     r = schema.APIGetBuild.parse_obj(response.json())
     assert r.status == schema.APIStatus.OK
-    assert r.data.id == {new_build_id}
+    assert r.data.id == new_build_id
     assert r.data.status == schema.BuildStatus.FAILED.value
