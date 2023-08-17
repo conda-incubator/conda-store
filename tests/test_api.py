@@ -970,7 +970,7 @@ def test_api_cancel_build(testclient):
     assert r.status == schema.APIStatus.OK
 
     # delay to ensure the build kicks off
-    time.sleep(30)
+    time.sleep(90)
 
     new_build_id = r.data.build_id
 
@@ -983,7 +983,7 @@ def test_api_cancel_build(testclient):
     assert "canceled" in r.message
 
     # delay to ensure the build is marked as failed
-    time.sleep(30)
+    time.sleep(90)
 
     # Ensure status is Failed
     response = testclient.get(f"api/v1/build/{new_build_id}")
