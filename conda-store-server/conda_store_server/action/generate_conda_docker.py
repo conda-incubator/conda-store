@@ -1,12 +1,5 @@
+import sys
 import pathlib
-
-from conda_docker.conda import (
-    build_docker_environment_image,
-    conda_info,
-    fetch_precs,
-    find_user_conda,
-    precs_from_environment_prefix,
-)
 
 from conda_store_server import action
 
@@ -20,6 +13,21 @@ def action_generate_conda_docker(
     output_image_name: str,
     output_image_tag: str,
 ):
+    if sys.platform != "linux":
+        raise RuntimeError(
+            "Generating Docker images is currently only supported on Linux"
+        )
+
+    # Import is inside the function because conda_docker is only available on
+    # Linux
+    from conda_docker.conda import (
+        build_docker_environment_image,
+        conda_info,
+        fetch_precs,
+        find_user_conda,
+        precs_from_environment_prefix,
+    )
+
     user_conda = find_user_conda()
     info = conda_info(user_conda)
     download_dir = info["pkgs_dirs"][0]

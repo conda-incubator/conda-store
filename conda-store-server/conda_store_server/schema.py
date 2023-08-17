@@ -1,5 +1,6 @@
 import re
 import os
+import sys
 import datetime
 import enum
 from typing import List, Optional, Union, Dict, Any, Callable
@@ -320,8 +321,14 @@ class Settings(BaseModel):
             BuildArtifactType.LOCKFILE,
             BuildArtifactType.YAML,
             BuildArtifactType.CONDA_PACK,
-            BuildArtifactType.DOCKER_MANIFEST,
-            BuildArtifactType.CONTAINER_REGISTRY,
+            *(
+                [
+                    BuildArtifactType.DOCKER_MANIFEST,
+                    BuildArtifactType.CONTAINER_REGISTRY,
+                ]
+                if sys.platform == "linux"
+                else []
+            ),
         ],
         description="artifacts to build in conda-store. By default all of the artifacts",
         metadata={"global": False},
