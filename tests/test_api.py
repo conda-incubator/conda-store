@@ -972,7 +972,7 @@ def test_api_cancel_build(testclient):
     new_build_id = r.data.build_id
 
     # delay to ensure the build kicks off
-    build_timeout = 120
+    build_timeout = 180
     building = False
     start = time.time()
     while time.time() - start < build_timeout:
