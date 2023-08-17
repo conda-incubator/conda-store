@@ -978,3 +978,12 @@ def test_api_cancel_build(testclient):
 
     assert r.status == schema.APIStatus.OK
     assert "canceled" in r.message
+
+    # Ensure status is Failed
+    response = testclient.get(f"api/v1/build/{new_build_id}")
+    response.raise_for_status()
+
+    r = schema.APIGetBuild.parse_obj(response.json())
+    assert r.status == schema.APIStatus.OK
+    assert r.data.id == {new_build_id}
+    assert r.data.status == schema.BuildStatus.FAILED.value
