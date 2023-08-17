@@ -969,6 +969,9 @@ def test_api_cancel_build(testclient):
     r = schema.APIPostSpecification.parse_obj(response.json())
     assert r.status == schema.APIStatus.OK
 
+    # delay to ensure the build kicks off
+    time.sleep(30)
+
     new_build_id = r.data.build_id
 
     # The new build should have kicked off, so now we will request to cancel it
@@ -978,6 +981,9 @@ def test_api_cancel_build(testclient):
 
     assert r.status == schema.APIStatus.OK
     assert "canceled" in r.message
+
+    # delay to ensure the build is marked as failed
+    time.sleep(30)
 
     # Ensure status is Failed
     response = testclient.get(f"api/v1/build/{new_build_id}")
