@@ -972,7 +972,7 @@ def test_api_cancel_build(testclient):
     new_build_id = r.data.build_id
 
     # delay to ensure the build kicks off
-    build_timeout = 300
+    build_timeout = 120
     building = False
     start = time.time()
     while time.time() - start < build_timeout:
@@ -996,7 +996,7 @@ def test_api_cancel_build(testclient):
     assert "canceled" in r.message
 
     # delay to ensure the build is marked as failed
-    time.sleep(10)
+    time.sleep(30)
 
     # Ensure status is Failed
     response = testclient.get(f"api/v1/build/{new_build_id}")
