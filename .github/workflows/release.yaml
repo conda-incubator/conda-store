@@ -6,13 +6,14 @@ on:
       - 'v*'
 
 permissions:
-  id-token: write # This is required for requesting the JWT
   contents: read  # This is required for actions/checkout
 
 jobs:
   release-conda-store:
     name: 'PyPi Release conda-store-server'
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
     strategy:
       matrix:
         directory:
@@ -25,17 +26,6 @@ jobs:
       - name: 'Checkout Infrastructure'
         uses: actions/checkout@main
 
-      - name: Retrieve secret from Vault
-        uses: hashicorp/vault-action@v2.5.0
-        with:
-          method: jwt
-          url: "https://quansight-vault-public-vault-b2379fa7.d415e30e.z1.hashicorp.cloud:8200"
-          namespace: "admin/quansight"
-          role: "repository-conda-incubator-conda-store-role"
-          secrets: |
-            kv/data/repository/conda-incubator/conda-store/shared_secrets PYPI_USERNAME | HATCH_INDEX_USER;
-            kv/data/repository/conda-incubator/conda-store/shared_secrets PYPI_PASSWORD | HATCH_INDEX_AUTH;
-
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
@@ -45,7 +35,9 @@ jobs:
         run: |
           pip install hatch
 
-      - name: Build and Distribute
+      - name: Build Package
         run: |
           hatch build
-          hatch publish
+
+      - name: Upload to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
