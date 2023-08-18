@@ -167,12 +167,10 @@ class RBACAuthorizationBackend(LoggingConfigurable):
         return (arn_1_matches_arn_2 and arn_2_matches_arn_1) or arn_2_matches_arn_1
 
     def get_entity_bindings(self, entity):
-
         authenticated = entity is not None
         entity_role_bindings = {} if entity is None else entity.role_bindings
 
         if authenticated:
-
             db_role_bindings = self.database_role_bindings(entity)
 
             return {
@@ -447,7 +445,7 @@ form.addEventListener('submit', loginHandler);
     def post_logout_method(self, request: Request, next: Optional[str] = None):
         redirect_url = next or request.url_for("ui_list_environments")
         response = RedirectResponse(redirect_url, status_code=303)
-        response.set_cookie(self.cookie_name, "", expires=0)
+        response.set_cookie(self.cookie_name, "", domain=self.cookie_domain, expires=0)
         return response
 
     def authenticate_request(self, request: Request, require=False):
@@ -480,11 +478,9 @@ form.addEventListener('submit', loginHandler);
         return request.state.entity
 
     def entity_bindings(self, entity):
-
         return self.authorization.get_entity_bindings(entity)
 
     def authorize_request(self, request: Request, arn, permissions, require=False):
-
         if not hasattr(request.state, "entity"):
             self.authenticate_request(request)
 
@@ -522,7 +518,6 @@ form.addEventListener('submit', loginHandler);
         )
 
     def filter_environments(self, entity, query):
-
         cases = []
         for entity_arn, entity_roles in self.entity_bindings(entity).items():
             namespace, name = self.authorization.compile_arn_sql_like(entity_arn)
