@@ -136,12 +136,13 @@ class CondaStore(LoggingConfigurable):
     )
 
     conda_allowed_channels = List(
-        [
-            "main",
-            "conda-forge",
-            "https://repo.anaconda.com/pkgs/main",
-        ],
-        help="Allowed conda channels to be used in conda environments. If set to empty list all channels are accepted. Defaults to main and conda-forge",
+        [],
+        help=(
+            "Allowed conda channels to be used in conda environments. "
+            "If set to empty list all channels are accepted (default). "
+            "Example: "
+            '["main", "conda-forge", "https://repo.anaconda.com/pkgs/main"]'
+        ),
         config=True,
     )
 

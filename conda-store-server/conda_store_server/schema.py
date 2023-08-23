@@ -275,8 +275,13 @@ class Settings(BaseModel):
     )
 
     conda_allowed_channels: List[str] = Field(
-        ["main", "conda-forge", "https://repo.anaconda.com/pkgs/main"],
-        description="Allowed conda channels to be used in conda environments. If set to empty list all channels are accepted. Defaults to main and conda-forge",
+        [],
+        description=(
+            "Allowed conda channels to be used in conda environments. "
+            "If set to empty list all channels are accepted (default). "
+            "Example: "
+            '["main", "conda-forge", "https://repo.anaconda.com/pkgs/main"]'
+        ),
         metadata={"global": False},
     )
 
