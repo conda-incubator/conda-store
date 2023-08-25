@@ -93,28 +93,29 @@ def test_install_lockfile(tmp_path, conda_store, simple_conda_lock):
     assert conda_utils.is_conda_prefix(conda_prefix)
 
 
-def test_generate_conda_export(conda_store, current_prefix):
+def test_generate_conda_export(conda_store, conda_prefix):
     context = action.action_generate_conda_export(
-        conda_command=conda_store.conda_command, conda_prefix=current_prefix
+        conda_command=conda_store.conda_command, conda_prefix=conda_prefix
     )
 
     schema.CondaSpecification.parse_obj(context.result)
 
 
-def test_generate_conda_pack(tmp_path, current_prefix):
+def test_generate_conda_pack(tmp_path, conda_prefix):
     output_filename = tmp_path / "environment.tar.gz"
 
     action.action_generate_conda_pack(
-        conda_prefix=current_prefix,
+        conda_prefix=conda_prefix,
         output_filename=output_filename,
     )
 
     assert output_filename.exists()
 
 
-def test_generate_conda_docker(conda_store, current_prefix):
+@pytest.mark.skipif(sys.platform != "linux", reason="conda-docker only works on linux")
+def test_generate_conda_docker(conda_store, conda_prefix):
     action.action_generate_conda_docker(
-        conda_prefix=current_prefix,
+        conda_prefix=conda_prefix,
         default_docker_image=utils.callable_or_value(
             conda_store.default_docker_base_image, None
         ),
@@ -175,16 +176,14 @@ def test_get_conda_prefix_stats(tmp_path, conda_store, simple_conda_lock):
     assert context.result["disk_usage"] > 0
 
 
-def test_add_conda_prefix_packages(
-    db, conda_store, simple_specification, current_prefix
-):
+def test_add_conda_prefix_packages(db, conda_store, simple_specification, conda_prefix):
     build_id = conda_store.register_environment(
         db, specification=simple_specification, namespace="pytest"
     )
 
     action.action_add_conda_prefix_packages(
         db=db,
-        conda_prefix=current_prefix,
+        conda_prefix=conda_prefix,
         build_id=build_id,
     )
 
@@ -193,7 +192,7 @@ def test_add_conda_prefix_packages(
 
 
 def test_add_lockfile_packages(
-    db, conda_store, simple_specification, simple_conda_lock, current_prefix
+    db, conda_store, simple_specification, simple_conda_lock
 ):
     task, solve_id = conda_store.register_solve(db, specification=simple_specification)
 
