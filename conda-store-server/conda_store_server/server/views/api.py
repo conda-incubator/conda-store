@@ -565,7 +565,15 @@ async def api_post_specification(
     except yaml.error.YAMLError:
         raise HTTPException(status_code=400, detail="Unable to parse. Invalid YAML")
     except pydantic.ValidationError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+
+        error_type = e.errors()[0]["type"]
+        human_readable_error = str(e)
+        if error_type == "type_error.none.not_allowed":
+            human_readable_error = (
+                "Invalid YAML. A forbidden `None` value has been encountered. "
+            )
+
+        raise HTTPException(status_code=400, detail=human_readable_error)
 
     auth.authorize_request(
         request,
