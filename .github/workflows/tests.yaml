@@ -15,8 +15,7 @@ jobs:
     strategy:
       matrix:
         # cannot run on windows due to needing fake-chroot for conda-docker
-        # osx takes forever to get a scheduled job
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     defaults:
       run:
