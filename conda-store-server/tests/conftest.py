@@ -24,9 +24,13 @@ def conda_store_config(tmp_path, request):
 
     filename = pathlib.Path(tmp_path) / "database.sqlite"
 
+    store_directory = tmp_path / ".conda-store" / "conda-store-state"
+    store_directory.mkdir(parents=True)
+
     with utils.chdir(tmp_path):
         yield Config(
             CondaStore=dict(
+                store_directory=str(store_directory),
                 database_url=f"sqlite:///{filename}?check_same_thread=False"
             )
         )
