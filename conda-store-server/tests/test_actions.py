@@ -97,6 +97,9 @@ def test_generate_conda_export(conda_store, conda_prefix):
     context = action.action_generate_conda_export(
         conda_command=conda_store.conda_command, conda_prefix=conda_prefix
     )
+    # The env name won't be correct because conda only sets the env name when
+    # an environment is in an envs dir. See the discussion on PR #549.
+    context.result['name'] = 'test-prefix'
 
     schema.CondaSpecification.parse_obj(context.result)
 
