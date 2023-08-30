@@ -60,7 +60,7 @@ class CondaStoreWorker(Application):
 
     @catch_config_error
     def initialize(self, *args, **kwargs):
-        super().initialize(*args, **kwargs)
+        super().initialize(*args, **kwargs, argv=[])
         self.load_config_file(self.config_file)
 
         self.conda_store = CondaStore(parent=self, log=self.log)
