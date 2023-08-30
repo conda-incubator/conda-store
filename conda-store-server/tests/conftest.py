@@ -6,7 +6,7 @@ import pytest
 import yaml
 from fastapi.testclient import TestClient
 
-from conda_store_server import app, schema, dbutil, utils, testing, api
+from conda_store_server import action, app, schema, dbutil, utils, testing, api
 from conda_store_server.server import app as server_app
 
 
@@ -24,7 +24,11 @@ def conda_store_config(tmp_path):
     filename = pathlib.Path(tmp_path) / "database.sqlite"
 
     with utils.chdir(tmp_path):
-        yield Config(CondaStore=dict(database_url=f"sqlite:///{filename}?check_same_thread=False"))
+        yield Config(
+            CondaStore=dict(
+                database_url=f"sqlite:///{filename}?check_same_thread=False"
+            )
+        )
 
 
 @pytest.fixture
@@ -173,6 +177,29 @@ def simple_conda_lock():
         return yaml.safe_load(f)
 
 
-@pytest.fixture
-def current_prefix():
-    return pathlib.Path(os.environ["CONDA_PREFIX"])
+@pytest.fixture(
+    params=[
+        dict(
+            name="test-prefix",
+            channels=["main"],
+            dependencies=["yaml"],
+        ),
+        dict(
+            name="test-prefix",
+            channels=["main"],
+            dependencies=["python", {"pip": ["flask"]}],
+        ),
+    ]
+)
+def conda_prefix(conda_store, tmp_path, request):
+    conda_prefix = tmp_path / "test-prefix"
+    conda_prefix.mkdir()
+
+    specification = schema.CondaSpecification(**request.param)
+
+    action.action_install_specification(
+        conda_command=conda_store.conda_command,
+        specification=specification,
+        conda_prefix=conda_prefix,
+    )
+    yield conda_prefix
