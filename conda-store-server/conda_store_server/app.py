@@ -2,6 +2,7 @@ import datetime
 import os
 import sys
 from contextlib import contextmanager
+from pathlib import Path, PosixPath
 from typing import Any, Dict
 
 import pydantic
@@ -88,7 +89,7 @@ class CondaStore(LoggingConfigurable):
     )
 
     store_directory = Unicode(
-        "conda-store-state",
+        str(Path.home() / ".conda-store" / "conda-store-state"),
         help="directory for conda-store to build environments and store state",
         config=True,
     )
@@ -201,7 +202,7 @@ class CondaStore(LoggingConfigurable):
     )
 
     database_url = Unicode(
-        "sqlite:///conda-store.sqlite",
+        "sqlite:///" + str(PosixPath.home()) + "/.conda-store/conda-store.sqlite",
         help="url for the database. e.g. 'sqlite:///conda-store.sqlite' tables will be automatically created if they do not exist",
         config=True,
     )
