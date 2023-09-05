@@ -1,9 +1,9 @@
 ---
-sidebar_position: 2
-description: Create a index page.
+sidebar_position: 3
+description: Tutorials
 ---
 
-# Get started
+# Tutorials
 
 import DocCardList from '@theme/DocCardList';
 import {useCurrentSidebarCategory} from '@docusaurus/theme-common';

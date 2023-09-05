@@ -1,9 +1,9 @@
 ---
-sidebar_position: 8
-description: Community
+sidebar_position: 4
+description: How to guides
 ---
 
-# Community
+# How-to Guides
 
 import DocCardList from '@theme/DocCardList';
 import {useCurrentSidebarCategory} from '@docusaurus/theme-common';
