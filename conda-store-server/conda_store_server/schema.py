@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field, constr, validator
 
 from conda_store_server import conda_utils
 
+ON_WIN = sys.platform.startswith("win")
 
 def _datetime_factory(offset: datetime.timedelta):
     """utcnow datetime + timezone as string"""
@@ -195,20 +196,20 @@ class Settings(BaseModel):
         metadata={"global": True},
     )
 
-    default_uid: int = Field(
-        os.getuid(),
+    default_uid: int | None = Field(
+        None if ON_WIN else os.getuid(),
         description="default uid to assign to built environments",
         metadata={"global": True},
     )
 
-    default_gid: int = Field(
-        os.getgid(),
+    default_gid: int | None = Field(
+        None if ON_WIN else os.getgid(),
         description="default gid to assign to built environments",
         metadata={"global": True},
     )
 
-    default_permissions: str = Field(
-        "775",
+    default_permissions: str | None = Field(
+        None if ON_WIN else "775",
         description="default file permissions to assign to built environments",
         metadata={"global": True},
     )

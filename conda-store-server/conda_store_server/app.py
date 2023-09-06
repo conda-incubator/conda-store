@@ -33,6 +33,8 @@ from conda_store_server import (
 )
 
 
+ON_WIN = sys.platform.startswith("win")
+
 def conda_store_validate_specification(
     db: Session,
     conda_store: "CondaStore",
@@ -302,21 +304,24 @@ class CondaStore(LoggingConfigurable):
     )
 
     default_uid = Integer(
-        os.getuid(),
+        None if ON_WIN else os.getuid(),
         help="default uid to assign to built environments",
         config=True,
+        allow_none=True,
     )
 
     default_gid = Integer(
-        os.getgid(),
+        None if ON_WIN else os.getgid(),
         help="default gid to assign to built environments",
         config=True,
+        allow_none=True,
     )
 
     default_permissions = Unicode(
-        "775",
+        None if ON_WIN else "775",
         help="default file permissions to assign to built environments",
         config=True,
+        allow_none=True,
     )
 
     default_docker_base_image = Union(
