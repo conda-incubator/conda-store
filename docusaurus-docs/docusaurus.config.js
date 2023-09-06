@@ -15,9 +15,6 @@ const config = {
   // Set /<baseUrl>/ pathname under which your site is served
   baseUrl: '/',
 
-  // GitHub pages deployment config - Remove after deployment mechanism is decided.
-  // organizationName: 'conda-incubator',
-  // projectName: 'conda-store',
 
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
@@ -75,7 +72,7 @@ const config = {
           path: 'conda-store',
           routeBasePath: 'conda-store',
           editUrl:
-            'https://github.com/conda-incubator/conda-store/',
+            'https://github.com/conda-incubator/conda-store/tree/main/docusaurus-docs',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
@@ -145,11 +142,11 @@ const config = {
               },
               {
                 label: 'Governance',
-                to: 'docs/community/governance',
+                to: 'community/governance',
               },
               {
                 label: 'Support',
-                href: 'docs/community/support',
+                to: 'community/support',
               },
             ],
           },
@@ -157,11 +154,11 @@ const config = {
             items: [
               {
                 label: 'Brand guidelines',
-                to: 'docs/community/design',
+                to: 'community/design',
               },
               {
-                label: 'Changelog',
-                to: 'docs/community/design',
+                label: 'Contribute',
+                to: 'community/contribute/',
               },
             ],
           },
