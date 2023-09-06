@@ -53,6 +53,16 @@ const config = {
         breadcrumbs: true,
       }),
     ],
+    [
+      "content-docs",
+      /** @type {import('@docusaurus/plugin-content-docs').Options} */
+      ({
+        id: 'jupyterlab-conda-store',
+        path: 'jupyterlab-conda-store',
+        routeBasePath: '/jupyterlab-conda-store',
+        breadcrumbs: true,
+      }),
+    ],
   ],
 
   presets: [
@@ -86,22 +96,22 @@ const config = {
         items: [
           {
             label: 'conda-store',
-            to: 'conda-store/intro',
+            to: 'conda-store/introduction',
             position: 'left',
           },
           {
             label: 'conda-store UI',
-            to: 'conda-store-ui/intro',
+            to: 'conda-store-ui/introduction',
             position: 'left',
           },
           {
             label: 'JupyterLab extension',
-            to: 'conda-store-ui/intro',
+            to: 'jupyterlab-conda-store/introduction',
             position: 'left',
           },
           {
             label: 'Community',
-            to: 'community/intro',
+            to: 'community/introduction',
             position: 'left',
           },
           {

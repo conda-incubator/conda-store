@@ -1,9 +1,9 @@
 ---
-sidebar_position: 4
+sidebar_position: 3
 description: How to guides
 ---
 
-# How-to Guides
+# How-to guides
 
 import DocCardList from '@theme/DocCardList';
 import {useCurrentSidebarCategory} from '@docusaurus/theme-common';

@@ -4,4 +4,4 @@ title: Introduction
 description: Introduction to documentation.
 ---
 
-## conda-store UI
+# conda-store UI
