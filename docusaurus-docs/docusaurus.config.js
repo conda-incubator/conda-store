@@ -7,7 +7,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'conda-store',
-  tagline: 'Data science environments, for collaboration',
+  tagline: 'Data science environments for collaboration',
   favicon: 'img/favicon.ico',
 
   // Set production url
