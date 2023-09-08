@@ -411,7 +411,7 @@ class CondaSpecification(BaseModel):
     def parse_obj(cls, specification):
 
         try:
-            super().parse_obj(specification)
+            return super().parse_obj(specification)
         except ValidationError as e:
 
             # there can be multiple errors. Let's build a comprehensive summary
