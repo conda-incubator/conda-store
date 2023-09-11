@@ -55,7 +55,7 @@ const ProjectsList = [
     link: '/jupyterlab-conda-store/introduction',
     description: (
       <>
-        Provides conda-store-ui frontent within the JupyterLab interface
+    JupyterLab interface that provides conda-store-ui frontend
       </>
     ),
   },
@@ -66,7 +66,7 @@ const FeatureList = [
     title: '🧶 Flexible & Intuitive UI',
     description: (
       <>
-        Create, update, and manage environments using a user-friendly graphical UI or YAML editor, optionally within JupyterLab.
+        Create, update, and manage environments using a user-friendly graphical UI or YAML editor, available from within JupyterLab or standalone.
       </>
     ),
   },
@@ -98,7 +98,7 @@ const FeatureList = [
     title: '⚖️ Role-based Access Control',
     description: (
       <>
-        As admins, manage users and teams, and approve packages and channels, to maintain organizational standards.
+        Admins can manage users or teams and approve packages and channels to maintain organizational standards.
       </>
     ),
   },
