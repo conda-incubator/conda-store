@@ -1,5 +1,6 @@
 import json
 import pathlib
+import sys
 import typing
 
 from conda_store_server import action
@@ -16,7 +17,9 @@ def action_install_lockfile(
         json.dump(conda_lock_spec, f)
 
     command = [
-        "conda-lock",
+        sys.executable,
+        "-m",
+        "conda_lock",
         "install",
         "--validate-platform",
         "--log-level",
