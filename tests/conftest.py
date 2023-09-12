@@ -7,9 +7,11 @@ import pytest
 from requests import Session
 from urllib.parse import urljoin
 
-
+CONDA_STORE_SERVER_PORT = os.environ.get(
+    "CONDA_STORE_SERVER_PORT", f"5000"
+)
 CONDA_STORE_BASE_URL = os.environ.get(
-    "CONDA_STORE_BASE_URL", "http://localhost:5000/conda-store/"
+    "CONDA_STORE_BASE_URL", f"http://localhost:{CONDA_STORE_SERVER_PORT}/conda-store/"
 )
 CONDA_STORE_USERNAME = os.environ.get("CONDA_STORE_USERNAME", "username")
 CONDA_STORE_PASSWORD = os.environ.get("CONDA_STORE_PASSWORD", "password")
@@ -45,3 +47,7 @@ class CondaStoreSession(Session):
 def testclient():
     session = CondaStoreSession(CONDA_STORE_BASE_URL)
     yield session
+
+@pytest.fixture
+def server_port():
+    return CONDA_STORE_SERVER_PORT
