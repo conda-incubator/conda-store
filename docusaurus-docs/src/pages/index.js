@@ -31,56 +31,119 @@ function HomepageHeader() {
   );
 }
 
-function HomepageVideo() {
-  const {siteConfig} = useDocusaurusContext();
-  return (
-    <header className={clsx('hero hero--primary', styles.heroBanner)}>
-      <div className="container">
-        <img
-          src={useBaseUrl('/img/conda-store-ui.webp')}
-          className={styles.video}
-        />
-        <br></br>
-      </div>
-    </header>
-  );
-}
+const ProjectsList = [
+  {
+    title: '📦 conda-store',
+    link: '/conda-store/introduction',
+    description: (
+      <>
+        Core library that provides key features through a REST API
+      </>
+    ),
+  },
+  {
+    title: '💻 conda-store UI',
+    link: '/conda-store-ui/introduction',
+    description: (
+      <>
+        User-friendly frontend to access conda-store features in a React application
+      </>
+    ),
+  },
+  {
+    title: '🪐 JupyterLab extension',
+    link: '/jupyterlab-conda-store/introduction',
+    description: (
+      <>
+    JupyterLab interface that provides conda-store-ui frontend
+      </>
+    ),
+  },
+]
 
 const FeatureList = [
   {
-    title: '🧶 Flexible',
+    title: '🧶 Flexible & Intuitive UI',
     description: (
       <>
-        Create and update environments quickly using a graphical UI or a YAML editor.
-        All environments are automatically version-controlled, and available for use.
+        Create, update, and manage environments using a user-friendly graphical UI or YAML editor, available from within JupyterLab or standalone.
       </>
     ),
   },
   {
-    title: '📋 Reproducible',
+    title: '📋 Reproducible Artifacts',
     description: (
       <>
-        Share environments effortlessly through the auto-generated artifacts: lockfile, docker image, YAML file, or tarball.
-        Exact versions of all packages and their dependencies are pinned in these artifacts.
+        Share fully-reproducible environments with auto-generated artifacts like lockfiles, YAML files, docker images, and tarballs.
       </>
     ),
   },
   {
-    title: '⚖️ Governance',
+    title: '🌱 Free and Open Source',
     description: (
       <>
-        Access admin-approved packages and channels, and request new ones when needed.
-        Admins have role-based access management, to allow users to share environments across (and only with) their team.
+        A part of the conda (incubator) community, conda-store tools are built using OSS libraries and developed under a permissive license.
+      </>
+    ),
+  },
+  {
+    title: '🔀 Version Controlled',
+    description: (
+      <>
+        Reference or use previous versions or artifacts of your environments with automatic version-control.
+      </>
+    ),
+  },
+  {
+    title: '⚖️ Role-based Access Control',
+    description: (
+      <>
+        Admins can manage users or teams and approve packages and channels to maintain organizational standards.
+      </>
+    ),
+  },
+  {
+    title: '💻 System Agnostic',
+    description: (
+      <>
+        Run conda-store on any major cloud provider, on-prem, or on local machines.
       </>
     ),
   },
 ];
 
+function Project({Svg, title, description, link}) {
+  return (
+    <div className={clsx('col col--4')}>
+      <div className="text--center padding--md">
+        <h2>{title}</h2>
+        <p>{description}</p>
+        <a href={link}> Learn more →</a>
+      </div>
+    </div>
+  );
+}
+
+function HomepageProjects() {
+  const {siteConfig} = useDocusaurusContext();
+  return (
+    <section className={styles.features}>
+      <div className="container">
+        <div className="row">
+          {ProjectsList.map((props, idx) => (
+            <Project key={idx} {...props} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function Feature({Svg, title, description}) {
   return (
     <div className={clsx('col col--4')}>
-      <div className="text--center padding-horiz--md">
-        <h2>{title}</h2>
+      <div className="text--center padding--md">
+        <h3>{title}</h3>
         <p>{description}</p>
       </div>
     </div>
@@ -90,7 +153,7 @@ function Feature({Svg, title, description}) {
 function HomepageFeatures() {
   const {siteConfig} = useDocusaurusContext();
   return (
-    <section className={styles.features}>
+    <section className={clsx(styles.features, "hero hero--primary")}>
       <div className="container">
         <div className="row">
           {FeatureList.map((props, idx) => (
@@ -102,14 +165,30 @@ function HomepageFeatures() {
   );
 }
 
+function HomepageVideo() {
+  const {siteConfig} = useDocusaurusContext();
+  return (
+    <header className={clsx("hero hero--secondary", styles.heroBanner)}>
+      <div className="container">
+        <img
+          src={useBaseUrl('/img/conda-store-ui.webp')}
+          className={styles.video}
+        />
+        <br></br>
+      </div>
+    </header>
+  );
+}
+
 export default function Home() {
   const {siteConfig} = useDocusaurusContext();
   return (
     <Layout
       title={`${siteConfig.title}`}
-      description="Description will go into a meta tag in <head />">
+      description="conda-store home page">
       <HomepageHeader />
       <main>
+        <HomepageProjects />
         <HomepageFeatures />
         <HomepageVideo />
       </main>
