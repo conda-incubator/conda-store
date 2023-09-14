@@ -1,3 +1,4 @@
+import datetime
 import shutil
 import os
 
@@ -231,7 +232,7 @@ def delete_build_artifact(db: Session, conda_store, build_artifact):
         # ignore key
         conda_prefix = build_artifact.build.build_path(conda_store)
         # be REALLY sure this is a directory within store directory
-        if conda_prefix.startswith(conda_store.store_directory) and os.path.isdir(
+        if str(conda_prefix).startswith(conda_store.store_directory) and os.path.isdir(
             conda_prefix
         ):
             shutil.rmtree(conda_prefix)
@@ -254,6 +255,7 @@ def task_delete_build(self, build_id):
 
         build = api.get_build(db, build_id)
 
+        # Deletes build artifacts for this build
         conda_store.log.info(f"deleting artifacts for build={build.id}")
         for build_artifact in api.list_build_artifacts(
             db,
@@ -261,7 +263,12 @@ def task_delete_build(self, build_id):
             excluded_artifact_types=settings.build_artifacts_kept_on_deletion,
         ).all():
             delete_build_artifact(db, conda_store, build_artifact)
-        conda_store.db.commit()
+
+        # Updates build size and marks build as deleted
+        build.deleted_on = datetime.datetime.utcnow()
+        build.size = 0
+
+        db.commit()
 
 
 @shared_task(base=WorkerTask, name="task_delete_environment", bind=True)
