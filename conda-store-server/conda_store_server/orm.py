@@ -519,7 +519,8 @@ class CondaChannel(Base):
                 package_builds[package_key].append(new_package_build_dict)
             logger.info("CondaPackageBuild objects created")
 
-            batch_size = 1000
+            # sqlite3 has a max expression depth of 1000
+            batch_size = 990
             all_package_keys = list(package_builds.keys())
             for i in range(0, len(all_package_keys), batch_size):
 
