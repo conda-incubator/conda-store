@@ -1,9 +1,8 @@
 ---
-sidebar_position: 3
-description: Tutorials
+description: Contribute
 ---
 
-# Tutorials
+# Contribute
 
 import DocCardList from '@theme/DocCardList';
 import {useCurrentSidebarCategory} from '@docusaurus/theme-common';

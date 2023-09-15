@@ -1,40 +1,37 @@
-import os
 import datetime
+import logging
+import os
 import pathlib
+import re
 import shutil
 
+from conda_store_server import conda_utils, schema, utils
+from conda_store_server.environment import validate_environment
 from sqlalchemy import (
-    Table,
-    Column,
-    BigInteger,
-    Integer,
-    Unicode,
-    Text,
     JSON,
-    Enum,
+    BigInteger,
+    Column,
     DateTime,
-    UniqueConstraint,
+    Enum,
     ForeignKey,
+    Integer,
+    Table,
+    Text,
+    Unicode,
     UnicodeText,
-    or_,
+    UniqueConstraint,
     and_,
-)
-from sqlalchemy.orm import (
-    sessionmaker,
-    relationship,
-    backref,
-    declarative_base,
-    validates,
+    create_engine,
+    or_,
 )
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy import create_engine
-
-from conda_store_server import utils, schema
-from conda_store_server.environment import validate_environment
-from conda_store_server import conda_utils
-import re
-import logging
-
+from sqlalchemy.orm import (
+    backref,
+    declarative_base,
+    relationship,
+    sessionmaker,
+    validates,
+)
 
 logger = logging.getLogger("orm")
 
@@ -411,7 +408,6 @@ class CondaChannel(Base):
             packages = {}
 
             for p_build in packages_data:
-
                 package_key = f'{p_build["name"]}-{p_build["version"]}-{self.id}'
 
                 # Filtering out : if the key already exists in existing_packages_keys,
@@ -420,7 +416,6 @@ class CondaChannel(Base):
                     package_key not in packages
                     and package_key not in existing_packages_keys
                 ):
-
                     new_package_dict = {
                         "channel_id": self.id,
                         "license": p_build.get("license"),
@@ -478,7 +473,6 @@ class CondaChannel(Base):
             package_builds = {}
             logger.info("Creating CondaPackageBuild objects")
             for p_build in packages_builds:
-
                 has_null = False
                 non_null_keys = [
                     "build",
@@ -523,7 +517,6 @@ class CondaChannel(Base):
             batch_size = 990
             all_package_keys = list(package_builds.keys())
             for i in range(0, len(all_package_keys), batch_size):
-
                 logger.info(f"handling subset at index {i} (batch size {batch_size}")
                 subset_keys = all_package_keys[i : i + batch_size]
 
@@ -554,9 +547,8 @@ class CondaChannel(Base):
                 logger.info("ready to bulk save")
 
             try:
-
                 flatten = []
-                for (p_name, p_version) in package_builds:
+                for p_name, p_version in package_builds:
                     flatten += package_builds[(p_name, p_version)]
 
                 db.bulk_insert_mappings(CondaPackageBuild, flatten)

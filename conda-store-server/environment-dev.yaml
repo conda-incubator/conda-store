@@ -53,4 +53,4 @@ dependencies:
   - docker-compose
 
   - pip:
-     - pytest-playwright
+      - pytest-playwright

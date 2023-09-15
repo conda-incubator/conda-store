@@ -1,9 +1,8 @@
-from typing import List, Dict, Any
 import re
+from typing import Any, Dict, List
 
-from sqlalchemy import func, null, or_, distinct
-
-from conda_store_server import orm, schema, utils
+from conda_store_server import conda_utils, orm, schema, utils
+from sqlalchemy import distinct, func, null, or_
 
 
 def list_namespaces(db, show_soft_deleted: bool = False):
@@ -52,7 +51,6 @@ def update_namespace(
     metadata_: Dict[str, Any] = None,
     role_mappings: Dict[str, List[str]] = None,
 ):
-
     namespace = get_namespace(db, name)
     if namespace is None:
         raise ValueError(f"Namespace='{name}' not found")
@@ -61,7 +59,6 @@ def update_namespace(
         namespace.metadata_ = metadata_
 
     if role_mappings is not None:
-
         # deletes all the existing role mappings ...
         for rm in namespace.role_mappings:
             db.delete(rm)
@@ -322,6 +319,20 @@ def get_build_packages(
     )
 
 
+def get_build_lockfile_legacy(db, build_id: int):
+    build = db.query(orm.Build).filter(orm.Build.id == build_id).first()
+    packages = [
+        f"{row.package.channel.name}/{row.subdir}/{row.package.name}-{row.package.version}-{row.build}.tar.bz2#{row.md5}"
+        for row in build.package_builds
+    ]
+    return """#platform: {0}
+@EXPLICIT
+{1}
+""".format(
+        conda_utils.conda_platform(), "\n".join(packages)
+    )
+
+
 def get_build_artifact_types(db, build_id: int):
     return (
         db.query(orm.BuildArtifact.artifact_type)
@@ -335,6 +346,7 @@ def list_build_artifacts(
     build_id: int = None,
     key: str = None,
     excluded_artifact_types: List[schema.BuildArtifactType] = None,
+    included_artifact_types: List[schema.BuildArtifactType] = None,
 ):
     filters = []
     if build_id:
@@ -345,6 +357,8 @@ def list_build_artifacts(
         filters.append(
             func.not_(orm.BuildArtifact.artifact_type.in_(excluded_artifact_types))
         )
+    if included_artifact_types:
+        filters.append(orm.BuildArtifact.artifact_type.in_(included_artifact_types))
 
     return db.query(orm.BuildArtifact).filter(*filters)
 

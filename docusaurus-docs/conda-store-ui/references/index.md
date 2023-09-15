@@ -1,9 +1,9 @@
 ---
-sidebar_position: 7
-description: Contribute
+sidebar_position: 4
+description: Create a index page.
 ---
 
-# Contribute
+# Reference
 
 import DocCardList from '@theme/DocCardList';
 import {useCurrentSidebarCategory} from '@docusaurus/theme-common';

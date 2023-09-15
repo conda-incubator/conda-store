@@ -1,13 +1,14 @@
+import datetime
 import os
 import pathlib
-import datetime
+import sys
 
 import pytest
 import yaml
 from fastapi.testclient import TestClient
 
-from conda_store_server import action, app, schema, dbutil, utils, testing, api
-from conda_store_server.server import app as server_app
+from conda_store_server import action, api, app, dbutil, schema, testing, utils  # isort:skip
+from conda_store_server.server import app as server_app  # isort:skip
 
 
 @pytest.fixture
@@ -18,7 +19,7 @@ def celery_config(conda_store):
 
 
 @pytest.fixture
-def conda_store_config(tmp_path):
+def conda_store_config(tmp_path, request):
     from traitlets.config import Config
 
     filename = pathlib.Path(tmp_path) / "database.sqlite"
@@ -29,6 +30,14 @@ def conda_store_config(tmp_path):
                 database_url=f"sqlite:///{filename}?check_same_thread=False"
             )
         )
+
+    original_sys_argv = list(sys.argv)
+    sys.argv = [sys.argv[0]]
+
+    def teardown():
+        sys.argv = list(original_sys_argv)
+
+    request.addfinalizer(teardown)
 
 
 @pytest.fixture

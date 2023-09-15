@@ -16,5 +16,5 @@ dependencies:
   - click
   - ruamel.yaml
   - pip:
-    - https://github.com/yuvipanda/jupyter-launcher-shortcuts/archive/refs/heads/master.zip
-    - jupyterlab-conda-store
+      - https://github.com/yuvipanda/jupyter-launcher-shortcuts/archive/refs/heads/master.zip
+      - jupyterlab-conda-store
