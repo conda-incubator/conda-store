@@ -1,15 +1,14 @@
+import asyncio
+import datetime
 import os
 import re
 import tempfile
 import time
-import asyncio
 from typing import List
-import datetime
 
-from ruamel.yaml import YAML
 import click
-
-from conda_store import api, runner, utils, exception, __version__
+from conda_store import __version__, api, exception, runner, utils
+from ruamel.yaml import YAML
 
 
 async def parse_build(conda_store_api: api.CondaStoreAPI, uri: str):

@@ -1,9 +1,7 @@
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
-
 from alembic import context
+from sqlalchemy import engine_from_config, pool
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -18,10 +16,11 @@ fileConfig(config.config_file_name)
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 
+import pathlib  # noqa E402
+
 # allow running without having conda_store_server installed
 # assumes that alembic is inside directory conda_store_server/alembic/env.py
 import sys  # noqa E402
-import pathlib  # noqa E402
 
 sys.path.append(str(pathlib.Path(__file__).parent.parent.parent))
 

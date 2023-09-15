@@ -12,6 +12,6 @@ conda-store is a set of open source tools for managing data science environments
 
 <!-- TODO: Expand with context -->
 
-* conda-store
-* conda-store-ui
-* jupyterlab-conda-store
+- conda-store
+- conda-store-ui
+- jupyterlab-conda-store

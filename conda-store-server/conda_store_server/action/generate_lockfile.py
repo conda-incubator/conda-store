@@ -1,12 +1,10 @@
+import json
 import pathlib
 import typing
-import json
 
 import yaml
-
-from conda_store_server import schema, conda_utils, action
-
 from conda_lock.conda_lock import run_lock
+from conda_store_server import action, conda_utils, schema
 
 
 @action.action

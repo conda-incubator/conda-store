@@ -1,14 +1,14 @@
-import os
-import sys
-import pathlib
 import datetime
+import os
+import pathlib
+import sys
 
 import pytest
 import yaml
 from fastapi.testclient import TestClient
 
-from conda_store_server import action, app, schema, dbutil, utils, testing, api
-from conda_store_server.server import app as server_app
+from conda_store_server import action, api, app, dbutil, schema, testing, utils  # isort:skip
+from conda_store_server.server import app as server_app  # isort:skip
 
 
 @pytest.fixture

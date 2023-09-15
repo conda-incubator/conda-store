@@ -1,24 +1,22 @@
+import base64
+import datetime
 import re
 import secrets
-import datetime
-from typing import Optional
-import base64
-
 from collections import defaultdict
+from typing import Optional
+
 import jwt
 import requests
-from traitlets.config import LoggingConfigurable
-from traitlets import Dict, Unicode, Type, default, Bool, Union, Callable, Instance
-from fastapi import APIRouter, Request, Response, HTTPException, Depends
-from fastapi.encoders import jsonable_encoder
-from fastapi.responses import RedirectResponse, JSONResponse, HTMLResponse
-from sqlalchemy import or_, and_, text
 import yarl
-
-from conda_store_server import schema, orm, utils
+from conda_store_server import orm, schema, utils
 from conda_store_server.server import dependencies
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from sqlalchemy import and_, or_, text
 from sqlalchemy.orm import sessionmaker
-
+from traitlets import Bool, Callable, Dict, Instance, Type, Unicode, Union, default
+from traitlets.config import LoggingConfigurable
 
 ARN_ALLOWED_REGEX = re.compile(schema.ARN_ALLOWED)
 

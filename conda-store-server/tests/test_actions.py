@@ -1,16 +1,13 @@
-import pytest
-
 import asyncio
-from fastapi import Request
-from fastapi.responses import RedirectResponse
 import pathlib
 import re
 import sys
 
-from conda_store_server import (
-    action, api, conda_utils, orm, schema, server, utils
-)
+import pytest
+from conda_store_server import action, api, conda_utils, orm, schema, server, utils
 from conda_store_server.server.auth import DummyAuthentication
+from fastapi import Request
+from fastapi.responses import RedirectResponse
 
 
 def test_action_decorator():

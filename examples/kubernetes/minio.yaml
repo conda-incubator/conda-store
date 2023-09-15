@@ -5,10 +5,10 @@ metadata:
 spec:
   type: NodePort
   ports:
-  - name: "9000"
-    nodePort: 30900
-    port: 9000
-    targetPort: 9000
+    - name: "9000"
+      nodePort: 30900
+      port: 9000
+      targetPort: 9000
   selector:
     app: minio
 ---

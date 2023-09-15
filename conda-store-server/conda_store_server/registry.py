@@ -1,13 +1,12 @@
-import hashlib
 import gzip
+import hashlib
 import urllib.parse
 
-from traitlets.config import LoggingConfigurable
-from traitlets import Dict, Callable, default
+from conda_store_server import orm, schema, utils
 from python_docker.registry import Image, Registry
 from sqlalchemy.orm import Session
-
-from conda_store_server import schema, orm, utils
+from traitlets import Callable, Dict, default
+from traitlets.config import LoggingConfigurable
 
 
 class ContainerRegistry(LoggingConfigurable):

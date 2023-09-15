@@ -1,16 +1,14 @@
-from typing import List, Dict, Optional, Any
 import datetime
+from typing import Any, Dict, List, Optional
 
 import pydantic
 import yaml
-from fastapi import APIRouter, Request, Depends, HTTPException, Query, Body
-from fastapi.responses import RedirectResponse, PlainTextResponse
-from sqlalchemy.orm import Session
-
-from conda_store_server import api, orm, schema, utils, __version__
-from conda_store_server.server import dependencies
+from conda_store_server import __version__, api, orm, schema, utils
 from conda_store_server.schema import Permissions
-
+from conda_store_server.server import dependencies
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request
+from fastapi.responses import PlainTextResponse, RedirectResponse
+from sqlalchemy.orm import Session
 
 router_api = APIRouter(
     tags=["api"],
@@ -88,7 +86,6 @@ def paginated_api_response(
     default_sort_by: List = [],
     default_order: str = "asc",
 ):
-
     sorts = get_sorts(
         order=paginated_args["order"],
         sort_by=paginated_args["sort_by"],
@@ -322,7 +319,6 @@ async def api_update_namespace(
     auth=Depends(dependencies.get_auth),
     db: Session = Depends(dependencies.get_db),
 ):
-
     auth.authorize_request(
         request,
         namespace,

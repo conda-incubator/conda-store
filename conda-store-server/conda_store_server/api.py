@@ -1,9 +1,8 @@
-from typing import List, Dict, Any
 import re
-
-from sqlalchemy import func, null, or_, distinct
+from typing import Any, Dict, List
 
 from conda_store_server import conda_utils, orm, schema, utils
+from sqlalchemy import distinct, func, null, or_
 
 
 def list_namespaces(db, show_soft_deleted: bool = False):
@@ -52,7 +51,6 @@ def update_namespace(
     metadata_: Dict[str, Any] = None,
     role_mappings: Dict[str, List[str]] = None,
 ):
-
     namespace = get_namespace(db, name)
     if namespace is None:
         raise ValueError(f"Namespace='{name}' not found")
@@ -61,7 +59,6 @@ def update_namespace(
         namespace.metadata_ = metadata_
 
     if role_mappings is not None:
-
         # deletes all the existing role mappings ...
         for rm in namespace.role_mappings:
             db.delete(rm)
