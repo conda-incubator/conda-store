@@ -5,14 +5,14 @@ from playwright.sync_api import Page
 
 
 @pytest.mark.playwright
-def test_integration(page: Page):
-    # Go to http://localhost:5000/conda-store/admin/
-    page.goto("http://localhost:5000/conda-store/admin/", wait_until="domcontentloaded")
+def test_integration(page: Page, server_port):
+    # Go to http://localhost:{server_port}/conda-store/admin/
+    page.goto(f"http://localhost:{server_port}/conda-store/admin/", wait_until="domcontentloaded")
     page.screenshot(path="test-results/conda-store-unauthenticated.png")
 
     # Click text=Login
     page.locator("text=Login").click()
-    # expect(page).to_have_url("http://localhost:5000/conda-store/login/")
+    # expect(page).to_have_url(f"http://localhost:{server_port}/conda-store/login/")
 
     # Click [placeholder="Username"]
     page.locator('[placeholder="Username"]').click()
@@ -27,7 +27,7 @@ def test_integration(page: Page):
     page.locator('[placeholder="Password"]').fill("password")
 
     # Click button:has-text("Sign In")
-    # with page.expect_navigation(url="http://localhost:5000/conda-store/"):
+    # with page.expect_navigation(url=f"http://localhost:{server_port}/conda-store/"):
     with page.expect_navigation():
         page.locator('button:has-text("Sign In")').click()
 
@@ -41,11 +41,11 @@ def test_integration(page: Page):
 
     # Press Enter
     page.locator('[placeholder="Search"]').press("Enter")
-    # expect(page).to_have_url("http://localhost:5000/conda-store/?search=python")
+    # expect(page).to_have_url(f"http://localhost:{server_port}/conda-store/?search=python")
 
     # Click text=filesystem/python-flask-env
     page.locator("text=filesystem / python-flask-env").click()
-    # expect(page).to_have_url("http://localhost:5000/conda-store/environment/filesystem/python-flask-env/")
+    # expect(page).to_have_url(f"http://localhost:{server_port}/conda-store/environment/filesystem/python-flask-env/")
 
     page.locator("a", has_text="Build").click()
 
@@ -61,7 +61,7 @@ def test_integration(page: Page):
 
     page.screenshot(path="test-results/conda-store-build-complete.png")
 
-    page.goto("http://localhost:5000/conda-store/admin/")
+    page.goto(f"http://localhost:{server_port}/conda-store/admin/")
 
-    page.goto("http://localhost:5000/conda-store/")
+    page.goto(f"http://localhost:{server_port}/conda-store/")
     time.sleep(5)
