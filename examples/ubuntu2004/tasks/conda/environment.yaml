@@ -1,20 +1,20 @@
 ---
- - name: create environments directory
-   become: yes
-   file:
-     path: /opt/conda-environments
-     state: directory
+- name: create environments directory
+  become: yes
+  file:
+    path: /opt/conda-environments
+    state: directory
 
- - name: copy environments files
-   become: yes
-   template:
-     src: "files/environments/{{ item }}.yaml"
-     dest: "/opt/conda-environments/{{ item }}.yaml"
-     mode: 0644
-   register: _environment
+- name: copy environments files
+  become: yes
+  template:
+    src: "files/environments/{{ item }}.yaml"
+    dest: "/opt/conda-environments/{{ item }}.yaml"
+    mode: 0644
+  register: _environment
 
- - name: install conda environment
-   become: yes
-   shell:
-     cmd: "{{ miniforge.home }}/bin/conda env update -f /opt/conda-environments/{{ item }}.yaml --prefix {{ miniforge.home }}/envs/{{ item }}"
-   when: _environment.changed
+- name: install conda environment
+  become: yes
+  shell:
+    cmd: "{{ miniforge.home }}/bin/conda env update -f /opt/conda-environments/{{ item }}.yaml --prefix {{ miniforge.home }}/envs/{{ item }}"
+  when: _environment.changed

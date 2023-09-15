@@ -1,12 +1,11 @@
+import asyncio
 import json
 import os
-import asyncio
 
+from conda_store.api import CondaStoreAPI
+from jupyterhub.auth import DummyAuthenticator
 from jupyterhub.spawner import SimpleLocalProcessSpawner
 from jupyterhub.utils import maybe_future
-from jupyterhub.auth import DummyAuthenticator
-from conda_store.api import CondaStoreAPI
-
 
 c.JupyterHub.ip = "0.0.0.0"
 

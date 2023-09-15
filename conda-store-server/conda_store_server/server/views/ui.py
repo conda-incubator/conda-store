@@ -1,13 +1,12 @@
 from typing import Optional
 
-from fastapi import APIRouter, Request, Depends
+import yaml
+from conda_store_server import api
+from conda_store_server.schema import Permissions
+from conda_store_server.server import dependencies
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
-import yaml
-
-from conda_store_server import api
-from conda_store_server.server import dependencies
-from conda_store_server.schema import Permissions
 
 router_ui = APIRouter(tags=["ui"])
 

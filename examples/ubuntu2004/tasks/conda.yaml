@@ -1,74 +1,74 @@
 ---
- - name: Check that the conda binary exists
-   stat:
-     path: "{{ miniforge.home }}/bin/conda"
-   register: stat_conda
+- name: Check that the conda binary exists
+  stat:
+    path: "{{ miniforge.home }}/bin/conda"
+  register: stat_conda
 
- # https://docs.anaconda.com/anaconda/install/linux/
- - name: Conda Dependencies
-   become: true
-   apt:
-     state: present
-     name:
-       - libgl1-mesa-glx
-       - libegl1-mesa
-       - libxrandr2
-       - libxrandr2
-       - libxss1
-       - libxcursor1
-       - libxcomposite1
-       - libasound2
-       - libxi6
-       - libxtst6
+# https://docs.anaconda.com/anaconda/install/linux/
+- name: Conda Dependencies
+  become: true
+  apt:
+    state: present
+    name:
+      - libgl1-mesa-glx
+      - libegl1-mesa
+      - libxrandr2
+      - libxrandr2
+      - libxss1
+      - libxcursor1
+      - libxcomposite1
+      - libasound2
+      - libxi6
+      - libxtst6
 
- - name: download miniconda installer
-   get_url:
-     url: "https://github.com/conda-forge/miniforge/releases/download/{{ miniforge.version }}/Miniforge3-{{ miniforge.version }}-Linux-x86_64.sh"
-     checksum: "sha256:{{ miniforge.sha256 }}"
-     dest: "/tmp/miniforge.sh"
-     force: false
-     mode: 0755
-   when: not stat_conda.stat.exists
+- name: download miniconda installer
+  get_url:
+    url: "https://github.com/conda-forge/miniforge/releases/download/{{ miniforge.version }}/Miniforge3-{{ miniforge.version }}-Linux-x86_64.sh"
+    checksum: "sha256:{{ miniforge.sha256 }}"
+    dest: "/tmp/miniforge.sh"
+    force: false
+    mode: 0755
+  when: not stat_conda.stat.exists
 
- - name: install miniforge
-   become: yes
-   shell:
-     creates: "{{ miniforge.home }}/bin/conda"
-     cmd: |
-       /tmp/miniforge.sh -b -p "{{ miniforge.home }}"
-   when: not stat_conda.stat.exists
+- name: install miniforge
+  become: yes
+  shell:
+    creates: "{{ miniforge.home }}/bin/conda"
+    cmd: |
+      /tmp/miniforge.sh -b -p "{{ miniforge.home }}"
+  when: not stat_conda.stat.exists
 
- - name: ensure conda.sh activated in shell
-   become: yes
-   file:
-     src: "{{ miniforge.home }}/etc/profile.d/conda.sh"
-     dest: "/etc/profile.d/conda.sh"
-     state: link
+- name: ensure conda.sh activated in shell
+  become: yes
+  file:
+    src: "{{ miniforge.home }}/etc/profile.d/conda.sh"
+    dest: "/etc/profile.d/conda.sh"
+    state: link
 
- - name: Ensure conda activate directory exists
-   become: true
-   file:
-     path: "{{ miniforge.home }}/etc/conda/activate.d"
-     state: directory
-     mode: '0755'
+- name: Ensure conda activate directory exists
+  become: true
+  file:
+    path: "{{ miniforge.home }}/etc/conda/activate.d"
+    state: directory
+    mode: "0755"
 
- - name: create conda configuration directory
-   become: yes
-   file:
-     path: /etc/conda
-     state: directory
+- name: create conda configuration directory
+  become: yes
+  file:
+    path: /etc/conda
+    state: directory
 
- - name: Create default condarc for users
-   become: yes
-   copy:
-     dest: /etc/conda/condarc
-     mode: 644
-     content: |
-       envs_dirs:
-         - "~/.conda/envs"
-       pkgs_dirs:
-         - "~/.conda/pkgs"
+- name: Create default condarc for users
+  become: yes
+  copy:
+    dest: /etc/conda/condarc
+    mode: 644
+    content: |
+      envs_dirs:
+        - "~/.conda/envs"
+      pkgs_dirs:
+        - "~/.conda/pkgs"
 
- - name: Install conda environments
-   include_tasks: conda/environment.yaml
-   with_items: "{{ miniforge.environments | default([]) }}"
+- name: Install conda environments
+  include_tasks: conda/environment.yaml
+  with_items: "{{ miniforge.environments | default([]) }}"

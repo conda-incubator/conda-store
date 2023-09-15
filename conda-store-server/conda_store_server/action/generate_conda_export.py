@@ -1,5 +1,5 @@
-import pathlib
 import json
+import pathlib
 
 from conda_store_server import action
 

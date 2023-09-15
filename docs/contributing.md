@@ -17,8 +17,8 @@ are using Linux.
 
 Install the following dependencies before developing on conda-store.
 
- - [docker](https://docs.docker.com/engine/install/)
- - [docker-compose](https://docs.docker.com/compose/install/)
+- [docker](https://docs.docker.com/engine/install/)
+- [docker-compose](https://docs.docker.com/compose/install/)
 
 To deploy `conda-store` run the following command
 
@@ -39,13 +39,13 @@ Have a look at this [discussion on Apple.com](https://developer.apple.com/forums
 for more details.
 :::
 
-
 The following resources will be available:
-  - conda-store web server running at [http://localhost:5000](http://localhost:5000)
-  - [MinIO](https://min.io/) s3 running at [http://localhost:9000](http://localhost:9000) with username `admin` and password `password`
-  - [PostgreSQL](https://www.postgresql.org/) running at [localhost:5432](http://localhost:5432) with username `admin` and password `password` database `conda-store`
-  - [Redis](https://www.redis.com/) running at [localhost:6379](http://localhost:6379) with password `password`
-  - [JupyterHub](https://jupyter.org/hub) running at [http://localhost:8000](http://localhost:8000) with any username and password `test`
+
+- conda-store web server running at [http://localhost:5000](http://localhost:5000)
+- [MinIO](https://min.io/) s3 running at [http://localhost:9000](http://localhost:9000) with username `admin` and password `password`
+- [PostgreSQL](https://www.postgresql.org/) running at [localhost:5432](http://localhost:5432) with username `admin` and password `password` database `conda-store`
+- [Redis](https://www.redis.com/) running at [localhost:6379](http://localhost:6379) with password `password`
+- [JupyterHub](https://jupyter.org/hub) running at [http://localhost:8000](http://localhost:8000) with any username and password `test`
 
 On a fast machine this deployment should only take 10 or so seconds
 assuming the docker images have been partially built before. If you
@@ -61,7 +61,7 @@ docker-compose up --build
 
 Install the following dependencies before developing on conda-store.
 
- - [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html)
+- [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html)
 
 Install the development dependencies and activate the environment.
 
@@ -74,7 +74,8 @@ Running `conda-store`. `--standalone` mode launched celery as a
 subprocess of the web server.
 
 python -m conda_store_server.server --standalone tests/assets/conda_store_standalone_config.py
-```
+
+````
 
 Visit [localhost:5000](http://localhost:5000/)
 
@@ -100,7 +101,7 @@ Conda.
 ```shell
 conda env create -f conda-store-server/environment-dev.yaml
 conda activate conda-store-server-dev
-```
+````
 
 Then go in the documentation directory `docs` and build the
 documentation.
@@ -122,8 +123,9 @@ easier to contribute to the documentation.
 ### Testing
 
 The `conda-store` repository is two packages.
- - `conda-store-server/` which is the worker + web server responsible for the `conda-store` service
- - `conda-store/` is the client which interacts with the service
+
+- `conda-store-server/` which is the worker + web server responsible for the `conda-store` service
+- `conda-store/` is the client which interacts with the service
 
 #### conda-store
 
@@ -230,11 +232,11 @@ PR must be created that updates to the released version
 
 conda-store has two PyPi packages `conda-store-server` and `conda-store`.
 
- - update `recipies/meta.yaml` with the new version `{% set version = "<version>" %}`
- - update `recipies/meta.yaml` with the appropriate sha256 for each
-   package. The sha256 can be found at
-   `https://pypi.org/project/conda-store/#files` by clicking the
-   `view` button.
+- update `recipies/meta.yaml` with the new version `{% set version = "<version>" %}`
+- update `recipies/meta.yaml` with the appropriate sha256 for each
+  package. The sha256 can be found at
+  `https://pypi.org/project/conda-store/#files` by clicking the
+  `view` button.
 
 Once the PR has been created ensure that you request a `rerender` of
 the feedstock with the following comment `@conda-forge-admin please
@@ -263,12 +265,13 @@ for a full example.
 
 conda-store can be broken into two components. The workers which have
 the following responsibilities:
- - build Conda environments from Conda `environment.yaml` specifications
- - build Conda pack archives
- - build Conda docker images
- - remove Conda builds
- - modify symlinks to point current environment to given build
- - generally any tasks that can take an unbounded amount of time
+
+- build Conda environments from Conda `environment.yaml` specifications
+- build Conda pack archives
+- build Conda docker images
+- remove Conda builds
+- modify symlinks to point current environment to given build
+- generally any tasks that can take an unbounded amount of time
 
 All of the worker logic is in `conda_store_server/build.py` and
 `conda_store_server/worker/*.py`. Celery is used for managing tasks so
@@ -278,9 +281,10 @@ in `CondaStore` functions in `conda_store_server/app.py` or
 `conda_store_server/build.py`.
 
 The web server has several responsibilities:
- - serve a UI for interacting with Conda environments
- - serve a REST API for managing Conda environments
- - serve a programmatic Docker registry for interesting docker-conda abilities
+
+- serve a UI for interacting with Conda environments
+- serve a REST API for managing Conda environments
+- serve a programmatic Docker registry for interesting docker-conda abilities
 
 The web server is based on
 [FastAPI](https://fastapi.tiangolo.com/). Originally Flask was chosen
@@ -290,9 +294,10 @@ robust input and output guarantees from the endpoints along with auto
 documentation made FastAPI appealing. The backend web app is defined
 in `conda_store_server.server.app`. There are several components to
 the server:
- - UI :: `conda_store_server/server/views/ui.py`
- - REST API :: `conda_store_server/server/views/api.py`
- - registry :: `conda_store_server/server/views/registry.py`
+
+- UI :: `conda_store_server/server/views/ui.py`
+- REST API :: `conda_store_server/server/views/api.py`
+- registry :: `conda_store_server/server/views/registry.py`
 
 Both the worker and server need a connection to a SQLAchemy compatible
 database, Redis, and S3 compatible object storage. The S3 server is
@@ -309,13 +314,13 @@ results along with enabling locks and realtime streaming of logs.
 
 `conda_environment = f(open("environment.yaml"), datatime.utcnow())`
 
- - namespace :: a way of providing scopes between environments. This
-   prevents Joe's environment named `data-science` from colliding from
-   Alice's environment name `data-science`.
- - environment :: a pointer to a current build of a given specification
- - specification :: a [Conda environment.yaml file](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#create-env-file-manually)
- - build :: a attempt of `conda env install -f environment.yaml` at a
-   given point in time
+- namespace :: a way of providing scopes between environments. This
+  prevents Joe's environment named `data-science` from colliding from
+  Alice's environment name `data-science`.
+- environment :: a pointer to a current build of a given specification
+- specification :: a [Conda environment.yaml file](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#create-env-file-manually)
+- build :: a attempt of `conda env install -f environment.yaml` at a
+  given point in time
 
 In order to understand why we have the complicated terminology for an
 environment it helps to understand how Conda builds a given
@@ -553,13 +558,14 @@ bellow.
 ![high level diagram](_static/images/conda-store-database-architecture.png)
 
 Important things to note about the relationship:
- - An `environment` exists within a given `namespace` and always has a current `build`
- - A `build` belongs to a particular `environment` and has associated `condapackage` and `buildartfacts`
- - A `buildartifact` is a way for the database to keep track of
-   external resources for example s3 artifacts, filesystem directories,
-   etc
- - A `condapackage` is a representation of a given Conda package which belongs to a given `condachannel`
- - A `specification` is the environment.yaml using in `conda env create -f <environment.yaml>`
+
+- An `environment` exists within a given `namespace` and always has a current `build`
+- A `build` belongs to a particular `environment` and has associated `condapackage` and `buildartfacts`
+- A `buildartifact` is a way for the database to keep track of
+  external resources for example s3 artifacts, filesystem directories,
+  etc
+- A `condapackage` is a representation of a given Conda package which belongs to a given `condachannel`
+- A `specification` is the environment.yaml using in `conda env create -f <environment.yaml>`
 
 The following will generate the database model shown bellow. It was
 generated from the `examples/docker` example. You'll see in the
@@ -580,17 +586,21 @@ eralchemy -i "postgresql+psycopg2://admin:password@localhost:5432/conda-store"  
 conda-store relies on [SQLAlchemy](https://www.sqlalchemy.org/) for ORM mapping, and on [Alembic](https://alembic.sqlalchemy.org/en/latest/) for DB migrations.
 
 The procedure to modify the database is the following :
+
 - First, modify [the ORM Model](https://github.com/conda-incubator/conda-store/blob/main/conda-store-server/conda_store_server/orm.py) according to the changes you want to make
 - edit the file `conda-store-server/alembic.ini` and replace the value for entry `sqlalchemy.url` to match the connection URL of your database.
 
 - in your command line, run the following :
+
 ```sh
 cd conda-store-server/conda_store_server
 alembic revision --autogenerate -m "description of your changes"
 ```
+
 - You should have a new file in `conda-store-server/conda_store_server/alembic/versions/` . **Review it thoroughly**. It contains the [`alembic` operations](https://alembic.sqlalchemy.org/en/latest/ops.html) (`op`) to actually modify the database, either when upgrading (`upgrade` function) or downgrading (`downgrade`)
 
 - You can migrate your data within these `upgrade`/`downgrade` functions, for example :
+
 ```python
 from alembic import op
 
@@ -627,8 +637,8 @@ def downgrade():
 
 ```
 
-
 - Once you're sure about the changes generated, you can apply them by running :
+
 ```sh
 alembic upgrade head
 ```

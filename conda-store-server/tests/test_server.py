@@ -1,8 +1,7 @@
-import yaml
 import json
 
 import pytest
-
+import yaml
 from conda_store_server import __version__, schema
 
 

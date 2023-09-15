@@ -27,6 +27,6 @@ services:
       timeout: 5s
       retries: 5
     platform: linux/amd64
-    command: ['conda-store-server', '--standalone']
+    command: ["conda-store-server", "--standalone"]
     ports:
       - "5000:5000"

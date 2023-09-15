@@ -4,16 +4,16 @@ This module provides all the functionality that is required for
 executing conda commands
 """
 
-import json
-import subprocess
 import bz2
 import datetime
-import tempfile
+import json
 import pathlib
+import subprocess
+import tempfile
 
+import requests
 import yaml
 import yarl
-import requests
 
 
 def normalize_channel_name(channel_alias, channel):
@@ -47,8 +47,8 @@ def conda_pack(prefix, output, ignore_missing_files=True):
 
 
 def conda_lock(specification: "CondaSpecification", conda_exe: str = "mamba"):  # noqa
-    from conda_lock.conda_lock import run_lock
     from conda.models.dist import Dist
+    from conda_lock.conda_lock import run_lock
 
     with tempfile.TemporaryDirectory() as tmpdir:
         environment_path = pathlib.Path(tmpdir) / "environment.yaml"

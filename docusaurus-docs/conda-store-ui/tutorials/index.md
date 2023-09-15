@@ -1,9 +1,9 @@
 ---
-sidebar_position: 5
-description: Conceptual guides
+sidebar_position: 2
+description: Tutorials
 ---
 
-# Conceptual guides
+# Tutorials
 
 import DocCardList from '@theme/DocCardList';
 import {useCurrentSidebarCategory} from '@docusaurus/theme-common';

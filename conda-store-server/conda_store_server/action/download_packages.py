@@ -1,12 +1,11 @@
-import typing
 import pathlib
 import shutil
+import typing
 
-import filelock
-
-from conda_store_server import conda_utils, action
 import conda_package_handling.api
 import conda_package_streaming.url
+import filelock
+from conda_store_server import action, conda_utils
 
 
 @action.action

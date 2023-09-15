@@ -2,18 +2,18 @@
 
 ## Resource Requirements
 
- - `conda-store-server` is simply a web server and should not require
-   any specific resources. 1 GB of RAM and 1 CPU should be plenty.
- - `conda-store-worker` does the actual builds of the Conda
-   environments. Solving for Conda environments can take a lot of
-   memory in some circumstances. So make sure to allocate at least 4
-   GB of RAM to the worker along with at least one CPU.
+- `conda-store-server` is simply a web server and should not require
+  any specific resources. 1 GB of RAM and 1 CPU should be plenty.
+- `conda-store-worker` does the actual builds of the Conda
+  environments. Solving for Conda environments can take a lot of
+  memory in some circumstances. So make sure to allocate at least 4
+  GB of RAM to the worker along with at least one CPU.
 
 ## Performance
 
 There are several parts of conda-store to consider for performance. We
 have tried to list them in order of performance impact that may be
-seen. 
+seen.
 
 ### Worker Storage
 
@@ -84,7 +84,7 @@ well tested.
 `CondaStore.conda_solve_platforms` configures which platforms to solve environments for, via conda-lock. It must include the current platform conda-store is running on. By default, contains only the platform on which conda-store is running.
 
 `CondaStore.store_directory` is the directory used for conda-store to
-build the environments. 
+build the environments.
 
 `CondaStore.build_directory` template used to form the directory for
 storing Conda environment builds. Available keys: `store_directory`,
@@ -242,7 +242,7 @@ the default docker image `library/debian:sid-slim`.
 
 `CondaStore.serialize_builds` DEPRECATED no longer has any effect
 
-`CondaStore.post_update_environment_build_hook` is an optional configurable to 
+`CondaStore.post_update_environment_build_hook` is an optional configurable to
 allow for custom behavior that will run after an environment's current build changes.
 
 ### `conda_store_server.storage.S3Storage`
@@ -513,8 +513,6 @@ callable function with arguments of registry and build.
 to assign to docker image pushed for particular registry via a
 callable function with arguments of registry and build.
 
-
-
 ## Frequently Asked Questions
 
 ### conda-store fails to build Conda environment and worker is spontaneously killed (9 SIGKILL)
@@ -546,6 +544,7 @@ e.g. redis. Database celery brokers are not supported.
 
 This issue occurs when the worker spontaineously dies. This can happen
 for several reasons:
- - worker is killed due to consuming too much memory (conda solver/builds can consume a lot of memory)
- - worker was killed for other reasons e.g. forced restart
- - bugs in conda-store
+
+- worker is killed due to consuming too much memory (conda solver/builds can consume a lot of memory)
+- worker was killed for other reasons e.g. forced restart
+- bugs in conda-store

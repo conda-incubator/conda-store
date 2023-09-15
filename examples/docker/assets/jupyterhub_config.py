@@ -1,9 +1,8 @@
 import json
 import os
 
-from jupyterhub.spawner import SimpleLocalProcessSpawner
 from jupyterhub.auth import DummyAuthenticator
-
+from jupyterhub.spawner import SimpleLocalProcessSpawner
 
 c.JupyterHub.ip = "0.0.0.0"
 

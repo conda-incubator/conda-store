@@ -1,4 +1,4 @@
-from fastapi import Request, Depends
+from fastapi import Depends, Request
 from sqlalchemy.orm import Session
 
 

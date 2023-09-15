@@ -1,18 +1,18 @@
 ---
- - name: conda-store deployment
-   hosts: all
-   tasks:
-     - name: Install redis
-       include_tasks: tasks/redis.yaml
+- name: conda-store deployment
+  hosts: all
+  tasks:
+    - name: Install redis
+      include_tasks: tasks/redis.yaml
 
-     - name: Install minio
-       include_tasks: tasks/minio.yaml
+    - name: Install minio
+      include_tasks: tasks/minio.yaml
 
-     - name: Install postgres
-       include_tasks: tasks/postgres.yaml
+    - name: Install postgres
+      include_tasks: tasks/postgres.yaml
 
-     - name: Install conda
-       include_tasks: tasks/conda.yaml
+    - name: Install conda
+      include_tasks: tasks/conda.yaml
 
-     - name: Install conda-store
-       include_tasks: tasks/conda-store.yaml
+    - name: Install conda-store
+      include_tasks: tasks/conda-store.yaml

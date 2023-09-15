@@ -34,7 +34,7 @@ pip dependencies. Click the `lockfile` icon to download the
 lockfile. First install `conda-lock` if it is not already installed.
 
 ```shell
-conda install -c conda-forge lockfile 
+conda install -c conda-forge lockfile
 ```
 
 Install the locked environment file from conda-store.
@@ -124,7 +124,7 @@ The following convention is used
 `<registry-url>:<registry-port>/conda-store-dynamic/`. After
 `conda-store-dynamic` you specify packages needed separated by
 slashes. Additionally you may specify package constraints
-for example `<=1.10` as `.lt.1.10`. 
+for example `<=1.10` as `.lt.1.10`.
 
 As full example support we want python less than `3.8` and NumPy
 greater than `1.0`. This would be the following docker image
@@ -134,7 +134,7 @@ download upon the docker image being built.
 
 ## conda-store UI
 
-### `/` Home Page 
+### `/` Home Page
 
 ![conda-store Homepage](_static/images/conda-store-authenticated.png)
 
@@ -143,7 +143,7 @@ The home page shows all of the available environments in the form
 be a `User` button in the top right hand corner to view information
 about the currently logged in user. Otherwise there is a `login`
 button and few if any environments will be visible. Additionally there
-is a convenient `Create Environment` button to easily create a given 
+is a convenient `Create Environment` button to easily create a given
 environment. There is a `Docs` button that will take you to this
 documentation at any time.
 
@@ -200,19 +200,20 @@ though a build may be deleted the logs, lockfile, and a other build
 information is preserved for the record.
 
 For each build several options are available to the user:
- - The `checkmark` icon allow the user to switch that given build to the
-   active build for the environment. This may be useful if you need
-   to rollback a given environment if the new build environment caused
-   some scripts to fail.
- - The `refresh` icon indicates that a user would like the given
-   environment to build again. Conda `environment.yaml` files are not
-   reproducible thus this will likely lead to an entirely new
-   solve. This is useful when you would like to update all the
-   packages in a given environment without having to change the
-   specification.
- - The `trashcan icon` marks the given build for
-   deletion. `CondaStore.build_artifacts_kept_on_deletion` allows some
-   artifacts to be kept on deletion. These include logs, YAML, etc.
+
+- The `checkmark` icon allow the user to switch that given build to the
+  active build for the environment. This may be useful if you need
+  to rollback a given environment if the new build environment caused
+  some scripts to fail.
+- The `refresh` icon indicates that a user would like the given
+  environment to build again. Conda `environment.yaml` files are not
+  reproducible thus this will likely lead to an entirely new
+  solve. This is useful when you would like to update all the
+  packages in a given environment without having to change the
+  specification.
+- The `trashcan icon` marks the given build for
+  deletion. `CondaStore.build_artifacts_kept_on_deletion` allows some
+  artifacts to be kept on deletion. These include logs, YAML, etc.
 
 ### `/build/<build_id>` builds
 
@@ -223,12 +224,12 @@ conda-store. At the top we see high level build metadata.
 
 conda-store downloads Conda channel data so that it fully understands
 the packages that exist within a given environment. A list is provided
-to the user of all packages within that environment. 
+to the user of all packages within that environment.
 
 Below this are all artifacts associated with a given build e.g
 lockfile, pinned YAML specification, Conda-Pack, and docker image.
 
-Finally a log of the given build regardless of whether the build 
+Finally a log of the given build regardless of whether the build
 succeeded or failed.
 
 ### `/namespace/` manage namespaces
@@ -299,7 +300,7 @@ requested conda-store can perform intelligent solves with caching.
 ## conda-store shebang
 
 `conda-store` can be used as a
-[shebang](https://en.wikipedia.org/wiki/Shebang_(Unix)) within Linux
+[shebang](<https://en.wikipedia.org/wiki/Shebang_(Unix)>) within Linux
 allowing users to embed Conda environments within scripts for
 reproducibility. Basic usage is as follows. Notice that the
 `conda-store run` command is just the normal usage of the command.

@@ -3,9 +3,9 @@ from contextlib import contextmanager
 from subprocess import check_call
 from tempfile import TemporaryDirectory
 
-from sqlalchemy import create_engine, inspect
 from alembic import command
 from alembic.config import Config
+from sqlalchemy import create_engine, inspect
 
 _here = os.path.abspath(os.path.dirname(__file__))
 
@@ -78,7 +78,6 @@ def upgrade(db_url, revision="head"):
     current_table_names = set(inspect(engine).get_table_names())
 
     with _temp_alembic_ini(db_url) as alembic_ini:
-
         if (
             "alembic_version" not in current_table_names
             and len(current_table_names) > 0

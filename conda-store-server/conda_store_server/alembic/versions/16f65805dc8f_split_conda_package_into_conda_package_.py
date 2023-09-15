@@ -16,7 +16,6 @@ depends_on = None
 
 
 def upgrade():
-
     # To migrate the data from conda_package, we'll use a temporary table.
     # We'll populate conda_package_tmp with the right data, then delete
     # conda_package and rename conda_package_tmp into conda_package
@@ -133,7 +132,6 @@ def upgrade():
     # implies aggregating on the other fields, and there's no (simple) way
     # to aggregate properly on the JSON fields like `constraints`.
     if op.get_bind().engine.name == "postgresql":
-
         op.execute(
             """
                 INSERT INTO conda_package_build (md5, constrains, sha256, build_number, timestamp, size, build, subdir, depends, package_id, channel_id)
@@ -159,7 +157,6 @@ def upgrade():
         )
 
     else:
-
         op.execute(
             """
                 INSERT INTO conda_package_build (md5, constrains, sha256, build_number, timestamp, size, build, subdir, depends, package_id, channel_id)
@@ -289,7 +286,6 @@ def upgrade():
 
 
 def downgrade():
-
     with op.batch_alter_table("solve") as batch_op:
         batch_op.drop_constraint("solve_specification_id_fkey", type_="foreignkey")
 

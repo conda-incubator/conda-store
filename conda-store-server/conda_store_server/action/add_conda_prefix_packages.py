@@ -1,10 +1,9 @@
-import pathlib
-import os
 import hashlib
 import json
+import os
+import pathlib
 
 from conda.core.prefix_data import PrefixData
-
 from conda_store_server import action, api
 
 
