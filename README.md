@@ -3,11 +3,13 @@
   <p>
   Data science environments, for collaboration.
 
-  Flexible. Reproducible. Governable.
+Flexible. Reproducible. Governable.
+
   </p>
 </div>
 
 ---
+
 <div align="center">
 
   <a href="https://conda-store.readthedocs.io/en/latest/">
@@ -40,16 +42,16 @@ conda-store is built to work for all team members from individual data scientist
 
 ## Key features
 
-* **Flexiblity**:
-  * Users can create and update environments with the Graphical UI or a YAML editor.
-  * The environments are automatically version-controlled and all versions are readily available.
-* **Reproduciblity**:
-  * User can share environments quickly through the auto-generated artifacts including a lockfile, docker image, YAML file, and tarball.
-  * conda-store pins exact versions of all packages and their dependencies in all the auto-generated artifacts.
-* **Goverance**:
-  * Users have access to admin-approved packages and channels for their work, and can request new ones when needed.
-  * Admins can insert or require certain packages and versions for organization-level compatibility.
-  * Admins can manage users' access-levels using "Namespaces", and allow users to share environments across (and only with) their team.
+- **Flexiblity**:
+  - Users can create and update environments with the Graphical UI or a YAML editor.
+  - The environments are automatically version-controlled and all versions are readily available.
+- **Reproduciblity**:
+  - User can share environments quickly through the auto-generated artifacts including a lockfile, docker image, YAML file, and tarball.
+  - conda-store pins exact versions of all packages and their dependencies in all the auto-generated artifacts.
+- **Goverance**:
+  - Users have access to admin-approved packages and channels for their work, and can request new ones when needed.
+  - Admins can insert or require certain packages and versions for organization-level compatibility.
+  - Admins can manage users' access-levels using "Namespaces", and allow users to share environments across (and only with) their team.
 
 ## Get started
 

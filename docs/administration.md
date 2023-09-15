@@ -2,12 +2,12 @@
 
 ## Resource Requirements
 
- - `conda-store-server` is simply a web server and should not require
-   any specific resources. 1 GB of RAM and 1 CPU should be plenty.
- - `conda-store-worker` does the actual builds of the Conda
-   environments. Solving for Conda environments can take a lot of
-   memory in some circumstances. So make sure to allocate at least 4
-   GB of RAM to the worker along with at least one CPU.
+- `conda-store-server` is simply a web server and should not require
+  any specific resources. 1 GB of RAM and 1 CPU should be plenty.
+- `conda-store-worker` does the actual builds of the Conda
+  environments. Solving for Conda environments can take a lot of
+  memory in some circumstances. So make sure to allocate at least 4
+  GB of RAM to the worker along with at least one CPU.
 
 ## Performance
 
@@ -513,8 +513,6 @@ callable function with arguments of registry and build.
 to assign to docker image pushed for particular registry via a
 callable function with arguments of registry and build.
 
-
-
 ## Frequently Asked Questions
 
 ### conda-store fails to build Conda environment and worker is spontaneously killed (9 SIGKILL)
@@ -546,6 +544,7 @@ e.g. redis. Database celery brokers are not supported.
 
 This issue occurs when the worker spontaineously dies. This can happen
 for several reasons:
- - worker is killed due to consuming too much memory (conda solver/builds can consume a lot of memory)
- - worker was killed for other reasons e.g. forced restart
- - bugs in conda-store
+
+- worker is killed due to consuming too much memory (conda solver/builds can consume a lot of memory)
+- worker was killed for other reasons e.g. forced restart
+- bugs in conda-store

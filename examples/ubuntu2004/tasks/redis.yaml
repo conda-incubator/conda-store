@@ -1,38 +1,38 @@
 ---
- - name: Ubuntu Release
-   command: "lsb_release -sc"
-   register: _redis_ubuntu_release
+- name: Ubuntu Release
+  command: "lsb_release -sc"
+  register: _redis_ubuntu_release
 
- - name: Add apt keys for redis
-   become: true
-   apt_key:
-     url: "https://packages.redis.io/gpg"
-     state: present
+- name: Add apt keys for redis
+  become: true
+  apt_key:
+    url: "https://packages.redis.io/gpg"
+    state: present
 
- - name: Add redis ppa
-   become: true
-   apt_repository:
-     repo: "{{ item }}"
-   with_items:
-     - "deb https://packages.redis.io/deb {{ _redis_ubuntu_release.stdout }} main"
+- name: Add redis ppa
+  become: true
+  apt_repository:
+    repo: "{{ item }}"
+  with_items:
+    - "deb https://packages.redis.io/deb {{ _redis_ubuntu_release.stdout }} main"
 
- - name: Add redis
-   become: true
-   apt:
-     name: redis
-     state: latest
-     cache_valid_time: 3600
+- name: Add redis
+  become: true
+  apt:
+    name: redis
+    state: latest
+    cache_valid_time: 3600
 
- - name: Redis password
-   become: true
-   lineinfile:
-     path: /etc/redis/redis.conf
-     regexp: '^requirepass '
-     line: "requirepass {{ redis.password }}"
+- name: Redis password
+  become: true
+  lineinfile:
+    path: /etc/redis/redis.conf
+    regexp: "^requirepass "
+    line: "requirepass {{ redis.password }}"
 
- - name: Restart Redis
-   become: true
-   systemd:
-     name: redis-server
-     state: restarted
-     daemon_reload: true
+- name: Restart Redis
+  become: true
+  systemd:
+    name: redis-server
+    state: restarted
+    daemon_reload: true

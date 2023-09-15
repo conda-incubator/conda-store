@@ -5,9 +5,10 @@ import sys
 
 import pytest
 import yaml
-from conda_store_server import action, api, app, dbutil, schema, testing, utils
-from conda_store_server.server import app as server_app
 from fastapi.testclient import TestClient
+
+from conda_store_server import action, api, app, dbutil, schema, testing, utils  # isort:skip
+from conda_store_server.server import app as server_app  # isort:skip
 
 
 @pytest.fixture

@@ -200,19 +200,20 @@ though a build may be deleted the logs, lockfile, and a other build
 information is preserved for the record.
 
 For each build several options are available to the user:
- - The `checkmark` icon allow the user to switch that given build to the
-   active build for the environment. This may be useful if you need
-   to rollback a given environment if the new build environment caused
-   some scripts to fail.
- - The `refresh` icon indicates that a user would like the given
-   environment to build again. Conda `environment.yaml` files are not
-   reproducible thus this will likely lead to an entirely new
-   solve. This is useful when you would like to update all the
-   packages in a given environment without having to change the
-   specification.
- - The `trashcan icon` marks the given build for
-   deletion. `CondaStore.build_artifacts_kept_on_deletion` allows some
-   artifacts to be kept on deletion. These include logs, YAML, etc.
+
+- The `checkmark` icon allow the user to switch that given build to the
+  active build for the environment. This may be useful if you need
+  to rollback a given environment if the new build environment caused
+  some scripts to fail.
+- The `refresh` icon indicates that a user would like the given
+  environment to build again. Conda `environment.yaml` files are not
+  reproducible thus this will likely lead to an entirely new
+  solve. This is useful when you would like to update all the
+  packages in a given environment without having to change the
+  specification.
+- The `trashcan icon` marks the given build for
+  deletion. `CondaStore.build_artifacts_kept_on_deletion` allows some
+  artifacts to be kept on deletion. These include logs, YAML, etc.
 
 ### `/build/<build_id>` builds
 
@@ -299,7 +300,7 @@ requested conda-store can perform intelligent solves with caching.
 ## conda-store shebang
 
 `conda-store` can be used as a
-[shebang](https://en.wikipedia.org/wiki/Shebang_(Unix)) within Linux
+[shebang](<https://en.wikipedia.org/wiki/Shebang_(Unix)>) within Linux
 allowing users to embed Conda environments within scripts for
 reproducibility. Basic usage is as follows. Notice that the
 `conda-store run` command is just the normal usage of the command.

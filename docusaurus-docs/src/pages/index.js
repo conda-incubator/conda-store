@@ -1,28 +1,26 @@
-import React from 'react';
-import clsx from 'clsx';
-import Link from '@docusaurus/Link';
-import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
-import Layout from '@theme/Layout';
-import CondaStoreLogo from '@site/static/img/logo.svg';
-import useBaseUrl, {useBaseUrlUtils} from '@docusaurus/useBaseUrl';
+import React from "react";
+import clsx from "clsx";
+import Link from "@docusaurus/Link";
+import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
+import Layout from "@theme/Layout";
+import CondaStoreLogo from "@site/static/img/logo.svg";
+import useBaseUrl, { useBaseUrlUtils } from "@docusaurus/useBaseUrl";
 
-import styles from './index.module.css';
+import styles from "./index.module.css";
 
 function HomepageHeader() {
-  const {siteConfig} = useDocusaurusContext();
+  const { siteConfig } = useDocusaurusContext();
   return (
-    <header className={clsx('hero hero--secondary', styles.heroBanner)}>
+    <header className={clsx("hero hero--secondary", styles.heroBanner)}>
       <div className="container">
         <CondaStoreLogo
           alt={siteConfig.title}
-          className={clsx(styles.logo, 'margin-vert--md')}
+          className={clsx(styles.logo, "margin-vert--md")}
         />
         <h1 className="hero__title">{siteConfig.title}</h1>
         <p className="hero__subtitle">{siteConfig.tagline}</p>
         <div className={styles.buttons}>
-          <Link
-            className="button button--primary button--lg"
-            to="/">
+          <Link className="button button--primary button--lg" to="/">
             Get Started
           </Link>
         </div>
@@ -33,88 +31,91 @@ function HomepageHeader() {
 
 const ProjectsList = [
   {
-    title: '📦 conda-store',
-    link: '/conda-store/introduction',
+    title: "📦 conda-store",
+    link: "/conda-store/introduction",
+    description: (
+      <>Core library that provides key features through a REST API</>
+    ),
+  },
+  {
+    title: "💻 conda-store UI",
+    link: "/conda-store-ui/introduction",
     description: (
       <>
-        Core library that provides key features through a REST API
+        User-friendly frontend to access conda-store features in a React
+        application
       </>
     ),
   },
   {
-    title: '💻 conda-store UI',
-    link: '/conda-store-ui/introduction',
+    title: "🪐 JupyterLab extension",
+    link: "/jupyterlab-conda-store/introduction",
     description: (
-      <>
-        User-friendly frontend to access conda-store features in a React application
-      </>
+      <>JupyterLab interface that provides conda-store-ui frontend</>
     ),
   },
-  {
-    title: '🪐 JupyterLab extension',
-    link: '/jupyterlab-conda-store/introduction',
-    description: (
-      <>
-    JupyterLab interface that provides conda-store-ui frontend
-      </>
-    ),
-  },
-]
+];
 
 const FeatureList = [
   {
-    title: '🧶 Flexible & Intuitive UI',
+    title: "🧶 Flexible & Intuitive UI",
     description: (
       <>
-        Create, update, and manage environments using a user-friendly graphical UI or YAML editor, available from within JupyterLab or standalone.
+        Create, update, and manage environments using a user-friendly graphical
+        UI or YAML editor, available from within JupyterLab or standalone.
       </>
     ),
   },
   {
-    title: '📋 Reproducible Artifacts',
+    title: "📋 Reproducible Artifacts",
     description: (
       <>
-        Share fully-reproducible environments with auto-generated artifacts like lockfiles, YAML files, docker images, and tarballs.
+        Share fully-reproducible environments with auto-generated artifacts like
+        lockfiles, YAML files, docker images, and tarballs.
       </>
     ),
   },
   {
-    title: '🌱 Free and Open Source',
+    title: "🌱 Free and Open Source",
     description: (
       <>
-        A part of the conda (incubator) community, conda-store tools are built using OSS libraries and developed under a permissive license.
+        A part of the conda (incubator) community, conda-store tools are built
+        using OSS libraries and developed under a permissive license.
       </>
     ),
   },
   {
-    title: '🔀 Version Controlled',
+    title: "🔀 Version Controlled",
     description: (
       <>
-        Reference or use previous versions or artifacts of your environments with automatic version-control.
+        Reference or use previous versions or artifacts of your environments
+        with automatic version-control.
       </>
     ),
   },
   {
-    title: '⚖️ Role-based Access Control',
+    title: "⚖️ Role-based Access Control",
     description: (
       <>
-        Admins can manage users or teams and approve packages and channels to maintain organizational standards.
+        Admins can manage users or teams and approve packages and channels to
+        maintain organizational standards.
       </>
     ),
   },
   {
-    title: '💻 System Agnostic',
+    title: "💻 System Agnostic",
     description: (
       <>
-        Run conda-store on any major cloud provider, on-prem, or on local machines.
+        Run conda-store on any major cloud provider, on-prem, or on local
+        machines.
       </>
     ),
   },
 ];
 
-function Project({Svg, title, description, link}) {
+function Project({ Svg, title, description, link }) {
   return (
-    <div className={clsx('col col--4')}>
+    <div className={clsx("col col--4")}>
       <div className="text--center padding--md">
         <h2>{title}</h2>
         <p>{description}</p>
@@ -125,7 +126,7 @@ function Project({Svg, title, description, link}) {
 }
 
 function HomepageProjects() {
-  const {siteConfig} = useDocusaurusContext();
+  const { siteConfig } = useDocusaurusContext();
   return (
     <section className={styles.features}>
       <div className="container">
@@ -139,9 +140,9 @@ function HomepageProjects() {
   );
 }
 
-function Feature({Svg, title, description}) {
+function Feature({ Svg, title, description }) {
   return (
-    <div className={clsx('col col--4')}>
+    <div className={clsx("col col--4")}>
       <div className="text--center padding--md">
         <h3>{title}</h3>
         <p>{description}</p>
@@ -151,7 +152,7 @@ function Feature({Svg, title, description}) {
 }
 
 function HomepageFeatures() {
-  const {siteConfig} = useDocusaurusContext();
+  const { siteConfig } = useDocusaurusContext();
   return (
     <section className={clsx(styles.features, "hero hero--primary")}>
       <div className="container">
@@ -166,12 +167,12 @@ function HomepageFeatures() {
 }
 
 function HomepageVideo() {
-  const {siteConfig} = useDocusaurusContext();
+  const { siteConfig } = useDocusaurusContext();
   return (
     <header className={clsx("hero hero--secondary", styles.heroBanner)}>
       <div className="container">
         <img
-          src={useBaseUrl('/img/conda-store-ui.webp')}
+          src={useBaseUrl("/img/conda-store-ui.webp")}
           className={styles.video}
         />
         <br></br>
@@ -181,11 +182,9 @@ function HomepageVideo() {
 }
 
 export default function Home() {
-  const {siteConfig} = useDocusaurusContext();
+  const { siteConfig } = useDocusaurusContext();
   return (
-    <Layout
-      title={`${siteConfig.title}`}
-      description="conda-store home page">
+    <Layout title={`${siteConfig.title}`} description="conda-store home page">
       <HomepageHeader />
       <main>
         <HomepageProjects />
