@@ -6,7 +6,7 @@ We support only the latest version, and we use [CalVer](https://calver.org/) for
 
 > **Note** > `conda-store` migrated to CalVer in September 2023, and the last version before that was [`0.4.15`](https://github.com/conda-incubator/conda-store/releases/tag/v0.4.15.2).
 
-You should feel comfortable upgrading if you're using our documented public APIs and pay attention to `DeprecationWarnings`. Whenever there is a need to break compatibility, it is announced in the [Changelog](./CHANGELOG.md) and raises a `DeprecationWarning` before it's finally really broken.
+You should feel comfortable upgrading if you're using our documented public APIs and pay attention to `DeprecationWarnings`. Whenever there is a need to break compatibility, it is announced in the [Changelog](./CHANGELOG.md) and will raise a `DeprecationWarning` before it's finally really broken.
 
 ## Reporting a Vulnerability
 
