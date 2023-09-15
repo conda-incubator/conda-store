@@ -1,9 +1,8 @@
 import pathlib
 
-import yaml
 import pydantic
-
-from conda_store_server import schema, conda_utils
+import yaml
+from conda_store_server import conda_utils, schema
 
 
 def validate_environment(specification):

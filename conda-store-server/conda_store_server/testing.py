@@ -1,10 +1,9 @@
-import typing
 import json
+import typing
 import uuid
 
+from conda_store_server import api, conda_utils, orm, schema
 from sqlalchemy.orm import Session
-
-from conda_store_server import schema, api, orm, conda_utils
 
 
 def seed_conda_store(

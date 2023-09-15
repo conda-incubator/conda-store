@@ -13,7 +13,7 @@
 
 There are several parts of conda-store to consider for performance. We
 have tried to list them in order of performance impact that may be
-seen. 
+seen.
 
 ### Worker Storage
 
@@ -84,7 +84,7 @@ well tested.
 `CondaStore.conda_solve_platforms` configures which platforms to solve environments for, via conda-lock. It must include the current platform conda-store is running on. By default, contains only the platform on which conda-store is running.
 
 `CondaStore.store_directory` is the directory used for conda-store to
-build the environments. 
+build the environments.
 
 `CondaStore.build_directory` template used to form the directory for
 storing Conda environment builds. Available keys: `store_directory`,
@@ -242,7 +242,7 @@ the default docker image `library/debian:sid-slim`.
 
 `CondaStore.serialize_builds` DEPRECATED no longer has any effect
 
-`CondaStore.post_update_environment_build_hook` is an optional configurable to 
+`CondaStore.post_update_environment_build_hook` is an optional configurable to
 allow for custom behavior that will run after an environment's current build changes.
 
 ### `conda_store_server.storage.S3Storage`

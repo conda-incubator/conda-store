@@ -1,6 +1,5 @@
-from conda_store_server import api
 import pytest
-
+from conda_store_server import api
 from conda_store_server.orm import NamespaceRoleMapping
 
 

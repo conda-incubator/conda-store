@@ -44,7 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
  - Switched to hatch for conda-store and conda-store-server (#449, #450)
- - Switch default UI to conda-store-ui and expose behind `/admin/` (#448) 
+ - Switch default UI to conda-store-ui and expose behind `/admin/` (#448)
  - Significant database rework on package storage for performance (#300)
 
 ### Removed
@@ -77,7 +77,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
  - `conda-store-server --standalone` now runs conda-store-server without any service dependencies (#378, #376)
- - Initial helm chart skeleton still work to be done to have official helm chart 
+ - Initial helm chart skeleton still work to be done to have official helm chart
 
 ### Fixed
 
@@ -180,7 +180,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  - `conda_store_server.server.auth.Authentication.authenticate` is now an `async` method receiving a [Starlette request object](https://www.starlette.io/requests/)
 
 ### Added
- 
+
  - Adding PyPi validation for included, required, and default packages (#292)
  - Creating a Conda solve API endpoint (#279)
  - Fully tested API for `/api/v1/...` endpoints (#281)
@@ -254,7 +254,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.3.9] - 2022-01-23
 
 ### Added
- 
+
  - Adding support for templates for build and environment symlink directories
  - Adding support for internal and external secure settings
 
@@ -378,5 +378,5 @@ notable things done in the past 3-6 months.
  - true parallel builds and retry if Conda channel update fails [#114](https://github.com/Quansight/conda-store/pull/114)
 
 ### Fixed
- 
+
  - SQLAlchemy connection leak to database [#105](https://github.com/Quansight/conda-store/pull/105)

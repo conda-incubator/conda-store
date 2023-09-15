@@ -1,11 +1,11 @@
+import contextlib
+import functools
 import io
 import logging
-import uuid
-import functools
-import typing
-import tempfile
-import contextlib
 import subprocess
+import tempfile
+import typing
+import uuid
 
 from conda_store_server import utils
 

@@ -3,9 +3,10 @@ import sys
 
 sys.path.append(os.path.join(os.getcwd(), "conda-store-server"))
 
+from urllib.parse import urljoin
+
 import pytest
 from requests import Session
-from urllib.parse import urljoin
 
 CONDA_STORE_SERVER_PORT = os.environ.get(
     "CONDA_STORE_SERVER_PORT", f"5000"

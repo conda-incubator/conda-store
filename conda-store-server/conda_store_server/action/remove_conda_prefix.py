@@ -1,7 +1,7 @@
-import shutil
 import pathlib
+import shutil
 
-from conda_store_server import conda_utils, action
+from conda_store_server import action, conda_utils
 
 
 @action.action

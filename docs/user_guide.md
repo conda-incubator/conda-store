@@ -34,7 +34,7 @@ pip dependencies. Click the `lockfile` icon to download the
 lockfile. First install `conda-lock` if it is not already installed.
 
 ```shell
-conda install -c conda-forge lockfile 
+conda install -c conda-forge lockfile
 ```
 
 Install the locked environment file from conda-store.
@@ -124,7 +124,7 @@ The following convention is used
 `<registry-url>:<registry-port>/conda-store-dynamic/`. After
 `conda-store-dynamic` you specify packages needed separated by
 slashes. Additionally you may specify package constraints
-for example `<=1.10` as `.lt.1.10`. 
+for example `<=1.10` as `.lt.1.10`.
 
 As full example support we want python less than `3.8` and NumPy
 greater than `1.0`. This would be the following docker image
@@ -134,7 +134,7 @@ download upon the docker image being built.
 
 ## conda-store UI
 
-### `/` Home Page 
+### `/` Home Page
 
 ![conda-store Homepage](_static/images/conda-store-authenticated.png)
 
@@ -143,7 +143,7 @@ The home page shows all of the available environments in the form
 be a `User` button in the top right hand corner to view information
 about the currently logged in user. Otherwise there is a `login`
 button and few if any environments will be visible. Additionally there
-is a convenient `Create Environment` button to easily create a given 
+is a convenient `Create Environment` button to easily create a given
 environment. There is a `Docs` button that will take you to this
 documentation at any time.
 
@@ -223,12 +223,12 @@ conda-store. At the top we see high level build metadata.
 
 conda-store downloads Conda channel data so that it fully understands
 the packages that exist within a given environment. A list is provided
-to the user of all packages within that environment. 
+to the user of all packages within that environment.
 
 Below this are all artifacts associated with a given build e.g
 lockfile, pinned YAML specification, Conda-Pack, and docker image.
 
-Finally a log of the given build regardless of whether the build 
+Finally a log of the given build regardless of whether the build
 succeeded or failed.
 
 ### `/namespace/` manage namespaces

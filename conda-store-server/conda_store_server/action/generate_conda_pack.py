@@ -1,7 +1,6 @@
 import pathlib
 
 import conda_pack
-
 from conda_store_server import action
 
 

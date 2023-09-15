@@ -1,25 +1,23 @@
 import datetime
-import shutil
 import os
+import shutil
 
-from celery import Task, shared_task
-from celery.signals import worker_ready
 import yaml
-
-from conda_store_server.worker.app import CondaStoreWorker
-from conda_store_server import api, environment, utils, schema
+from celery import Task, shared_task
+from celery.execute import send_task
+from celery.signals import worker_ready
+from conda_store_server import api, environment, schema, utils
 from conda_store_server.build import (
     build_cleanup,
-    build_conda_environment,
-    build_conda_env_export,
-    build_conda_pack,
     build_conda_docker,
+    build_conda_env_export,
+    build_conda_environment,
+    build_conda_pack,
     solve_conda_environment,
 )
-
-from sqlalchemy.orm import Session
-from celery.execute import send_task
+from conda_store_server.worker.app import CondaStoreWorker
 from filelock import FileLock
+from sqlalchemy.orm import Session
 
 
 @worker_ready.connect
