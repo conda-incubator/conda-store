@@ -60,8 +60,8 @@ There are two packages the [conda-store](https://github.com/conda-incubator/cond
 :::
 
 ```md
-These steps should be taken in order to create a new release!
-**Double check for quality-control**
+These steps should be taken to create a new release!
+**Double-check for quality control**
 
 ## Release details
 
@@ -78,6 +78,7 @@ Release captain responsible - <@gh_username>
 - [ ] Create a new git branch for the release `git checkout -b release-2023.9.1`
 - [ ] Bump `__version__` in [`conda-store/conda-store/__init__.py`](https://github.com/conda-incubator/conda-store/blob/main/conda-store/conda_store/__init__.py)
 - [ ] Bump `__version__` in [`conda-store-server/conda-store-server/__init__.py`](https://github.com/conda-incubator/conda-store/blob/main/conda-store/conda_store/__init__.py)
+- [ ] Update the `conda-store-ui` version in [`conda-store-server/hatch_build.py`](https://github.com/conda-incubator/conda-store/blob/main/conda-store-server/hatch_build.py)
 - [ ] Update the [CHANGELOG.md](./CHANGELOG.md) file with the new version, release date, and relevant changes[^github-activity].
 - [ ] Check the version locally with `hatch version`
 - [ ] Make a release commit: ``git commit -m 'REL - 2023.9.1'``

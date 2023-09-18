@@ -14,6 +14,7 @@ authors = [
   { name = "Christopher Ostrouchov", email = "chris.ostrouchov@gmail.com" },
 ]
 maintainers = [{ name = "Tania Allard", email = "trallard@bitsandchips.me" }]
+# TODO: update maintainers
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
