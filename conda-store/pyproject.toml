@@ -1,5 +1,6 @@
 [build-system]
-requires = ["hatchling>=1.14.0"]
+# https://github.com/ofek/hatch-vcs
+requires = ["hatchling>=1.14.0", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [project]
@@ -8,44 +9,39 @@ description = "conda-store client"
 readme = "README.md"
 license = "BSD-3-Clause"
 requires-python = ">=3.7"
-keywords = [
-  "conda",
-]
+keywords = ["conda"]
 authors = [
   { name = "Christopher Ostrouchov", email = "chris.ostrouchov@gmail.com" },
 ]
+maintainers = [{ name = "Tania Allard", email = "trallard@bitsandchips.me" }]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
   "Topic :: Software Development :: Build Tools",
   "License :: OSI Approved :: BSD License",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.7",
   "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3 :: Only",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Information Technology",
+  "Intended Audience :: Science/Research",
+  "Intended Audience :: System Administrators",
 ]
-dependencies = [
-   "rich",
-   "click",
-   "yarl",
-   "aiohttp",
-   "ruamel.yaml",
-]
+dependencies = ["rich", "click", "yarl", "aiohttp", "ruamel.yaml"]
 dynamic = ["version"]
 
 [project.urls]
 Homepage = "https://conda.store/"
 Source = "https://github.com/conda-incubator/conda-store"
 
-[project.optional-dependencies]
-dev = [
-  "build",
-  "twine",
-]
-
 [tool.hatch.version]
 path = "conda_store/__init__.py"
+
+[project.optional-dependencies]
+dev = ["build", "twine"]
 
 [tool.hatch.envs.dev]
 dependencies = [
@@ -60,9 +56,7 @@ dependencies = [
 ]
 
 [tool.hatch.envs.dev.scripts]
-lint = [
-  "pre-commit run --all",
-]
+lint = ["pre-commit run --all"]
 docs = "sphinx-build -b html ../docs ../docs/_build"
 test = "pytest tests"
 
@@ -71,9 +65,10 @@ conda-store = "conda_store.__main__:main"
 
 [tool.black]
 line-length = 88
-target-version = ['py37', 'py38', 'py39']
+target-version = ['py38', 'py39', 'py310']
 
 [tool.ruff]
 ignore = [
-  "E501",  # line-length
+  "E501", # line-length
+
 ]
