@@ -1,16 +1,15 @@
-name: "Release"
+name: "Release conda-store"
 
 on:
-  push:
-    tags:
-      - "v*"
+  release:
+    types: [created]
 
 permissions:
   contents: read # This is required for actions/checkout
 
 jobs:
   release-conda-store:
-    name: "PyPi Release conda-store-server"
+    name: "PyPi Release conda-store packages 🚀"
     runs-on: ubuntu-latest
     permissions:
       id-token: write # IMPORTANT: this permission is mandatory for trusted publishing
@@ -23,21 +22,21 @@ jobs:
       run:
         working-directory: ${{ matrix.directory }}
     steps:
-      - name: "Checkout Repository"
+      - name: "Checkout Repository 🛎"
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: "Set up Python 🐍"
         uses: actions/setup-python@v4
         with:
           python-version: 3.8
 
-      - name: Install hatch
+      - name: "Install hatch 🐣"
         run: |
           pip install hatch
 
-      - name: Build Package
+      - name: "Build Package 📦"
         run: |
           hatch build
 
-      - name: Upload to PyPI
+      - name: "Upload to PyPI 🚀"
         uses: pypa/gh-action-pypi-publish@release/v1
