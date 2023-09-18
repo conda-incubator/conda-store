@@ -50,11 +50,48 @@ def chdir(directory: pathlib.Path):
         os.chdir(current_directory)
 
 
+def du(path):
+    """
+    Pure Python equivalent of du -sb
+
+    Based on https://stackoverflow.com/a/55648984/161801
+    """
+    if os.path.islink(path):
+        return os.lstat(path).st_size
+    if os.path.isfile(path):
+        st = os.lstat(path)
+        return st.st_size
+    apparent_total_bytes = 0
+    have = set()
+    for dirpath, dirnames, filenames in os.walk(path):
+        apparent_total_bytes += os.lstat(dirpath).st_size
+        for f in filenames:
+            fp = os.path.join(dirpath, f)
+            if os.path.islink(fp):
+                apparent_total_bytes += os.lstat(fp).st_size
+                continue
+            st = os.lstat(fp)
+            if st.st_ino in have:
+                continue
+            have.add(st.st_ino)
+            apparent_total_bytes += st.st_size
+        for d in dirnames:
+            dp = os.path.join(dirpath, d)
+            if os.path.islink(dp):
+                apparent_total_bytes += os.lstat(dp).st_size
+
+    # Round up
+    n_blocks = (apparent_total_bytes + 511) // 512
+    return n_blocks
+
+
 def disk_usage(path: pathlib.Path):
     if sys.platform == "darwin":
         cmd = ["du", "-sAB1", str(path)]
-    else:
+    elif sys.platform == "linux":
         cmd = ["du", "-sb", str(path)]
+    else:
+        return str(du(path))
 
     return subprocess.check_output(cmd, encoding="utf-8").split()[0]
 
