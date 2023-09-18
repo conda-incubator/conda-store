@@ -1,4 +1,6 @@
-FROM --platform=linux/amd64 condaforge/mambaforge
+FROM --platform=linux/amd64 condaforge/mambaforge:23.3.1-1
+
+LABEL org.opencontainers.image.authors="conda-store development team"
 
 RUN apt-get update \
     # https://docs.anaconda.org/anaconda/install/linux/#installing-on-linux
