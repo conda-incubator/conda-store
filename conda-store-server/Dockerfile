@@ -2,18 +2,29 @@ FROM --platform=linux/amd64 condaforge/mambaforge:23.3.1-1
 
 LABEL org.opencontainers.image.authors="conda-store development team"
 
-RUN apt-get update \
+RUN apt-get update && \
     # https://docs.anaconda.org/anaconda/install/linux/#installing-on-linux
-    && apt-get install -y libgl1-mesa-glx libegl1-mesa libxrandr2 libxss1 libxcursor1 libxcomposite1 libasound2 libxi6 libxtst6 \
+    apt-get install -yq --no-install-recommends \
+    libgl1-mesa-glx \
+    libegl1-mesa \
+    libxrandr2 \
+    libxss1 \
+    libxcursor1 \
+    libxcomposite1 \
+    libasound2 \
+    libxi6 \
+    libxtst6 \
     # needed only for development
-    && apt-get install -y curl \
-    && rm -rf /var/lib/apt/lists/*
+    curl && \
+    apt-get clean && \
+    rm -rf /var/cache/apt/* &&\
+    rm -rf /var/lib/apt/lists/* &&\
+    rm -rf /tmp/*
 
 # ensure that conda channels is empty by default
-# we do not want to tamper with the solve
-RUN printf 'channels: []\n' > /opt/conda/.condarc
-
-RUN chown -R 1000:1000 /opt/conda && \
+# we do not want to tamper with the solve≈
+RUN printf 'channels: []\n' > /opt/conda/.condarc && \
+    chown -R 1000:1000 /opt/conda && \
     mkdir -p /opt/conda-store/conda-store && \
     chown 1000:1000 /opt/conda-store/conda-store && \
     mkdir -p /var/lib/conda-store && \

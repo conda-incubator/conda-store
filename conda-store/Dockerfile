@@ -4,9 +4,12 @@ LABEL org.opencontainers.image.authors="conda-store development team"
 
 USER root
 
-RUN apt-get update \
-    && apt-get install -y curl \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update &&  \
+    apt-get install -yq --no-install-recommends curl && \
+    apt-get clean && \
+    rm -rf /var/cache/apt/* &&\
+    rm -rf /var/lib/apt/lists/* &&\
+    rm -rf /tmp/*
 
 COPY environment.yaml /opt/conda-store/environment.yaml
 
