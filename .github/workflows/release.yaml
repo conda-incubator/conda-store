@@ -6,6 +6,7 @@ on:
   push:
     branches:
       - "*"
+  workflow_dispatch:
 
 env:
   FORCE_COLOR: "1" # Make tools pretty.
