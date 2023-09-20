@@ -2,22 +2,92 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+The project changed to `CalVer` in September, 2023.
 
-## [Unreleased]
+## [2023.9.1] - 2023-09-21
 
 ### Added
 
-### Changed
-
-### Deprecated
-
-### Removed
+- ENH - Make conda-store-server test port configurable (#571) [Kim
+  Pevey]
+- DOC - Update homepage to include project details (#565) [Kim Pevey, Pavithra Eswaramoorthy]
+- [DOCS] Create multiple sidebars structure (#558) [Pavithra
+  Eswaramoorthy]
+- Make tests use a temporary directory for conda environments (#549)
+  [Aaron Meurer]
+- Set up Docusaurus (#534) [Pavithra Eswaramoorthy]
+- Add a favicon to the docs and the conda-store server UI (#523) [Aaron
+  Meurer, Chris Ostrouchov]
+- Add trailing slash to avoid redirects (#500) [ClaytonAstrom, castrom]
+- 🔧 Create new docs env (#533) [Pavithra Eswaramoorthy]
+- Adding support for cleaning up builds stuck in BUILDING state (#530)
+  [Christopher Ostrouchov]
+- Adding additional routes for conda-lock lockfile (#526) [Christopher
+  Ostrouchov]
+- Allow setting a subdomain cookie for conda-store (#509) [Christopher
+  Ostrouchov]
+- MAINT - Add security policy. [Tania Allard]
+- Add pre-commit (#479) [john lee]
+- Adding incremental updates to the logs (#487) [Christopher Ostrouchov]
+- Adding an api method for getting usage data for namespaces (#486)
+  [Christopher Ostrouchov]
+- Adding global/namespace/environment settings with api/ui and tests
+  (#485) [Christopher Ostrouchov]
+- Adding tests that test traitlets for conda-store-server (#484)
+  [Christopher Ostrouchov]
+- Adding tests for fastapi server without need for integration (#483)
+  [Christopher Ostrouchov]
 
 ### Fixed
 
-### Security
+- MAINT - Update pre-commit hooks (#577) [Kim Pevey, Tania Allard]
+- Handle argv in pytest fixture (#557) [Stephannie Jimenez]
+- Fix some spelling errors in the PR template (#555) [Aaron Meurer]
+- Allow all channels by default (#545) [Nikita Karetnikov]
+- Don't run conda-docker on Mac (#539) [Aaron Meurer]
+-  Make the disk_usage() function work on macOS (#537) [Aaron Meurer]
+- Bugfix to allow backwards compatibility on metadata_ (#527)
+  [Christopher Ostrouchov]
+- Fixing vault role and paths (#525) [Christopher Ostrouchov]
+- Fixing docker builds on main (#503) [Christopher Ostrouchov]
+- Fixing docker builds temporarily by creating single image (#488)
+  [Christopher Ostrouchov]
+- Fix #476 : delete dangling build artifacts before migration (#477)
+  [Pierre-Olivier Simonard]
+- Pin SQLAlchemy <=1 .4.47 (#480) [Pierre-Olivier Simonard]
+- Fixing username for pipeline. [Chris Ostrouchov]
+
+### Changed
+
+- Update build metadata on deletion, fix misc bugs (#572) [Nikita Karetnikov]
+- Fix migration of artifact type for postgres (#574) [Pierre-Olivier Simonard]
+- ENH - Return legacy lockfile if key is empty (#553) [Nikita
+  Karetnikov]
+- Update LICENSE attribution (#564) [Pavithra Eswaramoorthy]
+- MAINT - Update release.yaml to use trusted publishing (#542) [Anirrudh
+  Krishnan]
+- Delete subdomain keys on logout (#541) [Anirrudh Krishnan]
+- Update release docs to reflect pyproject.toml changes. [Chris
+  Ostrouchov]
+- MAINT - Update issue and PR templates. [Tania Allard]
+- Update repository URL (#518) [Stephannie Jimenez Gacha]
+- Add python-docker as an explicit dependency in environment.yml (#524)
+  [Aaron Meurer]
+  - Proper handling of sqlalchemy database sessions in fastapi and celery
+  (#522) [Christopher Ostrouchov]
+  - API : update a namespace's metadata and role mappings (#508) [Pierre-
+  Olivier Simonard]
+- Change the tests when using sqlite to not check threads  (#505)
+  [Christopher Ostrouchov]
+- Better error messages around pip packages (#504) [Christopher
+  Ostrouchov]
+- Removing use of old lockfile format using newer conda-lock.yml format
+  (#501) [Christopher Ostrouchov, Pierre-Olivier Simonard]
+- Role mapping (#496) [Chris Ostrouchov, Pierre-Olivier Simonard]
+- Push images for main (#474) [john lee]
+- Reworking on celery tasks into actions (#473) [Christopher Ostrouchov]
+- Changing the vault url (#472) [Christopher Ostrouchov]
 
 ## [0.4.15] - 2023-04-21
 
