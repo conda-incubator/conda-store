@@ -3,13 +3,18 @@ name: "Release conda-store"
 on:
   release:
     types: [created]
+  push:
+    branches:
+      - "*"
+
+env:
+  FORCE_COLOR: "1" # Make tools pretty.
 
 permissions:
   contents: read # This is required for actions/checkout
 
 jobs:
-  release-conda-store:
-    name: "PyPi Release conda-store packages 🚀"
+  pypi-release:
     runs-on: ubuntu-latest
     permissions:
       id-token: write # IMPORTANT: this permission is mandatory for trusted publishing
@@ -30,13 +35,17 @@ jobs:
         with:
           python-version: 3.8
 
-      - name: "Install hatch 🐣"
+      - name: "Install dependencies 📦"
         run: |
-          pip install hatch
+          pip install hatch twine
 
       - name: "Build Package 📦"
         run: |
           hatch build
+          twine check dist/*
 
       - name: "Upload to PyPI 🚀"
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          print-hash: true
+        if: github.event_name == 'release' && startsWith(github.ref, 'refs/tags/')
