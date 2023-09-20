@@ -8,7 +8,7 @@ name = "conda-store"
 description = "conda-store client"
 readme = "README.md"
 license = "BSD-3-Clause"
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 keywords = ["conda"]
 authors = [
   { name = "Christopher Ostrouchov", email = "chris.ostrouchov@gmail.com" },
