@@ -1,15 +1,13 @@
 import datetime
 import enum
 import functools
-
 import os
 import re
 import sys
 from typing import Any, Callable, Dict, List, Optional, Union
 
 from conda_store_server import conda_utils, utils
-from pydantic import BaseModel, Field, constr, validator
-
+from pydantic import BaseModel, Field, ValidationError, constr, validator
 
 
 def _datetime_factory(offset: datetime.timedelta):
@@ -410,11 +408,9 @@ class CondaSpecification(BaseModel):
 
     @classmethod
     def parse_obj(cls, specification):
-
         try:
             return super().parse_obj(specification)
         except ValidationError as e:
-
             # there can be multiple errors. Let's build a comprehensive summary
             # to return to the end user.
 
@@ -432,7 +428,6 @@ class CondaSpecification(BaseModel):
                 )
 
                 if error_type == "type_error.none.not_allowed":
-
                     if error_loc[0] == "name":
                         human_readable_error = (
                             "The name of the environment cannot be empty."
