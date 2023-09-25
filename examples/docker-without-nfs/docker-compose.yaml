@@ -40,7 +40,12 @@ services:
     links:
       - "traefik:conda-store.localhost"
     platform: linux/amd64
-    command: ['conda-store-worker', '--config', '/etc/conda-store/conda_store_config.py']
+    command:
+      [
+        "conda-store-worker",
+        "--config",
+        "/etc/conda-store/conda_store_config.py",
+      ]
 
   conda-store-server:
     build: ../../conda-store-server
@@ -60,12 +65,18 @@ services:
     volumes:
       - ./assets/conda_store_config.py:/etc/conda-store/conda_store_config.py:ro
     healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:5000/conda-store/api/v1/"]
+      test:
+        ["CMD", "curl", "--fail", "http://localhost:5000/conda-store/api/v1/"]
       interval: 10s
       timeout: 5s
       retries: 5
     platform: linux/amd64
-    command: ['conda-store-server', '--config', '/etc/conda-store/conda_store_config.py']
+    command:
+      [
+        "conda-store-server",
+        "--config",
+        "/etc/conda-store/conda_store_config.py",
+      ]
     ports:
       - "5000:5000"
 
@@ -94,7 +105,13 @@ services:
       - conda_store_data:/opt/conda-store
       - ./assets/jupyterhub_config.py:/opt/jupyterhub/jupyterhub_config.py:ro
     platform: linux/amd64
-    command: ['/opt/conda/envs/conda-store/bin/jupyterhub', '--config', '/opt/jupyterhub/jupyterhub_config.py', '--debug']
+    command:
+      [
+        "/opt/conda/envs/conda-store/bin/jupyterhub",
+        "--config",
+        "/opt/jupyterhub/jupyterhub_config.py",
+        "--debug",
+      ]
     ports:
       - "8000:8000"
 
@@ -136,7 +153,7 @@ services:
     ports:
       - 3306:3306
     healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -149,7 +166,7 @@ services:
   redis:
     image: bitnami/redis
     healthcheck:
-      test: ["CMD", "redis-cli","ping"]
+      test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5

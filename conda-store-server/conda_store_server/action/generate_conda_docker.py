@@ -1,5 +1,5 @@
-import sys
 import pathlib
+import sys
 
 from conda_store_server import action
 

@@ -3,12 +3,10 @@ import os
 import shutil
 
 import minio
+from conda_store_server import api, orm, schema
 from minio.credentials.providers import Provider
-
+from traitlets import Bool, Dict, List, Type, Unicode
 from traitlets.config import LoggingConfigurable
-from traitlets import Unicode, Bool, Type, Dict, List
-
-from conda_store_server import orm, api, schema
 
 
 class Storage(LoggingConfigurable):

@@ -1,5 +1,6 @@
 [build-system]
-requires = ["hatchling>=1.14.0"]
+# https://github.com/ofek/hatch-vcs
+requires = ["hatchling>=1.14.0", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [project]
@@ -7,10 +8,8 @@ name = "conda-store-server"
 description = "Conda Environment Management, Builds, and Serve"
 readme = "README.md"
 license = "BSD-3-Clause"
-requires-python = ">=3.7"
-keywords = [
-  "conda",
-]
+requires-python = ">=3.8"
+keywords = ["conda"]
 authors = [
   { name = "Christopher Ostrouchov", email = "crhsi.ostrouchov@gmail.com" },
 ]
@@ -20,13 +19,14 @@ classifiers = [
   "Topic :: Software Development :: Build Tools",
   "License :: OSI Approved :: BSD License",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.7",
   "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3 :: Only",
 ]
 dependencies = [
-  "conda-docker",
+  "conda-docker; sys_platform == 'linux'",
   "conda-pack",
   "celery",
   "sqlalchemy",
@@ -44,6 +44,7 @@ dependencies = [
   "jinja2",
   "python-multipart",
   # conda (which should not be included here)
+
 ]
 dynamic = ["version"]
 
@@ -51,14 +52,11 @@ dynamic = ["version"]
 Homepage = "https://conda.store/"
 Source = "https://github.com/conda-incubator/conda-store"
 
-[project.optional-dependencies]
-dev = [
-  "build",
-  "twine",
-]
-
 [tool.hatch.version]
 path = "conda_store_server/__init__.py"
+
+[project.optional-dependencies]
+dev = ["build", "twine"]
 
 [tool.hatch.envs.dev]
 dependencies = [
@@ -74,18 +72,14 @@ dependencies = [
 ]
 
 [tool.hatch.envs.dev.scripts]
-lint = [
-  "pre-commit run --all",
-]
+lint = ["pre-commit run --all"]
 docs = "sphinx-build -b html ../docs ../docs/_build"
 unit-test = "pytest tests -v"
 playwright-test = [
   "playwright install",
   "pytest --video on ../tests/test_playwright.py"
 ]
-integration-test = [
-  "pytest ../tests/test_api.py ../tests/test_metrics.py"
-]
+integration-test = ["pytest ../tests/test_api.py ../tests/test_metrics.py"]
 
 [tool.hatch.build.hooks.custom]
 
@@ -101,5 +95,6 @@ target-version = ['py37', 'py38', 'py39']
 
 [tool.ruff]
 ignore = [
-  "E501",  # line-length
+  "E501", # line-length
+
 ]

@@ -12,11 +12,10 @@ import json
 import uuid
 from typing import List
 
-import pytest
-from pydantic import parse_obj_as
-
 import conda_store_server
+import pytest
 from conda_store_server import schema
+from pydantic import parse_obj_as
 
 
 def test_api_status_unauth(testclient):

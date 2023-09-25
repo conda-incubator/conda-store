@@ -1,14 +1,12 @@
-from typing import List, Dict
 import asyncio
-import sys
 import functools
 import json
-
-from rich.console import Console
-from rich.table import Table
+import sys
+from typing import Dict, List
 
 from conda_store import exception
-
+from rich.console import Console
+from rich.table import Table
 
 console = Console()
 error_console = Console(stderr=True, style="bold red")

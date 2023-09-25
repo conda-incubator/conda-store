@@ -3,17 +3,18 @@
 ## Linux
 
 You can install conda-store using conda :
+
 ```shell
 conda install conda-store-server>=0.4.10
 ```
 
 Once installed, start conda-store using :
+
 ```shell
 conda-store-server --standalone
 ```
 
 You can then access conda-store on port 5000 of the machine running it.
-
 
 ## Kubernetes
 

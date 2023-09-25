@@ -2,34 +2,30 @@ import logging
 import os
 import sys
 
+import conda_store_server
+import conda_store_server.dbutil as dbutil
 import uvicorn
-from fastapi import FastAPI, Request, HTTPException
+from conda_store_server import __version__, storage
+from conda_store_server.app import CondaStore
+from conda_store_server.server import auth, views
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import RedirectResponse, JSONResponse, FileResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
-from starlette.middleware.sessions import SessionMiddleware
 from fastapi.templating import Jinja2Templates
+from starlette.middleware.sessions import SessionMiddleware
 from traitlets import (
     Bool,
-    Unicode,
-    Integer,
-    Type,
-    validate,
-    Instance,
-    default,
     Dict,
+    Instance,
+    Integer,
     List,
+    Type,
+    Unicode,
+    default,
+    validate,
 )
-
 from traitlets.config import Application, catch_config_error
-
-import conda_store_server
-from conda_store_server import storage
-from conda_store_server.server import auth, views
-from conda_store_server.app import CondaStore
-from conda_store_server import __version__
-
-import conda_store_server.dbutil as dbutil
 
 
 class CondaStoreServer(Application):

@@ -1,24 +1,23 @@
-import shutil
+import datetime
 import os
+import shutil
 
-from celery import Task, shared_task
-from celery.signals import worker_ready
 import yaml
-
-from conda_store_server.worker.app import CondaStoreWorker
-from conda_store_server import api, environment, utils, schema
+from celery import Task, shared_task
+from celery.execute import send_task
+from celery.signals import worker_ready
+from conda_store_server import api, environment, schema, utils
 from conda_store_server.build import (
     build_cleanup,
-    build_conda_environment,
-    build_conda_env_export,
-    build_conda_pack,
     build_conda_docker,
+    build_conda_env_export,
+    build_conda_environment,
+    build_conda_pack,
     solve_conda_environment,
 )
-
-from sqlalchemy.orm import Session
-from celery.execute import send_task
+from conda_store_server.worker.app import CondaStoreWorker
 from filelock import FileLock
+from sqlalchemy.orm import Session
 
 
 @worker_ready.connect
@@ -231,7 +230,7 @@ def delete_build_artifact(db: Session, conda_store, build_artifact):
         # ignore key
         conda_prefix = build_artifact.build.build_path(conda_store)
         # be REALLY sure this is a directory within store directory
-        if conda_prefix.startswith(conda_store.store_directory) and os.path.isdir(
+        if str(conda_prefix).startswith(conda_store.store_directory) and os.path.isdir(
             conda_prefix
         ):
             shutil.rmtree(conda_prefix)
@@ -254,6 +253,7 @@ def task_delete_build(self, build_id):
 
         build = api.get_build(db, build_id)
 
+        # Deletes build artifacts for this build
         conda_store.log.info(f"deleting artifacts for build={build.id}")
         for build_artifact in api.list_build_artifacts(
             db,
@@ -261,7 +261,12 @@ def task_delete_build(self, build_id):
             excluded_artifact_types=settings.build_artifacts_kept_on_deletion,
         ).all():
             delete_build_artifact(db, conda_store, build_artifact)
-        conda_store.db.commit()
+
+        # Updates build size and marks build as deleted
+        build.deleted_on = datetime.datetime.utcnow()
+        build.size = 0
+
+        db.commit()
 
 
 @shared_task(base=WorkerTask, name="task_delete_environment", bind=True)

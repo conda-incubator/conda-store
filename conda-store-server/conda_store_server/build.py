@@ -1,17 +1,16 @@
-import re
-import typing
+import collections
 import datetime
+import json
 import pathlib
+import re
 import subprocess
 import tempfile
 import traceback
-import json
-import collections
+import typing
 
 import yaml
+from conda_store_server import action, api, conda_utils, orm, schema, utils
 from sqlalchemy.orm import Session
-
-from conda_store_server import conda_utils, orm, utils, schema, action, api
 
 
 def append_to_logs(db: Session, conda_store, build, logs: typing.Union[str, bytes]):

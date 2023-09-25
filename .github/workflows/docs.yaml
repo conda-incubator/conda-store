@@ -6,26 +6,26 @@ env:
 on:
   pull_request:
     paths:
-      - '**.md'
+      - "**.md"
   push:
     branches:
       - main
     paths:
-      - '**.md'
+      - "**.md"
 
 jobs:
   build-docs:
-    name: 'documentation'
+    name: "documentation"
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: conda-store-server
     steps:
-      - name: 'Checkout Repository'
-        uses: actions/checkout@master
+      - name: "Checkout Repository"
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
 
@@ -37,7 +37,7 @@ jobs:
         run: |
           hatch env run -e dev docs
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         if: ${{ always() }}
         with:
           name: documentation
