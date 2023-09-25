@@ -8,7 +8,7 @@ import functools
 
 from pydantic import BaseModel, Field, constr, validator, ValidationError
 
-from conda_store_server import conda_utils
+from conda_store_server import conda_utils, utils
 
 
 def _datetime_factory(offset: datetime.timedelta):
@@ -444,7 +444,7 @@ class CondaSpecification(BaseModel):
 
                 all_errors_hr.append(human_readable_error)
 
-            raise ValueError(all_errors_hr)
+            raise utils.CondaStoreError(all_errors_hr)
 
 
 ###############################
