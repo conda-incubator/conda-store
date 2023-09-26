@@ -113,4 +113,4 @@ As reviewers, you are the stewards of the code-base and sometimes that means pus
 <!-- Internal links -->
 
 [saved-replies]: /community/maintenance/saved-replies.md
-[github-conventions]: /communitymaintenance/github-conventions.md
+[github-conventions]: /community/maintenance/github-conventions.md
