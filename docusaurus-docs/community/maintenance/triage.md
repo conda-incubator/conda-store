@@ -109,3 +109,9 @@ However, permission to assign specific labels (such as `type: enhancement ğŸ’…ğŸ
 or close other contributors' issues is only granted to the author of an issue, assignees, and organization members.
 
 We have multiple [saved replies][saved-replies] that can be used to help triage issues and while conducting contributions reviews.
+
+
+<!-- Internal links -->
+
+[saved-replies]: /community/maintenance/saved-replies
+[github-conventions]: /community/maintenance/github-conventions.md

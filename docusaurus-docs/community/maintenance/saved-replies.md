@@ -10,21 +10,6 @@ It may be helpful to store some of these in [GitHub’s saved replies](https://g
 
 ### Issue triaging
 
-- **Usage question**
-
-  _action: redirect to support channels and close the issue_
-
-  ```md
-  Thanks for taking the time to open an issue!
-
-  You are asking a usage question. The issue tracker is for bugs and new features.
-  I'm going to close this issue, but feel free to visit our support resources:
-
-  - [User documentation](https://nebari.dev/docs/welcome)
-  - [Troubleshooting guide](https://nebari.dev/docs/troubleshooting)
-  - [User forum](https://github.com/orgs/nebari-dev/discussions)
-  ```
-
 - **Self-contained example for bug**
 
   _action: add `needs: investigation 🔍` label_
@@ -66,7 +51,7 @@ It may be helpful to store some of these in [GitHub’s saved replies](https://g
   Thanks for taking some time to make our documentation better!
 
   Please feel free to offer a pull request updating the documentation if you feel it could be improved.
-  You can find our contribution guidelines in the [Nebari documentation](https://nebari.dev/community)
+  You can find our contribution guidelines in the [conda-store documentation](https://conda.store)
   ```
 
 ### Better comments or issues
@@ -74,7 +59,7 @@ It may be helpful to store some of these in [GitHub’s saved replies](https://g
 - **Linking to code**
 
   ```md
-  For clarity's sake, you can link to code like [this](https://help.github.com/articles/creating-a-permanent-link-to-a-code-snippet/).
+  For clarity's sake, you can link to code [as shown in this GitHub documentation page](https://help.github.com/articles/creating-a-permanent-link-to-a-code-snippet/).
   ```
 
 - **Linking to comments**
@@ -124,19 +109,15 @@ It may be helpful to store some of these in [GitHub’s saved replies](https://g
 ### Code of conduct
 
 :::note
-The following replies should only be used by [Nebari's Code of Conduct committee members][nebari-coc-committee].
+The following replies should only be used by [conda-store development team members](https://github.com/orgs/conda-incubator/teams/conda-store).
 :::
 
 - **First warning**
 
   ```md
-  [[at-mention]] your comment was [[minimized|deleted]] as a violation of the [Nebari Code of Conduct](https://github.com/nebari-dev/governance/blob/main/CODE_OF_CONDUCT.md). You may consider this an official warning.
+  [[at-mention]] your comment was [[minimized|deleted]] as a violation of the [conda  organization Code of Conduct](https://github.com/conda-incubator/governance/blob/main/CODE_OF_CONDUCT.md). You may consider this an official warning.
 
   Please do not interact with the project for 24 hours.
   After that, please look through your open issues and edit them to ensure they're entirely on-topic,
   and we can continue the discussion here about the best way to go forward.
   ```
-
-<!-- Links -->
-
-[nebari-coc-committee]: https://github.com/nebari-dev/governance/blob/main/code-of-conduct/coc_enforcement.md#the-code-of-conduct-committee

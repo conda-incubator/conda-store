@@ -59,10 +59,7 @@ Note this is not an exhaustive, nor strictly list of items to cover on each revi
 Only maintainers can merge pull requests. Please follow these guidelines:
 
 - Make sure all automated CI tests pass before merging a PR, and that the documentation builds without any errors.
-  - If the contribution is made to the `nebari-dev/nebari` repository, then you'll need to trigger the Kubernetes tests
-    by commenting `/bot run tests` on the PR.
-  - If the contribution is made to the `nebari-dev/nebari-docs` repository, then make sure to check the Netlify build and preview.
-- In case of merge conflicts, ask the PR submitter to rebase on `develop`.
+- In case of merge conflicts, ask the PR submitter to rebase on `main`.
 - Squashing commits or cleaning up commit messages of a PR that you consider too messy is OK.
   Remember to retain the original author’s name when doing this.
 - When you want to reject a PR: if it’s very straightforward, you can close it and explain why. If it’s not,
@@ -112,15 +109,8 @@ It's also okay to say "No" to a PR. As a community, we want to respect people's 
 but sometimes things don't make sense to accept.
 As reviewers, you are the stewards of the code-base and sometimes that means pushing back on potential changes.
 
-## Acknowledgements
-
-Our reviewer guidelines were inspired and adapted from:
-
-- NumPy's [reviewer guidelines](https://numpy.org/devdocs/dev/reviewer_guidelines.html)
-- Kubernetes' [reviewer guidelines](https://github.com/kubernetes/community/blob/master/contributors/guide/review-guidelines.md)
-- scikit-learn [reviewer guidelines](https://scikit-learn.org/stable/developers/contributing.html#code-review-guidelines)
 
 <!-- Internal links -->
 
-[saved-replies]: ./saved-replies.md
-[github-conventions]: community/maintainers/github-conventions.md
+[saved-replies]: /community/maintenance/saved-replies.md
+[github-conventions]: /communitymaintenance/github-conventions.md

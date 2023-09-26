@@ -9,13 +9,13 @@ This page describes some common conventions and guidelines that we follow in all
 ## GitHub labels for issues and pull requests
 
 There are a few GitHub labels that we use to provide key metadata in our issues and pull requests.
-These are added to all `nebari-dev/` repositories, and share the same meaning across each of them.
+These are added to all conda-store repositories, and share the same meaning across each of them.
 
 Issues and pull requests are classified by having a [`type`](#issue-type) label and a number of optional labels such as [`area`](#area-tag) or [`impact`](#issue-impact).
 
 :::note
-Repositories may define their own labels in addition to the ones described here to better reflect the areas
-and scope of the project.
+Repositories may define their own labels in addition to the ones described here
+to better reflect the areas and scope of the project.
 :::
 
 ### Issue type
@@ -139,6 +139,3 @@ For example, if you realize that your PR needs more work after a first pass revi
 ## Issue and PR templates
 
 We use Issue and PR Templates to provide helpful prompts for common issues across all of our repositories.
-These templates live in our [.github](https://github.com/nebari-dev/.github) repository and are automatically synchronized with several other repositories through a [GitHub Workflow](https://github.com/nebari-dev/.github/blob/main/.github/workflows/sync-issue-templates.yaml).
-
-When you update one of the issue templates in that repository, a PR will automatically be created for the other repositories that are defined in the [sync.yml file](https://github.com/nebari-dev/.github/blob/main/.github/sync.yml).
