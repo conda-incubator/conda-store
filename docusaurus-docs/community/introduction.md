@@ -10,17 +10,15 @@ conda-store is a set of open source tools for managing data science environments
 
 ## Projects
 
-conda-store consists of three projects, developed on separate GitHub repositories:
+conda-store consists of three projects which are developed on separate GitHub repositories. The each have separate spaces on our documentation site as well:
 
-- [conda-store](https://github.com/conda-incubator/conda-store): the core repository that provides all the key features through a REST API and CLI. Further, the conda-store repository has two packages:
-  - conda-store-server: the worker and web server responsible for providing the `conda-store` "service"
-  - conda-store: the "client" that users interface with the service
-- [conda-store-ui](https://github.com/conda-incubator/conda-store): a frontend application for accessing all the conda-store features
-- [jupyterlab-conda-store](https://github.com/conda-incubator/jupyterlab-conda-store): an extension to access `conda-store-ui` within JupyterLab
+- [conda-store][conda-store-docs]: core library that provides all the key features through a REST API and CLI
+- [conda-store-ui][conda-store-ui-docs]: web application (frontend) for accessing all the conda-store features
+- [jupyterlab-conda-store][jupyterlab-conda-store-docs]: extension to access conda-store-ui within JupyterLab
 
-:::tip
+:::note
 The term "conda-store" is heavily overloaded, it can refer to the overall set of projects, the core repository, or the package based on context.
-If the meaning is unclear in a conversation, don't hesitate to ask the people involved to clarify.
+If the meaning is unclear in a discussion, don't hesitate to ask the people involved to clarify.
 :::
 
 ## Code of Conduct
@@ -75,3 +73,6 @@ conda-store's community documentation is inspired by the [Nebari community docum
 [triage]: /community/maintenance/triage
 [issues]: /community/contribute/issues
 [reviewer-guidelines]: /community/maintenance/reviewer-guidelines
+[conda-store-docs]: /conda-store/introduction
+[conda-store-ui-docs]: /conda-store-ui/introduction
+[jupyterlab-conda-store-docs]: /jupyterlab-conda-store/introduction
