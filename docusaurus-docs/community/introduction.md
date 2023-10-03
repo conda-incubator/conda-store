@@ -6,7 +6,22 @@ description: Community documentation
 
 # Welcome to conda-store!
 
-Thanks for being a part of the conda-store community!
+conda-store is a set of open source tools for managing data science environments in collaborative teams. It provides flexible-yet-reproducible environments and a user-friendly graphical interface, while enforcing best practices throughout the environment's life cycle.
+
+## Projects
+
+conda-store consists of three projects, developed on separate GitHub repositories:
+
+- [conda-store](https://github.com/conda-incubator/conda-store): the core repository that provides all the key features through a REST API and CLI. Further, the conda-store repository has two packages:
+  - conda-store-server: the worker and web server responsible for providing the `conda-store` "service"
+  - conda-store: the "client" that users interface with the service
+- [conda-store-ui](https://github.com/conda-incubator/conda-store): a frontend application for accessing all the conda-store features
+- [jupyterlab-conda-store](https://github.com/conda-incubator/jupyterlab-conda-store): an extension to access `conda-store-ui` within JupyterLab
+
+:::tip
+The term "conda-store" is heavily overloaded, it can refer to the overall set of projects, the core repository, or the package based on context.
+If the meaning is unclear in a conversation, don't hesitate to ask the people involved to clarify.
+:::
 
 ## Code of Conduct
 
