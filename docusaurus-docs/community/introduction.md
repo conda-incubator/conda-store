@@ -33,7 +33,7 @@ As a [federated project](https://github.com/conda-incubator/governance/tree/main
 
 ## Support
 
-conda-store's issue trackers are the best way to reach the conda-store development team. If you have any usage or contribution questions, please open an issue on the corresponding repository:
+conda-store's issue trackers are the best way to reach the conda-store development team. If you have any usage or contribution questions, open an issue on the corresponding repository following the [issue creation guidelines][issues]:
 
 * [conda-store](https://github.com/conda-incubator/conda-store/issues/new/choose)
 * [conda-store-ui](https://github.com/conda-incubator/conda-store-ui/issues/new/choose)
@@ -45,17 +45,19 @@ If you are unsure about the repository, open your issues against the `conda-stor
 
 There are many ways in which you can contribute to conda-store (they're all important, so we list them in alphabetical order):
 
-* Code maintenance and development
+* [Code maintenance and development →][contribute-code]
 * Community coordination and contributor experience
+* Content translation and internationalization
 * DevOps
 * Fundraising
 * Marketing
 * Project management
-* Content translation and internationalization
+* [Report bugs and submit feature requests →][issues]
+* [Review pull requests →][reviewer-guidelines]
+* [Triage issues and pull requests →][triage]
 * Website design and development
-* Writing technical documentation
+* [Writing technical documentation →][contribute-docs]
 * UI/UX
-* Opening issues and reviewing pull requests
 
 <!-- TODO: Add links to contribution guidelines for code, docs, and maintenance. -->
 
@@ -64,3 +66,12 @@ There are many ways in which you can contribute to conda-store (they're all impo
 ## Acknowledgements
 
 conda-store's community documentation is inspired by the [Nebari community documentation](https://www.nebari.dev/docs/community).
+
+
+<!-- Internal links -->
+
+[contribute-code]: /community/contribute/contribute-code
+[contribute-docs]: /community/contribute/contribute-docs
+[triage]: /community/maintenance/triage
+[issues]: /community/contribute/issues
+[reviewer-guidelines]: /community/maintenance/reviewer-guidelines
