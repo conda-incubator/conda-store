@@ -34,7 +34,7 @@ For the release tag, there should be **NO** prepended `v`.
 
 ## Release process walkthrough
 
-1. **Agree on a release schedule**. We aim to make a monthly conda-store release. The release captain should create an issue with the release date and assign themselves as the release captain.
+1. **Agree on a release schedule**. We aim to make a monthly conda-store release. Though this will depend on whether there are any `release-blocker` issues opened or team availability. The release captain should create an issue with the release date and assign themselves as the release captain.
 2. **Ensure the main branch builds a package correctly**.
    1. For conda-store and conda-store-server:
 
@@ -76,9 +76,9 @@ Release captain responsible - <@gh_username>
 **Prepare the codebase for a new version**
 
 - [ ] Create a new git branch for the release `git checkout -b release-2023.9.1`
-- [ ] Bump `__version__` in [`conda-store/conda-store/__init__.py`](https://github.com/conda-incubator/conda-store/blob/main/conda-store/conda_store/__init__.py)
-- [ ] Bump `__version__` in [`conda-store-server/conda-store-server/__init__.py`](https://github.com/conda-incubator/conda-store/blob/main/conda-store/conda_store/__init__.py)
-- [ ] Update the `conda-store-ui` version in [`conda-store-server/hatch_build.py`](https://github.com/conda-incubator/conda-store/blob/main/conda-store-server/hatch_build.py)
+- [ ] Bump `conda-store` version in [`conda-store/conda-store/__init__.py`](https://github.com/conda-incubator/conda-store/blob/main/conda-store/conda_store/__init__.py)
+- [ ] Bump `conda-store-server` version in [`conda-store-server/conda-store-server/__init__.py`](https://github.com/conda-incubator/conda-store/blob/main/conda-store/conda_store/__init__.py)
+- [ ] Update the `conda-store-ui` version users in `conda-store-server` [`conda-store-server/hatch_build.py`](https://github.com/conda-incubator/conda-store/blob/main/conda-store-server/hatch_build.py)
 - [ ] Update the [CHANGELOG.md](./CHANGELOG.md) file with the new version, release date, and relevant changes[^github-activity].
 - [ ] Check the version locally with `hatch version`
 - [ ] Make a release commit: ``git commit -m 'REL - 2023.9.1'``
@@ -97,10 +97,8 @@ Release captain responsible - <@gh_username>
     - [The `conda-store` PyPI version is updated](https://pypi.org/project/conda-store/)
     - [The `conda-store-server` PyPI version is updated](https://pypi.org/project/conda-store-server/)
     - [The Docker images have been published](https://github.com/conda-incubator/conda-store/blob/main/.github/workflows/build_docker_image.yaml)
-- [ ] Update the [conda-forge feedstock version](https://github.com/conda-forge/conda-store-feedstock) through a PR.
-  - [ ] Update [`recipe/meta.yaml`](https://github.com/conda-forge/conda-store-feedstock/blob/main/recipe/meta.yaml) with the new version `{% set version = "<version>" %}`
-  - [ ] Update [`recipe/meta.yaml`](https://github.com/conda-forge/conda-store-feedstock/blob/main/recipe/meta.yaml) with the appropriate sha256 for each package. The sha256 can be found at <https://pypi.org/project/conda-store/#files> by clicking the "View" button.
-  - [ ] Once the PR has been created ensure that you request a rerender of the feedstock with the following comment `@conda-forge-admin please rerender`.
+- [ ] Update the [conda-forge feedstock version](https://github.com/conda-forge/conda-store-feedstock) through a PR or review and merge the regro-bot PR.
+  - [ ] If needed - update `meta.yaml` or `recipe.yaml` and rerender the feedstock.
 - [ ] Celebrate, you're done! 🎉
 
 
