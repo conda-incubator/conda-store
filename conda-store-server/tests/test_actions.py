@@ -161,6 +161,7 @@ def test_remove_conda_prefix(tmp_path, simple_conda_lock):
     assert not conda_prefix.exists()
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="permissions are not supported on Windows")
 def test_set_conda_prefix_permissions(tmp_path, conda_store, simple_conda_lock):
     conda_prefix = tmp_path / "test"
 
