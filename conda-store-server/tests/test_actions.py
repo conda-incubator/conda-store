@@ -19,7 +19,7 @@ def test_action_decorator():
             # echo is not a separate program on Windows
             context.run(["cmd", "/c", "echo subprocess"])
             context.run("echo subprocess_stdout", shell=True)
-            context.run("echo subprocess_stderr >&2", shell=True)
+            context.run("echo subprocess_stderr>&2", shell=True)
         else:
             context.run(["echo", "subprocess"])
             context.run("echo subprocess_stdout", shell=True)
@@ -28,14 +28,9 @@ def test_action_decorator():
         return pathlib.Path.cwd()
 
     context = test_function()
-
-    if sys.platform == "win32":
-        newline = "\r\n"
-    else:
-        newline = "\n"
     assert (
         context.stdout.getvalue()
-        == f"stdout{newline}stderr{newline}subprocess{newline}subprocess_stdout{newline}subprocess_stderr{newline}log{newline}"
+        == "stdout\nstderr\nsubprocess\nsubprocess_stdout\nsubprocess_stderr\nlog\n"
     )
     # test that action direction is not the same as outside function
     assert context.result != pathlib.Path.cwd()
