@@ -2,7 +2,7 @@ import datetime
 import os
 import sys
 from contextlib import contextmanager
-from pathlib import Path, PosixPath
+from pathlib import Path, PurePosixPath
 from typing import Any, Dict
 
 import pydantic
@@ -73,6 +73,9 @@ def conda_store_validate_action(
         )
 
 
+CONDA_STORE_DIR = (Path.home() / ".conda-store",)
+
+
 class CondaStore(LoggingConfigurable):
     storage_class = Type(
         default_value=storage.LocalStorage,
@@ -89,7 +92,7 @@ class CondaStore(LoggingConfigurable):
     )
 
     store_directory = Unicode(
-        str(Path.home() / ".conda-store" / "conda-store-state"),
+        str(CONDA_STORE_DIR / "state"),
         help="directory for conda-store to build environments and store state",
         config=True,
     )
@@ -202,7 +205,10 @@ class CondaStore(LoggingConfigurable):
     )
 
     database_url = Unicode(
-        "sqlite:///" + str(PosixPath.home()) + "/.conda-store/conda-store.sqlite",
+        "sqlite:///"
+        + str(
+            PurePosixPath.home() / PurePosixPath(CONDA_STORE_DIR) / "conda-store.sqlite"
+        ),
         help="url for the database. e.g. 'sqlite:///conda-store.sqlite' tables will be automatically created if they do not exist",
         config=True,
     )
