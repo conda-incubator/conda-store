@@ -1,11 +1,11 @@
-name: "Deploy image"
+name: "Publish Docker Images"
 
 on:
   push:
     branches:
       - "main"
-    tags:
-      - "v*"
+  release:
+    types: [created]
 
 permissions:
   id-token: write # This is required for requesting the JWT
@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   build_and_push_docker_image:
-    name: "Build Docker Images"
+    name: "Build Docker Images 🛠"
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -21,10 +21,10 @@ jobs:
           - conda-store
           - conda-store-server
     steps:
-      - name: "Checkout Repository"
+      - name: "Checkout Repository 🛎"
         uses: actions/checkout@v4
 
-      - name: Retrieve secret from Vault
+      - name: "Retrieve secret from Vault 🗝"
         uses: hashicorp/vault-action@v2
         with:
           method: jwt
@@ -37,23 +37,23 @@ jobs:
             kv/data/repository/conda-incubator/conda-store/shared_secrets QUAY_QUANSIGHT_USERNAME | QUAY_USERNAME;
             kv/data/repository/conda-incubator/conda-store/shared_secrets QUAY_QUANSIGHT_PASSWORD | QUAY_PASSWORD;
 
-      - name: Set up Docker Buildx
+      - name: "Set up Docker Buildx 🏗"
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to Docker Hub
+      - name: "Login to Docker Hub 🐳"
         uses: docker/login-action@v3
         with:
           username: ${{ env.DOCKER_USERNAME }}
           password: ${{ env.DOCKER_PASSWORD }}
 
-      - name: Login to quay.io
+      - name: "Login to quay.io 🐳"
         uses: docker/login-action@v3
         with:
           registry: quay.io
           username: ${{ env.QUAY_USERNAME }}
           password: ${{ env.QUAY_PASSWORD }}
 
-      - name: Docker Meta
+      - name: "Add Docker metadata 📝"
         id: meta
         uses: crazy-max/ghaction-docker-meta@v5
         with:
@@ -65,7 +65,7 @@ jobs:
             type=ref,event=branch
             type=sha
 
-      - name: Build docker
+      - name: "Publish Docker image 🚀"
         uses: docker/build-push-action@v5
         with:
           context: "${{ matrix.docker-image }}"
