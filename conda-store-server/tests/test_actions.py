@@ -15,20 +15,31 @@ def test_action_decorator():
     def test_function(context):
         print("stdout")
         print("stderr", file=sys.stderr)
-        context.run(["echo", "subprocess"])
-        context.run("echo subprocess_stdout", shell=True)
-        context.run("echo subprocess_stderr 1>&2", shell=True)
+        if sys.platform == "win32":
+            # echo is not a separate program on Windows
+            context.run(["cmd", "/c", "echo subprocess"])
+            context.run("echo subprocess_stdout", shell=True)
+            context.run("echo subprocess_stderr >&2", shell=True)
+        else:
+            context.run(["echo", "subprocess"])
+            context.run("echo subprocess_stdout", shell=True)
+            context.run("echo subprocess_stderr 1>&2", shell=True)
         context.log.info("log")
         return pathlib.Path.cwd()
 
     context = test_function()
+
+    if sys.platform == "win32":
+        newline = "\r\n"
+    else:
+        newline = "\n"
     assert (
         context.stdout.getvalue()
-        == "stdout\nstderr\nsubprocess\nsubprocess_stdout\nsubprocess_stderr\nlog\n"
+        == f"stdout{newline}stderr{newline}subprocess{newline}subprocess_stdout{newline}subprocess_stderr{newline}log{newline}"
     )
     # test that action direction is not the same as outside function
     assert context.result != pathlib.Path.cwd()
-    # test that temportary directory is cleaned up
+    # test that temporary directory is cleaned up
     assert not context.result.exists()
 
 
