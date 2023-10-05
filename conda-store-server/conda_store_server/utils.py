@@ -80,9 +80,7 @@ def du(path):
             if os.path.islink(dp):
                 apparent_total_bytes += os.lstat(dp).st_size
 
-    # Round up
-    n_blocks = (apparent_total_bytes + 511) // 512
-    return n_blocks
+    return apparent_total_bytes
 
 
 def disk_usage(path: pathlib.Path):
@@ -93,8 +91,11 @@ def disk_usage(path: pathlib.Path):
     else:
         return str(du(path))
 
-    return subprocess.check_output(cmd, encoding="utf-8").split()[0]
-
+    output = subprocess.check_output(cmd, encoding="utf-8").split()[0]
+    if sys.platform == "darwin":
+        # mac du does not have the -b option to return bytes
+        output = str(int(output)*512)
+    return output
 
 @contextlib.contextmanager
 def timer(logger, prefix):
