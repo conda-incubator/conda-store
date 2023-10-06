@@ -73,7 +73,7 @@ def conda_store_validate_action(
         )
 
 
-CONDA_STORE_DIR = (Path.home() / ".conda-store",)
+CONDA_STORE_DIR = Path.home() / ".conda-store"
 
 
 class CondaStore(LoggingConfigurable):
