@@ -206,7 +206,7 @@ class CondaStore(LoggingConfigurable):
     database_url = Unicode(
         "sqlite:///"
         + str(
-            PurePosixPath.home() / PurePosixPath(CONDA_STORE_DIR) / "conda-store.sqlite"
+            PurePosixPath(CONDA_STORE_DIR) / "conda-store.sqlite"
         ),
         help="url for the database. e.g. 'sqlite:///conda-store.sqlite' tables will be automatically created if they do not exist",
         config=True,
