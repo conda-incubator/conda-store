@@ -89,7 +89,7 @@ services:
     command: redis-server --save 20 1 --loglevel debug
     healthcheck:
       test: ["CMD", "redis-cli","ping"]
-    volumes: 
+    volumes:
       - redis:/etc/redis
 
   jupyterhub:

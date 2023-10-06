@@ -1,12 +1,12 @@
-import sys
-import os
-import re
-import subprocess
 import contextlib
-import pathlib
-import time
 import hashlib
 import json
+import os
+import pathlib
+import re
+import subprocess
+import sys
+import time
 
 
 class CondaStoreError(Exception):

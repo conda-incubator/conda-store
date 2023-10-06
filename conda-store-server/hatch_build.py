@@ -1,15 +1,14 @@
-from typing import Any, List, Dict
-import tempfile
-import tarfile
 import pathlib
-import urllib.request
-import shutil
 import re
+import shutil
+import tarfile
+import tempfile
+import urllib.request
+from typing import Any, Dict, List
 
 from hatchling.builders.hooks.plugin.interface import BuildHookInterface
 
-
-CONDA_STORE_UI_VERSION = "0.1.4"
+CONDA_STORE_UI_VERSION = "2023.9.3"
 CONDA_STORE_UI_URL = f"https://registry.npmjs.org/@conda-store/conda-store-ui/-/conda-store-ui-{CONDA_STORE_UI_VERSION}.tgz"
 CONDA_STORE_UI_FILES = [
     "main.js",

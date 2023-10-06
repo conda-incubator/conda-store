@@ -1,6 +1,6 @@
-import typing
-import pathlib
 import json
+import pathlib
+import typing
 
 from conda_store_server import action
 

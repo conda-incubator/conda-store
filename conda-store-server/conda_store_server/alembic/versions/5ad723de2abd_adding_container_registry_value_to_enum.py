@@ -5,9 +5,8 @@ Revises: 8d63a091aff8
 Create Date: 2022-08-05 22:14:34.110642
 
 """
-from alembic import op
 import sqlalchemy as sa
-
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "5ad723de2abd"
@@ -17,6 +16,12 @@ depends_on = None
 
 
 def upgrade():
+    # Custom migration for postgres
+    if op.get_bind().engine.name == "postgresql":
+        op.execute("ALTER TYPE buildartifacttype ADD VALUE 'CONTAINER_REGISTRY';")
+        return
+
+    # Default migration for all the other engines
     old_type = sa.Enum(
         "DIRECTORY",
         "LOCKFILE",

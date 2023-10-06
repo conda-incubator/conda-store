@@ -8,10 +8,10 @@ def detect_shebang():
       - usage :: https://nixos.wiki/wiki/Nix-shell_shebang
       - implementation :: https://github.com/nixos/nix/blob/7a9ac91a43e1e05e9df9d1b9b4a2cf322d62bb1c/src/nix-build/nix-build.cc#L108-L130
     """
-    import sys
-    import re
     import pathlib
+    import re
     import shlex
+    import sys
 
     filename = pathlib.Path(sys.argv[1]).resolve()
     args = ["conda-store", "run"]
