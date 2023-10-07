@@ -25,21 +25,21 @@ jobs:
       - name: "Checkout Repository"
         uses: actions/checkout@v4
 
-      - name: Set up Python (Linux)
+      - name: Set CONDA_ENV_FILE
+        run: |
+          if [ "${{ matrix.os }}" == "ubuntu-latest" ]; then
+            echo "CONDA_ENV_FILE=conda-store-server/environment-dev.yaml" >> $GITHUB_ENV
+          else
+            echo "CONDA_ENV_FILE=conda-store-server/environment-macos-dev.yaml" >> $GITHUB_ENV
+          fi
+
+      - name: Set up Conda Environment
         if: matrix.os == 'ubuntu-latest'
         uses: conda-incubator/setup-miniconda@v2
         with:
-          mamba: "*"
+          mamba-version: "*"
           activate-environment: conda-store-server-dev
           environment-file: conda-store-server/environment-dev.yaml
-          auto-activate-base: false
-
-      - name: Set up Python (macOS)
-        if: matrix.os == 'macos-latest'
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-          activate-environment: conda-store-server-dev
-          environment-file: conda-store-server/environment-macos-dev.yaml
           auto-activate-base: false
 
       - name: Linting Checks
