@@ -11,6 +11,7 @@ from pydantic import BaseModel, Field, ValidationError, constr, validator
 
 ON_WIN = sys.platform.startswith("win")
 
+
 def _datetime_factory(offset: datetime.timedelta):
     """utcnow datetime + timezone as string"""
     return datetime.datetime.utcnow() + offset
