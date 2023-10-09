@@ -44,15 +44,15 @@ jobs:
 
       - name: "Linting Checks 🧹"
         run: |
-          python -m hatch env run -e dev lint
+          hatch env run -e dev lint
 
       - name: "Build package 📦"
         run: |
-          python -m hatch build
+          hatch build
 
       - name: "Unit tests ✅"
         run: |
-          python -m pytest tests
+          pytest tests
 
   integration-test-conda-store-server:
     name: "integration-test conda-store-server"
