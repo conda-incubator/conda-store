@@ -31,8 +31,8 @@ from traitlets import (
 )
 from traitlets.config import LoggingConfigurable
 
-
 ON_WIN = sys.platform.startswith("win")
+
 
 def conda_store_validate_specification(
     db: Session,

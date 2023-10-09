@@ -77,7 +77,6 @@ def upgrade(db_url, revision="head"):
     current_table_names = set(inspect(engine).get_table_names())
 
     with _temp_alembic_ini(db_url) as alembic_ini:
-
         alembic_cfg = Config(alembic_ini)
 
         if (

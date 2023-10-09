@@ -76,7 +76,7 @@ class CondaStoreWorker(Application):
         # The default Celery pool requires this on Windows. See
         # https://stackoverflow.com/questions/37255548/how-to-run-celery-on-windows
         if sys.platform == "win32":
-            os.environ.setdefault('FORKED_BY_MULTIPROCESSING', '1')
+            os.environ.setdefault("FORKED_BY_MULTIPROCESSING", "1")
         else:
             # --beat does not work on Windows
             argv += [

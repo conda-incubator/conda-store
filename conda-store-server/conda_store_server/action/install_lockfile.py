@@ -1,6 +1,6 @@
-import sys
 import json
 import pathlib
+import sys
 import typing
 
 from conda_store_server import action
