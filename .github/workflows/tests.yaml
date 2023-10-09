@@ -51,15 +51,15 @@ jobs:
 
       - name: Linting Checks
         run: |
-          hatch env run -e dev lint
+          python -m hatch env run -e dev lint
 
       - name: Release Check
         run: |
-          hatch build
+          python -m hatch build
 
       - name: Unit Tests
         run: |
-          pytest tests
+          python -m pytest tests
 
   integration-test-conda-store-server:
     name: "integration-test conda-store-server"
