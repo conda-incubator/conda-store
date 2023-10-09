@@ -47,7 +47,7 @@ jobs:
         with:
           activate-environment: conda-store-server-dev
           environment-file: conda-store-server/environment-windows-dev.yaml
-          auto-activate-base: false
+          auto-activate-base: true
 
       - name: Linting Checks
         run: |
