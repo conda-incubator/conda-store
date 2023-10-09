@@ -14,8 +14,7 @@ jobs:
     name: "unit-test conda-store-server"
     strategy:
       matrix:
-        # cannot run on windows due to needing fake-chroot for conda-docker
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -40,6 +39,14 @@ jobs:
         with:
           activate-environment: conda-store-server-dev
           environment-file: conda-store-server/environment-macos-dev.yaml
+          auto-activate-base: false
+
+      - name: Set up Python (Windows)
+        if: matrix.os == 'windows-latest'
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: conda-store-server-dev
+          environment-file: conda-store-server/environment-windows-dev.yaml
           auto-activate-base: false
 
       - name: Linting Checks
