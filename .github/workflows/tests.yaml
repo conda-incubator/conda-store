@@ -19,13 +19,14 @@ jobs:
     name: "unit-test conda-store-server"
     strategy:
       matrix:
-        # cannot run on windows due to needing fake-chroot for conda-docker
-        os: ["ubuntu", "macos"]
+        os: ["ubuntu", "macos", "windows"]
         include:
           - os: ubuntu
             environment-file: conda-store-server/environment-dev.yaml
           - os: macos
             environment-file: conda-store-server/environment-macos-dev.yaml
+          - os: windows
+            environment-file: conda-store-server/environment-windows-dev.yaml
     runs-on: ${{ matrix.os }}-latest
     defaults:
       run:
