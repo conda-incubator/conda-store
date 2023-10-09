@@ -560,6 +560,8 @@ async def api_post_specification(
         specification = schema.CondaSpecification.parse_obj(specification)
     except yaml.error.YAMLError:
         raise HTTPException(status_code=400, detail="Unable to parse. Invalid YAML")
+    except utils.CondaStoreError as e:
+        raise HTTPException(status_code=400, detail="\n".join(e.args[0]))
     except pydantic.ValidationError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
