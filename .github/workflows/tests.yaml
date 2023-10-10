@@ -25,8 +25,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: "Create ~/.condarc"
+        if: matrix.os == 'windows-latest'
+        shell: powershell
         run: |
-          echo "channels: ['conda-forge']" > ~/.condarc
+          echo "channels: ['conda-forge']" > C:\Users\runneradmin\.condarc
 
       - name: Set up Python (Linux)
         if: matrix.os == 'ubuntu-latest'
