@@ -24,12 +24,6 @@ jobs:
       - name: "Checkout Repository"
         uses: actions/checkout@v4
 
-      - name: "Create ~/.condarc"
-        if: matrix.os == 'windows-latest'
-        shell: powershell
-        run: |
-          echo "channels: ['conda-forge']" > C:\Users\runneradmin\.condarc
-
       - name: Set up Python (Linux)
         if: matrix.os == 'ubuntu-latest'
         uses: conda-incubator/setup-miniconda@v2
@@ -55,6 +49,15 @@ jobs:
           auto-activate-base: false
           channels: conda-forge
           miniforge-version: latest
+
+      - name: Reinstall Python 3.10 on Windows runner
+        uses: nick-fields/retry@v2.8.3
+        with:
+          timeout_minutes: 9999
+          max_attempts: 6
+          command:
+            conda install --channel=conda-forge --quiet --yes python=${{ matrix.python }}
+        if: matrix.os == 'windows-latest'
 
       - name: Linting Checks
         run: |
