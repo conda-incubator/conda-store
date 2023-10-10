@@ -68,7 +68,7 @@ jobs:
 
       - name: Unit Tests
         run: |
-          pytest tests
+          pytest -vvv tests
 
   integration-test-conda-store-server:
     name: "integration-test conda-store-server"
