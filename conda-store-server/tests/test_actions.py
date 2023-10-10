@@ -20,10 +20,12 @@ def test_action_decorator():
             context.run(["cmd", "/c", "echo subprocess"])
             context.run("echo subprocess_stdout", shell=True)
             context.run("echo subprocess_stderr>&2", shell=True)
+            context.run("echo subprocess_stderr_no_redirect>&2", shell=True, redirect_stderr=False)
         else:
             context.run(["echo", "subprocess"])
             context.run("echo subprocess_stdout", shell=True)
             context.run("echo subprocess_stderr 1>&2", shell=True)
+            context.run("echo subprocess_stderr_no_redirect 1>&2", shell=True, redirect_stderr=False)
         context.log.info("log")
         return pathlib.Path.cwd()
 
@@ -32,6 +34,7 @@ def test_action_decorator():
         context.stdout.getvalue()
         == "stdout\nstderr\nsubprocess\nsubprocess_stdout\nsubprocess_stderr\nlog\n"
     )
+    assert context.stderr.getvalue() == "subprocess_stderr_no_redirect\n"
     # test that action direction is not the same as outside function
     assert context.result != pathlib.Path.cwd()
     # test that temporary directory is cleaned up
