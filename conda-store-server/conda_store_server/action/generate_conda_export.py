@@ -17,5 +17,7 @@ def action_generate_conda_export(
         "--json",
     ]
 
-    result = context.run(command, check=True)
+    result = context.run(command, check=True, redirect_stderr=False)
+    if result.stderr:
+        context.log.warning(f"conda env export stderr: {result.stderr}")
     return json.loads(result.stdout)
