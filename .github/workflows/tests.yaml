@@ -50,6 +50,7 @@ jobs:
           channels: conda-forge
           miniforge-version: latest
 
+      # This fixes a "DLL not found" issue importing ctypes from the hatch env
       - name: Reinstall Python 3.10 on Windows runner
         uses: nick-fields/retry@v2.8.3
         with:
