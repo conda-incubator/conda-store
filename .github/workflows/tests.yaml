@@ -56,7 +56,7 @@ jobs:
           timeout_minutes: 9999
           max_attempts: 6
           command:
-            conda install --channel=conda-forge --quiet --yes python=${{ matrix.python }}
+            conda install -n conda-store-server-dev --force-reinstall --override-channels --channel=conda-forge --quiet --yes python=${{ matrix.python }}
         if: matrix.os == 'windows-latest'
 
       - name: Linting Checks
