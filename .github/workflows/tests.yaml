@@ -48,6 +48,7 @@ jobs:
           environment-file: conda-store-server/environment-windows-dev.yaml
           auto-activate-base: false
           channels: conda-forge
+          miniforge-version: latest
 
       - name: Linting Checks
         run: |
