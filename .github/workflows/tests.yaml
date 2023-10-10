@@ -47,11 +47,7 @@ jobs:
           activate-environment: conda-store-server-dev
           environment-file: conda-store-server/environment-windows-dev.yaml
           auto-activate-base: false
-
-      - name: Env test
-        run: |
-          python -c 'import sys;print(sys.executable)'
-          python -c 'import ctypes'
+          channels: conda-forge
 
       - name: Linting Checks
         run: |
