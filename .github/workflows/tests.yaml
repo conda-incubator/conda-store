@@ -42,6 +42,16 @@ jobs:
             environment-file: ${{ matrix.environment-file }}
             miniforge-version: latest
 
+      # This fixes a "DLL not found" issue importing ctypes from the hatch env
+      - name: Reinstall Python 3.10 on Windows runner
+        uses: nick-fields/retry@v2.8.3
+        with:
+          timeout_minutes: 9999
+          max_attempts: 6
+          command:
+            conda install --channel=conda-forge --quiet --yes python=${{ matrix.python }}
+        if: matrix.os == 'windows'
+
       - name: "Linting Checks 🧹"
         run: |
           hatch env run -e dev lint
