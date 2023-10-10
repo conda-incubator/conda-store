@@ -24,6 +24,10 @@ jobs:
       - name: "Checkout Repository"
         uses: actions/checkout@v4
 
+      - name: "Create ~/.condarc"
+        run: |
+          cat "channels: ['conda-forge']" > ~/.condarc
+
       - name: Set up Python (Linux)
         if: matrix.os == 'ubuntu-latest'
         uses: conda-incubator/setup-miniconda@v2
