@@ -26,7 +26,7 @@ jobs:
 
       - name: "Create ~/.condarc"
         run: |
-          cat "channels: ['conda-forge']" > ~/.condarc
+          echo "channels: ['conda-forge']" > ~/.condarc
 
       - name: Set up Python (Linux)
         if: matrix.os == 'ubuntu-latest'
