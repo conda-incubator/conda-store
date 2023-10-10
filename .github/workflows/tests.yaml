@@ -47,8 +47,6 @@ jobs:
           activate-environment: conda-store-server-dev
           environment-file: conda-store-server/environment-windows-dev.yaml
           auto-activate-base: false
-          channels: conda-forge
-          miniforge-version: latest
 
       # This fixes a "DLL not found" issue importing ctypes from the hatch env
       - name: Reinstall Python 3.10 on Windows runner
