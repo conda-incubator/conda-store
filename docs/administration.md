@@ -20,7 +20,7 @@ seen.
 When conda-store builds a given environment it has to locally install
 the environment in the directory specified in the
 [Traitlets](https://traitlets.readthedocs.io/en/stable/using_traitlets.html)
-configuration `CondaStore.store_directroy`. Conda environments consist
+configuration `CondaStore.store_directory`. Conda environments consist
 of many hardlinks to small files. This means that the
 `store_directory` is limited to the number of
 [IOPS](https://en.wikipedia.org/wiki/IOPS) the directory can
@@ -545,9 +545,36 @@ in the BUILDING state and are not currently running on the
 workers. This feature only works for certain brokers
 e.g. redis. Database celery brokers are not supported.
 
-This issue occurs when the worker spontaineously dies. This can happen
+This issue occurs when the worker spontaneously dies. This can happen
 for several reasons:
 
 - worker is killed due to consuming too much memory (conda solver/builds can consume a lot of memory)
 - worker was killed for other reasons e.g. forced restart
 - bugs in conda-store
+
+### Long paths on Windows
+
+conda-store supports Windows in standalone mode. However, when creating
+environments with certain packages, you may see errors like
+
+```
+ERROR:root:[WinError 206] The filename or extension is too long: 'C:\\...'
+```
+
+This error is due to the fact that Windows has a limitation that file paths
+cannot be more than 260 characters. The fix is to set the registry key
+`Computer\HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FileSystem\LongPathsEnabled
+(Type: REG_DWORD)` to `1`, which removes this MAX_PATH limitation. See [this
+Microsoft support
+article](https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation)
+for more details on how to set this registry key.
+
+If it is not possible to set this registry key, for instance, because you do
+not have access to administrator privileges, you should configure the
+conda-store `CondaStore.store_directory` to be as close to the filesystem root
+as possible, so that the total length of the paths of package files is
+minimized.
+
+See [conda-store issue
+#588](https://github.com/conda-incubator/conda-store/issues/588) for more
+details.
