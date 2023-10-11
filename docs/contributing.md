@@ -74,7 +74,7 @@ Running `conda-store`. `--standalone` mode launched celery as a
 subprocess of the web server. Run
 
 ```
-python -m conda_store_server.server --standalone tests/assets/conda_store_standalone_config.py
+python -m conda_store_server.server --standalone
 ```
 
 Then visit [localhost:5000](http://localhost:5000/).
