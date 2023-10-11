@@ -66,7 +66,7 @@ Install the following dependencies before developing on conda-store.
 Install the development dependencies and activate the environment.
 
 ```shell
-# replace this with environment-mac-dev.yaml or environment-windows-dev.yaml
+# replace this with environment-macos-dev.yaml or environment-windows-dev.yaml
 # if you are on Mac or Windows
 conda env create -f conda-store-server/environment-dev.yaml
 conda activate conda-store-server-dev
@@ -101,7 +101,7 @@ To build the documentation install the development environment via
 Conda.
 
 ```shell
-# replace this with environment-mac-dev.yaml or environment-windows-dev.yaml
+# replace this with environment-macos-dev.yaml or environment-windows-dev.yaml
 # if you are on Mac or Windows
 conda env create -f conda-store-server/environment-dev.yaml
 conda activate conda-store-server-dev
