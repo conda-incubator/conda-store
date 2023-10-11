@@ -73,6 +73,10 @@ conda-unpack
 
 ### Docker Registry
 
+```{note}
+Docker image creation is currently only supported on Linux.
+```
+
 conda-store acts as a docker registry which allows for interesting
 ways to handle Conda environment. In addition this registry leverages
 [conda-docker](https://github.com/conda-incubator/conda-docker) which
