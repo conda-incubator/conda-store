@@ -217,17 +217,20 @@ filesystem.
 `CondaStore.default_uid` is the uid (user id) to assign to all
 files and directories in a given built environment. This setting is
 useful if you want to protect environments from modification from
-certain users and groups.
+certain users and groups. Note: this configuration option is not
+supported on Windows.
 
 `CondaStore.default_gid` is the gid (group id) to assign to all
 files and directories in a given built environment. This setting is
 useful if you want to protect environments from modification from
-certain users and groups.
+certain users and groups. Note: this configuration option is not
+supported on Windows.
 
 `CondaStore.default_permissions` is the filesystem permissions to
 assign to all files and directories in a given built environment. This
 setting is useful if you want to protect environments from
-modification from certain users and groups.
+modification from certain users and groups. Note: this configuration
+option is not supported on Windows.
 
 `CondaStore.default_docker_base_image` default base image used for the
 Dockerized environments. Make sure to have a proper glibc within image
