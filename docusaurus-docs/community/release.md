@@ -99,7 +99,7 @@ Release captain responsible - <@gh_username>
 - [ ] Push the release (REL) commit ``git push upstream main``
 - [ ] If a **release candidate** is needed, tick this box when we're ready for a full release.
 
-### 2. Make the release
+### 3. Make the release
 
 - [ ] [Start a new GitHub release](https://github.com/conda-incubator/conda-store/releases/new)
   - Call the release the current version, e.g. `2023.9.1`
