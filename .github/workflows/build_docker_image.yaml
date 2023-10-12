@@ -69,6 +69,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: "${{ matrix.docker-image }}"
+          target: "prod"
           file: "${{ matrix.docker-image }}/Dockerfile"
           tags: |
             ${{ steps.meta.outputs.tags }}

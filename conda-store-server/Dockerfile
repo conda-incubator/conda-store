@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 condaforge/mambaforge:23.3.1-1
+FROM --platform=linux/amd64 condaforge/mambaforge:23.3.1-1 as prod
 
 LABEL org.opencontainers.image.authors="conda-store development team"
 

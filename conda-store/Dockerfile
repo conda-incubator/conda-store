@@ -1,15 +1,17 @@
-FROM --platform=linux/amd64 condaforge/mambaforge:23.3.1-1
+FROM --platform=linux/amd64 condaforge/mambaforge:23.3.1-1 as base
 
 LABEL org.opencontainers.image.authors="conda-store development team"
-
-USER root
 
 RUN apt-get update &&  \
     apt-get install -yq --no-install-recommends curl && \
     apt-get clean && \
     rm -rf /var/cache/apt/* &&\
     rm -rf /var/lib/apt/lists/* &&\
-    rm -rf /tmp/*
+    rm -rf /tmp/*   &&\
+    groupadd -g 1000 conda-store &&\
+    useradd -M -r -s /usr/sbin/nologin -u 1000 -g 1000  conda-store && \
+    mkdir -p /opt/jupyterhub && \
+    chown -R conda-store:conda-store /opt/jupyterhub
 
 COPY environment.yaml /opt/conda-store/environment.yaml
 
@@ -19,12 +21,14 @@ ENV PATH=/opt/conda/condabin:/opt/conda/envs/conda-store/bin:/opt/conda/bin:/usr
 
 COPY ./ /opt/conda-store/
 
+FROM base as dev
 RUN cd /opt/conda-store && \
     pip install -e .
+USER conda-store
+WORKDIR /opt/jupyterhub
 
-RUN mkdir -p /opt/jupyterhub && \
-    chown -R 1000:1000 /opt/jupyterhub
-
-USER 1000:1000
-
+FROM base as prod
+RUN cd /opt/conda-store && \
+    pip install .
+USER conda-store
 WORKDIR /opt/jupyterhub
