@@ -181,6 +181,8 @@ class CondaStoreServer(Application):
         self.conda_store = CondaStore(parent=self, log=self.log)
 
         self.conda_store.ensure_directories()
+        self.log.info(f"Running conda-store with database: {self.conda_store.database_url}")
+        self.log.info(f"Running conda-store with storage: {self.conda_store.store_directory}")
 
         if self.conda_store.upgrade_db:
             dbutil.upgrade(self.conda_store.database_url)
