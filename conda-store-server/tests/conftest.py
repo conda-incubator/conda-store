@@ -22,9 +22,9 @@ def celery_config(conda_store):
 def conda_store_config(tmp_path, request):
     from traitlets.config import Config
 
-    filename = pathlib.Path(tmp_path) / "database.sqlite"
+    filename = pathlib.Path(tmp_path) / ".conda-store" / "database.sqlite"
 
-    store_directory = tmp_path / ".conda-store" / "conda-store-state"
+    store_directory = tmp_path / ".conda-store" / "state"
     store_directory.mkdir(parents=True)
 
     with utils.chdir(tmp_path):
