@@ -1,10 +1,9 @@
-FROM --platform=linux/amd64 condaforge/mambaforge:23.3.1-1 as prod
+# Stage 1: Build the application
+FROM --platform=linux/amd64 condaforge/mambaforge:23.3.1-1 as builder
 
-LABEL org.opencontainers.image.authors="conda-store development team"
-
-RUN apt-get update && \
-    # https://docs.anaconda.org/anaconda/install/linux/#installing-on-linux
-    apt-get install -yq --no-install-recommends \
+# Update and install build dependencies
+RUN --mount=type=cache,target=/var/lib/apt --mount=type=cache,target=/var/cache/apt apt update && \
+    apt install -y --no-install-recommends \
     libgl1-mesa-glx \
     libegl1-mesa \
     libxrandr2 \
@@ -13,16 +12,9 @@ RUN apt-get update && \
     libxcomposite1 \
     libasound2 \
     libxi6 \
-    libxtst6 \
-    # needed only for development
-    curl && \
-    apt-get clean && \
-    rm -rf /var/cache/apt/* &&\
-    rm -rf /var/lib/apt/lists/* &&\
-    rm -rf /tmp/*
+    libxtst6 
 
-# ensure that conda channels is empty by default
-# we do not want to tamper with the solve≈
+# Ensure that conda channels are empty by default
 RUN printf 'channels: []\n' > /opt/conda/.condarc && \
     chown -R 1000:1000 /opt/conda && \
     mkdir -p /opt/conda-store/conda-store && \
@@ -36,20 +28,34 @@ RUN printf 'channels: []\n' > /opt/conda/.condarc && \
 
 USER 1000:1000
 
+# Copy environment.yaml and create a conda environment
 COPY environment.yaml /opt/conda-store-server/environment.yaml
+RUN mamba env create -f /opt/conda-store-server/environment.yaml && conda clean --force-pkgs-dirs
 
-RUN mamba env create -f /opt/conda-store-server/environment.yaml
-
+# Copy the application code
 COPY ./ /opt/conda-store-server/
 
 USER 0:0
 RUN chown -R 1000:1000 /opt/conda-store-server/
 USER 1000:1000
 
-RUN ls -la /opt/conda-store-server/ && \
+# Install the application
+RUN --mount=type=cache,target=/root/.cache/pip ls -la /opt/conda-store-server && \
     cd /opt/conda-store-server && \
     /opt/conda/envs/conda-store-server/bin/pip install .
 
+# Stage 2: Create the runtime image
+FROM --platform=linux/amd64 condaforge/mambaforge:23.3.1-1 as prod
+
+# Copy the conda environment from the builder stage
+COPY --from=builder /opt/conda /opt/conda
+
+RUN --mount=type=cache,target=/var/lib/apt --mount=type=cache,target=/var/cache/apt apt install -y --no-install-recommends curl
+
+LABEL org.opencontainers.image.authors="conda-store development team"
+
+
+# Set environment variables
 ENV PATH=/opt/conda/condabin:/opt/conda/envs/conda-store-server/bin:/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${PATH}
 ENV TZ=America/New_York
 
