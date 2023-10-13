@@ -1,5 +1,4 @@
 from fastapi import Depends, Request
-from sqlalchemy.orm import Session
 
 
 async def get_conda_store(request: Request):
@@ -20,11 +19,3 @@ async def get_entity(request: Request, auth=Depends(get_auth)):
 
 async def get_templates(request: Request):
     return request.state.templates
-
-
-async def get_db(request: Request, conda_store=Depends(get_conda_store)) -> Session:
-    db = conda_store.session_factory()
-    try:
-        yield db
-    finally:
-        db.close()

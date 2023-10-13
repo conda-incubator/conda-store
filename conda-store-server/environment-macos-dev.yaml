@@ -37,6 +37,7 @@ dependencies:
   - typer
 
   # dev dependencies
+  - aiohttp>=3.8.1
   - hatch
   - pytest
   - pytest-celery
