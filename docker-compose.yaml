@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   conda-store-worker:
-    build: 
+    build:
       context: conda-store-server
       target: dev
     user: 1000:1000
