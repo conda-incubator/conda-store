@@ -47,9 +47,9 @@ FROM --platform=linux/amd64 condaforge/mambaforge:23.3.1-1 as prod
 LABEL org.opencontainers.image.authors="conda-store development team"
 ARG RELEASE_VERSION
 RUN --mount=type=cache,target=/var/lib/apt --mount=type=cache,target=/var/cache/apt \
-apt install -y --no-install-recommends curl && \
+apt install -y --no-install-recommends curl 
 # Copy the conda environment from the builder stage
-COPY --from=builder /opt/conda /opt/conda
+COPY --from=base /opt/conda /opt/conda
 RUN /opt/conda/envs/conda-store-server/bin/pip install conda-store-server==${RELEASE_VERSION} && \
     chown -R 1000:1000 /opt/conda
 
@@ -62,7 +62,7 @@ apt install -y --no-install-recommends curl
 LABEL org.opencontainers.image.authors="conda-store development team"
 ARG RELEASE_VERSION
 # Copy the conda environment from the builder stage
-COPY --from=builder /opt/conda /opt/conda
+COPY --from=base /opt/conda /opt/conda
 RUN cd /opt/conda-store-server && \
     /opt/conda/envs/conda-store-server/bin/pip install -e . && \
     chown -R 1000:1000 /opt/conda
