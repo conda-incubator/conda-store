@@ -46,7 +46,9 @@ FROM --platform=linux/amd64 condaforge/mambaforge:23.3.1-1 as prod
 # Copy the conda environment from the builder stage
 COPY --from=builder /opt/conda /opt/conda
 
-RUN --mount=type=cache,target=/var/lib/apt --mount=type=cache,target=/var/cache/apt apt install -y --no-install-recommends curl
+RUN --mount=type=cache,target=/var/lib/apt --mount=type=cache,target=/var/cache/apt \
+apt install -y --no-install-recommends curl && \
+chown -R 1000:1000 /opt/conda
 
 LABEL org.opencontainers.image.authors="conda-store development team"
 USER 1000:1000
