@@ -1,5 +1,5 @@
 ---
-description: Guidelines and tips for reviewing contributions to Nebari
+description: Guidelines and tips for reviewing contributions to conda-store
 ---
 
 # Reviewer guidelines
@@ -16,7 +16,7 @@ its development workflow.
   and your subsequent remarks may be heard more openly. You may feel good also.
 - Begin if possible with the large issues, so the author knows they’ve been understood.
   Resist the temptation to immediately go line by line, or to open with small pervasive issues.
-- You are the face of the project, and the Nebari project aims to be: open, empathetic, welcoming, friendly and patient.
+- You are the face of the project, and the conda-store project aims to be open, empathetic, welcoming, friendly and patient.
   [Be kind to contributors](https://youtu.be/tzFWz5fiVKU?t=49m30s).
 - Do not let perfect be the enemy of the good, particularly for documentation. If you find yourself making many small suggestions,
   or being too nitpicky on style or grammar, consider merging the current PR when all important concerns are addressed.
@@ -63,7 +63,7 @@ Only maintainers can merge pull requests. Please follow these guidelines:
 - Squashing commits or cleaning up commit messages of a PR that you consider too messy is OK.
   Remember to retain the original author’s name when doing this.
 - When you want to reject a PR: if it’s very straightforward, you can close it and explain why. If it’s not,
-  then it’s a good idea to first explain why you think the PR is not suitable for inclusion in Nebari and then let a second committer comment or close.
+  then it’s a good idea first to explain why you think the PR is not suitable for inclusion in conda-store and then let a second committer comment or close.
 - Maintainers are encouraged to finalize PRs when only small changes are necessary before merging
   (acceptable changes are fixing code style or grammatical errors). If a PR becomes inactive, maintainers may make larger changes.
   Remember, a PR is a collaboration between a contributor and a reviewer/s, sometimes a direct push is the best way to finish it.

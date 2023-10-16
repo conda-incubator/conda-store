@@ -15,7 +15,7 @@ It may be helpful to store some of these in [GitHub’s saved replies](https://g
   _action: add `needs: investigation 🔍` label_
 
   ```md
-  Thanks for reporting this and helping make Nebari better!
+  Thanks for reporting this and helping make conda-store better!
 
   Please provide a [self-contained example code](https://stackoverflow.com/help/mcve), including imports and data (if possible),
   so that other contributors can run it and reproduce your issue.
