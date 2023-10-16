@@ -39,7 +39,7 @@ services:
       - conda_store_data:/opt/conda-store/
 
   conda-store-worker:
-    build: ../../conda-store-server
+    image: quansight/conda-store-server
     user: 1000:1000
     volumes:
       - conda_store_data:/opt/conda-store/
@@ -55,7 +55,7 @@ services:
     command: ['conda-store-worker', '--config', '/etc/conda-store/conda_store_config.py']
 
   conda-store-server:
-    build: ../../conda-store-server
+    image: quansight/conda-store-server
     user: 1000:1000
     labels:
       - "traefik.enable=true"
@@ -81,19 +81,8 @@ services:
     ports:
       - "5000:5000"
 
-  redis:
-    image: redis:6.2-alpine
-    restart: always
-    ports:
-      - '6379:6379'
-    command: redis-server --save 20 1 --loglevel debug
-    healthcheck:
-      test: ["CMD", "redis-cli","ping"]
-    volumes:
-      - redis:/etc/redis
-
   jupyterhub:
-    build: ../../conda-store
+    image: quansight/conda-store
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.jupyterhub.rule=Host(`conda-store.localhost`) && (Path(`/`) || PathPrefix(`/hub`) || PathPrefix(`/user`))"

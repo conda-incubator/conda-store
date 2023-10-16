@@ -1,6 +1,7 @@
 import datetime
 import os
 import sys
+from contextlib import contextmanager
 from typing import Any, Dict
 
 import pydantic
@@ -360,6 +361,18 @@ class CondaStore(LoggingConfigurable):
             poolclass=QueuePool,
         )
         return self._session_factory
+
+    # Do not define this as a FastAPI dependency! That would cause Sessions
+    # not to be closed, which would lead to DB pool exhaustion and requests
+    # getting blocked.
+    # https://github.com/conda-incubator/conda-store/issues/598
+    @contextmanager
+    def get_db(self):
+        db = self.session_factory()
+        try:
+            yield db
+        finally:
+            db.close()
 
     @property
     def redis(self):

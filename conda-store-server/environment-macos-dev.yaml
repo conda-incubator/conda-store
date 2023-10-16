@@ -6,10 +6,10 @@ dependencies:
   - python ==3.10
   # conda builds
   - conda ==23.5.2
-  - conda-docker >= 0.1.2
   - python-docker
   - conda-pack
   - conda-lock >=1.0.5
+  - mamba
   - conda-package-handling
   # web server
   - celery

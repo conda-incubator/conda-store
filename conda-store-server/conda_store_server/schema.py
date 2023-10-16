@@ -6,8 +6,8 @@ import re
 import sys
 from typing import Any, Callable, Dict, List, Optional, Union
 
-from conda_store_server import conda_utils
-from pydantic import BaseModel, Field, constr, validator
+from conda_store_server import conda_utils, utils
+from pydantic import BaseModel, Field, ValidationError, constr, validator
 
 
 def _datetime_factory(offset: datetime.timedelta):
@@ -405,6 +405,42 @@ class CondaSpecification(BaseModel):
             raise ValueError(f"Invalid conda package dependency specification {v}")
 
         return v
+
+    @classmethod
+    def parse_obj(cls, specification):
+        try:
+            return super().parse_obj(specification)
+        except ValidationError as e:
+            # there can be multiple errors. Let's build a comprehensive summary
+            # to return to the end user.
+
+            # hr stands for "human readable"
+            all_errors_hr = []
+
+            for err in e.errors():
+                error_type = err["type"]
+                error_loc = err["loc"]
+
+                # fallback case : if we can't figure out the error, let's build a default
+                # one based on the data returned by Pydantic.
+                human_readable_error = (
+                    f"{err['msg']} (type={error_type}, loc={error_loc})"
+                )
+
+                if error_type == "type_error.none.not_allowed":
+                    if error_loc[0] == "name":
+                        human_readable_error = (
+                            "The name of the environment cannot be empty."
+                        )
+                    else:
+                        if len(error_loc) == 1:
+                            human_readable_error = f"Invalid YAML : A forbidden `None` value has been encountered in section {error_loc[0]}"
+                        elif len(error_loc) == 2:
+                            human_readable_error = f"Invalid YAML : A forbidden `None` value has been encountered in section `{error_loc[0]}`, line {error_loc[1]}"
+
+                all_errors_hr.append(human_readable_error)
+
+            raise utils.CondaStoreError(all_errors_hr)
 
 
 ###############################

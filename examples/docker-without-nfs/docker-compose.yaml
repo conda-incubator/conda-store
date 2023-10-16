@@ -28,7 +28,7 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
 
   conda-store-worker:
-    build: ../../conda-store-server
+    image: quansight/conda-store-server
     user: 1000:1000
     volumes:
       - conda_store_data:/opt/conda-store/
@@ -48,7 +48,7 @@ services:
       ]
 
   conda-store-server:
-    build: ../../conda-store-server
+    image: quansight/conda-store-server
     user: 1000:1000
     labels:
       - "traefik.enable=true"
@@ -81,7 +81,7 @@ services:
       - "5000:5000"
 
   jupyterhub:
-    build: ../../conda-store
+    build: quansight/conda-store
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.jupyterhub.rule=Host(`conda-store.localhost`) && (Path(`/`) || PathPrefix(`/hub`) || PathPrefix(`/user`))"
