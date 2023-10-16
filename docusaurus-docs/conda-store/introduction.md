@@ -1,17 +1,14 @@
 ---
 sidebar_position: 1
 title: Introduction
-description: Introduction to documentation.
+description: Introduction to conda-store documentation
 ---
 
-# Welcome to conda-store's documentation
+# conda-store
 
-conda-store is a set of open source tools for managing data science environments in collaborative teams. It provides flexible, yet reproducible, environments while enforcing best practices throughout your environment's life cycle.
+The `conda-store` repository has two packages:
 
-## Projects
+- `conda-store-server`: the worker and web server responsible for the `conda-store` service
+- `conda-store/`: the client which interacts with the service
 
-<!-- TODO: Expand with context -->
-
-- conda-store
-- conda-store-ui
-- jupyterlab-conda-store
+<!-- TODO: Update and expand -->
