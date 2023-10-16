@@ -141,11 +141,11 @@ const config = {
               },
               {
                 label: "Governance",
-                to: "community/governance",
+                href: "https://github.com/conda-incubator/governance/tree/main",
               },
               {
                 label: "Support",
-                to: "community/support",
+                to: "community/introduction#support",
               },
             ],
           },

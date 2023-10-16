@@ -1,9 +1,9 @@
 ---
-sidebar_position: 2
-description: Guidelines for conda-store contributors
+sidebar_position: 3
+description: Guidelines and resources for conda-store maintenance efforts
 ---
 
-# Contribution guidelines
+# Maintenance guidelines
 
 import DocCardList from '@theme/DocCardList';
 import {useCurrentSidebarCategory} from '@docusaurus/theme-common';
