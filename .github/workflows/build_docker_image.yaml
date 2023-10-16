@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - "main"
-      - "dcmcand-update-conda-store-dockerfile"
 
 permissions:
   id-token: write # This is required for requesting the JWT
