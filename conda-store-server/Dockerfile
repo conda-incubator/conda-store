@@ -59,6 +59,6 @@ WORKDIR /var/lib/conda-store
 FROM base as prod
 ARG RELEASE_VERSION
 RUN cd /opt/conda-store-server && \
-    /opt/conda/envs/conda-store-server/bin/pip install conda-store-server==${RELEASE_VERSION} 
+    /opt/conda/envs/conda-store-server/bin/pip install conda-store-server==${RELEASE_VERSION}
 
 WORKDIR /var/lib/conda-store

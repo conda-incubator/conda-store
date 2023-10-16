@@ -30,6 +30,6 @@ WORKDIR /opt/jupyterhub
 FROM base as prod
 ARG RELEASE_VERSION
 RUN cd /opt/conda-store && \
-    pip install conda-store==${RELEASE_VERSION} 
+    pip install conda-store==${RELEASE_VERSION}
 USER conda-store
 WORKDIR /opt/jupyterhub
