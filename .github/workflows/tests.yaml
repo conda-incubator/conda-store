@@ -212,7 +212,7 @@ jobs:
           file: "${{ matrix.docker-image }}/Dockerfile"
           tags: |
             ${{ steps.meta.outputs.tags }}
-          target: "prod"
+          target: "dev"
           push: false
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
