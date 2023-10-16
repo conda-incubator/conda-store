@@ -2,7 +2,6 @@ from conda_store_server import api
 from conda_store_server.server import dependencies
 from fastapi import APIRouter, Depends
 from fastapi.responses import PlainTextResponse
-from sqlalchemy.orm import Session
 
 router_metrics = APIRouter(tags=["metrics"])
 
@@ -10,10 +9,10 @@ router_metrics = APIRouter(tags=["metrics"])
 @router_metrics.get("/metrics", response_class=PlainTextResponse)
 async def prometheus_metrics(
     conda_store=Depends(dependencies.get_conda_store),
-    db: Session = Depends(dependencies.get_db),
 ):
-    metrics = api.get_metrics(db)
-    return "\n".join(f"conda_store_{key} {value}" for key, value in metrics.items())
+    with conda_store.get_db() as db:
+        metrics = api.get_metrics(db)
+        return "\n".join(f"conda_store_{key} {value}" for key, value in metrics.items())
 
 
 @router_metrics.get("/celery")

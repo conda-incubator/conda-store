@@ -8,14 +8,55 @@ environments/builds may have been created which would change the
 ordering for tests.
 
 """
+import asyncio
 import json
 import uuid
 from typing import List
 
+import aiohttp
 import conda_store_server
 import pytest
 from conda_store_server import schema
 from pydantic import parse_obj_as
+
+from .conftest import CONDA_STORE_BASE_URL
+
+
+# Calls APIs that use get_db to ensure DB pool limit is not reached. The default
+# queue limit is 15, so this calls a bit more APIs than that. Uses async to call
+# APIs as fast as possible, while API handlers are still executing. When we
+# reach the pool limit, the old (wrong) behavior was to raise an exception on
+# the server side and block on the client side after processing 15 requests. If
+# everything works correctly, this test should succeed and not timeout.
+#
+# The error that used to be thrown on the server side:
+# sqlalchemy.exc.TimeoutError: QueuePool limit of size 5 overflow 10 reached,
+# connection timed out, timeout 30.00 (Background on this error at:
+# https://sqlalche.me/e/14/3o7r)
+#
+# https://github.com/conda-incubator/conda-store/issues/598
+def test_api_db_pool_queue():
+    urls = [
+        f"{CONDA_STORE_BASE_URL}api/v1/package",
+        f"{CONDA_STORE_BASE_URL}api/v1/namespace/",
+        f"{CONDA_STORE_BASE_URL}api/v1/environment/",
+        f"{CONDA_STORE_BASE_URL}api/v1/build/",
+        f"{CONDA_STORE_BASE_URL}api/v1/channel/",
+    ] * 10
+
+    async def get(url, session):
+        async with session.get(url) as response:
+            r = await response.read()
+            print(f"Got {url} with response length {len(r)}")
+
+    async def main(urls):
+        async with aiohttp.ClientSession(raise_for_status=True) as session:
+            requests = [get(url, session) for url in urls]
+            await asyncio.wait_for(asyncio.gather(*requests), timeout=30)
+            assert len(requests) == len(urls)
+            print(f"Done: processed {len(requests)} requests")
+
+    asyncio.run(main(urls))
 
 
 def test_api_status_unauth(testclient):

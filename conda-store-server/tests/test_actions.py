@@ -266,7 +266,6 @@ def test_api_get_build_lockfile(
         server.views.api.api_get_build_lockfile(
             request=request,
             conda_store=conda_store,
-            db=db,
             auth=auth,
             namespace=namespace,
             environment_name=environment.name,
