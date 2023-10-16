@@ -2,7 +2,9 @@ version: "3.8"
 
 services:
   conda-store-worker:
-    build: conda-store-server
+    build:
+      context: conda-store-server
+      target: dev
     user: 1000:1000
     volumes:
       - ./tests/assets/environments:/opt/environments:ro
@@ -19,7 +21,9 @@ services:
       ]
 
   conda-store-server:
-    build: conda-store-server
+    build:
+      context: conda-store-server
+      target: dev
     user: 1000:1000
     depends_on:
       postgres:

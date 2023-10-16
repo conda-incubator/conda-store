@@ -1,9 +1,13 @@
-# Stage 1: Build the application
-FROM --platform=linux/amd64 condaforge/mambaforge:23.3.1-1 as builder
+FROM --platform=linux/amd64 condaforge/mambaforge:23.3.1-1 as base
 
-# Update and install build dependencies
-RUN --mount=type=cache,target=/var/lib/apt --mount=type=cache,target=/var/cache/apt apt update && \
-    apt install -y --no-install-recommends \
+LABEL org.opencontainers.image.authors="conda-store development team"
+
+ENV PATH=/opt/conda/condabin:/opt/conda/envs/conda-store-server/bin:/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${PATH}
+ENV TZ=America/New_York
+
+RUN apt-get update && \
+    # https://docs.anaconda.org/anaconda/install/linux/#installing-on-linux
+    apt-get install -yq --no-install-recommends \
     libgl1-mesa-glx \
     libegl1-mesa \
     libxrandr2 \
@@ -34,28 +38,33 @@ RUN mamba env create -f /opt/conda-store-server/environment.yaml && conda clean 
 COPY ./ /opt/conda-store-server/
 
 # Install the application
-RUN --mount=type=cache,target=/root/.cache/pip ls -la /opt/conda-store-server && \
-    cd /opt/conda-store-server && \
-    /opt/conda/envs/conda-store-server/bin/pip install . && chown -R 1000:1000 /opt/conda-store-server/ && \
+RUN  chown -R 1000:1000 /opt/conda-store-server/ && \
     mkdir /opt/conda/pkgs && \
     chmod 0755 /opt/conda/pkgs 
 
-# Stage 2: Create the runtime image
+# Prod Image
 FROM --platform=linux/amd64 condaforge/mambaforge:23.3.1-1 as prod
-
-# Copy the conda environment from the builder stage
-COPY --from=builder /opt/conda /opt/conda
-
+LABEL org.opencontainers.image.authors="conda-store development team"
+ARG RELEASE_VERSION
 RUN --mount=type=cache,target=/var/lib/apt --mount=type=cache,target=/var/cache/apt \
 apt install -y --no-install-recommends curl && \
-chown -R 1000:1000 /opt/conda
+# Copy the conda environment from the builder stage
+COPY --from=builder /opt/conda /opt/conda
+RUN /opt/conda/envs/conda-store-server/bin/pip install conda-store-server==${RELEASE_VERSION} && \
+    chown -R 1000:1000 /opt/conda
 
-LABEL org.opencontainers.image.authors="conda-store development team"
 USER 1000:1000
 
+# Dev Image
+FROM --platform=linux/amd64 condaforge/mambaforge:23.3.1-1 as dev
+RUN --mount=type=cache,target=/var/lib/apt --mount=type=cache,target=/var/cache/apt \
+apt install -y --no-install-recommends curl 
+LABEL org.opencontainers.image.authors="conda-store development team"
+ARG RELEASE_VERSION
+# Copy the conda environment from the builder stage
+COPY --from=builder /opt/conda /opt/conda
+RUN cd /opt/conda-store-server && \
+    /opt/conda/envs/conda-store-server/bin/pip install -e . && \
+    chown -R 1000:1000 /opt/conda
 
-# Set environment variables
-ENV PATH=/opt/conda/condabin:/opt/conda/envs/conda-store-server/bin:/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${PATH}
-ENV TZ=America/New_York
-
-WORKDIR /var/lib/conda-store
+USER 1000:1000

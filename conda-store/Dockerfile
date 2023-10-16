@@ -21,14 +21,15 @@ ENV PATH=/opt/conda/condabin:/opt/conda/envs/conda-store/bin:/opt/conda/bin:/usr
 
 COPY ./ /opt/conda-store/
 
-FROM base as dev
-RUN --mount=type=cache,target=/root/.cache/pip cd /opt/conda-store && \
-    pip install -e . --no-cache
+FROM base as prod
+ARG RELEASE_VERSION
+RUN cd /opt/conda-store && \
+    pip install conda-store==${RELEASE_VERSION}
 USER conda-store
 WORKDIR /opt/jupyterhub
 
-FROM base as prod
+FROM base as dev
 RUN --mount=type=cache,target=/root/.cache/pip cd /opt/conda-store && \
-    pip install . --no-cache
+    pip install -e . --no-cache
 USER conda-store
 WORKDIR /opt/jupyterhub
