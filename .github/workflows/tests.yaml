@@ -198,7 +198,7 @@ jobs:
 
       - name: Docker Meta
         id: meta
-        uses: crazy-max/ghaction-docker-meta@v5
+        uses: docker/metadata-action@v5
         with:
           images: |
             quansight/${{ matrix.docker-image }}
