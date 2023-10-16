@@ -49,16 +49,16 @@ USER 0:0
 RUN chown -R 1000:1000 /opt/conda-store-server/
 USER 1000:1000
 
-FROM base as dev
-
-RUN cd /opt/conda-store-server && \
-    /opt/conda/envs/conda-store-server/bin/pip install -e .
-
-WORKDIR /var/lib/conda-store
-
 FROM base as prod
 ARG RELEASE_VERSION
 RUN cd /opt/conda-store-server && \
     /opt/conda/envs/conda-store-server/bin/pip install conda-store-server==${RELEASE_VERSION}
+
+WORKDIR /var/lib/conda-store
+
+FROM base as dev
+
+RUN cd /opt/conda-store-server && \
+    /opt/conda/envs/conda-store-server/bin/pip install -e .
 
 WORKDIR /var/lib/conda-store

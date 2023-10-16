@@ -21,15 +21,15 @@ ENV PATH=/opt/conda/condabin:/opt/conda/envs/conda-store/bin:/opt/conda/bin:/usr
 
 COPY ./ /opt/conda-store/
 
-FROM base as dev
-RUN cd /opt/conda-store && \
-    pip install -e .
-USER conda-store
-WORKDIR /opt/jupyterhub
-
 FROM base as prod
 ARG RELEASE_VERSION
 RUN cd /opt/conda-store && \
     pip install conda-store==${RELEASE_VERSION}
+USER conda-store
+WORKDIR /opt/jupyterhub
+
+FROM base as dev
+RUN cd /opt/conda-store && \
+    pip install -e .
 USER conda-store
 WORKDIR /opt/jupyterhub
