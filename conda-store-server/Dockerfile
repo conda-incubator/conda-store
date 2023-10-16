@@ -5,7 +5,7 @@ LABEL org.opencontainers.image.authors="conda-store development team"
 ENV PATH=/opt/conda/condabin:/opt/conda/envs/conda-store-server/bin:/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${PATH}
 ENV TZ=America/New_York
 
-RUN apt-get update && \
+RUN --mount=type=cache,target=/var/lib/apt --mount=type=cache,target=/var/cache/apt  apt-get update && \
     # https://docs.anaconda.org/anaconda/install/linux/#installing-on-linux
     apt-get install -yq --no-install-recommends \
     libgl1-mesa-glx \
@@ -40,30 +40,31 @@ COPY ./ /opt/conda-store-server/
 # Install the application
 RUN  chown -R 1000:1000 /opt/conda-store-server/ && \
     mkdir /opt/conda/pkgs && \
-    chmod 0755 /opt/conda/pkgs 
+    chown -R 1000:1000 /opt/conda/
 
 # Prod Image
 FROM --platform=linux/amd64 condaforge/mambaforge:23.3.1-1 as prod
 LABEL org.opencontainers.image.authors="conda-store development team"
 ARG RELEASE_VERSION
-RUN --mount=type=cache,target=/var/lib/apt --mount=type=cache,target=/var/cache/apt \
-apt install -y --no-install-recommends curl 
 # Copy the conda environment from the builder stage
 COPY --from=base /opt/conda /opt/conda
-RUN /opt/conda/envs/conda-store-server/bin/pip install conda-store-server==${RELEASE_VERSION} && \
+RUN --mount=type=cache,target=/var/lib/apt --mount=type=cache,target=/var/cache/apt \
+apt install -y --no-install-recommends curl 
+RUN  --mount=type=cache,target=/root/.cache/pip /opt/conda/envs/conda-store-server/bin/pip install conda-store-server==${RELEASE_VERSION} && \
     chown -R 1000:1000 /opt/conda
 
 USER 1000:1000
 
 # Dev Image
 FROM --platform=linux/amd64 condaforge/mambaforge:23.3.1-1 as dev
-RUN --mount=type=cache,target=/var/lib/apt --mount=type=cache,target=/var/cache/apt \
-apt install -y --no-install-recommends curl 
 LABEL org.opencontainers.image.authors="conda-store development team"
 ARG RELEASE_VERSION
 # Copy the conda environment from the builder stage
 COPY --from=base /opt/conda /opt/conda
-RUN cd /opt/conda-store-server && \
+RUN --mount=type=cache,target=/var/lib/apt --mount=type=cache,target=/var/cache/apt \
+apt install -y --no-install-recommends curl 
+COPY --from=base /opt/conda-store-server /opt/conda-store-server
+RUN  --mount=type=cache,target=/root/.cache/pip cd /opt/conda-store-server && \
     /opt/conda/envs/conda-store-server/bin/pip install -e . && \
     chown -R 1000:1000 /opt/conda
 
