@@ -26,8 +26,6 @@ RUN printf 'channels: []\n' > /opt/conda/.condarc && \
     mkdir /.cache && \
     chown 1000:1000 /.cache
 
-USER 1000:1000
-
 # Copy environment.yaml and create a conda environment
 COPY environment.yaml /opt/conda-store-server/environment.yaml
 RUN mamba env create -f /opt/conda-store-server/environment.yaml && conda clean --force-pkgs-dirs
@@ -35,14 +33,12 @@ RUN mamba env create -f /opt/conda-store-server/environment.yaml && conda clean 
 # Copy the application code
 COPY ./ /opt/conda-store-server/
 
-USER 0:0
-RUN chown -R 1000:1000 /opt/conda-store-server/
-USER 1000:1000
-
 # Install the application
 RUN --mount=type=cache,target=/root/.cache/pip ls -la /opt/conda-store-server && \
     cd /opt/conda-store-server && \
-    /opt/conda/envs/conda-store-server/bin/pip install .
+    /opt/conda/envs/conda-store-server/bin/pip install . && chown -R 1000:1000 /opt/conda-store-server/ && \
+    mkdir /opt/conda/pkgs && \
+    chmod 0755 /opt/conda/pkgs 
 
 # Stage 2: Create the runtime image
 FROM --platform=linux/amd64 condaforge/mambaforge:23.3.1-1 as prod
@@ -53,6 +49,7 @@ COPY --from=builder /opt/conda /opt/conda
 RUN --mount=type=cache,target=/var/lib/apt --mount=type=cache,target=/var/cache/apt apt install -y --no-install-recommends curl
 
 LABEL org.opencontainers.image.authors="conda-store development team"
+USER 1000:1000
 
 
 # Set environment variables
