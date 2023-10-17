@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 condaforge/mambaforge:23.3.1-1 as base
+FROM condaforge/mambaforge:23.3.1-1 as base
 
 LABEL org.opencontainers.image.authors="conda-store development team"
 
@@ -15,7 +15,9 @@ RUN apt-get update &&  \
 
 COPY environment.yaml /opt/conda-store/environment.yaml
 
-RUN mamba env create -f /opt/conda-store/environment.yaml && mamba clean --all -y && conda clean --force-pkgs-dirs
+RUN mamba env create -f /opt/conda-store/environment.yaml && \
+mamba clean --all -y && \
+conda clean --force-pkgs-dirs
 
 ENV PATH=/opt/conda/condabin:/opt/conda/envs/conda-store/bin:/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${PATH}
 
