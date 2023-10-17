@@ -54,6 +54,8 @@ jobs:
   build_and_push_docker_image:
     name: "Build Docker Images 🛠"
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write # IMPORTANT: this permission is mandatory for trusted publishing
     strategy:
       matrix:
         docker-image:
