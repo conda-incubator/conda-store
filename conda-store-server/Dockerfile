@@ -41,7 +41,8 @@ USER 1000:1000
 
 COPY environment.yaml /opt/conda-store-server/environment.yaml
 
-RUN mamba env create -f /opt/conda-store-server/environment.yaml && conda clean  --force-pkgs-dirs
+RUN mamba env create -f /opt/conda-store-server/environment.yaml && \
+	conda clean  --force-pkgs-dirs
 
 COPY ./ /opt/conda-store-server/
 
