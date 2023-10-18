@@ -9,48 +9,47 @@ on:
     branches:
       - main
 
+# ensuring only one instance is running at a given time
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test-conda-store-server:
     name: "unit-test conda-store-server"
     strategy:
       matrix:
         # cannot run on windows due to needing fake-chroot for conda-docker
-        os: [ubuntu-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
+        os: ["ubuntu", "macos"]
+        include:
+          - os: ubuntu
+            environment-file: conda-store-server/environment-dev.yaml
+          - os: macos
+            environment-file: conda-store-server/environment-macos-dev.yaml
+    runs-on: ${{ matrix.os }}-latest
     defaults:
       run:
         shell: bash -el {0}
         working-directory: conda-store-server
     steps:
-      - name: "Checkout Repository"
+      - name: "Checkout Repository 🛎"
         uses: actions/checkout@v4
 
-      - name: Set up Python (Linux)
-        if: matrix.os == 'ubuntu-latest'
+      - name: "Set up env ${{ matrix.os }} 🐍"
         uses: conda-incubator/setup-miniconda@v2
         with:
-          mamba-version: "*"
-          activate-environment: conda-store-server-dev
-          environment-file: conda-store-server/environment-dev.yaml
-          auto-activate-base: false
+            environment-file: ${{ matrix.environment-file }}
+            miniforge-version: latest
 
-      - name: Set up Python (macOS)
-        if: matrix.os == 'macos-latest'
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-          activate-environment: conda-store-server-dev
-          environment-file: conda-store-server/environment-macos-dev.yaml
-          auto-activate-base: false
-
-      - name: Linting Checks
+      - name: "Linting Checks 🧹"
         run: |
           hatch env run -e dev lint
 
-      - name: Release Check
+      - name: "Build package 📦"
         run: |
           hatch build
 
-      - name: Unit Tests
+      - name: "Unit tests ✅"
         run: |
           pytest tests
 
@@ -62,23 +61,21 @@ jobs:
         shell: bash -el {0}
         working-directory: conda-store-server
     steps:
-      - name: "Checkout Repository"
+      - name: "Checkout Repository 🛎"
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: "Set up env 🐍"
         uses: conda-incubator/setup-miniconda@v2
         with:
-          mamba-version: "*"
-          activate-environment: conda-store-server-dev
           environment-file: conda-store-server/environment-dev.yaml
-          auto-activate-base: false
+          miniforge-version: latest
 
-      - name: Install Dependencies
+      - name: "Install build dependencies 📦"
         run: |
           pip install hatch
           sudo apt install wait-for-it -y
 
-      - name: Deploy docker-compose
+      - name: "Deploy docker-compose"
         run: |
           docker-compose up -d
           docker ps
@@ -87,23 +84,24 @@ jobs:
           wait-for-it localhost:9000 # minio
           wait-for-it localhost:5000 # conda-store-server
 
-      - name: Run Playwright tests
+      - name: "Run Playwright tests 🎭"
         run: |
           playwright install
           pytest --video on ../tests/test_playwright.py
 
-      - uses: actions/upload-artifact@v2
+      - name: "Upload test results 📤"
+        uses: actions/upload-artifact@v2
         if: ${{ always() }}
         with:
           name: playwright-tests
           path: conda-store-server/test-results
 
-      - name: Run integration tests
+      - name: "Run integration tests ✅"
         run: |
           export PYTHONPATH=$PYTHONPATH:$PWD
           pytest ../tests/test_api.py ../tests/test_metrics.py
 
-      - name: Docker logs
+      - name: "Get Docker logs 🔍"
         if: ${{ failure() }}
         run: |
           docker-compose logs
@@ -118,28 +116,28 @@ jobs:
       matrix:
         python-version: ["3.8", "3.9", "3.10"]
     steps:
-      - name: "Checkout Repository"
+      - name: "Checkout Repository 🛎"
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: "Set up Python 🐍"
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install Dependencies
+      - name: "Install Dependencies 📦"
         run: |
           pip install hatch
           sudo apt install wait-for-it -y
 
-      - name: Linting Checks
+      - name: "Linting Checks 🧹"
         run: |
           hatch env run -e dev lint
 
-      - name: Release Check
+      - name: "Build package 📦"
         run: |
           hatch build
 
-      - name: Deploy docker-compose
+      - name: "Deploy docker-compose"
         run: |
           docker-compose up -d
           docker ps
@@ -148,20 +146,20 @@ jobs:
           wait-for-it localhost:9000 # minio
           wait-for-it localhost:5000 # conda-store-server
 
-      - name: Install conda-store for tests
+      - name: "Install conda-store for tests 📦"
         run: |
           pip install .
 
-      - name: Basic tests not authenticated
+      - name: "Run basic tests -  not authenticated"
         run: |
           sleep 20
           ./tests/unauthenticated-tests.sh
 
-      - name: Basic tests authenticated
+      - name: "Run basic tests - authenticated"
         run: |
           ./tests/authenticated-tests.sh
 
-      - name: Test shebang
+      - name: "Test shebang"
         run: |
           export CONDA_STORE_URL=http://localhost:5000/conda-store
           export CONDA_STORE_AUTH=basic
@@ -169,7 +167,7 @@ jobs:
           export CONDA_STORE_PASSWORD=password
           ./tests/shebang.sh
 
-      - name: Docker logs
+      - name: "Get Docker logs 🔍"
         if: ${{ failure() }}
         run: |
           docker-compose logs
