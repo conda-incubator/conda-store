@@ -1,9 +1,9 @@
-FROM --platform=linux/amd64 condaforge/mambaforge:23.3.1-1 as base
+FROM condaforge/mambaforge:23.3.1-1 as base
 
 LABEL org.opencontainers.image.authors="conda-store development team"
 
 ENV PATH=/opt/conda/condabin:/opt/conda/envs/conda-store-server/bin:/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${PATH}
-ENV TZ=America/New_York
+ENV TZ=Etc/UTC
 
 RUN apt-get update && \
     # https://docs.anaconda.org/anaconda/install/linux/#installing-on-linux
@@ -41,7 +41,8 @@ USER 1000:1000
 
 COPY environment.yaml /opt/conda-store-server/environment.yaml
 
-RUN mamba env create -f /opt/conda-store-server/environment.yaml
+RUN mamba env create -f /opt/conda-store-server/environment.yaml && \
+	conda clean  --force-pkgs-dirs
 
 COPY ./ /opt/conda-store-server/
 
@@ -52,7 +53,8 @@ USER 1000:1000
 FROM base as prod
 ARG RELEASE_VERSION
 RUN cd /opt/conda-store-server && \
-    /opt/conda/envs/conda-store-server/bin/pip install conda-store-server==${RELEASE_VERSION}
+    /opt/conda/envs/conda-store-server/bin/pip install conda-store-server==${RELEASE_VERSION} && \
+    rm -rf /opt/conda-store-server/tests
 
 WORKDIR /var/lib/conda-store
 
