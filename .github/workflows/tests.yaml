@@ -24,10 +24,8 @@ jobs:
         include:
           - os: ubuntu
             environment-file: conda-store-server/environment-dev.yaml
-            miniforge-version: latest
           - os: macos
             environment-file: conda-store-server/environment-macos-dev.yaml
-            miniforge-version: latest
     runs-on: ${{ matrix.os }}-latest
     defaults:
       run:
@@ -41,7 +39,7 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
             environment-file: ${{ matrix.environment-file }}
-            miniforge-version: ${{ matrix.miniforge-version }}
+            miniforge-version: latest
 
       - name: "Linting Checks 🧹"
         run: |
