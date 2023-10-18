@@ -33,7 +33,7 @@ Release captain responsible - <@gh_username>
   - [ ] For `conda-store` and `conda-store-server`:
 
     ```bash
-    # note you will need to run this twice, once for each package
+    # Note you will need to run this twice, once for each package
     cd conda-store # or cd conda-store-server
     hatch build
     twine check dist/*
@@ -49,8 +49,8 @@ Release captain responsible - <@gh_username>
 - [ ] [Start a new GitHub release](https://github.com/conda-incubator/conda-store/releases/new)
   - Call the release the current version, e.g. `2023.9.1`
   - In the **`Choose a Tag:`** dropdown, type in the release name (e.g., `2023.9.1`) and click "Create new tag"
-  - In the **`Target:`** dropdown, pin it to the release commit that you've recently pushed.
-  - Add release notes in the field below[^github-activity], you can copy/paste the changelog from the [CHANGELOG.md](./CHANGELOG.md) file.
+  - In the **`Target:`** dropdown, pin it to the release commit you've recently pushed.
+  - Add release notes in the field below[^github-activity]; you can copy/paste the changelog from the [CHANGELOG.md](./CHANGELOG.md) file.
 - [ ] Confirm that the release completed
   - [The `release` GitHub action job](https://github.com/conda-incubator/conda-store/blob/main/.github/workflows/release.yaml) has completed successfully in the [actions tab](https://github.com/pydata/pydata-sphinx-theme/actions).
   - [The `conda-store` PyPI version is updated](https://pypi.org/project/conda-store/)
@@ -60,4 +60,4 @@ Release captain responsible - <@gh_username>
   - [ ] If needed - update `meta.yaml` or `recipe.yaml` and re-render the feedstock.
 - [ ] Celebrate, you're done! 🎉
 
-[^github-activity]: If you wish, use [`github-activity` to generate a changelog](https://github.com/choldgraf/github-activity), eg `github-activity conda-incubator/conda-store --since 2023.9.1 --until 2023.10.1`.
+[^github-activity]: If you wish, use [`github-activity` to generate a changelog](https://github.com/choldgraf/github-activity), e.g. `github-activity conda-incubator/conda-store --since 2023.9.1 --until 2023.10.1`.

@@ -13,7 +13,7 @@ body:
 
         Please fill out each section below. This info allows maintainers to diagnose (and fix!) your issue as
         quickly as possible.
-        Before submitting a bug, please make sure the issue hasn't been already addressed by searching through
+        Before submitting a bug, please make sure the issue hasn't already been addressed by searching through
         the past issues in this repository.
 
   - type: textarea
@@ -40,8 +40,8 @@ body:
       label: How to Reproduce the problem?
       description: |
         Please provide a minimal code example to reproduce the error.
-        Be as succinct as possible, and provide detailed step by step guidelines to reproduce the bug (using numbered items).
-        If you have created a GitHub gist, you can paste the link in this box instead.
+        Be as concise as possible, and provide detailed step-by-step guidelines to reproduce the bug (using numbered items).
+        If you created a GitHub gist, paste the link in this box instead.
     validations:
       required: true
 

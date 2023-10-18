@@ -1,7 +1,7 @@
 name: "General issue 💡"
 description: "A general template for many kinds of issues."
 title: "<title>"
-labels: ["type: question 🤔"]
+labels: ["needs: triaging 🚦"]
 
 body:
   - type: markdown
@@ -13,7 +13,7 @@ body:
 
         Please fill out each section below. This info allows maintainers to diagnose (and fix!) your issue as
         quickly as possible.
-        Before submitting a bug, please make sure the issue hasn't been already addressed by searching through
+        Before submitting a bug, please make sure the issue hasn't already been addressed by searching through
         the past issues in this repository.
 
   - type: textarea

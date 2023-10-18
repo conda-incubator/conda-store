@@ -24,7 +24,7 @@ body:
     attributes:
       label: Value and/or benefit
       description: |
-        What is the value in adding this feature, and who will benefit from it? Include any information that could help us prioritize the issue.
+        What is the value of adding this feature, and who will benefit from it? Include any information that could help us prioritize the issue.
         This section should contain "why" this issue should be resolved.
     validations:
       required: true

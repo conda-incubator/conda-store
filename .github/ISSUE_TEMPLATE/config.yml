@@ -4,5 +4,5 @@ contact_links:
     url: https://conda.store/en/latest/
     about: Check out the conda-store documentation
   - name: conda-store issue tracker
-    about: Did you find a bug or want to make a suggestion? Open an issue on our tracker.
+    about: Did you find a bug or want to suggest something? Please open an issue on our tracker.
     url: https://https://github.com/conda-incubator/conda-store/issues/new/choose
