@@ -9,6 +9,11 @@ on:
     branches:
       - main
 
+# ensuring only one instance is running at a given time
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test-conda-store-server:
     name: "unit-test conda-store-server"
