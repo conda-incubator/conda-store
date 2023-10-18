@@ -43,8 +43,8 @@ dependencies = [
   "itsdangerous",
   "jinja2",
   "python-multipart",
+  "python-docker"
   # conda (which should not be included here)
-
 ]
 dynamic = ["version"]
 
