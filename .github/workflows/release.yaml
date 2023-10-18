@@ -50,3 +50,74 @@ jobs:
         with:
           print-hash: true
         if: github.event_name == 'release' && startsWith(github.ref, 'refs/tags/')
+
+  build_and_push_docker_image:
+    name: "Build Docker Images 🛠"
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # IMPORTANT: this permission is mandatory for trusted publishing
+    strategy:
+      matrix:
+        docker-image:
+          - conda-store
+          - conda-store-server
+    steps:
+      - name: "Checkout Repository 🛎"
+        uses: actions/checkout@v4
+
+      - name: "Retrieve secret from Vault 🗝"
+        uses: hashicorp/vault-action@v2
+        with:
+          method: jwt
+          url: "https://quansight-vault-public-vault-b2379fa7.d415e30e.z1.hashicorp.cloud:8200"
+          namespace: "admin/quansight"
+          role: "repository-conda-incubator-conda-store-role"
+          secrets: |
+            kv/data/repository/conda-incubator/conda-store/shared_secrets DOCKER_QUANSIGHT_USERNAME | DOCKER_USERNAME;
+            kv/data/repository/conda-incubator/conda-store/shared_secrets DOCKER_QUANSIGHT_PASSWORD | DOCKER_PASSWORD;
+            kv/data/repository/conda-incubator/conda-store/shared_secrets QUAY_QUANSIGHT_USERNAME | QUAY_USERNAME;
+            kv/data/repository/conda-incubator/conda-store/shared_secrets QUAY_QUANSIGHT_PASSWORD | QUAY_PASSWORD;
+
+      - name: "Set up Docker Buildx 🏗"
+        uses: docker/setup-buildx-action@v3
+
+      - name: "Login to Docker Hub 🐳"
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKER_USERNAME }}
+          password: ${{ env.DOCKER_PASSWORD }}
+
+      - name: "Login to quay.io 🐳"
+        uses: docker/login-action@v3
+        with:
+          registry: quay.io
+          username: ${{ env.QUAY_USERNAME }}
+          password: ${{ env.QUAY_PASSWORD }}
+
+      - name: "Add Docker metadata 📝"
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            quansight/${{ matrix.docker-image }}
+            quay.io/quansight/${{ matrix.docker-image }}
+          tags: |
+            type=ref,event=tag
+            type=ref,event=branch
+            type=sha
+
+      - name: "Publish Docker image 🚀"
+        uses: docker/build-push-action@v5
+        with:
+          context: "${{ matrix.docker-image }}"
+          target: "prod"
+          file: "${{ matrix.docker-image }}/Dockerfile"
+          build-args: |
+            RELEASE_VERSION=${{github.ref_name}}
+          tags: |
+            ${{ steps.meta.outputs.tags }}
+          push: true
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+        if: github.event_name == 'release' && startsWith(github.ref, 'refs/tags/')

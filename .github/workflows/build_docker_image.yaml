@@ -1,11 +1,9 @@
-name: "Publish Docker Images"
+name: "Publish Dev Docker Images"
 
 on:
   push:
     branches:
       - "main"
-  release:
-    types: [created]
 
 permissions:
   id-token: write # This is required for requesting the JWT
@@ -55,20 +53,20 @@ jobs:
 
       - name: "Add Docker metadata 📝"
         id: meta
-        uses: crazy-max/ghaction-docker-meta@v5
+        uses: docker/metadata-action@v5
         with:
           images: |
             quansight/${{ matrix.docker-image }}
             quay.io/quansight/${{ matrix.docker-image }}
           tags: |
             type=ref,event=tag
-            type=ref,event=branch
             type=sha
 
       - name: "Publish Docker image 🚀"
         uses: docker/build-push-action@v5
         with:
           context: "${{ matrix.docker-image }}"
+          target: "dev"
           file: "${{ matrix.docker-image }}/Dockerfile"
           tags: |
             ${{ steps.meta.outputs.tags }}

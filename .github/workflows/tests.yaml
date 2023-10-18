@@ -198,7 +198,7 @@ jobs:
 
       - name: Docker Meta
         id: meta
-        uses: crazy-max/ghaction-docker-meta@v5
+        uses: docker/metadata-action@v5
         with:
           images: |
             quansight/${{ matrix.docker-image }}
@@ -212,6 +212,7 @@ jobs:
           file: "${{ matrix.docker-image }}/Dockerfile"
           tags: |
             ${{ steps.meta.outputs.tags }}
+          target: "dev"
           push: false
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
