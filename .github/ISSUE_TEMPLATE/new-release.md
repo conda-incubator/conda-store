@@ -26,7 +26,7 @@ Release captain responsible - <@gh_username>
   - [ ] Prepare the branch just in case `git clean -fxdq`
 - [ ] Bump `conda-store` version in [`conda-store/conda-store/__init__.py`](https://github.com/conda-incubator/conda-store/blob/main/conda-store/conda_store/__init__.py)
 - [ ] Bump `conda-store-server` version in [`conda-store-server/conda-store-server/__init__.py`](https://github.com/conda-incubator/conda-store/blob/main/conda-store/conda_store/__init__.py)
-- [ ] Update the `conda-store-ui` version users in `conda-store-server` [`conda-store-server/hatch_build.py`](https://github.com/conda-incubator/conda-store/blob/main/conda-store-server/hatch_build.py)
+- [ ] Update the `conda-store-ui` version used in `conda-store-server` [`conda-store-server/hatch_build.py`](https://github.com/conda-incubator/conda-store/blob/main/conda-store-server/hatch_build.py)
 - [ ] Update the [CHANGELOG.md](./CHANGELOG.md) file with the new version, release date, and relevant changes[^github-activity].
 - [ ] Check the version locally with `hatch version`
 - [ ] Build and test locally
@@ -50,7 +50,7 @@ Release captain responsible - <@gh_username>
   - Call the release the current version, e.g. `2023.9.1`
   - In the **`Choose a Tag:`** dropdown, type in the release name (e.g., `2023.9.1`) and click "Create new tag"
   - In the **`Target:`** dropdown, pin it to the release commit you've recently pushed.
-  - Add release notes in the field below[^github-activity]; you can copy/paste the changelog from the [CHANGELOG.md](./CHANGELOG.md) file.
+  - Add release notes in the field below[^github-activity]; you can copy/paste the Changelog from the [CHANGELOG.md](./CHANGELOG.md) file.
 - [ ] Confirm that the release completed
   - [The `release` GitHub action job](https://github.com/conda-incubator/conda-store/blob/main/.github/workflows/release.yaml) has completed successfully in the [actions tab](https://github.com/pydata/pydata-sphinx-theme/actions).
   - [The `conda-store` PyPI version is updated](https://pypi.org/project/conda-store/)
