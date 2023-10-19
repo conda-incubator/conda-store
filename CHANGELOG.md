@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 The project changed to `CalVer` in September, 2023.
 
+## [2023.10.1] - 2023-10-19
+
+([full changelog](https://github.com/conda-incubator/conda-store/compare/2023.9.1...91d2cb43f81c42c8445d6d7e213bc962500117a3))
+
+## Merged PRs
+
+- ENH  -  Use miniforge throughout [#634](https://github.com/conda-incubator/conda-store/pull/634) ([@trallard](https://github.com/trallard))
+- :heavy_plus_sign: Add python-docker [#633](https://github.com/conda-incubator/conda-store/pull/633) ([@trallard](https://github.com/trallard))
+- Dcmcand optimize docker files [#625](https://github.com/conda-incubator/conda-store/pull/625) ([@dcmcand](https://github.com/dcmcand))
+- :pencil2: Tone and grammar improvements to templates [#624](https://github.com/conda-incubator/conda-store/pull/624) ([@trallard](https://github.com/trallard))
+- Bump @babel/traverse from 7.22.10 to 7.23.2 in /docusaurus-docs [#623](https://github.com/conda-incubator/conda-store/pull/623) ([@dependabot](https://github.com/dependabot))
+- Bug fix: use context manager for Sessions [#622](https://github.com/conda-incubator/conda-store/pull/622) ([@nkaretnikov](https://github.com/nkaretnikov))
+- update conda store dockerfile to have prod target [#621](https://github.com/conda-incubator/conda-store/pull/621) ([@dcmcand](https://github.com/dcmcand))
+- remove extra redis and move to using built images for examples [#620](https://github.com/conda-incubator/conda-store/pull/620) ([@dcmcand](https://github.com/dcmcand))
+- DOC - Add alembic example for postgres in docker [#610](https://github.com/conda-incubator/conda-store/pull/610) ([@nkaretnikov](https://github.com/nkaretnikov))
+- Bump postcss from 8.4.27 to 8.4.31 in /docusaurus-docs [#609](https://github.com/conda-incubator/conda-store/pull/609) ([@dependabot](https://github.com/dependabot))
+- MAINT - Update release docs and add issue template [#608](https://github.com/conda-incubator/conda-store/pull/608) ([@trallard](https://github.com/trallard))
+- REL - `2023.9.2` [#587](https://github.com/conda-incubator/conda-store/pull/587) ([@trallard](https://github.com/trallard))
+- 🔖  release 2023.9.1 [#586](https://github.com/conda-incubator/conda-store/pull/586) ([@trallard](https://github.com/trallard))
+- [DOC] Add Community documentation [#579](https://github.com/conda-incubator/conda-store/pull/579) ([@pavithraes](https://github.com/pavithraes))
+- Add a macOS worker to the CI [#550](https://github.com/conda-incubator/conda-store/pull/550) ([@asmeurer](https://github.com/asmeurer))
+- Better handling of pydantic error msgs [#546](https://github.com/conda-incubator/conda-store/pull/546) ([@pierrotsmnrd](https://github.com/pierrotsmnrd))
+
+## Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/conda-incubator/conda-store/graphs/contributors?from=2023-09-20&to=2023-10-19&type=c))
+
+[@asmeurer](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Aasmeurer+updated%3A2023-09-20..2023-10-19&type=Issues) | [@costrouc](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Acostrouc+updated%3A2023-09-20..2023-10-19&type=Issues) | [@dcmcand](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Adcmcand+updated%3A2023-09-20..2023-10-19&type=Issues) | [@dependabot](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Adependabot+updated%3A2023-09-20..2023-10-19&type=Issues) | [@dharhas](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Adharhas+updated%3A2023-09-20..2023-10-19&type=Issues) | [@iameskild](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Aiameskild+updated%3A2023-09-20..2023-10-19&type=Issues) | [@jaimergp](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Ajaimergp+updated%3A2023-09-20..2023-10-19&type=Issues) | [@kcpevey](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Akcpevey+updated%3A2023-09-20..2023-10-19&type=Issues) | [@netlify](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Anetlify+updated%3A2023-09-20..2023-10-19&type=Issues) | [@nkaretnikov](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Ankaretnikov+updated%3A2023-09-20..2023-10-19&type=Issues) | [@pavithraes](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Apavithraes+updated%3A2023-09-20..2023-10-19&type=Issues) | [@pierrotsmnrd](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Apierrotsmnrd+updated%3A2023-09-20..2023-10-19&type=Issues) | [@trallard](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Atrallard+updated%3A2023-09-20..2023-10-19&type=Issues)
+
 ## [2023.9.1] - 2023-09-21
 
 ### Added
