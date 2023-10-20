@@ -59,6 +59,8 @@ jobs:
     if: github.repository_owner == 'conda-incubator' && github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     needs: build-package
+    permissions:
+      id-token: write # IMPORTANT: this permission is mandatory for trusted publishing
     strategy:
       matrix:
         directory:
