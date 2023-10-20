@@ -12,10 +12,6 @@ Flexible. Reproducible. Governable.
 
 <div align="center">
 
-  <a href="https://conda-store.readthedocs.io/en/latest/">
-    <img src="https://readthedocs.org/projects/conda-store/badge/?version=latest" alt="Documentation Status"/>
-  </a>
-
   <a href="https://pypi.org/project/conda-store-server/">
     <img src="https://img.shields.io/pypi/v/conda-store-server?label=pypi|conda-store-server" alt="PyPi"/>
   </a>

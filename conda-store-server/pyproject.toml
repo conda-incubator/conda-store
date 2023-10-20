@@ -98,3 +98,7 @@ ignore = [
   "E501", # line-length
 
 ]
+
+[tool.check-wheel-contents]
+# ignore alembic migrations https://github.com/jwodder/check-wheel-contents?tab=readme-ov-file#w004--module-is-not-located-at-importable-path
+ignore = ["W004"]
