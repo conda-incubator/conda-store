@@ -35,8 +35,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - run: echo "Running on ${{ matrix.directory }}"
       - name: "Check package build - ${{ matrix.directory }} 📦"
         uses: hynek/build-and-inspect-python-package@v1
+        with:
+          path: ${{ matrix.directory }}
 
   # Upload to Test PyPI on every commit on main
   release-test-pypi:
