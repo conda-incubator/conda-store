@@ -48,7 +48,9 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.directory }}-package
-          path: /tmp/baipp/dist/*
+          path: |
+            /tmp/baipp/dist/*.whl
+            /tmp/baipp/dist/*.tar.gz
 
   # Upload to Test PyPI on every commit on main
   release-test-pypi:
