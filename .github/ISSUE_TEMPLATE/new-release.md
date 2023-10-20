@@ -60,4 +60,4 @@ Release captain responsible - <@gh_username>
   - [ ] If needed - update `meta.yaml` or `recipe.yaml` and re-render the feedstock.
 - [ ] Celebrate, you're done! 🎉
 
-[^github-activity]: If you wish, use [`github-activity` to generate a changelog](https://github.com/choldgraf/github-activity), e.g. `github-activity conda-incubator/conda-store --since 2023.9.1 --until 2023.10.1`.
+[^github-activity]: If you wish, use [`github-activity` to generate a Changelog](https://github.com/choldgraf/github-activity), e.g. `github-activity conda-incubator/conda-store --since 2023.9.1 --until 2023.10.1`.
