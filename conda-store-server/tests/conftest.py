@@ -14,7 +14,10 @@ from conda_store_server.server import app as server_app  # isort:skip
 @pytest.fixture
 def celery_config(conda_store):
     config = conda_store.celery_config
-    config["traitlets"] = {"CondaStore": {"database_url": conda_store.database_url}}
+    config["traitlets"] = {"CondaStore": {
+        "database_url": conda_store.database_url,
+        "store_directory": conda_store.store_directory,
+    }}
     return config
 
 
