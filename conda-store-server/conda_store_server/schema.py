@@ -9,8 +9,6 @@ from typing import Any, Callable, Dict, List, Optional, Union
 from conda_store_server import conda_utils, utils
 from pydantic import BaseModel, Field, ValidationError, constr, validator
 
-ON_WIN = sys.platform.startswith("win")
-
 
 def _datetime_factory(offset: datetime.timedelta):
     """utcnow datetime + timezone as string"""
@@ -196,20 +194,20 @@ class Settings(BaseModel):
         metadata={"global": True},
     )
 
-    default_uid: int | None = Field(
-        None if ON_WIN else os.getuid(),
+    default_uid: Optional[int] = Field(
+        None if sys.platform == "win32" else os.getuid(),
         description="default uid to assign to built environments",
         metadata={"global": True},
     )
 
-    default_gid: int | None = Field(
-        None if ON_WIN else os.getgid(),
+    default_gid: Optional[int] = Field(
+        None if sys.platform == "win32" else os.getgid(),
         description="default gid to assign to built environments",
         metadata={"global": True},
     )
 
-    default_permissions: str | None = Field(
-        None if ON_WIN else "775",
+    default_permissions: Optional[str] = Field(
+        None if sys.platform == "win32" else "775",
         description="default file permissions to assign to built environments",
         metadata={"global": True},
     )

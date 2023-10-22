@@ -32,8 +32,6 @@ from traitlets import (
 )
 from traitlets.config import LoggingConfigurable
 
-ON_WIN = sys.platform.startswith("win")
-
 
 def conda_store_validate_specification(
     db: Session,
@@ -304,21 +302,21 @@ class CondaStore(LoggingConfigurable):
     )
 
     default_uid = Integer(
-        None if ON_WIN else os.getuid(),
+        None if sys.platform == "win32" else os.getuid(),
         help="default uid to assign to built environments",
         config=True,
         allow_none=True,
     )
 
     default_gid = Integer(
-        None if ON_WIN else os.getgid(),
+        None if sys.platform == "win32" else os.getgid(),
         help="default gid to assign to built environments",
         config=True,
         allow_none=True,
     )
 
     default_permissions = Unicode(
-        None if ON_WIN else "775",
+        None if sys.platform == "win32" else "775",
         help="default file permissions to assign to built environments",
         config=True,
         allow_none=True,
