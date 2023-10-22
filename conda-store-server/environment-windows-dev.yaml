@@ -1,7 +1,8 @@
 name: conda-store-server-dev
 channels:
   - conda-forge
-  - Microsoft
+  - microsoft
+  - nodefaults
 dependencies:
   - python ==3.10
   # conda builds
@@ -37,6 +38,7 @@ dependencies:
   - typer
 
   # dev dependencies
+  - aiohttp>=3.8.1
   - hatch
   - pytest
   - pytest-celery
@@ -51,6 +53,7 @@ dependencies:
   - pydata-sphinx-theme
   - playwright
   - docker-compose
+  - pip
 
   - pip:
       - pytest-playwright
