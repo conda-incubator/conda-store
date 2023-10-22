@@ -56,7 +56,11 @@ def disk_usage(path: pathlib.Path):
     else:
         cmd = ["du", "-sb", str(path)]
 
-    return subprocess.check_output(cmd, encoding="utf-8").split()[0]
+    output = subprocess.check_output(cmd, encoding="utf-8").split()[0]
+    if sys.platform == "darwin":
+        # mac du does not have the -b option to return bytes
+        output = str(int(output) * 512)
+    return output
 
 
 @contextlib.contextmanager
