@@ -53,34 +53,26 @@ def chdir(directory: pathlib.Path):
 def du(path):
     """
     Pure Python equivalent of du -sb
-
     Based on https://stackoverflow.com/a/55648984/161801
     """
-    if os.path.islink(path):
+    if os.path.islink(path) or os.path.isfile(path):
         return os.lstat(path).st_size
-    if os.path.isfile(path):
-        st = os.lstat(path)
-        return st.st_size
-    apparent_total_bytes = 0
-    have = set()
+    nbytes = 0
+    seen = set()
     for dirpath, dirnames, filenames in os.walk(path):
-        apparent_total_bytes += os.lstat(dirpath).st_size
+        nbytes += os.lstat(dirpath).st_size
         for f in filenames:
             fp = os.path.join(dirpath, f)
-            if os.path.islink(fp):
-                apparent_total_bytes += os.lstat(fp).st_size
-                continue
             st = os.lstat(fp)
-            if st.st_ino in have:
+            if st.st_ino in seen:
                 continue
-            have.add(st.st_ino)
-            apparent_total_bytes += st.st_size
+            seen.add(st.st_ino)  # adds inode to seen list
+            nbytes += st.st_size  # adds bytes to total
         for d in dirnames:
             dp = os.path.join(dirpath, d)
             if os.path.islink(dp):
-                apparent_total_bytes += os.lstat(dp).st_size
-
-    return apparent_total_bytes
+                nbytes += os.lstat(dp).st_size
+    return nbytes
 
 
 def disk_usage(path: pathlib.Path):
