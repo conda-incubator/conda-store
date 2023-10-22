@@ -336,10 +336,6 @@ class CondaStoreServer(Application):
 
         # start worker if in standalone mode
         if self.standalone:
-            address = "localhost" if self.address == "0.0.0.0" else self.address
-            print(
-                f"Starting standalone conda-store server at http://{address}:{self.port}"
-            )
             import multiprocessing
 
             multiprocessing.set_start_method("spawn")
