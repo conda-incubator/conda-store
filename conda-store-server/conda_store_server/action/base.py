@@ -18,7 +18,7 @@ def action(f: typing.Callable):
             # redirect stdout -> action_context.stdout
             stack.enter_context(contextlib.redirect_stdout(action_context.stdout))
 
-            # redirect stderr -> action_context.stderr
+            # redirect stderr -> action_context.stdout
             stack.enter_context(contextlib.redirect_stderr(action_context.stdout))
 
             # create a temporary directory
