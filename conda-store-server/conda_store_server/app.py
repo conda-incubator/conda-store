@@ -2,12 +2,12 @@ import datetime
 import os
 import sys
 from contextlib import contextmanager
-from pathlib import Path, PurePosixPath
 from typing import Any, Dict
 
 import pydantic
 from celery import Celery, group
 from conda_store_server import (
+    CONDA_STORE_DIR,
     api,
     conda_utils,
     environment,
@@ -17,7 +17,6 @@ from conda_store_server import (
     storage,
     utils,
 )
-from conda_store_server import CONDA_STORE_DIR
 from sqlalchemy.orm import Session
 from sqlalchemy.pool import QueuePool
 from traitlets import (
