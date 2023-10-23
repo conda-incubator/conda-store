@@ -5,6 +5,7 @@ import shutil
 
 import minio
 from conda_store_server import api, orm, schema
+from conda_store_server import CONDA_STORE_DIR
 from minio.credentials.providers import Provider
 from traitlets import Bool, Dict, List, Type, Unicode
 from traitlets.config import LoggingConfigurable
@@ -194,7 +195,7 @@ class S3Storage(Storage):
 
 class LocalStorage(Storage):
     storage_path = Unicode(
-        "conda-store-state/storage",
+        str(CONDA_STORE_DIR / "storage"),
         help="directory to store binary blobs of conda-store artifacts",
         config=True,
     )

@@ -17,6 +17,7 @@ from conda_store_server import (
     storage,
     utils,
 )
+from conda_store_server import CONDA_STORE_DIR
 from sqlalchemy.orm import Session
 from sqlalchemy.pool import QueuePool
 from traitlets import (
@@ -71,9 +72,6 @@ def conda_store_validate_action(
         raise utils.CondaStoreError(
             f"`CondaStore.storage_threshold` reached. Action {action.value} prevented due to insufficient storage space"
         )
-
-
-CONDA_STORE_DIR = Path.home() / ".conda-store"
 
 
 class CondaStore(LoggingConfigurable):
@@ -205,7 +203,7 @@ class CondaStore(LoggingConfigurable):
     )
 
     database_url = Unicode(
-        "sqlite:///" + str(PurePosixPath(CONDA_STORE_DIR) / "conda-store.sqlite"),
+        "sqlite:///" + str(CONDA_STORE_DIR / "conda-store.sqlite"),
         help="url for the database. e.g. 'sqlite:///conda-store.sqlite' tables will be automatically created if they do not exist",
         config=True,
     )
