@@ -1,0 +1,59 @@
+name: conda-store-server-dev
+channels:
+  - conda-forge
+  - microsoft
+  - nodefaults
+dependencies:
+  - python ==3.10
+  # conda builds
+  - conda ==23.5.2
+  - python-docker
+  - conda-pack
+  - conda-lock >=1.0.5
+  - mamba
+  - conda-package-handling
+  # web server
+  - celery
+  - flower
+  - redis-py
+  - sqlalchemy<=1.4.47
+  - psycopg2
+  - pymysql
+  - requests
+  - uvicorn
+  - fastapi
+  - pydantic < 2.0
+  - pyyaml
+  - traitlets
+  - yarl
+  - pyjwt
+  - filelock
+  - itsdangerous
+  - jinja2
+  - python-multipart
+  - alembic
+  # artifact storage
+  - minio
+  # CLI
+  - typer
+
+  # dev dependencies
+  - aiohttp>=3.8.1
+  - hatch
+  - pytest
+  - pytest-celery
+  - pytest-mock
+  - black ==22.3.0
+  - flake8
+  - ruff
+  - sphinx
+  - myst-parser
+  - sphinx-panels
+  - sphinx-copybutton
+  - pydata-sphinx-theme
+  - playwright
+  - docker-compose
+  - pip
+
+  - pip:
+      - pytest-playwright

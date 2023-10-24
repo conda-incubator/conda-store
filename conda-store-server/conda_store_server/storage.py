@@ -1,5 +1,6 @@
 import io
 import os
+import posixpath
 import shutil
 
 import minio
@@ -223,7 +224,7 @@ class LocalStorage(Storage):
             return f.read()
 
     def get_url(self, key):
-        return os.path.join(self.storage_url, key)
+        return posixpath.join(self.storage_url, key)
 
     def delete(self, db, build_id, key):
         filename = os.path.join(self.storage_path, key)

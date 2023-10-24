@@ -50,13 +50,44 @@ def chdir(directory: pathlib.Path):
         os.chdir(current_directory)
 
 
+def du(path):
+    """
+    Pure Python equivalent of du -sb
+    Based on https://stackoverflow.com/a/55648984/161801
+    """
+    if os.path.islink(path) or os.path.isfile(path):
+        return os.lstat(path).st_size
+    nbytes = 0
+    seen = set()
+    for dirpath, dirnames, filenames in os.walk(path):
+        nbytes += os.lstat(dirpath).st_size
+        for f in filenames:
+            fp = os.path.join(dirpath, f)
+            st = os.lstat(fp)
+            if st.st_ino in seen:
+                continue
+            seen.add(st.st_ino)  # adds inode to seen list
+            nbytes += st.st_size  # adds bytes to total
+        for d in dirnames:
+            dp = os.path.join(dirpath, d)
+            if os.path.islink(dp):
+                nbytes += os.lstat(dp).st_size
+    return nbytes
+
+
 def disk_usage(path: pathlib.Path):
     if sys.platform == "darwin":
         cmd = ["du", "-sAB1", str(path)]
-    else:
+    elif sys.platform == "linux":
         cmd = ["du", "-sb", str(path)]
+    else:
+        return str(du(path))
 
-    return subprocess.check_output(cmd, encoding="utf-8").split()[0]
+    output = subprocess.check_output(cmd, encoding="utf-8").split()[0]
+    if sys.platform == "darwin":
+        # mac du does not have the -b option to return bytes
+        output = str(int(output) * 512)
+    return output
 
 
 @contextlib.contextmanager

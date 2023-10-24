@@ -1,6 +1,5 @@
 import os
 from contextlib import contextmanager
-from subprocess import check_call
 from tempfile import TemporaryDirectory
 
 from alembic import command
@@ -78,6 +77,8 @@ def upgrade(db_url, revision="head"):
     current_table_names = set(inspect(engine).get_table_names())
 
     with _temp_alembic_ini(db_url) as alembic_ini:
+        alembic_cfg = Config(alembic_ini)
+
         if (
             "alembic_version" not in current_table_names
             and len(current_table_names) > 0
@@ -86,10 +87,10 @@ def upgrade(db_url, revision="head"):
             # we stamp the revision at the first one, that introduces the alembic revisions.
             # I chose the leave the revision number hardcoded as it's not something
             # dynamic, not something we want to change, and tightly related to the codebase
-            command.stamp(Config(alembic_ini), "48be4072fe58")
+            command.stamp(alembic_cfg, "48be4072fe58")
             # After this point, whatever is in the database, Alembic will
             # believe it's at the first revision. If there are more upgrades/migrations
             # to run, they'll be at the next step :
 
         # run the upgrade.
-        check_call(["alembic", "-c", alembic_ini, "upgrade", revision])
+        command.upgrade(config=alembic_cfg, revision=revision)

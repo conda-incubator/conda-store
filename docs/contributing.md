@@ -66,18 +66,20 @@ Install the following dependencies before developing on conda-store.
 Install the development dependencies and activate the environment.
 
 ```shell
+# replace this with environment-macos-dev.yaml or environment-windows-dev.yaml
+# if you are on Mac or Windows
 conda env create -f conda-store-server/environment-dev.yaml
 conda activate conda-store-server-dev
 ```
 
 Running `conda-store`. `--standalone` mode launched celery as a
-subprocess of the web server.
+subprocess of the web server. Run
 
-python -m conda_store_server.server --standalone tests/assets/conda_store_standalone_config.py
+```
+python -m conda_store_server.server --standalone
+```
 
-````
-
-Visit [localhost:5000](http://localhost:5000/)
+Then visit [localhost:5000](http://localhost:5000/).
 
 ### Changes to API
 
@@ -99,6 +101,8 @@ To build the documentation install the development environment via
 Conda.
 
 ```shell
+# replace this with environment-macos-dev.yaml or environment-windows-dev.yaml
+# if you are on Mac or Windows
 conda env create -f conda-store-server/environment-dev.yaml
 conda activate conda-store-server-dev
 ````

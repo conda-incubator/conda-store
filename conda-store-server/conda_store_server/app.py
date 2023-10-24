@@ -302,21 +302,24 @@ class CondaStore(LoggingConfigurable):
     )
 
     default_uid = Integer(
-        os.getuid(),
+        None if sys.platform == "win32" else os.getuid(),
         help="default uid to assign to built environments",
         config=True,
+        allow_none=True,
     )
 
     default_gid = Integer(
-        os.getgid(),
+        None if sys.platform == "win32" else os.getgid(),
         help="default gid to assign to built environments",
         config=True,
+        allow_none=True,
     )
 
     default_permissions = Unicode(
-        "775",
+        None if sys.platform == "win32" else "775",
         help="default file permissions to assign to built environments",
         config=True,
+        allow_none=True,
     )
 
     default_docker_base_image = Union(

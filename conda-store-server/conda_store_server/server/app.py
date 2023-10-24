@@ -1,5 +1,6 @@
 import logging
 import os
+import posixpath
 import sys
 
 import conda_store_server
@@ -198,9 +199,9 @@ class CondaStoreServer(Application):
         app = FastAPI(
             title="conda-store",
             version=__version__,
-            openapi_url=os.path.join(self.url_prefix, "openapi.json"),
-            docs_url=os.path.join(self.url_prefix, "docs"),
-            redoc_url=os.path.join(self.url_prefix, "redoc"),
+            openapi_url=posixpath.join(self.url_prefix, "openapi.json"),
+            docs_url=posixpath.join(self.url_prefix, "docs"),
+            redoc_url=posixpath.join(self.url_prefix, "redoc"),
             contact={
                 "name": "Quansight",
                 "url": "https://quansight.com",

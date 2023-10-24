@@ -19,13 +19,14 @@ jobs:
     name: "unit-test conda-store-server"
     strategy:
       matrix:
-        # cannot run on windows due to needing fake-chroot for conda-docker
-        os: ["ubuntu", "macos"]
+        os: ["ubuntu", "macos", "windows"]
         include:
           - os: ubuntu
             environment-file: conda-store-server/environment-dev.yaml
           - os: macos
             environment-file: conda-store-server/environment-macos-dev.yaml
+          - os: windows
+            environment-file: conda-store-server/environment-windows-dev.yaml
     runs-on: ${{ matrix.os }}-latest
     defaults:
       run:
@@ -40,6 +41,16 @@ jobs:
         with:
             environment-file: ${{ matrix.environment-file }}
             miniforge-version: latest
+
+      # This fixes a "DLL not found" issue importing ctypes from the hatch env
+      - name: Reinstall Python 3.10 on Windows runner
+        uses: nick-fields/retry@v2.8.3
+        with:
+          timeout_minutes: 9999
+          max_attempts: 6
+          command:
+            conda install --channel=conda-forge --quiet --yes python=${{ matrix.python }}
+        if: matrix.os == 'windows'
 
       - name: "Linting Checks 🧹"
         run: |

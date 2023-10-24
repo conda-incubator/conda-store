@@ -15,9 +15,17 @@ def test_action_decorator():
     def test_function(context):
         print("stdout")
         print("stderr", file=sys.stderr)
-        context.run(["echo", "subprocess"])
-        context.run("echo subprocess_stdout", shell=True)
-        context.run("echo subprocess_stderr 1>&2", shell=True)
+        if sys.platform == "win32":
+            # echo is not a separate program on Windows
+            context.run(["cmd", "/c", "echo subprocess"])
+            context.run("echo subprocess_stdout", shell=True)
+            context.run("echo subprocess_stderr>&2", shell=True)
+            context.run("echo subprocess_stderr_no_redirect>&2", shell=True, redirect_stderr=False)
+        else:
+            context.run(["echo", "subprocess"])
+            context.run("echo subprocess_stdout", shell=True)
+            context.run("echo subprocess_stderr 1>&2", shell=True)
+            context.run("echo subprocess_stderr_no_redirect 1>&2", shell=True, redirect_stderr=False)
         context.log.info("log")
         return pathlib.Path.cwd()
 
@@ -26,9 +34,10 @@ def test_action_decorator():
         context.stdout.getvalue()
         == "stdout\nstderr\nsubprocess\nsubprocess_stdout\nsubprocess_stderr\nlog\n"
     )
+    assert context.stderr.getvalue() == "subprocess_stderr_no_redirect\n"
     # test that action direction is not the same as outside function
     assert context.result != pathlib.Path.cwd()
-    # test that temportary directory is cleaned up
+    # test that temporary directory is cleaned up
     assert not context.result.exists()
 
 
@@ -155,6 +164,7 @@ def test_remove_conda_prefix(tmp_path, simple_conda_lock):
     assert not conda_prefix.exists()
 
 
+@pytest.mark.skipif(sys.platform == "win32", reason="permissions are not supported on Windows")
 def test_set_conda_prefix_permissions(tmp_path, conda_store, simple_conda_lock):
     conda_prefix = tmp_path / "test"
 

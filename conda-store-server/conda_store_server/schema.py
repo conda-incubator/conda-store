@@ -194,20 +194,20 @@ class Settings(BaseModel):
         metadata={"global": True},
     )
 
-    default_uid: int = Field(
-        os.getuid(),
+    default_uid: Optional[int] = Field(
+        None if sys.platform == "win32" else os.getuid(),
         description="default uid to assign to built environments",
         metadata={"global": True},
     )
 
-    default_gid: int = Field(
-        os.getgid(),
+    default_gid: Optional[int] = Field(
+        None if sys.platform == "win32" else os.getgid(),
         description="default gid to assign to built environments",
         metadata={"global": True},
     )
 
-    default_permissions: str = Field(
-        "775",
+    default_permissions: Optional[str] = Field(
+        None if sys.platform == "win32" else "775",
         description="default file permissions to assign to built environments",
         metadata={"global": True},
     )
