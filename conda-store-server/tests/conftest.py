@@ -18,7 +18,7 @@ def celery_config(tmp_path, conda_store):
         "database_url": conda_store.database_url,
         "store_directory": conda_store.store_directory,
     }}
-    config["beat_schedule_filename"] = str(tmp_path / "celerybeat-schedule")
+    config["beat_schedule_filename"] = str(tmp_path / ".conda-store" / "celerybeat-schedule")
     return config
 
 
@@ -31,7 +31,7 @@ def conda_store_config(tmp_path, request):
     store_directory = tmp_path / ".conda-store" / "state"
     store_directory.mkdir(parents=True)
 
-    storage.LocalStorage.storage_path = str(tmp_path / "storage")
+    storage.LocalStorage.storage_path = str(tmp_path / ".conda-store" / "storage")
 
     with utils.chdir(tmp_path):
         yield Config(
