@@ -435,7 +435,7 @@ class CondaStore(LoggingConfigurable):
                     "kwargs": {},
                 },
             },
-            "beat_schedule_filename": f"{CONDA_STORE_DIR}/celerybeat-schedule",
+            "beat_schedule_filename": str(CONDA_STORE_DIR / "celerybeat-schedule"),
             "triatlets": {},
         }
 
