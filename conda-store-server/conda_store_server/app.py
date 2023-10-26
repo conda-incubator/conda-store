@@ -7,6 +7,7 @@ from typing import Any, Dict
 import pydantic
 from celery import Celery, group
 from conda_store_server import (
+    CONDA_STORE_DIR,
     api,
     conda_utils,
     environment,
@@ -88,7 +89,7 @@ class CondaStore(LoggingConfigurable):
     )
 
     store_directory = Unicode(
-        "conda-store-state",
+        str(CONDA_STORE_DIR / "state"),
         help="directory for conda-store to build environments and store state",
         config=True,
     )
@@ -201,7 +202,7 @@ class CondaStore(LoggingConfigurable):
     )
 
     database_url = Unicode(
-        "sqlite:///conda-store.sqlite",
+        "sqlite:///" + str(CONDA_STORE_DIR / "conda-store.sqlite"),
         help="url for the database. e.g. 'sqlite:///conda-store.sqlite' tables will be automatically created if they do not exist",
         config=True,
     )
@@ -434,6 +435,7 @@ class CondaStore(LoggingConfigurable):
                     "kwargs": {},
                 },
             },
+            "beat_schedule_filename": str(CONDA_STORE_DIR / "celerybeat-schedule"),
             "triatlets": {},
         }
 
