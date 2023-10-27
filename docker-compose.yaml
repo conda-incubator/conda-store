@@ -36,7 +36,7 @@ services:
       - ./tests/assets/conda_store_config.py:/opt/conda_store/conda_store_config.py:ro
     healthcheck:
       test:
-        ["CMD", "curl", "--fail", "http://localhost:5000/conda-store/api/v1/"]
+        ["CMD", "curl", "--fail", "http://localhost:8080/conda-store/api/v1/"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -48,7 +48,7 @@ services:
         "/opt/conda_store/conda_store_config.py",
       ]
     ports:
-      - "5000:5000"
+      - "8080:8080"
 
   minio:
     image: minio/minio:RELEASE.2020-11-10T21-02-24Z

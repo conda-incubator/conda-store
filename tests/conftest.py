@@ -9,7 +9,7 @@ import pytest
 from requests import Session
 
 CONDA_STORE_SERVER_PORT = os.environ.get(
-    "CONDA_STORE_SERVER_PORT", f"5000"
+    "CONDA_STORE_SERVER_PORT", f"8080"
 )
 CONDA_STORE_BASE_URL = os.environ.get(
     "CONDA_STORE_BASE_URL", f"http://localhost:{CONDA_STORE_SERVER_PORT}/conda-store/"

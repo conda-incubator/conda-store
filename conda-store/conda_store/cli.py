@@ -36,7 +36,7 @@ async def parse_build(conda_store_api: api.CondaStoreAPI, uri: str):
 @click.group()
 @click.option(
     "--conda-store-url",
-    default="http://localhost:5000",
+    default="http://localhost:8080",
     envvar="CONDA_STORE_URL",
     help="conda-store base url including prefix",
 )
