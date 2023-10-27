@@ -93,7 +93,7 @@ jobs:
 
           wait-for-it localhost:5432 # postgresql
           wait-for-it localhost:9000 # minio
-          wait-for-it localhost:5000 # conda-store-server
+          wait-for-it localhost:8080 # conda-store-server
 
       - name: "Run Playwright tests 🎭"
         run: |
@@ -155,7 +155,7 @@ jobs:
 
           wait-for-it localhost:5432 # postgresql
           wait-for-it localhost:9000 # minio
-          wait-for-it localhost:5000 # conda-store-server
+          wait-for-it localhost:8080 # conda-store-server
 
       - name: "Install conda-store for tests 📦"
         run: |
@@ -172,7 +172,7 @@ jobs:
 
       - name: "Test shebang"
         run: |
-          export CONDA_STORE_URL=http://localhost:5000/conda-store
+          export CONDA_STORE_URL=http://localhost:8080/conda-store
           export CONDA_STORE_AUTH=basic
           export CONDA_STORE_USERNAME=username
           export CONDA_STORE_PASSWORD=password

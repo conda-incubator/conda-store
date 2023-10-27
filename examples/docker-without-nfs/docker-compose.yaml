@@ -54,7 +54,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.conda-store.rule=Host(`conda-store.localhost`) && PathPrefix(`/conda-store`)"
       - "traefik.http.routers.conda-store.entrypoints=websecure"
-      - "traefik.port=5000"
+      - "traefik.port=8080"
     depends_on:
       postgres:
         condition: service_healthy
@@ -66,7 +66,7 @@ services:
       - ./assets/conda_store_config.py:/etc/conda-store/conda_store_config.py:ro
     healthcheck:
       test:
-        ["CMD", "curl", "--fail", "http://localhost:5000/conda-store/api/v1/"]
+        ["CMD", "curl", "--fail", "http://localhost:8080/conda-store/api/v1/"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -78,7 +78,7 @@ services:
         "/etc/conda-store/conda_store_config.py",
       ]
     ports:
-      - "5000:5000"
+      - "8080:8080"
 
   jupyterhub:
     build: quansight/conda-store

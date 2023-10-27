@@ -33,15 +33,9 @@ arm architectures. Otherwise this workflow has been shown to run and build on OS
 Notice the `architecture: amd64` whithin the docker-compose.yaml files.
 :::
 
-:::{warning}
-If you're developing on a Mac and run into issues that complain about `tcp 0.0.0.0:5000: bind: address already in use` you might need to deactivate the `Airplay Receiver` service from the `Sharing` section in Control Center.
-Have a look at this [discussion on Apple.com](https://developer.apple.com/forums/thread/682332)
-for more details.
-:::
-
 The following resources will be available:
 
-- conda-store web server running at [http://localhost:5000](http://localhost:5000)
+- conda-store web server running at [http://localhost:8080](http://localhost:8080)
 - [MinIO](https://min.io/) s3 running at [http://localhost:9000](http://localhost:9000) with username `admin` and password `password`
 - [PostgreSQL](https://www.postgresql.org/) running at [localhost:5432](http://localhost:5432) with username `admin` and password `password` database `conda-store`
 - [Redis](https://www.redis.com/) running at [localhost:6379](http://localhost:6379) with password `password`
@@ -79,7 +73,7 @@ subprocess of the web server. Run
 python -m conda_store_server.server --standalone
 ```
 
-Then visit [localhost:5000](http://localhost:5000/).
+Then visit [localhost:8080](http://localhost:8080/).
 
 ### Changes to API
 
@@ -148,12 +142,12 @@ docker.
 $ cd conda-store
 $ docker-compose down -v # ensure you've cleared state
 $ docker-compose up --build
-# wait until the conda-store-server is running check by visiting localhost:5000
+# wait until the conda-store-server is running check by visiting localhost:8080
 
 $ pip install -e .
 $ ./tests/unauthenticated-tests.sh
 $ ./tests/authenticated-tests.sh
-$ export CONDA_STORE_URL=http://localhost:5000/conda-store
+$ export CONDA_STORE_URL=http://localhost:8080/conda-store
 $ export CONDA_STORE_AUTH=basic
 $ export CONDA_STORE_USERNAME=username
 $ export CONDA_STORE_PASSWORD=password
@@ -191,7 +185,7 @@ docker.
 $ cd conda-store-server
 $ docker-compose down -v # ensure you've cleared state
 $ docker-compose up --build
-# wait until the conda-store-server is running check by visiting localhos:5000
+# wait until the conda-store-server is running check by visiting localhos:8080
 $ hatch env run -e dev playwright-test
 $ hatch env run -e dev integration-test
 ```

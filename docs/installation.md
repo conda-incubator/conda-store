@@ -14,7 +14,7 @@ Once installed, start conda-store using :
 conda-store-server --standalone
 ```
 
-You can then access conda-store on port 5000 of the machine running it.
+You can then access conda-store on port 8080 of the machine running it.
 
 ## Kubernetes
 
@@ -56,10 +56,10 @@ If your installation worked you should be able to port forward the
 conda-store web server.
 
 ```shell
-kubectl port-forward service/conda-store-server 5000:5000
+kubectl port-forward service/conda-store-server 8080:8080
 ```
 
-Then visit via your web browser [http://localhost:5000](http://localhost:5000)
+Then visit via your web browser [http://localhost:8080](http://localhost:8080)
 
 For additional configuration options see the [administrative
 guide](./administration.md)
