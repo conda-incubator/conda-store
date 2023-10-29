@@ -103,6 +103,21 @@ class NamespaceRoleMapping(BaseModel):
         orm_mode = True
 
 
+class NamespaceRoleMappingV2(BaseModel):
+    id: int
+    entity: str
+    namespace: str
+    other_namespace: str
+    role: str
+
+    class Config:
+        orm_mode = True
+
+    @classmethod
+    def from_list(cls, lst):
+        return cls(**{k: v for k, v in zip(cls.__fields__.keys(), lst)})
+
+
 class Namespace(BaseModel):
     id: int
     name: constr(regex=f"^[{ALLOWED_CHARACTERS}]+$")  # noqa: F722
