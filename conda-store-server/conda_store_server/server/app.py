@@ -264,6 +264,14 @@ class CondaStoreServer(Application):
                 views.router_api_v1,
                 prefix=trim_slash(self.url_prefix),
             )
+            app.include_router(
+                views.router_api_v2,
+                prefix=trim_slash(self.url_prefix),
+            )
+            app.include_router(
+                views.router_api_experimental,
+                prefix=trim_slash(self.url_prefix),
+            )
 
         if self.enable_registry:
             # docker registry api specification does not support a url_prefix

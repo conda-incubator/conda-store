@@ -9,10 +9,36 @@ from conda_store_server.server import dependencies
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request
 from fastapi.responses import PlainTextResponse, RedirectResponse
 
+_API_PREFIX_V1 = "/api/v1"
+_API_PREFIX_V2 = "/api/v2"
+_API_PREFIX_EXPERIMENTAL = "/api/experimental"
+
 router_api_v1 = APIRouter(
     tags=["api"],
-    prefix="/api/v1",
+    prefix=_API_PREFIX_V1,
 )
+
+router_api_v2 = APIRouter(
+    tags=["api"],
+    prefix=_API_PREFIX_V2,
+)
+
+router_api_experimental = APIRouter(
+    tags=["api"],
+    prefix=_API_PREFIX_EXPERIMENTAL,
+)
+
+
+def _is_api_v1(request: Request) -> bool:
+    return request.scope["route"].path.startswith(_API_PREFIX_V1)
+
+
+def _is_api_v2(request: Request) -> bool:
+    return request.scope["route"].path.startswith(_API_PREFIX_V2)
+
+
+def _is_api_experimental(request: Request) -> bool:
+    return request.scope["route"].path.startswith(_API_PREFIX_EXPERIMENTAL)
 
 
 def get_paginated_args(
