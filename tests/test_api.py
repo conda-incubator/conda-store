@@ -79,10 +79,11 @@ def test_api_permissions_unauth(testclient):
     assert r.data.authenticated == False
     assert r.data.primary_namespace == "default"
     assert r.data.entity_permissions == {
-        "default/*": [
+        "default/*": sorted([
             schema.Permissions.ENVIRONMENT_READ.value,
             schema.Permissions.NAMESPACE_READ.value,
-        ]
+            schema.Permissions.NAMESPACE_ROLE_MAPPING_READ.value,
+        ])
     }
 
 
@@ -109,6 +110,8 @@ def test_api_permissions_auth(testclient):
                 schema.Permissions.NAMESPACE_DELETE.value,
                 schema.Permissions.NAMESPACE_UPDATE.value,
                 schema.Permissions.NAMESPACE_ROLE_MAPPING_CREATE.value,
+                schema.Permissions.NAMESPACE_ROLE_MAPPING_READ.value,
+                schema.Permissions.NAMESPACE_ROLE_MAPPING_UPDATE.value,
                 schema.Permissions.NAMESPACE_ROLE_MAPPING_DELETE.value,
                 schema.Permissions.SETTING_READ.value,
                 schema.Permissions.SETTING_UPDATE.value,
@@ -118,12 +121,14 @@ def test_api_permissions_auth(testclient):
             [
                 schema.Permissions.ENVIRONMENT_READ.value,
                 schema.Permissions.NAMESPACE_READ.value,
+                schema.Permissions.NAMESPACE_ROLE_MAPPING_READ.value,
             ]
         ),
         "filesystem/*": sorted(
             [
                 schema.Permissions.ENVIRONMENT_READ.value,
                 schema.Permissions.NAMESPACE_READ.value,
+                schema.Permissions.NAMESPACE_ROLE_MAPPING_READ.value,
             ]
         ),
     }
