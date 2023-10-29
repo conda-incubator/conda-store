@@ -92,7 +92,7 @@ class NamespaceRoleMapping(Base):
 class NamespaceRoleMappingV2(Base):
     """Mapping between roles and namespaces"""
 
-    __tablename__ = "namespace_role_mapping"
+    __tablename__ = "namespace_role_mapping_v2"
 
     id = Column(Integer, primary_key=True)
     # Provides access to this namespace
