@@ -105,8 +105,8 @@ def test_namespace_role_mapping_v2(db):
     with pytest.raises(
             Exception,
             match=(r"UNIQUE constraint failed: "
-                   r"namespace_role_mapping.namespace_id, "
-                   r"namespace_role_mapping.other_namespace_id")):
+                   r"namespace_role_mapping_v2.namespace_id, "
+                   r"namespace_role_mapping_v2.other_namespace_id")):
         # Runs in a nested transaction since a constraint violation will cause a rollback
         with db.begin_nested():
             api.create_namespace_role(db, name=namespace_name, other=other_namespace_name2, role="developer")
