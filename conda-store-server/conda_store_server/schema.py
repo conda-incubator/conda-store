@@ -617,6 +617,28 @@ class APIGetNamespace(APIResponse):
     data: Namespace
 
 
+# GET /api/v2/namespace/{name}/role
+class APIGetNamespaceRole(BaseModel):
+    other_namespace: str
+
+
+# POST /api/v2/namespace/{name}/role
+class APIPostNamespaceRole(BaseModel):
+    other_namespace: str
+    role: str
+
+
+# PUT /api/v2/namespace/{name}/role
+class APIPutNamespaceRole(BaseModel):
+    other_namespace: str
+    role: str
+
+
+# DELETE /api/v2/namespace/{name}/role
+class APIDeleteNamespaceRole(BaseModel):
+    other_namespace: str
+
+
 # GET /api/v1/environment
 class APIListEnvironment(APIPaginatedResponse):
     data: List[Environment]
