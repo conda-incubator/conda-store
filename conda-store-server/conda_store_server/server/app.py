@@ -261,7 +261,7 @@ class CondaStoreServer(Application):
 
         if self.enable_api:
             app.include_router(
-                views.router_api,
+                views.router_api_v1,
                 prefix=trim_slash(self.url_prefix),
             )
 

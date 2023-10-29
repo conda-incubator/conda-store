@@ -9,7 +9,7 @@ from conda_store_server.server import dependencies
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request
 from fastapi.responses import PlainTextResponse, RedirectResponse
 
-router_api = APIRouter(
+router_api_v1 = APIRouter(
     tags=["api"],
     prefix="/api/v1",
 )
@@ -109,7 +109,7 @@ def paginated_api_response(
     }
 
 
-@router_api.get(
+@router_api_v1.get(
     "/",
     response_model=schema.APIGetStatus,
 )
@@ -117,7 +117,7 @@ async def api_status():
     return {"status": "ok", "data": {"version": __version__}}
 
 
-@router_api.get(
+@router_api_v1.get(
     "/permission/",
     response_model=schema.APIGetPermission,
 )
@@ -155,7 +155,7 @@ async def api_get_permissions(
     }
 
 
-@router_api.get(
+@router_api_v1.get(
     "/usage/",
     response_model=schema.APIGetUsage,
 )
@@ -185,7 +185,7 @@ async def api_get_usage(
         }
 
 
-@router_api.post(
+@router_api_v1.post(
     "/token/",
     response_model=schema.APIPostToken,
 )
@@ -230,7 +230,7 @@ async def api_post_token(
     }
 
 
-@router_api.get(
+@router_api_v1.get(
     "/namespace/",
     response_model=schema.APIListNamespace,
     # don't send metadata_ and role_mappings
@@ -258,7 +258,7 @@ async def api_list_namespaces(
         )
 
 
-@router_api.get(
+@router_api_v1.get(
     "/namespace/{namespace}/",
     response_model=schema.APIGetNamespace,
 )
@@ -283,7 +283,7 @@ async def api_get_namespace(
         }
 
 
-@router_api.post(
+@router_api_v1.post(
     "/namespace/{namespace}/",
     response_model=schema.APIAckResponse,
 )
@@ -310,7 +310,7 @@ async def api_create_namespace(
         return {"status": "ok"}
 
 
-@router_api.put(
+@router_api_v1.put(
     "/namespace/{namespace}/",
     response_model=schema.APIAckResponse,
 )
@@ -346,7 +346,7 @@ async def api_update_namespace(
         return {"status": "ok"}
 
 
-@router_api.delete("/namespace/{namespace}/", response_model=schema.APIAckResponse)
+@router_api_v1.delete("/namespace/{namespace}/", response_model=schema.APIAckResponse)
 async def api_delete_namespace(
     namespace: str,
     request: Request,
@@ -370,7 +370,7 @@ async def api_delete_namespace(
         return {"status": "ok"}
 
 
-@router_api.get(
+@router_api_v1.get(
     "/environment/",
     response_model=schema.APIListEnvironment,
 )
@@ -413,7 +413,7 @@ async def api_list_environments(
         )
 
 
-@router_api.get(
+@router_api_v1.get(
     "/environment/{namespace}/{environment_name}/",
     response_model=schema.APIGetEnvironment,
 )
@@ -446,7 +446,7 @@ async def api_get_environment(
         }
 
 
-@router_api.put(
+@router_api_v1.put(
     "/environment/{namespace}/{name}/",
     response_model=schema.APIAckResponse,
 )
@@ -482,7 +482,7 @@ async def api_update_environment_build(
         return {"status": "ok"}
 
 
-@router_api.delete(
+@router_api_v1.delete(
     "/environment/{namespace}/{name}/",
     response_model=schema.APIAckResponse,
 )
@@ -509,7 +509,7 @@ async def api_delete_environment(
         return {"status": "ok"}
 
 
-@router_api.get(
+@router_api_v1.get(
     "/specification/",
 )
 async def api_get_specification(
@@ -547,7 +547,7 @@ async def api_get_specification(
         return {"solve": solve.packages}
 
 
-@router_api.post(
+@router_api_v1.post(
     "/specification/",
     response_model=schema.APIPostSpecification,
 )
@@ -600,7 +600,7 @@ async def api_post_specification(
         return {"status": "ok", "data": {"build_id": build_id}}
 
 
-@router_api.get("/build/", response_model=schema.APIListBuild)
+@router_api_v1.get("/build/", response_model=schema.APIListBuild)
 async def api_list_builds(
     status: Optional[schema.BuildStatus] = None,
     packages: Optional[List[str]] = Query([]),
@@ -642,7 +642,7 @@ async def api_list_builds(
         )
 
 
-@router_api.get("/build/{build_id}/", response_model=schema.APIGetBuild)
+@router_api_v1.get("/build/{build_id}/", response_model=schema.APIGetBuild)
 async def api_get_build(
     build_id: int,
     request: Request,
@@ -667,7 +667,7 @@ async def api_get_build(
         }
 
 
-@router_api.put(
+@router_api_v1.put(
     "/build/{build_id}/",
     response_model=schema.APIPostSpecification,
 )
@@ -703,7 +703,7 @@ async def api_put_build(
         }
 
 
-@router_api.delete(
+@router_api_v1.delete(
     "/build/{build_id}/",
     response_model=schema.APIAckResponse,
 )
@@ -733,7 +733,7 @@ async def api_delete_build(
         return {"status": "ok"}
 
 
-@router_api.get(
+@router_api_v1.get(
     "/build/{build_id}/packages/",
     response_model=schema.APIListCondaPackage,
 )
@@ -774,7 +774,7 @@ async def api_get_build_packages(
         )
 
 
-@router_api.get("/build/{build_id}/logs/")
+@router_api_v1.get("/build/{build_id}/logs/")
 async def api_get_build_logs(
     build_id: int,
     request: Request,
@@ -796,7 +796,7 @@ async def api_get_build_logs(
         return RedirectResponse(conda_store.storage.get_url(build.log_key))
 
 
-@router_api.get(
+@router_api_v1.get(
     "/channel/",
     response_model=schema.APIListCondaChannel,
 )
@@ -815,7 +815,7 @@ async def api_list_channels(
         )
 
 
-@router_api.get(
+@router_api_v1.get(
     "/package/",
     response_model=schema.APIListCondaPackage,
 )
@@ -855,7 +855,7 @@ async def api_list_packages(
         )
 
 
-@router_api.get("/build/{build_id}/yaml/")
+@router_api_v1.get("/build/{build_id}/yaml/")
 async def api_get_build_yaml(
     build_id: int,
     request: Request,
@@ -876,25 +876,25 @@ async def api_get_build_yaml(
         return RedirectResponse(conda_store.storage.get_url(build.conda_env_export_key))
 
 
-@router_api.get(
+@router_api_v1.get(
     "/environment/{namespace}/{environment_name}/conda-lock.yml",
     response_class=PlainTextResponse,
 )
-@router_api.get(
+@router_api_v1.get(
     "/environment/{namespace}/{environment_name}/conda-lock.yaml",
     response_class=PlainTextResponse,
 )
-@router_api.get(
+@router_api_v1.get(
     "/environment/{namespace}/{environment_name}/lockfile/",
     response_class=PlainTextResponse,
 )
-@router_api.get("/build/{build_id}/conda-lock.yml", response_class=PlainTextResponse)
-@router_api.get(
+@router_api_v1.get("/build/{build_id}/conda-lock.yml", response_class=PlainTextResponse)
+@router_api_v1.get(
     "/build/{build_id}/conda-lock.yaml",
     name="api_get_build_conda_lock_file",
     response_class=PlainTextResponse,
 )
-@router_api.get("/build/{build_id}/lockfile/", response_class=PlainTextResponse)
+@router_api_v1.get("/build/{build_id}/lockfile/", response_class=PlainTextResponse)
 async def api_get_build_lockfile(
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
@@ -940,7 +940,7 @@ async def api_get_build_lockfile(
         return RedirectResponse(conda_store.storage.get_url(build.conda_lock_key))
 
 
-@router_api.get("/build/{build_id}/archive/")
+@router_api_v1.get("/build/{build_id}/archive/")
 async def api_get_build_archive(
     build_id: int,
     request: Request,
@@ -959,7 +959,7 @@ async def api_get_build_archive(
         return RedirectResponse(conda_store.storage.get_url(build.conda_pack_key))
 
 
-@router_api.get("/build/{build_id}/docker/")
+@router_api_v1.get("/build/{build_id}/docker/")
 async def api_get_build_docker_image_url(
     build_id: int,
     request: Request,
@@ -987,15 +987,15 @@ async def api_get_build_docker_image_url(
             )
 
 
-@router_api.get(
+@router_api_v1.get(
     "/setting/",
     response_model=schema.APIGetSetting,
 )
-@router_api.get(
+@router_api_v1.get(
     "/setting/{namespace}/",
     response_model=schema.APIGetSetting,
 )
-@router_api.get(
+@router_api_v1.get(
     "/setting/{namespace}/{environment_name}/",
     response_model=schema.APIGetSetting,
 )
@@ -1028,15 +1028,15 @@ async def api_get_settings(
         }
 
 
-@router_api.put(
+@router_api_v1.put(
     "/setting/",
     response_model=schema.APIPutSetting,
 )
-@router_api.put(
+@router_api_v1.put(
     "/setting/{namespace}/",
     response_model=schema.APIPutSetting,
 )
-@router_api.put(
+@router_api_v1.put(
     "/setting/{namespace}/{environment_name}/",
     response_model=schema.APIPutSetting,
 )
