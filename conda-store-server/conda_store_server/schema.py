@@ -105,7 +105,6 @@ class NamespaceRoleMapping(BaseModel):
 
 class NamespaceRoleMappingV2(BaseModel):
     id: int
-    entity: str
     namespace: str
     other_namespace: str
     role: str
