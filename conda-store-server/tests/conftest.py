@@ -53,6 +53,7 @@ def conda_store_config(tmp_path, request):
 
 @pytest.fixture
 def conda_store_server(conda_store_config):
+    server_app.CondaStoreServer.url_prefix = "/"
     _conda_store_server = server_app.CondaStoreServer(config=conda_store_config)
     _conda_store_server.initialize()
 
