@@ -631,11 +631,6 @@ class APIGetNamespace(APIResponse):
     data: Namespace
 
 
-# GET /api/v2/namespace/{name}/role
-class APIGetNamespaceRole(BaseModel):
-    other_namespace: str
-
-
 # POST /api/v2/namespace/{name}/role
 class APIPostNamespaceRole(BaseModel):
     other_namespace: str

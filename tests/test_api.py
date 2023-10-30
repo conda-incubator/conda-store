@@ -728,12 +728,14 @@ def test_create_get_delete_namespace_auth(testclient):
     assert r.status == schema.APIStatus.ERROR
 
 
-def _crud_common(testclient, auth, method, route, json=None, data_pred=None):
+def _crud_common(testclient, auth, method, route, params=None, json=None, data_pred=None):
     if auth:
         testclient.login()
 
     if json is not None:
         response = method(route, json=json)
+    elif params is not None:
+        response = method(route, params=params)
     else:
         response = method(route)
 
@@ -797,7 +799,7 @@ def test_crud_namespace_roles_v2(testclient, auth):
     make_request(
         method=testclient.get,
         route=f"api/v2/namespace/{namespace}/role",
-        json={
+        params={
             "other_namespace": other_namespace,
         },
         data_pred=lambda data: (

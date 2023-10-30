@@ -449,7 +449,7 @@ async def api_delete_namespace_roles(
 async def api_get_namespace_role(
     namespace: str,
     request: Request,
-    role_mapping: schema.APIGetNamespaceRole,
+    other_namespace: str,
     auth=Depends(dependencies.get_auth),
     conda_store=Depends(dependencies.get_conda_store),
 ):
@@ -468,9 +468,7 @@ async def api_get_namespace_role(
             raise HTTPException(status_code=404, detail="namespace does not exist")
 
         try:
-            data = api.get_namespace_role(
-                db, namespace, other=role_mapping.other_namespace
-            )
+            data = api.get_namespace_role(db, namespace, other=other_namespace)
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e.args[0]))
         db.commit()
