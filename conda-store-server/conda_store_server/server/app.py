@@ -88,7 +88,7 @@ class CondaStoreServer(Application):
     )
 
     url_prefix = Unicode(
-        "/",
+        "/conda-store",
         help="the prefix URL (subdirectory) for the entire application; "
         "it MUST start with a forward slash - tip: "
         "use this to run conda-store within an existing website.",
