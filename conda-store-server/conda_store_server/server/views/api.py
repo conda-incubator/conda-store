@@ -472,6 +472,8 @@ async def api_get_namespace_role(
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e.args[0]))
         db.commit()
+        if data is None:
+            raise HTTPException(status_code=404, detail="failed to find role")
         return {
             "status": "ok",
             "data": data.dict(),
