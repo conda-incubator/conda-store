@@ -182,6 +182,14 @@ class Build(Base):
     started_on = Column(DateTime, default=None)
     ended_on = Column(DateTime, default=None)
     deleted_on = Column(DateTime, default=None)
+    build_key_version = Column(Integer, default=2, nullable=False)
+
+    @validates("build_key_version")
+    def validate_build_key_version(self, key, build_key_version):
+        if build_key_version not in [1, 2]:
+            raise ValueError(f"invalid build_key_version={build_key_version}")
+
+        return build_key_version
 
     build_artifacts = relationship(
         "BuildArtifact", back_populates="build", cascade="all, delete-orphan"
@@ -234,15 +242,29 @@ class Build(Base):
         The build key should be a key that allows for the environment
         build to be easily identified and found in the database.
         """
-        datetime_format = "%Y%m%d-%H%M%S-%f"
-        return f"{self.specification.sha256}-{self.scheduled_on.strftime(datetime_format)}-{self.id}-{self.specification.name}"
+        if self.build_key_version == 1:
+            datetime_format = "%Y%m%d-%H%M%S-%f"
+            return f"{self.specification.sha256}-{self.scheduled_on.strftime(datetime_format)}-{self.id}-{self.specification.name}"
+        elif self.build_key_version == 2:
+            hash = self.specification.sha256[:4]
+            timestamp = int(self.scheduled_on.timestamp())
+            id = self.id
+            name = self.specification.name[:16]
+            return f"{hash}-{timestamp}-{id}-{name}"
+        else:
+            raise ValueError(f"invalid build key version: {self.build_key_version}")
 
     @staticmethod
     def parse_build_key(key):
         parts = key.split("-")
-        if len(parts) < 5:
-            return None
-        return int(parts[4])  # build_id
+        # Note: cannot rely on the number of dashes to differentiate between
+        # versions because name can contain dashes. Instead, this relies on the
+        # hash size to infer the format. The name is the last field, so indexing
+        # to find the id is okay.
+        if key[4] == "-":  # v2
+            return int(parts[2])  # build_id
+        else:  # v1
+            return int(parts[4])  # build_id
 
     @property
     def log_key(self):
