@@ -190,15 +190,22 @@ class Build(Base):
         """
         store_directory = os.path.abspath(conda_store.store_directory)
         namespace = self.environment.namespace.name
-        name = self.specification.name
-        return (
+        res = (
             pathlib.Path(
                 conda_store.build_directory.format(
-                    store_directory=store_directory, namespace=namespace, name=name
+                    store_directory=store_directory,
+                    namespace=namespace,
                 )
             )
             / self.build_key
         )
+        # conda prefix must be less or equal to 255 chars
+        # https://github.com/conda-incubator/conda-store/issues/649
+        if len(str(res)) > 255:
+            raise ValueError(
+                f"build_path too long: {res} must be <= 255 chars, got {len(str(res))}"
+            )
+        return res
 
     def environment_path(self, conda_store):
         """Environment path is the path for the symlink to the build

@@ -134,3 +134,13 @@ def test_get_set_keyvaluestore(db):
     # test updating a prefix
     api.set_kvstore_key_values(db, "pytest", {"c": 999, "d": 999}, update=False)
     assert {**setting_1, **setting_2} == api.get_kvstore_key_values(db, "pytest")
+
+
+def test_build_path_too_long(db, conda_store, simple_specification):
+    conda_store.store_directory = 'A' * 800
+    build_id = conda_store.register_environment(
+        db, specification=simple_specification, namespace="pytest"
+    )
+    build = api.get_build(db, build_id=build_id)
+    with pytest.raises(ValueError, match=r"build_path too long: .* must be <= 255 chars"):
+        build.build_path(conda_store)
