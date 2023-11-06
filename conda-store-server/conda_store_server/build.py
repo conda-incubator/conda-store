@@ -107,27 +107,27 @@ def build_conda_environment(db: Session, conda_store, build):
     symlink the build to a named environment
 
     """
-    set_build_started(db, build)
-    append_to_logs(
-        db,
-        conda_store,
-        build,
-        f"starting build of conda environment {datetime.datetime.utcnow()} UTC\n",
-    )
-
-    settings = conda_store.get_settings(
-        db=db,
-        namespace=build.environment.namespace.name,
-        environment_name=build.environment.name,
-    )
-
-    conda_prefix = build.build_path(conda_store)
-    conda_prefix.parent.mkdir(parents=True, exist_ok=True)
-
-    environment_prefix = build.environment_path(conda_store)
-    environment_prefix.parent.mkdir(parents=True, exist_ok=True)
-
     try:
+        set_build_started(db, build)
+        append_to_logs(
+            db,
+            conda_store,
+            build,
+            f"starting build of conda environment {datetime.datetime.utcnow()} UTC\n",
+        )
+
+        settings = conda_store.get_settings(
+            db=db,
+            namespace=build.environment.namespace.name,
+            environment_name=build.environment.name,
+        )
+
+        conda_prefix = build.build_path(conda_store)
+        conda_prefix.parent.mkdir(parents=True, exist_ok=True)
+
+        environment_prefix = build.environment_path(conda_store)
+        environment_prefix.parent.mkdir(parents=True, exist_ok=True)
+
         with utils.timer(conda_store.log, f"building conda_prefix={conda_prefix}"):
             context = action.action_solve_lockfile(
                 settings.conda_command,
@@ -202,14 +202,14 @@ def build_conda_environment(db: Session, conda_store, build):
 
         set_build_completed(db, conda_store, build)
     except subprocess.CalledProcessError as e:
+        set_build_failed(db, build)
         conda_store.log.exception(e)
         append_to_logs(db, conda_store, build, e.output)
-        set_build_failed(db, build)
         raise e
     except Exception as e:
+        set_build_failed(db, build)
         conda_store.log.exception(e)
         append_to_logs(db, conda_store, build, traceback.format_exc())
-        set_build_failed(db, build)
         raise e
 
 
