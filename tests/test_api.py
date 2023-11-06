@@ -10,6 +10,7 @@ ordering for tests.
 """
 import asyncio
 import json
+import time
 import uuid
 from typing import List
 
@@ -456,6 +457,66 @@ def test_create_specification_auth(testclient):
 
     r = schema.APIGetEnvironment.parse_obj(response.json())
     assert r.data.namespace.name == namespace
+
+
+# Only testing size values that will always cause errors. Smaller values could
+# cause errors as well, but would be flaky since the test conda-store state
+# directory might have different lengths on different systems, for instance,
+# due to different username lengths.
+@pytest.mark.parametrize(
+    "size",
+    [
+        # minio.error.MinioException: S3 operation failed; code:
+        # XMinioInvalidObjectName, message: Object name contains unsupported
+        # characters.
+        # The error message is misleading: it's a size issue.
+        255,
+        # SQL error: value too long for type character varying(255)
+        256,
+    ],
+)
+def test_create_specification_auth_env_name_too_long(testclient, size):
+    namespace = "default"
+    environment_name = 'A' * size
+
+    testclient.login()
+    response = testclient.post(
+        "api/v1/specification",
+        json={
+            "namespace": namespace,
+            "specification": json.dumps({"name": environment_name}),
+        },
+    )
+    if size > 255:
+        assert response.status_code == 500
+        return  # error, nothing to do
+    response.raise_for_status()
+
+    r = schema.APIPostSpecification.parse_obj(response.json())
+    assert r.status == schema.APIStatus.OK
+    build_id = r.data.build_id
+
+    # Try checking that the status is 'FAILED'
+    is_updated = False
+    for _ in range(5):
+        time.sleep(5)
+
+        # check for the given build
+        response = testclient.get(f"api/v1/build/{build_id}")
+        response.raise_for_status()
+
+        r = schema.APIGetBuild.parse_obj(response.json())
+        assert r.status == schema.APIStatus.OK
+        assert r.data.specification.name == environment_name
+        if r.data.status == "QUEUED":
+            continue  # checked too fast, try again
+        assert r.data.status == "FAILED"
+        is_updated = True
+        break
+
+    # If we're here, the task didn't update the status on failure
+    if not is_updated:
+        assert False, f"failed to update status"
 
 
 def test_create_specification_auth_no_namespace_specified(testclient):
