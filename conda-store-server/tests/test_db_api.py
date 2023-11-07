@@ -1,6 +1,7 @@
 import pytest
 from conda_store_server import api
 from conda_store_server.orm import NamespaceRoleMapping
+from conda_store_server.utils import BuildPathError
 
 
 def test_namespace_crud(db):
@@ -142,5 +143,5 @@ def test_build_path_too_long(db, conda_store, simple_specification):
         db, specification=simple_specification, namespace="pytest"
     )
     build = api.get_build(db, build_id=build_id)
-    with pytest.raises(ValueError, match=r"build_path too long: .* must be <= 255 chars"):
+    with pytest.raises(BuildPathError, match=r"build_path too long: must be <= 255 chars"):
         build.build_path(conda_store)
