@@ -206,7 +206,7 @@ class Build(Base):
         # conda prefix must be less or equal to 255 chars
         # https://github.com/conda-incubator/conda-store/issues/649
         if len(str(res)) > 255:
-            raise BuildPathError("build_path too long: must be <= 255 chars")
+            raise BuildPathError("build_path too long: must be <= 255 characters")
         return res
 
     def environment_path(self, conda_store):
