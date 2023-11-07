@@ -511,6 +511,7 @@ def test_create_specification_auth_env_name_too_long(testclient, size):
         if r.data.status == "QUEUED":
             continue  # checked too fast, try again
         assert r.data.status == "FAILED"
+        assert r.data.status_info == "build_path too long: must be <= 255 chars"
         is_updated = True
         break
 

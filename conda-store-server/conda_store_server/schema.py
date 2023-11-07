@@ -157,6 +157,7 @@ class Build(BaseModel):
     specification: Optional[Specification]
     packages: Optional[List[CondaPackage]]
     status: BuildStatus
+    status_info: Optional[str]
     size: int
     scheduled_on: datetime.datetime
     started_on: Optional[datetime.datetime]

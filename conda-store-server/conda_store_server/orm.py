@@ -7,6 +7,7 @@ import shutil
 
 from conda_store_server import conda_utils, schema, utils
 from conda_store_server.environment import validate_environment
+from conda_store_server.utils import BuildPathError
 from sqlalchemy import (
     JSON,
     BigInteger,
@@ -173,6 +174,9 @@ class Build(Base):
     package_builds = relationship("CondaPackageBuild", secondary=build_conda_package)
 
     status = Column(Enum(schema.BuildStatus), default=schema.BuildStatus.QUEUED)
+    # Additional status info that will be provided to the user. DO NOT put
+    # sensitive data here
+    status_info = Column(UnicodeText, default=None)
     size = Column(BigInteger, default=0)
     scheduled_on = Column(DateTime, default=datetime.datetime.utcnow)
     started_on = Column(DateTime, default=None)
@@ -202,9 +206,7 @@ class Build(Base):
         # conda prefix must be less or equal to 255 chars
         # https://github.com/conda-incubator/conda-store/issues/649
         if len(str(res)) > 255:
-            raise ValueError(
-                f"build_path too long: {res} must be <= 255 chars, got {len(str(res))}"
-            )
+            raise BuildPathError("build_path too long: must be <= 255 chars")
         return res
 
     def environment_path(self, conda_store):
