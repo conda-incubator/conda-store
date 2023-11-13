@@ -155,6 +155,9 @@ build_conda_package = Table(
 )
 
 
+_BUILD_KEY_V2_HASH_SIZE = 8
+
+
 class Build(Base):
     """The state of a build of a given specification"""
 
@@ -246,10 +249,10 @@ class Build(Base):
             datetime_format = "%Y%m%d-%H%M%S-%f"
             return f"{self.specification.sha256}-{self.scheduled_on.strftime(datetime_format)}-{self.id}-{self.specification.name}"
         elif self.build_key_version == 2:
-            hash = self.specification.sha256[:4]
+            hash = self.specification.sha256[:_BUILD_KEY_V2_HASH_SIZE]
             timestamp = int(self.scheduled_on.timestamp())
             id = self.id
-            name = self.specification.name[:16]
+            name = self.specification.name
             return f"{hash}-{timestamp}-{id}-{name}"
         else:
             raise ValueError(f"invalid build key version: {self.build_key_version}")
@@ -261,7 +264,7 @@ class Build(Base):
         # versions because name can contain dashes. Instead, this relies on the
         # hash size to infer the format. The name is the last field, so indexing
         # to find the id is okay.
-        if key[4] == "-":  # v2
+        if key[_BUILD_KEY_V2_HASH_SIZE] == "-":  # v2
             return int(parts[2])  # build_id
         else:  # v1
             return int(parts[4])  # build_id

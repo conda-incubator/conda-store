@@ -240,7 +240,7 @@ def test_api_get_build_lockfile(
 ):
     # initializes data needed to get the lockfile
     specification = simple_specification_with_pip
-    specification.name = "this-is-a-long-environment-name-to-test-truncation"
+    specification.name = "this-is-a-long-environment-name"
     namespace = "pytest"
 
     class MyAuthentication(DummyAuthentication):
@@ -313,11 +313,11 @@ def test_api_get_build_lockfile(
             return f"lockfile/{build_key}.yml"
         if build_key_version is 1:
             build_key = (
-                "7a0c9317530e3732a25f22c2017a881dcd6f84ff85c96a609210168deea280ef-"
-                "20231105-035410-510258-12345678-this-is-a-long-environment-name-to-test-truncation"
+                "c7afdeffbe2bda7d16ca69beecc8bebeb29280a95d4f3ed92849e4047710923b-"
+                "20231105-035410-510258-12345678-this-is-a-long-environment-name"
             )
         elif build_key_version is 2:
-            build_key = "7a0c-1699156450-12345678-this-is-a-long-e"
+            build_key = "c7afdeff-1699156450-12345678-this-is-a-long-environment-name"
         else:
             raise ValueError(f"unexpected build_key_version: {build_key_version}")
         assert type(res) is RedirectResponse
