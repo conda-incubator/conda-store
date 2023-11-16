@@ -10,6 +10,7 @@ import typing
 
 import yaml
 from conda_store_server import action, api, conda_utils, orm, schema, utils
+from conda_store_server.utils import BuildPathError
 from sqlalchemy.orm import Session
 
 
@@ -38,8 +39,11 @@ def set_build_started(db: Session, build: orm.Build):
     db.commit()
 
 
-def set_build_failed(db: Session, build: orm.Build):
+def set_build_failed(
+    db: Session, build: orm.Build, status_info: typing.Optional[str] = None
+):
     build.status = schema.BuildStatus.FAILED
+    build.status_info = status_info
     build.ended_on = datetime.datetime.utcnow()
     db.commit()
 
@@ -107,27 +111,29 @@ def build_conda_environment(db: Session, conda_store, build):
     symlink the build to a named environment
 
     """
-    set_build_started(db, build)
-    append_to_logs(
-        db,
-        conda_store,
-        build,
-        f"starting build of conda environment {datetime.datetime.utcnow()} UTC\n",
-    )
-
-    settings = conda_store.get_settings(
-        db=db,
-        namespace=build.environment.namespace.name,
-        environment_name=build.environment.name,
-    )
-
-    conda_prefix = build.build_path(conda_store)
-    conda_prefix.parent.mkdir(parents=True, exist_ok=True)
-
-    environment_prefix = build.environment_path(conda_store)
-    environment_prefix.parent.mkdir(parents=True, exist_ok=True)
-
     try:
+        set_build_started(db, build)
+        # Note: even append_to_logs can fail due to filename size limit, so
+        # check build_path length first
+        conda_prefix = build.build_path(conda_store)
+        append_to_logs(
+            db,
+            conda_store,
+            build,
+            f"starting build of conda environment {datetime.datetime.utcnow()} UTC\n",
+        )
+
+        settings = conda_store.get_settings(
+            db=db,
+            namespace=build.environment.namespace.name,
+            environment_name=build.environment.name,
+        )
+
+        conda_prefix.parent.mkdir(parents=True, exist_ok=True)
+
+        environment_prefix = build.environment_path(conda_store)
+        environment_prefix.parent.mkdir(parents=True, exist_ok=True)
+
         with utils.timer(conda_store.log, f"building conda_prefix={conda_prefix}"):
             context = action.action_solve_lockfile(
                 settings.conda_command,
@@ -201,15 +207,24 @@ def build_conda_environment(db: Session, conda_store, build):
         build.size = context.result["disk_usage"]
 
         set_build_completed(db, conda_store, build)
+    # Always mark build as failed first since other functions may throw an
+    # exception
     except subprocess.CalledProcessError as e:
+        set_build_failed(db, build)
         conda_store.log.exception(e)
         append_to_logs(db, conda_store, build, e.output)
-        set_build_failed(db, build)
         raise e
-    except Exception as e:
+    except BuildPathError as e:
+        # Provide status_info, which will be exposed to the user, ONLY in this
+        # case because the error message doesn't expose sensitive information
+        set_build_failed(db, build, status_info=e.message)
         conda_store.log.exception(e)
         append_to_logs(db, conda_store, build, traceback.format_exc())
+        raise e
+    except Exception as e:
         set_build_failed(db, build)
+        conda_store.log.exception(e)
+        append_to_logs(db, conda_store, build, traceback.format_exc())
         raise e
 
 

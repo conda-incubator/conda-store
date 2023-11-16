@@ -1,4 +1,5 @@
 import json
+import time
 
 import pytest
 import yaml
@@ -333,6 +334,60 @@ def test_create_specification_unauth(testclient):
 
     r = schema.APIResponse.parse_obj(response.json())
     assert r.status == schema.APIStatus.ERROR
+
+
+# Only testing size values that will always cause errors. Smaller values could
+# cause errors as well, but would be flaky since the test conda-store state
+# directory might have different lengths on different systems, for instance,
+# due to different username lengths.
+@pytest.mark.parametrize(
+    "size",
+    [
+        # OSError: [Errno 36] File name too long
+        255,
+        # OSError: [Errno 36] File name too long
+        256,
+    ],
+)
+def test_create_specification_auth_env_name_too_long(testclient, celery_worker, authenticate, size):
+    namespace = "default"
+    environment_name = 'A' * size
+
+    response = testclient.post(
+        "api/v1/specification",
+        json={
+            "namespace": namespace,
+            "specification": json.dumps({"name": environment_name}),
+        },
+    )
+    response.raise_for_status()
+
+    r = schema.APIPostSpecification.parse_obj(response.json())
+    assert r.status == schema.APIStatus.OK
+    build_id = r.data.build_id
+
+    # Try checking that the status is 'FAILED'
+    is_updated = False
+    for _ in range(5):
+        time.sleep(5)
+
+        # check for the given build
+        response = testclient.get(f"api/v1/build/{build_id}")
+        response.raise_for_status()
+
+        r = schema.APIGetBuild.parse_obj(response.json())
+        assert r.status == schema.APIStatus.OK
+        assert r.data.specification.name == environment_name
+        if r.data.status == "QUEUED":
+            continue  # checked too fast, try again
+        assert r.data.status == "FAILED"
+        assert r.data.status_info == "build_path too long: must be <= 255 characters"
+        is_updated = True
+        break
+
+    # If we're here, the task didn't update the status on failure
+    if not is_updated:
+        assert False, f"failed to update status"
 
 
 def test_create_specification_auth(testclient, celery_worker, authenticate):

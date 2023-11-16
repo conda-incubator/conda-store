@@ -15,6 +15,10 @@ class CondaStoreError(Exception):
         return self.args[0]
 
 
+class BuildPathError(CondaStoreError):
+    pass
+
+
 def symlink(source, target):
     if os.path.islink(target):
         os.unlink(target)

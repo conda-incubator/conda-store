@@ -552,6 +552,25 @@ for several reasons:
 - worker was killed for other reasons e.g. forced restart
 - bugs in conda-store
 
+### Build path length
+
+Conda packages are guaranteed to be [relocatable] as long as the environment
+prefix length is <= 255 characters. In conda-store, the said prefix is specified
+in `Build.build_path`. When building an environment, you might see an error like
+this:
+
+```
+build_path too long: must be <= 255 characters
+```
+
+If so, try configuring the conda-store `CondaStore.store_directory` to be as
+close to the filesystem root as possible. Additionally, 255 characters is also a
+common limit for individual files on many filesystems. When creating
+environments, try using shorter `namespace` and `environment` names since they
+affect both the `build_path` length and the filename length.
+
+[relocatable]: https://docs.conda.io/projects/conda-build/en/latest/resources/make-relocatable.html
+
 ### Long paths on Windows
 
 conda-store supports Windows in standalone mode. However, when creating
