@@ -1,16 +1,16 @@
 """add build_key_version
 
-Revision ID: 64a749e87619
-Revises: b387747ca9b7
-Create Date: 2023-11-05 00:59:57.132192
+Revision ID: 30b37e725c32
+Revises: d78e9889566a
+Create Date: 2023-11-17 14:34:40.688865
 
 """
 import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = "64a749e87619"
-down_revision = "b387747ca9b7"
+revision = "30b37e725c32"
+down_revision = "d78e9889566a"
 branch_labels = None
 depends_on = None
 
