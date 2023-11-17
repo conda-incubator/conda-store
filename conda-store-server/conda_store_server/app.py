@@ -106,6 +106,22 @@ class CondaStore(LoggingConfigurable):
         config=True,
     )
 
+    build_key_version = Integer(
+        2,
+        help="Build key version to use: 1 (long, legacy), 2 (short, default)",
+        config=True,
+    )
+
+    @validate("build_key_version")
+    def _check_build_key_version(self, proposal):
+        expected = [1, 2]
+        if proposal.value not in expected:
+            raise TraitError(
+                f"c.CondaStore.build_key_version: invalid build key version: "
+                f"{proposal.value}, expected: {expected}"
+            )
+        return proposal.value
+
     conda_command = Unicode(
         "mamba",
         help="conda executable to use for solves",
@@ -364,6 +380,11 @@ class CondaStore(LoggingConfigurable):
             url=self.database_url,
             poolclass=QueuePool,
         )
+
+        # Sets the default build_key_version value in the DB based on the config
+        import conda_store_server
+
+        conda_store_server._BUILD_KEY_VERSION = self.build_key_version
         return self._session_factory
 
     # Do not define this as a FastAPI dependency! That would cause Sessions

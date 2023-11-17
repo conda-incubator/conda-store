@@ -158,6 +158,18 @@ build_conda_package = Table(
 _BUILD_KEY_V2_HASH_SIZE = 8
 
 
+# Avoids a cyclic dependency between the orm module and the module defining
+# CondaStore.build_key_version. Because the orm module is loaded early on
+# startup, we want to delay initialization of the build_key_version field until
+# it's been read from the config.
+def _get_build_key_version():
+    from conda_store_server import _BUILD_KEY_VERSION
+
+    # None means the value is not set, likely due to an import error
+    assert _BUILD_KEY_VERSION is not None
+    return _BUILD_KEY_VERSION
+
+
 class Build(Base):
     """The state of a build of a given specification"""
 
@@ -185,7 +197,7 @@ class Build(Base):
     started_on = Column(DateTime, default=None)
     ended_on = Column(DateTime, default=None)
     deleted_on = Column(DateTime, default=None)
-    build_key_version = Column(Integer, default=2, nullable=False)
+    build_key_version = Column(Integer, default=_get_build_key_version, nullable=False)
 
     @validates("build_key_version")
     def validate_build_key_version(self, key, build_key_version):
