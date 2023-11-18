@@ -18,6 +18,7 @@ jobs:
   test-conda-store-server:
     name: "unit-test conda-store-server"
     strategy:
+      fail-fast: false
       matrix:
         os: ["ubuntu", "macos", "windows"]
         include:
