@@ -62,6 +62,9 @@ jobs:
 
       - name: "Unit tests ✅"
         run: |
+          which python
+          which conda
+          echo $CONDA_PREFIX
           pytest tests
 
   integration-test-conda-store-server:
