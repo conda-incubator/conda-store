@@ -128,7 +128,9 @@ def test_generate_conda_pack(tmp_path, conda_prefix):
     assert output_filename.exists()
 
 
-@pytest.mark.skipif(sys.platform != "linux", reason="conda-docker only works on linux")
+@pytest.mark.skip(reason=(
+    "upstream issue in conda-docker, see "
+    "https://github.com/conda-incubator/conda-store/issues/666"))
 def test_generate_conda_docker(conda_store, conda_prefix):
     action.action_generate_conda_docker(
         conda_prefix=conda_prefix,
