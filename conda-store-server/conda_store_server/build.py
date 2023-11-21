@@ -313,46 +313,49 @@ def build_conda_pack(db: Session, conda_store, build: orm.Build):
 
 
 def build_conda_docker(db: Session, conda_store, build: orm.Build):
-    conda_prefix = build.build_path(conda_store)
-    settings = conda_store.get_settings(
-        db=db,
-        namespace=build.environment.namespace.name,
-        environment_name=build.environment.name,
-    )
+    # Upstream issue in conda-docker, see
+    # https://github.com/conda-incubator/conda-store/issues/666
+    pass
+    # conda_prefix = build.build_path(conda_store)
+    # settings = conda_store.get_settings(
+    #     db=db,
+    #     namespace=build.environment.namespace.name,
+    #     environment_name=build.environment.name,
+    # )
 
-    try:
-        with utils.timer(
-            conda_store.log,
-            f"packaging docker image of conda environment={conda_prefix}",
-        ):
-            context = action.action_generate_conda_docker(
-                conda_prefix=conda_prefix,
-                default_docker_image=utils.callable_or_value(
-                    settings.default_docker_base_image, None
-                ),
-                container_registry=conda_store.container_registry,
-                output_image_name=build.specification.name,
-                output_image_tag=build.build_key,
-            )
-            append_to_logs(
-                db,
-                conda_store,
-                build,
-                "::group::action_generate_conda_docker\n"
-                + context.stdout.getvalue()
-                + "\n::endgroup::\n",
-            )
+    # try:
+    #     with utils.timer(
+    #         conda_store.log,
+    #         f"packaging docker image of conda environment={conda_prefix}",
+    #     ):
+    #         context = action.action_generate_conda_docker(
+    #             conda_prefix=conda_prefix,
+    #             default_docker_image=utils.callable_or_value(
+    #                 settings.default_docker_base_image, None
+    #             ),
+    #             container_registry=conda_store.container_registry,
+    #             output_image_name=build.specification.name,
+    #             output_image_tag=build.build_key,
+    #         )
+    #         append_to_logs(
+    #             db,
+    #             conda_store,
+    #             build,
+    #             "::group::action_generate_conda_docker\n"
+    #             + context.stdout.getvalue()
+    #             + "\n::endgroup::\n",
+    #         )
 
-            image = context.result
+    #         image = context.result
 
-            if schema.BuildArtifactType.DOCKER_MANIFEST in settings.build_artifacts:
-                conda_store.container_registry.store_image(
-                    db, conda_store, build, image
-                )
+    #         if schema.BuildArtifactType.DOCKER_MANIFEST in settings.build_artifacts:
+    #             conda_store.container_registry.store_image(
+    #                 db, conda_store, build, image
+    #             )
 
-            if schema.BuildArtifactType.CONTAINER_REGISTRY in settings.build_artifacts:
-                conda_store.container_registry.push_image(db, build, image)
-    except Exception as e:
-        conda_store.log.exception(e)
-        append_to_logs(db, conda_store, build, traceback.format_exc())
-        raise e
+    #         if schema.BuildArtifactType.CONTAINER_REGISTRY in settings.build_artifacts:
+    #             conda_store.container_registry.push_image(db, build, image)
+    # except Exception as e:
+    #     conda_store.log.exception(e)
+    #     append_to_logs(db, conda_store, build, traceback.format_exc())
+    #     raise e
