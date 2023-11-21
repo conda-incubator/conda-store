@@ -128,7 +128,7 @@ def test_generate_conda_pack(tmp_path, conda_prefix):
     assert output_filename.exists()
 
 
-@pytest.mark.skip(reason=(
+@pytest.mark.xfail(reason=(
     "upstream issue in conda-docker, see "
     "https://github.com/conda-incubator/conda-store/issues/666"))
 def test_generate_conda_docker(conda_store, conda_prefix):
