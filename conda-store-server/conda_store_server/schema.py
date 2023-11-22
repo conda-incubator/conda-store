@@ -631,19 +631,19 @@ class APIGetNamespace(APIResponse):
     data: Namespace
 
 
-# POST /api/v2/namespace/{name}/role
+# POST /api/v1/namespace/{name}/role
 class APIPostNamespaceRole(BaseModel):
     other_namespace: str
     role: str
 
 
-# PUT /api/v2/namespace/{name}/role
+# PUT /api/v1/namespace/{name}/role
 class APIPutNamespaceRole(BaseModel):
     other_namespace: str
     role: str
 
 
-# DELETE /api/v2/namespace/{name}/role
+# DELETE /api/v1/namespace/{name}/role
 class APIDeleteNamespaceRole(BaseModel):
     other_namespace: str
 

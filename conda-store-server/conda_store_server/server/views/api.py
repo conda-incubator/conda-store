@@ -9,36 +9,10 @@ from conda_store_server.server import dependencies
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request
 from fastapi.responses import PlainTextResponse, RedirectResponse
 
-_API_PREFIX_V1 = "/api/v1"
-_API_PREFIX_V2 = "/api/v2"
-_API_PREFIX_EXPERIMENTAL = "/api/experimental"
-
-router_api_v1 = APIRouter(
+router_api = APIRouter(
     tags=["api"],
-    prefix=_API_PREFIX_V1,
+    prefix="/api/v1",
 )
-
-router_api_v2 = APIRouter(
-    tags=["api"],
-    prefix=_API_PREFIX_V2,
-)
-
-router_api_experimental = APIRouter(
-    tags=["api"],
-    prefix=_API_PREFIX_EXPERIMENTAL,
-)
-
-
-def _is_api_v1(request: Request) -> bool:
-    return request.scope["route"].path.startswith(_API_PREFIX_V1)
-
-
-def _is_api_v2(request: Request) -> bool:
-    return request.scope["route"].path.startswith(_API_PREFIX_V2)
-
-
-def _is_api_experimental(request: Request) -> bool:
-    return request.scope["route"].path.startswith(_API_PREFIX_EXPERIMENTAL)
 
 
 def get_paginated_args(
@@ -135,14 +109,18 @@ def paginated_api_response(
     }
 
 
-@router_api_v1.get("/", response_model=schema.APIGetStatus)  # fmt: skip
-@router_api_v2.get("/", response_model=schema.APIGetStatus)  # fmt: skip
+@router_api.get(
+    "/",
+    response_model=schema.APIGetStatus,
+)
 async def api_status():
     return {"status": "ok", "data": {"version": __version__}}
 
 
-@router_api_v1.get("/permission/", response_model=schema.APIGetPermission)  # fmt: skip
-@router_api_v2.get("/permission/", response_model=schema.APIGetPermission)  # fmt: skip
+@router_api.get(
+    "/permission/",
+    response_model=schema.APIGetPermission,
+)
 async def api_get_permissions(
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
@@ -177,8 +155,10 @@ async def api_get_permissions(
     }
 
 
-@router_api_v1.get("/usage/", response_model=schema.APIGetUsage)  # fmt: skip
-@router_api_v2.get("/usage/", response_model=schema.APIGetUsage)  # fmt: skip
+@router_api.get(
+    "/usage/",
+    response_model=schema.APIGetUsage,
+)
 async def api_get_usage(
     request: Request,
     auth=Depends(dependencies.get_auth),
@@ -205,8 +185,10 @@ async def api_get_usage(
         }
 
 
-@router_api_v1.post("/token/", response_model=schema.APIPostToken)  # fmt: skip
-@router_api_v2.post("/token/", response_model=schema.APIPostToken)  # fmt: skip
+@router_api.post(
+    "/token/",
+    response_model=schema.APIPostToken,
+)
 async def api_post_token(
     request: Request,
     primary_namespace: Optional[str] = Body(None),
@@ -248,9 +230,12 @@ async def api_post_token(
     }
 
 
-# response_model_exclude_defaults=True is to not send metadata_ and role_mappings
-@router_api_v1.get("/namespace/", response_model=schema.APIListNamespace, response_model_exclude_defaults=True)  # fmt: skip
-@router_api_v2.get("/namespace/", response_model=schema.APIListNamespace, response_model_exclude_defaults=True)  # fmt: skip
+@router_api.get(
+    "/namespace/",
+    response_model=schema.APIListNamespace,
+    # don't send metadata_ and role_mappings
+    response_model_exclude_defaults=True,
+)
 async def api_list_namespaces(
     auth=Depends(dependencies.get_auth),
     entity=Depends(dependencies.get_entity),
@@ -273,8 +258,10 @@ async def api_list_namespaces(
         )
 
 
-@router_api_v1.get("/namespace/{namespace}/", response_model=schema.APIGetNamespace)  # fmt: skip
-@router_api_v2.get("/namespace/{namespace}/", response_model=schema.APIGetNamespace)  # fmt: skip
+@router_api.get(
+    "/namespace/{namespace}/",
+    response_model=schema.APIGetNamespace,
+)
 async def api_get_namespace(
     namespace: str,
     request: Request,
@@ -296,8 +283,10 @@ async def api_get_namespace(
         }
 
 
-@router_api_v1.post("/namespace/{namespace}/", response_model=schema.APIAckResponse)  # fmt: skip
-@router_api_v2.post("/namespace/{namespace}/", response_model=schema.APIAckResponse)  # fmt: skip
+@router_api.post(
+    "/namespace/{namespace}/",
+    response_model=schema.APIAckResponse,
+)
 async def api_create_namespace(
     namespace: str,
     request: Request,
@@ -321,7 +310,10 @@ async def api_create_namespace(
         return {"status": "ok"}
 
 
-@router_api_v1.put("/namespace/{namespace}/", response_model=schema.APIAckResponse)  # fmt: skip
+@router_api.put(
+    "/namespace/{namespace}/",
+    response_model=schema.APIAckResponse,
+)
 async def api_update_namespace(
     namespace: str,
     request: Request,
@@ -354,7 +346,7 @@ async def api_update_namespace(
         return {"status": "ok"}
 
 
-@router_api_v2.put("/namespace/{namespace}/metadata", response_model=schema.APIAckResponse)  # fmt: skip
+@router_api.put("/namespace/{namespace}/metadata", response_model=schema.APIAckResponse)
 async def api_update_namespace_metadata(
     namespace: str,
     request: Request,
@@ -384,7 +376,7 @@ async def api_update_namespace_metadata(
         return {"status": "ok"}
 
 
-@router_api_v2.get("/namespace/{namespace}/roles", response_model=schema.APIResponse)  # fmt: skip
+@router_api.get("/namespace/{namespace}/roles", response_model=schema.APIResponse)
 async def api_get_namespace_roles(
     namespace: str,
     request: Request,
@@ -416,7 +408,7 @@ async def api_get_namespace_roles(
         }
 
 
-@router_api_v2.delete("/namespace/{namespace}/roles", response_model=schema.APIAckResponse)  # fmt: skip
+@router_api.delete("/namespace/{namespace}/roles", response_model=schema.APIAckResponse)
 async def api_delete_namespace_roles(
     namespace: str,
     request: Request,
@@ -445,7 +437,7 @@ async def api_delete_namespace_roles(
         return {"status": "ok"}
 
 
-@router_api_v2.get("/namespace/{namespace}/role", response_model=schema.APIResponse)  # fmt: skip
+@router_api.get("/namespace/{namespace}/role", response_model=schema.APIResponse)
 async def api_get_namespace_role(
     namespace: str,
     request: Request,
@@ -480,7 +472,7 @@ async def api_get_namespace_role(
         }
 
 
-@router_api_v2.post("/namespace/{namespace}/role", response_model=schema.APIAckResponse)  # fmt: skip
+@router_api.post("/namespace/{namespace}/role", response_model=schema.APIAckResponse)
 async def api_create_namespace_role(
     namespace: str,
     request: Request,
@@ -515,7 +507,7 @@ async def api_create_namespace_role(
         return {"status": "ok"}
 
 
-@router_api_v2.put("/namespace/{namespace}/role", response_model=schema.APIAckResponse)  # fmt: skip
+@router_api.put("/namespace/{namespace}/role", response_model=schema.APIAckResponse)
 async def api_update_namespace_role(
     namespace: str,
     request: Request,
@@ -550,7 +542,7 @@ async def api_update_namespace_role(
         return {"status": "ok"}
 
 
-@router_api_v2.delete("/namespace/{namespace}/role", response_model=schema.APIAckResponse)  # fmt: skip
+@router_api.delete("/namespace/{namespace}/role", response_model=schema.APIAckResponse)
 async def api_delete_namespace_role(
     namespace: str,
     request: Request,
@@ -580,8 +572,7 @@ async def api_delete_namespace_role(
         return {"status": "ok"}
 
 
-@router_api_v1.delete("/namespace/{namespace}/", response_model=schema.APIAckResponse)  # fmt: skip
-@router_api_v2.delete("/namespace/{namespace}/", response_model=schema.APIAckResponse)  # fmt: skip
+@router_api.delete("/namespace/{namespace}/", response_model=schema.APIAckResponse)
 async def api_delete_namespace(
     namespace: str,
     request: Request,
@@ -605,8 +596,10 @@ async def api_delete_namespace(
         return {"status": "ok"}
 
 
-@router_api_v1.get("/environment/", response_model=schema.APIListEnvironment)  # fmt: skip
-@router_api_v2.get("/environment/", response_model=schema.APIListEnvironment)  # fmt: skip
+@router_api.get(
+    "/environment/",
+    response_model=schema.APIListEnvironment,
+)
 async def api_list_environments(
     search: Optional[str] = None,
     namespace: Optional[str] = None,
@@ -646,8 +639,10 @@ async def api_list_environments(
         )
 
 
-@router_api_v1.get("/environment/{namespace}/{environment_name}/", response_model=schema.APIGetEnvironment)  # fmt: skip
-@router_api_v2.get("/environment/{namespace}/{environment_name}/", response_model=schema.APIGetEnvironment)  # fmt: skip
+@router_api.get(
+    "/environment/{namespace}/{environment_name}/",
+    response_model=schema.APIGetEnvironment,
+)
 async def api_get_environment(
     namespace: str,
     environment_name: str,
@@ -677,8 +672,10 @@ async def api_get_environment(
         }
 
 
-@router_api_v1.put("/environment/{namespace}/{name}/", response_model=schema.APIAckResponse)  # fmt: skip
-@router_api_v2.put("/environment/{namespace}/{name}/", response_model=schema.APIAckResponse)  # fmt: skip
+@router_api.put(
+    "/environment/{namespace}/{name}/",
+    response_model=schema.APIAckResponse,
+)
 async def api_update_environment_build(
     namespace: str,
     name: str,
@@ -711,8 +708,10 @@ async def api_update_environment_build(
         return {"status": "ok"}
 
 
-@router_api_v1.delete("/environment/{namespace}/{name}/", response_model=schema.APIAckResponse)  # fmt: skip
-@router_api_v2.delete("/environment/{namespace}/{name}/", response_model=schema.APIAckResponse)  # fmt: skip
+@router_api.delete(
+    "/environment/{namespace}/{name}/",
+    response_model=schema.APIAckResponse,
+)
 async def api_delete_environment(
     namespace: str,
     name: str,
@@ -736,8 +735,9 @@ async def api_delete_environment(
         return {"status": "ok"}
 
 
-@router_api_v1.get("/specification/")  # fmt: skip
-@router_api_v2.get("/specification/")  # fmt: skip
+@router_api.get(
+    "/specification/",
+)
 async def api_get_specification(
     request: Request,
     channel: List[str] = Query([]),
@@ -773,8 +773,10 @@ async def api_get_specification(
         return {"solve": solve.packages}
 
 
-@router_api_v1.post("/specification/", response_model=schema.APIPostSpecification)  # fmt: skip
-@router_api_v2.post("/specification/", response_model=schema.APIPostSpecification)  # fmt: skip
+@router_api.post(
+    "/specification/",
+    response_model=schema.APIPostSpecification,
+)
 async def api_post_specification(
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
@@ -824,8 +826,7 @@ async def api_post_specification(
         return {"status": "ok", "data": {"build_id": build_id}}
 
 
-@router_api_v1.get("/build/", response_model=schema.APIListBuild)  # fmt: skip
-@router_api_v2.get("/build/", response_model=schema.APIListBuild)  # fmt: skip
+@router_api.get("/build/", response_model=schema.APIListBuild)
 async def api_list_builds(
     status: Optional[schema.BuildStatus] = None,
     packages: Optional[List[str]] = Query([]),
@@ -867,8 +868,7 @@ async def api_list_builds(
         )
 
 
-@router_api_v1.get("/build/{build_id}/", response_model=schema.APIGetBuild)  # fmt: skip
-@router_api_v2.get("/build/{build_id}/", response_model=schema.APIGetBuild)  # fmt: skip
+@router_api.get("/build/{build_id}/", response_model=schema.APIGetBuild)
 async def api_get_build(
     build_id: int,
     request: Request,
@@ -893,8 +893,10 @@ async def api_get_build(
         }
 
 
-@router_api_v1.put("/build/{build_id}/", response_model=schema.APIPostSpecification)  # fmt: skip
-@router_api_v2.put("/build/{build_id}/", response_model=schema.APIPostSpecification)  # fmt: skip
+@router_api.put(
+    "/build/{build_id}/",
+    response_model=schema.APIPostSpecification,
+)
 async def api_put_build(
     build_id: int,
     request: Request,
@@ -927,8 +929,10 @@ async def api_put_build(
         }
 
 
-@router_api_v1.delete("/build/{build_id}/", response_model=schema.APIAckResponse)  # fmt: skip
-@router_api_v2.delete("/build/{build_id}/", response_model=schema.APIAckResponse)  # fmt: skip
+@router_api.delete(
+    "/build/{build_id}/",
+    response_model=schema.APIAckResponse,
+)
 async def api_delete_build(
     build_id: int,
     request: Request,
@@ -955,8 +959,10 @@ async def api_delete_build(
         return {"status": "ok"}
 
 
-@router_api_v1.get("/build/{build_id}/packages/", response_model=schema.APIListCondaPackage)  # fmt: skip
-@router_api_v2.get("/build/{build_id}/packages/", response_model=schema.APIListCondaPackage)  # fmt: skip
+@router_api.get(
+    "/build/{build_id}/packages/",
+    response_model=schema.APIListCondaPackage,
+)
 async def api_get_build_packages(
     build_id: int,
     request: Request,
@@ -994,8 +1000,7 @@ async def api_get_build_packages(
         )
 
 
-@router_api_v1.get("/build/{build_id}/logs/")  # fmt: skip
-@router_api_v2.get("/build/{build_id}/logs/")  # fmt: skip
+@router_api.get("/build/{build_id}/logs/")
 async def api_get_build_logs(
     build_id: int,
     request: Request,
@@ -1017,8 +1022,10 @@ async def api_get_build_logs(
         return RedirectResponse(conda_store.storage.get_url(build.log_key))
 
 
-@router_api_v1.get("/channel/", response_model=schema.APIListCondaChannel)  # fmt: skip
-@router_api_v2.get("/channel/", response_model=schema.APIListCondaChannel)  # fmt: skip
+@router_api.get(
+    "/channel/",
+    response_model=schema.APIListCondaChannel,
+)
 async def api_list_channels(
     conda_store=Depends(dependencies.get_conda_store),
     paginated_args=Depends(get_paginated_args),
@@ -1034,8 +1041,10 @@ async def api_list_channels(
         )
 
 
-@router_api_v1.get("/package/", response_model=schema.APIListCondaPackage)  # fmt: skip
-@router_api_v2.get("/package/", response_model=schema.APIListCondaPackage)  # fmt: skip
+@router_api.get(
+    "/package/",
+    response_model=schema.APIListCondaPackage,
+)
 async def api_list_packages(
     search: Optional[str] = None,
     exact: Optional[str] = None,
@@ -1072,8 +1081,7 @@ async def api_list_packages(
         )
 
 
-@router_api_v1.get("/build/{build_id}/yaml/")  # fmt: skip
-@router_api_v2.get("/build/{build_id}/yaml/")  # fmt: skip
+@router_api.get("/build/{build_id}/yaml/")
 async def api_get_build_yaml(
     build_id: int,
     request: Request,
@@ -1094,18 +1102,25 @@ async def api_get_build_yaml(
         return RedirectResponse(conda_store.storage.get_url(build.conda_env_export_key))
 
 
-@router_api_v1.get("/environment/{namespace}/{environment_name}/conda-lock.yml", response_class=PlainTextResponse)  # fmt: skip
-@router_api_v2.get("/environment/{namespace}/{environment_name}/conda-lock.yml", response_class=PlainTextResponse)  # fmt: skip
-@router_api_v1.get("/environment/{namespace}/{environment_name}/conda-lock.yaml", response_class=PlainTextResponse)  # fmt: skip
-@router_api_v2.get("/environment/{namespace}/{environment_name}/conda-lock.yaml", response_class=PlainTextResponse)  # fmt: skip
-@router_api_v1.get("/environment/{namespace}/{environment_name}/lockfile/", response_class=PlainTextResponse)  # fmt: skip
-@router_api_v2.get("/environment/{namespace}/{environment_name}/lockfile/", response_class=PlainTextResponse)  # fmt: skip
-@router_api_v1.get("/build/{build_id}/conda-lock.yml", response_class=PlainTextResponse)  # fmt: skip
-@router_api_v2.get("/build/{build_id}/conda-lock.yml", response_class=PlainTextResponse)  # fmt: skip
-@router_api_v1.get("/build/{build_id}/conda-lock.yaml", name="api_get_build_conda_lock_file", response_class=PlainTextResponse)  # fmt: skip
-@router_api_v2.get("/build/{build_id}/conda-lock.yaml", name="api_get_build_conda_lock_file", response_class=PlainTextResponse)  # fmt: skip
-@router_api_v1.get("/build/{build_id}/lockfile/", response_class=PlainTextResponse)  # fmt: skip
-@router_api_v2.get("/build/{build_id}/lockfile/", response_class=PlainTextResponse)  # fmt: skip
+@router_api.get(
+    "/environment/{namespace}/{environment_name}/conda-lock.yml",
+    response_class=PlainTextResponse,
+)
+@router_api.get(
+    "/environment/{namespace}/{environment_name}/conda-lock.yaml",
+    response_class=PlainTextResponse,
+)
+@router_api.get(
+    "/environment/{namespace}/{environment_name}/lockfile/",
+    response_class=PlainTextResponse,
+)
+@router_api.get("/build/{build_id}/conda-lock.yml", response_class=PlainTextResponse)
+@router_api.get(
+    "/build/{build_id}/conda-lock.yaml",
+    name="api_get_build_conda_lock_file",
+    response_class=PlainTextResponse,
+)
+@router_api.get("/build/{build_id}/lockfile/", response_class=PlainTextResponse)
 async def api_get_build_lockfile(
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
@@ -1151,8 +1166,7 @@ async def api_get_build_lockfile(
         return RedirectResponse(conda_store.storage.get_url(build.conda_lock_key))
 
 
-@router_api_v1.get("/build/{build_id}/archive/")  # fmt: skip
-@router_api_v2.get("/build/{build_id}/archive/")  # fmt: skip
+@router_api.get("/build/{build_id}/archive/")
 async def api_get_build_archive(
     build_id: int,
     request: Request,
@@ -1171,8 +1185,7 @@ async def api_get_build_archive(
         return RedirectResponse(conda_store.storage.get_url(build.conda_pack_key))
 
 
-@router_api_v1.get("/build/{build_id}/docker/")  # fmt: skip
-@router_api_v2.get("/build/{build_id}/docker/")  # fmt: skip
+@router_api.get("/build/{build_id}/docker/")
 async def api_get_build_docker_image_url(
     build_id: int,
     request: Request,
@@ -1200,12 +1213,18 @@ async def api_get_build_docker_image_url(
             )
 
 
-@router_api_v1.get("/setting/", response_model=schema.APIGetSetting)  # fmt: skip
-@router_api_v2.get("/setting/", response_model=schema.APIGetSetting)  # fmt: skip
-@router_api_v1.get("/setting/{namespace}/", response_model=schema.APIGetSetting)  # fmt: skip
-@router_api_v2.get("/setting/{namespace}/", response_model=schema.APIGetSetting)  # fmt: skip
-@router_api_v1.get("/setting/{namespace}/{environment_name}/", response_model=schema.APIGetSetting)  # fmt: skip
-@router_api_v2.get("/setting/{namespace}/{environment_name}/", response_model=schema.APIGetSetting)  # fmt: skip
+@router_api.get(
+    "/setting/",
+    response_model=schema.APIGetSetting,
+)
+@router_api.get(
+    "/setting/{namespace}/",
+    response_model=schema.APIGetSetting,
+)
+@router_api.get(
+    "/setting/{namespace}/{environment_name}/",
+    response_model=schema.APIGetSetting,
+)
 async def api_get_settings(
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
@@ -1235,12 +1254,18 @@ async def api_get_settings(
         }
 
 
-@router_api_v1.put("/setting/", response_model=schema.APIPutSetting)  # fmt: skip
-@router_api_v2.put("/setting/", response_model=schema.APIPutSetting)  # fmt: skip
-@router_api_v1.put("/setting/{namespace}/", response_model=schema.APIPutSetting)  # fmt: skip
-@router_api_v2.put("/setting/{namespace}/", response_model=schema.APIPutSetting)  # fmt: skip
-@router_api_v1.put("/setting/{namespace}/{environment_name}/", response_model=schema.APIPutSetting)  # fmt: skip
-@router_api_v2.put("/setting/{namespace}/{environment_name}/", response_model=schema.APIPutSetting)  # fmt: skip
+@router_api.put(
+    "/setting/",
+    response_model=schema.APIPutSetting,
+)
+@router_api.put(
+    "/setting/{namespace}/",
+    response_model=schema.APIPutSetting,
+)
+@router_api.put(
+    "/setting/{namespace}/{environment_name}/",
+    response_model=schema.APIPutSetting,
+)
 async def api_put_settings(
     request: Request,
     data: Dict[str, Any],

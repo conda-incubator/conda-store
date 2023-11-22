@@ -762,7 +762,7 @@ def test_update_namespace_metadata_v2(testclient, auth):
 
     make_request(
         method=testclient.put,
-        route=f"api/v2/namespace/{namespace}/metadata",
+        route=f"api/v1/namespace/{namespace}/metadata",
         json={"test_key1": "test_value1", "test_key2": "test_value2"},
     )
 
@@ -776,19 +776,19 @@ def test_crud_namespace_roles_v2(testclient, auth):
     # Deletes roles to start with a clean state
     make_request(
         method=testclient.delete,
-        route=f"api/v2/namespace/{namespace}/roles",
+        route=f"api/v1/namespace/{namespace}/roles",
     )
 
     # Creates new namespace
     make_request(
         method=testclient.post,
-        route=f"api/v2/namespace/{other_namespace}",
+        route=f"api/v1/namespace/{other_namespace}",
     )
 
     # Creates role for 'other_namespace' with access to 'namespace'
     make_request(
         method=testclient.post,
-        route=f"api/v2/namespace/{namespace}/role",
+        route=f"api/v1/namespace/{namespace}/role",
         json={
             "other_namespace": other_namespace,
             "role": "developer"
@@ -798,7 +798,7 @@ def test_crud_namespace_roles_v2(testclient, auth):
     # Reads created role
     make_request(
         method=testclient.get,
-        route=f"api/v2/namespace/{namespace}/role",
+        route=f"api/v1/namespace/{namespace}/role",
         params={
             "other_namespace": other_namespace,
         },
@@ -812,7 +812,7 @@ def test_crud_namespace_roles_v2(testclient, auth):
     # Updates created role
     make_request(
         method=testclient.put,
-        route=f"api/v2/namespace/{namespace}/role",
+        route=f"api/v1/namespace/{namespace}/role",
         json={
             "other_namespace": other_namespace,
             "role": "admin"
@@ -822,7 +822,7 @@ def test_crud_namespace_roles_v2(testclient, auth):
     # Reads updated roles
     make_request(
         method=testclient.get,
-        route=f"api/v2/namespace/{namespace}/roles",
+        route=f"api/v1/namespace/{namespace}/roles",
         data_pred=lambda data: (
             data[0]['namespace'] == 'filesystem' and
             data[0]['other_namespace'] == other_namespace and
@@ -834,7 +834,7 @@ def test_crud_namespace_roles_v2(testclient, auth):
     # Deletes created role
     make_request(
         method=testclient.delete,
-        route=f"api/v2/namespace/{namespace}/role",
+        route=f"api/v1/namespace/{namespace}/role",
         json={
             "other_namespace": other_namespace,
         },
@@ -843,7 +843,7 @@ def test_crud_namespace_roles_v2(testclient, auth):
     # Reads roles to check if deleted
     make_request(
         method=testclient.get,
-        route=f"api/v2/namespace/{namespace}/roles",
+        route=f"api/v1/namespace/{namespace}/roles",
         data_pred=lambda data: data == [],
     )
 
