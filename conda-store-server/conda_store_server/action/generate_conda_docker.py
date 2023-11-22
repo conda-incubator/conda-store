@@ -12,9 +12,10 @@ def action_generate_conda_docker(
     output_image_name: str,
     output_image_tag: str,
 ):
-    # Upstream issue in conda-docker, see
-    # https://github.com/conda-incubator/conda-store/issues/666
-    raise RuntimeError("Generating Docker images is currently not supported, see #666")
+    raise RuntimeError(
+        "Generating Docker images is currently not supported, see "
+        "https://github.com/conda-incubator/conda-store/issues/666"
+    )
 
     # Import is inside the function because conda_docker is only available on
     # Linux
