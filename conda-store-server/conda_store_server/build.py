@@ -313,6 +313,14 @@ def build_conda_pack(db: Session, conda_store, build: orm.Build):
 
 
 def build_conda_docker(db: Session, conda_store, build: orm.Build):
+    import warnings
+
+    warnings.warn(
+        "Generating Docker images is currently not supported, see "
+        "https://github.com/conda-incubator/conda-store/issues/666"
+    )
+    return
+
     conda_prefix = build.build_path(conda_store)
     settings = conda_store.get_settings(
         db=db,
