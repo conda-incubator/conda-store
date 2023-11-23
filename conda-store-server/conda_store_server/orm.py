@@ -155,21 +155,6 @@ build_conda_package = Table(
 )
 
 
-_BUILD_KEY_V2_HASH_SIZE = 8
-
-
-# Avoids a cyclic dependency between the orm module and the module defining
-# CondaStore.build_key_version. Because the orm module is loaded early on
-# startup, we want to delay initialization of the build_key_version field until
-# it's been read from the config.
-def _get_build_key_version():
-    from conda_store_server import _BUILD_KEY_VERSION
-
-    # None means the value is not set, likely due to an import error
-    assert _BUILD_KEY_VERSION is not None
-    return _BUILD_KEY_VERSION
-
-
 class Build(Base):
     """The state of a build of a given specification"""
 
@@ -197,14 +182,21 @@ class Build(Base):
     started_on = Column(DateTime, default=None)
     ended_on = Column(DateTime, default=None)
     deleted_on = Column(DateTime, default=None)
+
+    @staticmethod
+    def _get_build_key_version():
+        # Uses local import to make sure current version is initialized
+        from conda_store_server import BuildKey
+
+        return BuildKey.current_version()
+
     build_key_version = Column(Integer, default=_get_build_key_version, nullable=False)
 
     @validates("build_key_version")
     def validate_build_key_version(self, key, build_key_version):
-        if build_key_version not in [1, 2]:
-            raise ValueError(f"invalid build_key_version={build_key_version}")
+        from conda_store_server import BuildKey
 
-        return build_key_version
+        return BuildKey.set_current_version(build_key_version)
 
     build_artifacts = relationship(
         "BuildArtifact", back_populates="build", cascade="all, delete-orphan"
@@ -257,29 +249,17 @@ class Build(Base):
         The build key should be a key that allows for the environment
         build to be easily identified and found in the database.
         """
-        if self.build_key_version == 1:
-            datetime_format = "%Y%m%d-%H%M%S-%f"
-            return f"{self.specification.sha256}-{self.scheduled_on.strftime(datetime_format)}-{self.id}-{self.specification.name}"
-        elif self.build_key_version == 2:
-            hash = self.specification.sha256[:_BUILD_KEY_V2_HASH_SIZE]
-            timestamp = int(self.scheduled_on.timestamp())
-            id = self.id
-            name = self.specification.name
-            return f"{hash}-{timestamp}-{id}-{name}"
-        else:
-            raise ValueError(f"invalid build key version: {self.build_key_version}")
+        # Uses local import to make sure BuildKey is initialized
+        from conda_store_server import BuildKey
+
+        return BuildKey.get_build_key(self)
 
     @staticmethod
     def parse_build_key(key):
-        parts = key.split("-")
-        # Note: cannot rely on the number of dashes to differentiate between
-        # versions because name can contain dashes. Instead, this relies on the
-        # hash size to infer the format. The name is the last field, so indexing
-        # to find the id is okay.
-        if key[_BUILD_KEY_V2_HASH_SIZE] == "-":  # v2
-            return int(parts[2])  # build_id
-        else:  # v1
-            return int(parts[4])  # build_id
+        # Uses local import to make sure BuildKey is initialized
+        from conda_store_server import BuildKey
+
+        return BuildKey.parse_build_key(key)
 
     @property
     def log_key(self):

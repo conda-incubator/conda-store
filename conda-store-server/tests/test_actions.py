@@ -5,10 +5,20 @@ import re
 import sys
 
 import pytest
-from conda_store_server import action, api, conda_utils, orm, schema, server, utils
+from conda_store_server import (
+    BuildKey,
+    action,
+    api,
+    conda_utils,
+    orm,
+    schema,
+    server,
+    utils,
+)
 from conda_store_server.server.auth import DummyAuthentication
 from fastapi import Request
 from fastapi.responses import RedirectResponse
+from traitlets import TraitError
 
 
 def test_action_decorator():
@@ -238,6 +248,18 @@ def test_add_lockfile_packages(
 def test_api_get_build_lockfile(
     request, conda_store, db, simple_specification_with_pip, conda_prefix, is_legacy_build, build_key_version
 ):
+    # sets build_key_version
+    if build_key_version == 0:  # invalid
+        with pytest.raises(TraitError, match=(
+            r"c.CondaStore.build_key_version: invalid build key version: 0, "
+            r"expected: \(1, 2\)"
+        )):
+            conda_store.build_key_version = build_key_version
+        return  # invalid, nothing more to test
+    conda_store.build_key_version = build_key_version
+    assert BuildKey.current_version() == build_key_version
+    assert BuildKey.versions() == (1, 2)
+
     # initializes data needed to get the lockfile
     specification = simple_specification_with_pip
     specification.name = "this-is-a-long-environment-name"
@@ -259,11 +281,6 @@ def test_api_get_build_lockfile(
     # makes this more visible in the lockfile
     build_id = 12345678
     build.id = build_id
-    if build_key_version == 0:  # invalid
-        with pytest.raises(ValueError, match=r"invalid build_key_version=0"):
-            build.build_key_version = build_key_version
-        return  # invalid, nothing more to test
-    build.build_key_version = build_key_version
     # makes sure the timestamp in build_key is always the same
     build.scheduled_on = datetime.datetime(2023, 11, 5, 3, 54, 10, 510258)
     environment = api.get_environment(db, namespace=namespace)
@@ -323,7 +340,9 @@ def test_api_get_build_lockfile(
         assert type(res) is RedirectResponse
         assert key == res.headers['location']
         assert build.build_key == build_key
+        assert BuildKey.get_build_key(build) == build_key
         assert build.parse_build_key(build_key) == 12345678
+        assert BuildKey.parse_build_key(build_key) == 12345678
         assert lockfile_url(build_key) == build.conda_lock_key
         assert lockfile_url(build_key) == res.headers['location']
         assert res.status_code == 307

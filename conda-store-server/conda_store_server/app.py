@@ -8,6 +8,7 @@ import pydantic
 from celery import Celery, group
 from conda_store_server import (
     CONDA_STORE_DIR,
+    BuildKey,
     api,
     conda_utils,
     environment,
@@ -107,20 +108,17 @@ class CondaStore(LoggingConfigurable):
     )
 
     build_key_version = Integer(
-        2,
+        BuildKey.set_current_version(2),
         help="Build key version to use: 1 (long, legacy), 2 (short, default)",
         config=True,
     )
 
     @validate("build_key_version")
     def _check_build_key_version(self, proposal):
-        expected = [1, 2]
-        if proposal.value not in expected:
-            raise TraitError(
-                f"c.CondaStore.build_key_version: invalid build key version: "
-                f"{proposal.value}, expected: {expected}"
-            )
-        return proposal.value
+        try:
+            return BuildKey.set_current_version(proposal.value)
+        except Exception as e:
+            raise TraitError(f"c.CondaStore.build_key_version: {e}")
 
     conda_command = Unicode(
         "mamba",
@@ -381,10 +379,6 @@ class CondaStore(LoggingConfigurable):
             poolclass=QueuePool,
         )
 
-        # Sets the default build_key_version value in the DB based on the config
-        import conda_store_server
-
-        conda_store_server._BUILD_KEY_VERSION = self.build_key_version
         return self._session_factory
 
     # Do not define this as a FastAPI dependency! That would cause Sessions
