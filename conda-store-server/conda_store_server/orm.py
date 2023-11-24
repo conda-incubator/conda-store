@@ -185,7 +185,7 @@ class Build(Base):
 
     @staticmethod
     def _get_build_key_version():
-        # Uses local import to make sure current version is initialized
+        # Uses local import to make sure BuildKey is initialized
         from conda_store_server import BuildKey
 
         return BuildKey.current_version()
@@ -194,6 +194,7 @@ class Build(Base):
 
     @validates("build_key_version")
     def validate_build_key_version(self, key, build_key_version):
+        # Uses local import to make sure BuildKey is initialized
         from conda_store_server import BuildKey
 
         return BuildKey.set_current_version(build_key_version)
