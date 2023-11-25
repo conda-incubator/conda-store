@@ -1,4 +1,5 @@
 import datetime
+import typing
 from pathlib import Path
 
 __version__ = "2023.10.1"
@@ -18,7 +19,7 @@ class BuildKey:
 
     _version2_hash_size = 8
 
-    def _version1_fmt(build: "Build"):  # noqa: F821
+    def _version1_fmt(build: "Build") -> str:  # noqa: F821
         datetime_format = "%Y%m%d-%H%M%S-%f"
         hash = build.specification.sha256
         timestamp = build.scheduled_on.strftime(datetime_format)
@@ -26,7 +27,7 @@ class BuildKey:
         name = build.specification.name
         return f"{hash}-{timestamp}-{id}-{name}"
 
-    def _version2_fmt(build: "Build"):  # noqa: F821
+    def _version2_fmt(build: "Build") -> str:  # noqa: F821
         tzinfo = datetime.timezone.utc
         hash = build.specification.sha256[: BuildKey._version2_hash_size]
         timestamp = int(build.scheduled_on.replace(tzinfo=tzinfo).timestamp())
@@ -41,7 +42,7 @@ class BuildKey:
     }
 
     @classmethod
-    def _check_version(cls, build_key_version):
+    def _check_version(cls, build_key_version: int):
         if build_key_version not in cls.versions():
             raise ValueError(
                 f"invalid build key version: {build_key_version}, "
@@ -49,32 +50,32 @@ class BuildKey:
             )
 
     @classmethod
-    def set_current_version(cls, build_key_version: int):
+    def set_current_version(cls, build_key_version: int) -> int:
         """Sets provided build key version as current and returns it"""
         cls._check_version(build_key_version)
         cls._current_version = build_key_version
         return build_key_version
 
     @classmethod
-    def current_version(cls):
+    def current_version(cls) -> int:
         """Returns currently selected build key version"""
         # None means the value is not set, likely due to an import error
         assert cls._current_version is not None
         return cls._current_version
 
     @classmethod
-    def versions(cls):
+    def versions(cls) -> typing.Tuple[int]:
         """Returns available build key versions"""
         return tuple(cls._fmt.keys())
 
     @classmethod
-    def get_build_key(cls, build: "Build"):  # noqa: F821
+    def get_build_key(cls, build: "Build") -> str:  # noqa: F821
         """Returns build key for this build"""
         cls._check_version(build.build_key_version)
         return cls._fmt.get(build.build_key_version)(build)
 
     @classmethod
-    def parse_build_key(cls, build_key: str):
+    def parse_build_key(cls, build_key: str) -> int:
         """Returns build id from build key"""
         parts = build_key.split("-")
         # Note: cannot rely on the number of dashes to differentiate between
