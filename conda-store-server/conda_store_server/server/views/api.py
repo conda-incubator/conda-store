@@ -388,6 +388,7 @@ async def api_get_namespace_roles(
             request,
             namespace,
             {
+                Permissions.NAMESPACE_READ,
                 Permissions.NAMESPACE_ROLE_MAPPING_READ,
             },
             require=True,
@@ -420,6 +421,7 @@ async def api_delete_namespace_roles(
             request,
             namespace,
             {
+                Permissions.NAMESPACE_READ,
                 Permissions.NAMESPACE_ROLE_MAPPING_DELETE,
             },
             require=True,
@@ -450,6 +452,7 @@ async def api_get_namespace_role(
             request,
             namespace,
             {
+                Permissions.NAMESPACE_READ,
                 Permissions.NAMESPACE_ROLE_MAPPING_READ,
             },
             require=True,
@@ -485,6 +488,7 @@ async def api_create_namespace_role(
             request,
             namespace,
             {
+                Permissions.NAMESPACE_READ,
                 Permissions.NAMESPACE_ROLE_MAPPING_CREATE,
             },
             require=True,
@@ -520,6 +524,7 @@ async def api_update_namespace_role(
             request,
             namespace,
             {
+                Permissions.NAMESPACE_READ,
                 Permissions.NAMESPACE_ROLE_MAPPING_UPDATE,
             },
             require=True,
@@ -555,6 +560,7 @@ async def api_delete_namespace_role(
             request,
             namespace,
             {
+                Permissions.NAMESPACE_READ,
                 Permissions.NAMESPACE_ROLE_MAPPING_DELETE,
             },
             require=True,
