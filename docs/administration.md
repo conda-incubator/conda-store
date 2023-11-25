@@ -571,6 +571,55 @@ affect both the `build_path` length and the filename length.
 
 [relocatable]: https://docs.conda.io/projects/conda-build/en/latest/resources/make-relocatable.html
 
+### Build key versions
+
+The part of the build path that identifies a particular environment build is the
+build key. Originally, conda-store used the following format, known as version
+1:
+
+```
+c7afdeffbe2bda7d16ca69beecc8bebeb29280a95d4f3ed92849e4047710923b-20231105-035410-510258-12345678-this-is-a-long-environment-name
+^ (1)                                                            ^ (2)                  ^ (3)    ^ (4)
+```
+
+It consists of:
+1. a SHA-256 hash of the environment specification
+2. a human-readable timestamp (year, month, day, `-`, hour, minute, second, `-`, microsecond)
+3. the id of a build
+4. the environment name.
+
+To help mitigate build path length issues, a shorter build key format was
+introduced, known as version 2:
+
+```
+c7afdeff-1699156450-12345678-this-is-a-long-environment-name
+^ (1)    ^ (2)      ^ (3)    ^ (4)
+```
+
+It consists of:
+1. a truncated SHA-256 hash of the environment specification
+2. a Unix timestamp
+3. the id of a build
+4. the environment name.
+
+The version 2 format is now the default. Environments created using the version
+1 format will continue to be accessible in the UI, but new builds will use the
+version 2 format. No changes are needed for existing deployments of conda-store.
+
+There is no real reason to use the version 1 format anymore, but it can be
+explicitly set via the config:
+
+```
+c.CondaStore.build_key_version = 1
+```
+
+The version 2 format can also be explicitly set if needed (this is the same as
+the default):
+
+```
+c.CondaStore.build_key_version = 2
+```
+
 ### Long paths on Windows
 
 conda-store supports Windows in standalone mode. However, when creating
