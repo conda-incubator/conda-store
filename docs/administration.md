@@ -416,6 +416,38 @@ should be fully configurable from those options.
 `GithubOAuthAuthentication.jupyterhub_url` is the url for connecting
 to JupyterHub. The URL should not include the `/hub/`.
 
+### `conda_store_server.server.auth.RBACAuthorizationBackend`
+
+`c.RBACAuthorizationBackend.role_mappings_version` specifies the role mappings
+version to use: 1 (default, legacy), 2 (new, recommended)
+
+The role mappings version determines which database table is used when a call to
+`RBACAuthorizationBackend.authorize` is made in one of the HTTP route handlers.
+
+For authorization to work properly, clients must use a set of HTTP APIs matching
+the selected role mappings version.
+
+Role mappings version 2 is the recommended version to use. It relies on the
+following HTTP APIs to update namespace metadata and set the roles:
+
+```
+PUT    /api/v1/namespace/{namespace}/metadata
+GET    /api/v1/namespace/{namespace}/roles
+DELETE /api/v1/namespace/{namespace}/roles
+GET    /api/v1/namespace/{namespace}/role
+POST   /api/v1/namespace/{namespace}/role
+PUT    /api/v1/namespace/{namespace}/role
+DELETE /api/v1/namespace/{namespace}/role
+```
+
+Role mappings version 1 is a legacy version that exists for compatibility
+reasons and is not recommended. It uses this API endpoint to update namespace
+metadata and set the roles:
+
+```
+PUT /api/v1/namespace/{namespace}/
+```
+
 ### `conda_store_server.server.app.CondaStoreServer`
 
 `CondaStoreServer.log_level` is the level for all server

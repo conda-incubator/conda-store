@@ -15,7 +15,19 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from sqlalchemy import and_, or_, text
 from sqlalchemy.orm import sessionmaker
-from traitlets import Bool, Callable, Dict, Instance, Type, Unicode, Union, default
+from traitlets import (
+    Bool,
+    Callable,
+    Dict,
+    Instance,
+    Integer,
+    TraitError,
+    Type,
+    Unicode,
+    Union,
+    default,
+    validate,
+)
 from traitlets.config import LoggingConfigurable
 
 ARN_ALLOWED_REGEX = re.compile(schema.ARN_ALLOWED)
@@ -58,6 +70,74 @@ class AuthenticationBackend(LoggingConfigurable):
 
 
 class RBACAuthorizationBackend(LoggingConfigurable):
+    role_mappings_version = Integer(
+        1,
+        help="Role mappings version to use: 1 (default, legacy), 2 (new, recommended)",
+        config=True,
+    )
+
+    def _database_role_bindings_v1(self, entity: schema.AuthenticationToken):
+        with self.authentication_db() as db:
+            result = db.execute(
+                text(
+                    """
+                    SELECT nrm.entity, nrm.role
+                    FROM namespace n
+                    RIGHT JOIN namespace_role_mapping nrm ON nrm.namespace_id = n.id
+                    WHERE n.name = :primary_namespace
+                    """
+                ),
+                {"primary_namespace": entity.primary_namespace},
+            )
+            raw_role_mappings = result.mappings().all()
+
+            db_role_mappings = defaultdict(set)
+            for row in raw_role_mappings:
+                db_role_mappings[row["entity"]].add(row["role"])
+
+        return db_role_mappings
+
+    def _database_role_bindings_v2(self, entity: schema.AuthenticationToken):
+        def _convert_namespace_to_entity_arn(namespace):
+            return f"{namespace}/*"
+
+        with self.authentication_db() as db:
+            # Must have the same format as authenticated_role_bindings:
+            # {
+            #     "default/*": {"viewer"},
+            #     "filesystem/*": {"viewer"},
+            # }
+            res = defaultdict(set)
+
+            # FIXME: Remove try-except.
+            # Used in tests to check default permissions without populating the
+            # DB, which raises an exception since namespace is not found.
+            try:
+                roles = api.get_other_namespace_roles(db, name=entity.primary_namespace)
+            except Exception:
+                return res
+
+            for x in roles:
+                res[_convert_namespace_to_entity_arn(x.namespace)].add(x.role)
+            return res
+
+    # version -> DB bindings
+    _role_mappings_versions = {
+        1: _database_role_bindings_v1,
+        2: _database_role_bindings_v2,
+    }
+
+    @validate("role_mappings_version")
+    def _check_role_mappings_version(self, proposal):
+        expected = tuple(self._role_mappings_versions.keys())
+        if proposal.value not in expected:
+            raise TraitError(
+                f"c.RBACAuthorizationBackend.role_mappings_version: "
+                f"invalid role mappings version: {proposal.value}, "
+                f"expected: {expected}"
+            )
+        return proposal.value
+
     role_mappings = Dict(
         {
             "viewer": {
@@ -247,57 +327,11 @@ class RBACAuthorizationBackend(LoggingConfigurable):
     def database_role_bindings(self, entity: schema.AuthenticationToken):
         # This method can be reached from the router_ui via filter_environments.
         # Since the UI routes are not versioned, we don't know which API version
-        # the client might be using. So we check all API versions, starting from
-        # the most recent one.
-        v2 = self._database_role_bindings_v2(entity)
-        if v2:
-            return v2
-        return self._database_role_bindings_v1(entity)
-
-    def _database_role_bindings_v1(self, entity: schema.AuthenticationToken):
-        with self.authentication_db() as db:
-            result = db.execute(
-                text(
-                    """
-                    SELECT nrm.entity, nrm.role
-                    FROM namespace n
-                    RIGHT JOIN namespace_role_mapping nrm ON nrm.namespace_id = n.id
-                    WHERE n.name = :primary_namespace
-                    """
-                ),
-                {"primary_namespace": entity.primary_namespace},
-            )
-            raw_role_mappings = result.mappings().all()
-
-            db_role_mappings = defaultdict(set)
-            for row in raw_role_mappings:
-                db_role_mappings[row["entity"]].add(row["role"])
-
-        return db_role_mappings
-
-    def _database_role_bindings_v2(self, entity: schema.AuthenticationToken):
-        def _convert_namespace_to_entity_arn(namespace):
-            return f"{namespace}/*"
-
-        with self.authentication_db() as db:
-            # Must have the same format as authenticated_role_bindings:
-            # {
-            #     "default/*": {"viewer"},
-            #     "filesystem/*": {"viewer"},
-            # }
-            res = defaultdict(set)
-
-            # FIXME: Remove try-except.
-            # Used in tests to check default permissions without populating the
-            # DB, which raises an exception since namespace is not found.
-            try:
-                roles = api.get_other_namespace_roles(db, name=entity.primary_namespace)
-            except Exception:
-                return res
-
-            for x in roles:
-                res[_convert_namespace_to_entity_arn(x.namespace)].add(x.role)
-            return res
+        # the client might be using. So we rely on the role_mappings_version
+        # config option to access the proper DB table.
+        return self._role_mappings_versions.get(self.role_mappings_version)(
+            self, entity
+        )
 
 
 class Authentication(LoggingConfigurable):
