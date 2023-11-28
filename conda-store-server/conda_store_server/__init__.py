@@ -9,10 +9,21 @@ CONDA_STORE_DIR = Path.home() / ".conda-store"
 
 
 class BuildKey:
-    # Avoids a cyclic dependency between the orm module and the module defining
-    # CondaStore.build_key_version. Because the orm module is loaded early on
-    # startup, we want to delay initialization of the Build.build_key_version
-    # field until CondaStore.build_key_version has been read from the config.
+    """
+    Used to configure the build key format, which identifies a particular
+    environment build
+
+    Avoids a cyclic dependency between the `orm` module and the module defining
+    `CondaStore.build_key_version`. Because the `orm` module is loaded early on
+    startup, we want to delay initialization of the `Build.build_key_version`
+    field until `CondaStore.build_key_version` has been read from the config.
+
+    Because the build key version needs to be the same for the entire
+    application, this class implements the singleton pattern. Users are expected
+    to use class methods instead of creating class instances. All implementation
+    details are hidden within the class, preventing potential issues caused by
+    cyclic imports.
+    """
 
     # Default version, must be None here. Initialized in CondaStore.build_key_version
     _current_version = None
