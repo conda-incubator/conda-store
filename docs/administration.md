@@ -587,6 +587,9 @@ c7afdeffbe2bda7d16ca69beecc8bebeb29280a95d4f3ed92849e4047710923b-20231105-035410
 
 It consists of:
 1. a SHA-256 hash of the environment specification
+   (`CondaSpecification`, which represents a user-provided environment, is
+   converted to a dict and passed to `datastructure_hash`, which recursively sorts
+   it and calculates the SHA-256 hash)
 2. a human-readable timestamp (year, month, day, `-`, hour, minute, second, `-`, microsecond)
 3. the id of a build
 4. the environment name.
@@ -601,6 +604,9 @@ c7afdeff-1699156450-12345678-this-is-a-long-environment-name
 
 It consists of:
 1. a truncated SHA-256 hash of the environment specification
+   (`CondaSpecification`, which represents a user-provided environment, is
+   converted to a dict and passed to `datastructure_hash`, which recursively sorts
+   it and calculates the SHA-256 hash)
 2. a Unix timestamp
 3. the id of a build
 4. the environment name.
