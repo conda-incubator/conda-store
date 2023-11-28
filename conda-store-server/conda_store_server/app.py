@@ -8,6 +8,7 @@ import pydantic
 from celery import Celery, group
 from conda_store_server import (
     CONDA_STORE_DIR,
+    BuildKey,
     api,
     conda_utils,
     environment,
@@ -105,6 +106,19 @@ class CondaStore(LoggingConfigurable):
         help="Template used to form the directory for symlinking conda environment builds. Available keys: store_directory, namespace, name. The default will put all environments in the same namespace within the same directory.",
         config=True,
     )
+
+    build_key_version = Integer(
+        BuildKey.set_current_version(2),
+        help="Build key version to use: 1 (long, legacy), 2 (short, default)",
+        config=True,
+    )
+
+    @validate("build_key_version")
+    def _check_build_key_version(self, proposal):
+        try:
+            return BuildKey.set_current_version(proposal.value)
+        except Exception as e:
+            raise TraitError(f"c.CondaStore.build_key_version: {e}")
 
     conda_command = Unicode(
         "mamba",
@@ -364,6 +378,7 @@ class CondaStore(LoggingConfigurable):
             url=self.database_url,
             poolclass=QueuePool,
         )
+
         return self._session_factory
 
     # Do not define this as a FastAPI dependency! That would cause Sessions
