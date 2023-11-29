@@ -1,16 +1,16 @@
 """add v2 role mappings
 
-Revision ID: 0e213092db14
-Revises: d78e9889566a
-Create Date: 2023-11-25 20:52:55.641442
+Revision ID: 771180018e1b
+Revises: 30b37e725c32
+Create Date: 2023-11-29 09:02:35.835664
 
 """
 import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = "0e213092db14"
-down_revision = "d78e9889566a"
+revision = "771180018e1b"
+down_revision = "30b37e725c32"
 branch_labels = None
 depends_on = None
 
