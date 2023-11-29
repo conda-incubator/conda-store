@@ -418,8 +418,8 @@ to JupyterHub. The URL should not include the `/hub/`.
 
 ### `conda_store_server.server.auth.RBACAuthorizationBackend`
 
-`c.RBACAuthorizationBackend.role_mappings_version` specifies the role mappings
-version to use: 1 (default, legacy), 2 (new, recommended)
+`RBACAuthorizationBackend.role_mappings_version` specifies the role mappings
+version to use: 1 (default, legacy), 2 (new, recommended).
 
 The role mappings version determines which database table is used when a call to
 `RBACAuthorizationBackend.authorize` is made in one of the HTTP route handlers.
