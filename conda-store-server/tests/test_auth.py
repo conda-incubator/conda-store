@@ -1,4 +1,5 @@
 import datetime
+import uuid
 
 import pytest
 from conda_store_server.schema import AuthenticationToken, Permissions
@@ -140,36 +141,191 @@ def test_authorization(conda_store, entity_bindings, arn, permissions, authorize
     assert authorized == authorization.authorize(entity, arn, permissions)
 
 
-def test_end_to_end_auth_flow(conda_store):
+@pytest.mark.parametrize("role_mappings_version", [1, 2])
+def test_end_to_end_auth_flow_v1(conda_store_server, testclient, authenticate, role_mappings_version):
+    # Configures authentication
+    namespace = f"this-{uuid.uuid4()}"
+    other_namespace = f"other-{uuid.uuid4()}"
+
+    conda_store = conda_store_server.conda_store
+
     authentication = AuthenticationBackend()
     authentication.secret = "supersecret"
 
     token = authentication.encrypt_token(
         AuthenticationToken(
-            primary_namespace="default",
-            role_bindings={
-                "default/*": ["viewer"],
-                "e*/e*": ["admin"],
-            },
+            primary_namespace=namespace,
+            # No default roles
+            role_bindings={},
         )
     )
 
     token_model = authentication.authenticate(token)
 
     authorization = RBACAuthorizationBackend(
-        authentication_db=conda_store.session_factory
+        authentication_db=conda_store.session_factory,
+        role_mappings_version = role_mappings_version,
     )
-    assert authorization.authorize(
+    def authorize():
+        return authorization.authorize(
         AuthenticationToken(
             primary_namespace=token_model.primary_namespace,
             role_bindings=token_model.role_bindings,
         ),
-        "example-namespace/example-name",
+        f"{other_namespace}/example-name",
         {
+            Permissions.BUILD_DELETE,
+            Permissions.ENVIRONMENT_CREATE,
             Permissions.ENVIRONMENT_DELETE,
             Permissions.ENVIRONMENT_READ,
+            Permissions.ENVIRONMENT_UPDATE,
+            Permissions.ENVIRONMENT_SOLVE,
+            Permissions.NAMESPACE_CREATE,
+            Permissions.NAMESPACE_DELETE,
+            Permissions.NAMESPACE_READ,
+            Permissions.NAMESPACE_UPDATE,
+            Permissions.NAMESPACE_ROLE_MAPPING_CREATE,
+            Permissions.NAMESPACE_ROLE_MAPPING_READ,
+            Permissions.NAMESPACE_ROLE_MAPPING_UPDATE,
+            Permissions.NAMESPACE_ROLE_MAPPING_DELETE,
+            Permissions.SETTING_READ,
+            Permissions.SETTING_UPDATE,
         },
     )
+    # No default roles
+    assert authorize() is False
+
+    # Creates new namespaces
+    for n in (namespace, other_namespace):
+        response = testclient.post(
+            f"api/v1/namespace/{n}"
+        )
+        response.raise_for_status()
+
+    # Deletes roles to start with a clean state
+    response = testclient.put(
+        f"api/v1/namespace/{namespace}",
+        json={"role_mappings": {}}
+    )
+    response.raise_for_status()
+
+    # Creates role for 'namespace' with access to 'other_namespace'
+    response = testclient.put(
+        f"api/v1/namespace/{namespace}",
+        json={"role_mappings": {
+            f"{other_namespace}/ex*-name": ["admin"],
+        }}
+    )
+    response.raise_for_status()
+
+    # Should succeed now if v1
+    if role_mappings_version == 1:
+        assert authorize() is True
+    else:
+        assert authorize() is False
+
+    # Deletes created roles
+    response = testclient.put(
+        f"api/v1/namespace/{namespace}",
+        json={"role_mappings": {}}
+    )
+    response.raise_for_status()
+
+    # Should fail again
+    assert authorize() is False
+
+
+@pytest.mark.parametrize("role_mappings_version", [1, 2])
+def test_end_to_end_auth_flow_v2(conda_store_server, testclient, authenticate, role_mappings_version):
+    # Configures authentication
+    namespace = f"this-{uuid.uuid4()}"
+    other_namespace = f"other-{uuid.uuid4()}"
+
+    conda_store = conda_store_server.conda_store
+
+    authentication = AuthenticationBackend()
+    authentication.secret = "supersecret"
+
+    token = authentication.encrypt_token(
+        AuthenticationToken(
+            primary_namespace=namespace,
+            # No default roles
+            role_bindings={},
+        )
+    )
+
+    token_model = authentication.authenticate(token)
+
+    authorization = RBACAuthorizationBackend(
+        authentication_db=conda_store.session_factory,
+        role_mappings_version = role_mappings_version,
+    )
+    def authorize():
+        return authorization.authorize(
+            AuthenticationToken(
+                primary_namespace=token_model.primary_namespace,
+                role_bindings=token_model.role_bindings,
+            ),
+            f"{other_namespace}/example-name",
+            {
+                Permissions.BUILD_DELETE,
+                Permissions.ENVIRONMENT_CREATE,
+                Permissions.ENVIRONMENT_DELETE,
+                Permissions.ENVIRONMENT_READ,
+                Permissions.ENVIRONMENT_UPDATE,
+                Permissions.ENVIRONMENT_SOLVE,
+                Permissions.NAMESPACE_CREATE,
+                Permissions.NAMESPACE_DELETE,
+                Permissions.NAMESPACE_READ,
+                Permissions.NAMESPACE_UPDATE,
+                Permissions.NAMESPACE_ROLE_MAPPING_CREATE,
+                Permissions.NAMESPACE_ROLE_MAPPING_READ,
+                Permissions.NAMESPACE_ROLE_MAPPING_UPDATE,
+                Permissions.NAMESPACE_ROLE_MAPPING_DELETE,
+                Permissions.SETTING_READ,
+                Permissions.SETTING_UPDATE,
+            },
+        )
+    # No default roles
+    assert authorize() is False
+
+    # Creates new namespaces
+    for n in (namespace, other_namespace):
+        response = testclient.post(
+            f"api/v1/namespace/{n}"
+        )
+        response.raise_for_status()
+
+    # Deletes roles to start with a clean state
+    response = testclient.delete(
+        f"api/v1/namespace/{other_namespace}/roles"
+    )
+    response.raise_for_status()
+
+    # Creates role for 'namespace' with access to 'other_namespace'
+    response = testclient.post(
+        f"api/v1/namespace/{other_namespace}/role",
+        json={
+            "other_namespace": namespace,
+            "role": "admin"
+        },
+    )
+    response.raise_for_status()
+
+    # Should succeed now if v2
+    if role_mappings_version == 2:
+        assert authorize() is True
+    else:
+        assert authorize() is False
+
+    # Deletes created roles
+    response = testclient.delete(
+        f"api/v1/namespace/{other_namespace}/roles"
+    )
+    response.raise_for_status()
+
+    # Should fail again
+    assert authorize() is False
 
 
 @pytest.mark.parametrize(
