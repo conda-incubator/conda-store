@@ -421,6 +421,19 @@ to JupyterHub. The URL should not include the `/hub/`.
 `RBACAuthorizationBackend.role_mappings_version` specifies the role mappings
 version to use: 1 (default, legacy), 2 (new, recommended).
 
+This option can be set via the config as follows:
+
+```python
+c.RBACAuthorizationBackend.role_mappings_version = <version>
+```
+
+When an invalid version is specified, an error message will be printed to the
+terminal when attempting to log in:
+
+```
+c.RBACAuthorizationBackend.role_mappings_version: invalid role mappings version: <version>, expected: (1, 2)
+```
+
 The role mappings version determines which database table is used when a call to
 `RBACAuthorizationBackend.authorize` is made in one of the HTTP route handlers.
 
