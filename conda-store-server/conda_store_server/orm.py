@@ -183,6 +183,22 @@ class Build(Base):
     ended_on = Column(DateTime, default=None)
     deleted_on = Column(DateTime, default=None)
 
+    @staticmethod
+    def _get_build_key_version():
+        # Uses local import to make sure BuildKey is initialized
+        from conda_store_server import BuildKey
+
+        return BuildKey.current_version()
+
+    build_key_version = Column(Integer, default=_get_build_key_version, nullable=False)
+
+    @validates("build_key_version")
+    def validate_build_key_version(self, key, build_key_version):
+        # Uses local import to make sure BuildKey is initialized
+        from conda_store_server import BuildKey
+
+        return BuildKey.set_current_version(build_key_version)
+
     build_artifacts = relationship(
         "BuildArtifact", back_populates="build", cascade="all, delete-orphan"
     )
@@ -234,15 +250,17 @@ class Build(Base):
         The build key should be a key that allows for the environment
         build to be easily identified and found in the database.
         """
-        datetime_format = "%Y%m%d-%H%M%S-%f"
-        return f"{self.specification.sha256}-{self.scheduled_on.strftime(datetime_format)}-{self.id}-{self.specification.name}"
+        # Uses local import to make sure BuildKey is initialized
+        from conda_store_server import BuildKey
+
+        return BuildKey.get_build_key(self)
 
     @staticmethod
     def parse_build_key(key):
-        parts = key.split("-")
-        if len(parts) < 5:
-            return None
-        return int(parts[4])  # build_id
+        # Uses local import to make sure BuildKey is initialized
+        from conda_store_server import BuildKey
+
+        return BuildKey.parse_build_key(key)
 
     @property
     def log_key(self):
