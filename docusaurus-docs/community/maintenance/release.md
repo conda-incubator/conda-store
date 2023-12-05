@@ -59,7 +59,7 @@ Create an issue and copy & paste the steps below to release a new conda-store ve
 There are two packages the [conda-store](https://github.com/conda-incubator/conda-store) repository; [`conda-store`](https://github.com/conda-incubator/conda-store/tree/main/conda-store) and [`conda-store-server`](https://github.com/conda-incubator/conda-store/tree/main/conda-store-server). Make sure to update both packages when releasing a new version.
 :::
 
-```md
+~~~md
 These steps should be taken to create a new release!
 **Double-check for quality control**
 
@@ -117,6 +117,6 @@ Release captain responsible - <@gh_username>
 
 [^github-activity]: If you wish, use [`github-activity` to generate a changelog](https://github.com/choldgraf/github-activity), eg `github-activity conda-incubator/conda-store --since 2023.9.1 --until 2023.10.1`.
 
-```
+~~~
 
 <!-- TODO: Add conda-store-ui and jupyterlab -->
