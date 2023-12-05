@@ -168,6 +168,12 @@ const config = {
         theme: lightCodeTheme,
         darkTheme: darkCodeTheme,
       },
+      announcementBar: {
+        id: 'WIP',
+        content:
+          '⚠️ We are in the process of revamping our docs, some pages may be incomplete or inaccurate. ⚠️',
+        isCloseable: false,
+      },
     }),
 };
 
