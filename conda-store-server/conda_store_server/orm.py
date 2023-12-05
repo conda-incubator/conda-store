@@ -89,6 +89,37 @@ class NamespaceRoleMapping(Base):
         return role
 
 
+class NamespaceRoleMappingV2(Base):
+    """Mapping between roles and namespaces"""
+
+    __tablename__ = "namespace_role_mapping_v2"
+
+    id = Column(Integer, primary_key=True)
+    # Provides access to this namespace
+    namespace_id = Column(Integer, ForeignKey("namespace.id"), nullable=False)
+    namespace = relationship(Namespace, foreign_keys=[namespace_id])
+
+    # ... for other namespace
+    other_namespace_id = Column(Integer, ForeignKey("namespace.id"), nullable=False)
+    other_namespace = relationship(Namespace, foreign_keys=[other_namespace_id])
+
+    # ... with this role, like 'viewer'
+    role = Column(Unicode(255), nullable=False)
+
+    @validates("role")
+    def validate_role(self, key, role):
+        if role not in ["admin", "viewer", "developer"]:
+            raise ValueError(f"invalid role={role}")
+        return role
+
+    __table_args__ = (
+        # Ensures no duplicates can be added with this combination of fields.
+        # Note: this doesn't add role because role needs to be unique for each
+        # pair of ids.
+        UniqueConstraint("namespace_id", "other_namespace_id", name="_uc"),
+    )
+
+
 class Specification(Base):
     """The specifiction for a given conda environment"""
 

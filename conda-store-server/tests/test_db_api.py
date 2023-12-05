@@ -71,6 +71,108 @@ def test_namespace_role_mapping(db):
     NamespaceRoleMapping(namespace=namespace, namespace_id=namespace.id, entity="*/*")
 
 
+def test_namespace_role_mapping_v2(db):
+    namespace_name = "pytest-namespace"
+    other_namespace_name1 = "pytest-other-namespace1"
+    other_namespace_name2 = "pytest-other-namespace2"
+    other_namespace_name3 = "pytest-other-namespace3"
+
+    # Starts with no namespaces
+    assert len(api.list_namespaces(db).all()) == 0
+
+    # Creates namespaces
+    api.create_namespace(db, name=namespace_name)
+    api.create_namespace(db, name=other_namespace_name1)
+    api.create_namespace(db, name=other_namespace_name2)
+    api.create_namespace(db, name=other_namespace_name3)
+    db.commit()
+
+    # Checks that all namespaces exist
+    assert len(api.list_namespaces(db).all()) == 4
+
+    # Creates role mappings
+    api.create_namespace_role(db, name=namespace_name, other=other_namespace_name1, role="admin")
+    api.create_namespace_role(db, name=namespace_name, other=other_namespace_name2, role="admin")
+    api.create_namespace_role(db, name=namespace_name, other=other_namespace_name3, role="viewer")
+    db.commit()
+
+    # Attempts to create a role mapping with an invalid role
+    with pytest.raises(ValueError, match=r"invalid role=invalid-role"):
+        api.create_namespace_role(db, name=namespace_name, other=other_namespace_name3, role="invalid-role")
+        db.commit()
+
+    # Attempts to create a role mapping violating the uniqueness constraint
+    with pytest.raises(
+            Exception,
+            match=(r"UNIQUE constraint failed: "
+                   r"namespace_role_mapping_v2.namespace_id, "
+                   r"namespace_role_mapping_v2.other_namespace_id")):
+        # Runs in a nested transaction since a constraint violation will cause a rollback
+        with db.begin_nested():
+            api.create_namespace_role(db, name=namespace_name, other=other_namespace_name2, role="developer")
+            db.commit()
+
+    # Updates a role mapping
+    api.update_namespace_role(db, name=namespace_name, other=other_namespace_name2, role="developer")
+    db.commit()
+
+    # Gets all role mappings
+    roles = api.get_namespace_roles(db, namespace_name)
+    db.commit()
+    assert len(roles) == 3
+
+    assert roles[0].id == 1
+    assert roles[0].namespace == namespace_name
+    assert roles[0].other_namespace == other_namespace_name1
+    assert roles[0].role == 'admin'
+
+    assert roles[1].id == 2
+    assert roles[1].namespace == namespace_name
+    assert roles[1].other_namespace == other_namespace_name2
+    assert roles[1].role == 'developer'
+
+    assert roles[2].id == 3
+    assert roles[2].namespace == namespace_name
+    assert roles[2].other_namespace == other_namespace_name3
+    assert roles[2].role == 'viewer'
+
+    # Gets other role mappings
+    roles = api.get_other_namespace_roles(db, other_namespace_name1)
+    db.commit()
+    assert len(roles) == 1
+    roles = api.get_other_namespace_roles(db, namespace_name)
+    db.commit()
+    assert len(roles) == 0
+
+    # Deletes one role mapping
+    api.delete_namespace_role(db, name=namespace_name, other=other_namespace_name2)
+    db.commit()
+
+    # Gets all role mappings again
+    roles = api.get_namespace_roles(db, namespace_name)
+    db.commit()
+    assert len(roles) == 2
+
+    assert roles[0].id == 1
+    assert roles[0].namespace == namespace_name
+    assert roles[0].other_namespace == other_namespace_name1
+    assert roles[0].role == 'admin'
+
+    assert roles[1].id == 3
+    assert roles[1].namespace == namespace_name
+    assert roles[1].other_namespace == other_namespace_name3
+    assert roles[1].role == 'viewer'
+
+    # Deletes all role mappings
+    api.delete_namespace_roles(db, name=namespace_name)
+    db.commit()
+
+    # Checks that roles were deleted
+    roles = api.get_namespace_roles(db, name=namespace_name)
+    db.commit()
+    assert len(roles) == 0
+
+
 def test_environment_crud(db):
     namespace_name = "pytest-namespace"
     environment_name = "pytest-environment"

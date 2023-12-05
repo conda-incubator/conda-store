@@ -8,14 +8,26 @@ from typing import Optional
 import jwt
 import requests
 import yarl
-from conda_store_server import orm, schema, utils
+from conda_store_server import api, orm, schema, utils
 from conda_store_server.server import dependencies
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from sqlalchemy import and_, or_, text
 from sqlalchemy.orm import sessionmaker
-from traitlets import Bool, Callable, Dict, Instance, Type, Unicode, Union, default
+from traitlets import (
+    Bool,
+    Callable,
+    Dict,
+    Instance,
+    Integer,
+    TraitError,
+    Type,
+    Unicode,
+    Union,
+    default,
+    validate,
+)
 from traitlets.config import LoggingConfigurable
 
 ARN_ALLOWED_REGEX = re.compile(schema.ARN_ALLOWED)
@@ -58,11 +70,80 @@ class AuthenticationBackend(LoggingConfigurable):
 
 
 class RBACAuthorizationBackend(LoggingConfigurable):
+    role_mappings_version = Integer(
+        1,
+        help="Role mappings version to use: 1 (default, legacy), 2 (new, recommended)",
+        config=True,
+    )
+
+    def _database_role_bindings_v1(self, entity: schema.AuthenticationToken):
+        with self.authentication_db() as db:
+            result = db.execute(
+                text(
+                    """
+                    SELECT nrm.entity, nrm.role
+                    FROM namespace n
+                    RIGHT JOIN namespace_role_mapping nrm ON nrm.namespace_id = n.id
+                    WHERE n.name = :primary_namespace
+                    """
+                ),
+                {"primary_namespace": entity.primary_namespace},
+            )
+            raw_role_mappings = result.mappings().all()
+
+            db_role_mappings = defaultdict(set)
+            for row in raw_role_mappings:
+                db_role_mappings[row["entity"]].add(row["role"])
+
+        return db_role_mappings
+
+    def _database_role_bindings_v2(self, entity: schema.AuthenticationToken):
+        def _convert_namespace_to_entity_arn(namespace):
+            return f"{namespace}/*"
+
+        with self.authentication_db() as db:
+            # Must have the same format as authenticated_role_bindings:
+            # {
+            #     "default/*": {"viewer"},
+            #     "filesystem/*": {"viewer"},
+            # }
+            res = defaultdict(set)
+
+            # FIXME: Remove try-except.
+            # Used in tests to check default permissions without populating the
+            # DB, which raises an exception since namespace is not found.
+            try:
+                roles = api.get_other_namespace_roles(db, name=entity.primary_namespace)
+            except Exception:
+                return res
+
+            for x in roles:
+                res[_convert_namespace_to_entity_arn(x.namespace)].add(x.role)
+            return res
+
+    # version -> DB bindings
+    _role_mappings_versions = {
+        1: _database_role_bindings_v1,
+        2: _database_role_bindings_v2,
+    }
+
+    @validate("role_mappings_version")
+    def _check_role_mappings_version(self, proposal):
+        expected = tuple(self._role_mappings_versions.keys())
+        if proposal.value not in expected:
+            raise TraitError(
+                f"c.RBACAuthorizationBackend.role_mappings_version: "
+                f"invalid role mappings version: {proposal.value}, "
+                f"expected: {expected}"
+            )
+        return proposal.value
+
     role_mappings = Dict(
         {
             "viewer": {
                 schema.Permissions.ENVIRONMENT_READ,
                 schema.Permissions.NAMESPACE_READ,
+                schema.Permissions.NAMESPACE_ROLE_MAPPING_READ,
             },
             "developer": {
                 schema.Permissions.ENVIRONMENT_CREATE,
@@ -70,6 +151,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
                 schema.Permissions.ENVIRONMENT_UPDATE,
                 schema.Permissions.ENVIRONMENT_SOLVE,
                 schema.Permissions.NAMESPACE_READ,
+                schema.Permissions.NAMESPACE_ROLE_MAPPING_READ,
                 schema.Permissions.SETTING_READ,
             },
             "admin": {
@@ -84,6 +166,8 @@ class RBACAuthorizationBackend(LoggingConfigurable):
                 schema.Permissions.NAMESPACE_READ,
                 schema.Permissions.NAMESPACE_UPDATE,
                 schema.Permissions.NAMESPACE_ROLE_MAPPING_CREATE,
+                schema.Permissions.NAMESPACE_ROLE_MAPPING_READ,
+                schema.Permissions.NAMESPACE_ROLE_MAPPING_UPDATE,
                 schema.Permissions.NAMESPACE_ROLE_MAPPING_DELETE,
                 schema.Permissions.SETTING_READ,
                 schema.Permissions.SETTING_UPDATE,
@@ -164,7 +248,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
         )
         return (arn_1_matches_arn_2 and arn_2_matches_arn_1) or arn_2_matches_arn_1
 
-    def get_entity_bindings(self, entity):
+    def get_entity_bindings(self, entity: schema.AuthenticationToken):
         authenticated = entity is not None
         entity_role_bindings = {} if entity is None else entity.role_bindings
 
@@ -188,14 +272,14 @@ class RBACAuthorizationBackend(LoggingConfigurable):
             permissions = permissions | self.role_mappings[role]
         return permissions
 
-    def get_entity_binding_permissions(self, entity):
+    def get_entity_binding_permissions(self, entity: schema.AuthenticationToken):
         entity_bindings = self.get_entity_bindings(entity)
         return {
             entity_arn: self.convert_roles_to_permissions(roles=entity_roles)
             for entity_arn, entity_roles in entity_bindings.items()
         }
 
-    def get_entity_permissions(self, entity, arn: str):
+    def get_entity_permissions(self, entity: schema.AuthenticationToken, arn: str):
         """Get set of permissions for given ARN given AUTHENTICATION
         state and entity_bindings
 
@@ -233,31 +317,21 @@ class RBACAuthorizationBackend(LoggingConfigurable):
                 return False
         return True
 
-    def authorize(self, entity, arn, required_permissions):
+    def authorize(
+        self, entity: schema.AuthenticationToken, arn: str, required_permissions
+    ):
         return required_permissions <= self.get_entity_permissions(
             entity=entity, arn=arn
         )
 
-    def database_role_bindings(self, entity):
-        with self.authentication_db() as db:
-            result = db.execute(
-                text(
-                    """
-                    SELECT nrm.entity, nrm.role
-                    FROM namespace n
-                    RIGHT JOIN namespace_role_mapping nrm ON nrm.namespace_id = n.id
-                    WHERE n.name = :primary_namespace
-                    """
-                ),
-                {"primary_namespace": entity.primary_namespace},
-            )
-            raw_role_mappings = result.mappings().all()
-
-            db_role_mappings = defaultdict(set)
-            for row in raw_role_mappings:
-                db_role_mappings[row["entity"]].add(row["role"])
-
-        return db_role_mappings
+    def database_role_bindings(self, entity: schema.AuthenticationToken):
+        # This method can be reached from the router_ui via filter_environments.
+        # Since the UI routes are not versioned, we don't know which API version
+        # the client might be using. So we rely on the role_mappings_version
+        # config option to access the proper DB table.
+        return self._role_mappings_versions.get(self.role_mappings_version)(
+            self, entity
+        )
 
 
 class Authentication(LoggingConfigurable):
