@@ -2,4 +2,4 @@
 description: Brand design assets
 ---
 
-# Brand design assets
+# Brand and design assets

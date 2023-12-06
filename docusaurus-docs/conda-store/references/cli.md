@@ -1,22 +1,12 @@
 ---
-description: Use the CLI
+description: Reference for conda-store's CLI commands
 ---
 
-# Use the CLI
+# CLI reference
 
 :::warning
-This page is in active development, content may be inaccurate.
+This page is in active development, content may be inaccurate and incomplete.
 :::
-
-The conda-store client can be easily installed via pip or conda.
-
-```shell
-pip install conda-store
-
-# OR
-
-conda install -c conda-forge conda-store
-```
 
 The base CLI is inspired by tools such as
 [conda](https://docs.conda.io/en/latest/),
