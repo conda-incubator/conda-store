@@ -59,7 +59,7 @@ Create an issue and copy & paste the steps below to release a new conda-store ve
 There are two packages the [conda-store](https://github.com/conda-incubator/conda-store) repository; [`conda-store`](https://github.com/conda-incubator/conda-store/tree/main/conda-store) and [`conda-store-server`](https://github.com/conda-incubator/conda-store/tree/main/conda-store-server). Make sure to update both packages when releasing a new version.
 :::
 
-~~~md
+```md
 These steps should be taken to create a new release!
 **Double-check for quality control**
 
