@@ -943,50 +943,50 @@ async def api_put_build_cancel(
     build_id: int,
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
-    db: Session = Depends(dependencies.get_db),
     auth=Depends(dependencies.get_auth),
 ):
-    build = api.get_build(db, build_id)
-    if build is None:
-        raise HTTPException(status_code=404, detail="build id does not exist")
+    with conda_store.get_db() as db:
+        build = api.get_build(db, build_id)
+        if build is None:
+            raise HTTPException(status_code=404, detail="build id does not exist")
 
-    auth.authorize_request(
-        request,
-        f"{build.environment.namespace.name}/{build.environment.name}",
-        {Permissions.BUILD_CANCEL},
-        require=True,
-    )
-
-    if conda_store.celery_app.control.inspect().ping() is None:
-        raise HTTPException(
-            status_code=409,
-            detail="conda-store celery broker does not support task cancelation. Use redis or rabbitmq message queues. See docs for a more detailed explanation",
+        auth.authorize_request(
+            request,
+            f"{build.environment.namespace.name}/{build.environment.name}",
+            {Permissions.BUILD_CANCEL},
+            require=True,
         )
 
-    conda_store.celery_app.control.revoke(
-        [
-            f"build-{build_id}-conda-env-export",
-            f"build-{build_id}-conda-pack",
-            f"build-{build_id}-conda-docker",
-            f"build-{build_id}-environment",
-        ],
-        terminate=True,
-        signal="SIGTERM",
-    )
+        if conda_store.celery_app.control.inspect().ping() is None:
+            raise HTTPException(
+                status_code=409,
+                detail="conda-store celery broker does not support task cancelation. Use redis or rabbitmq message queues. See docs for a more detailed explanation",
+            )
 
-    from conda_store_server.worker import tasks
+        conda_store.celery_app.control.revoke(
+            [
+                f"build-{build_id}-conda-env-export",
+                f"build-{build_id}-conda-pack",
+                f"build-{build_id}-conda-docker",
+                f"build-{build_id}-environment",
+            ],
+            terminate=True,
+            signal="SIGTERM",
+        )
 
-    tasks.task_cleanup_builds.si(
-        build_ids=[build_id],
-        reason=f"""
-build {build_id} marked as FAILED due to being canceled from the REST API
-""",
-    ).apply_async(countdown=5)
+        from conda_store_server.worker import tasks
 
-    return {
-        "status": "ok",
-        "message": f"build {build_id} canceled",
-    }
+        tasks.task_cleanup_builds.si(
+            build_ids=[build_id],
+            reason=f"""
+    build {build_id} marked as FAILED due to being canceled from the REST API
+    """,
+        ).apply_async(countdown=5)
+
+        return {
+            "status": "ok",
+            "message": f"build {build_id} canceled",
+        }
 
 
 @router_api.delete(
