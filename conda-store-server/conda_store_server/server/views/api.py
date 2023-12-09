@@ -346,6 +346,238 @@ async def api_update_namespace(
         return {"status": "ok"}
 
 
+@router_api.put("/namespace/{namespace}/metadata", response_model=schema.APIAckResponse)
+async def api_update_namespace_metadata(
+    namespace: str,
+    request: Request,
+    metadata: Dict[str, Any] = None,
+    auth=Depends(dependencies.get_auth),
+    conda_store=Depends(dependencies.get_conda_store),
+):
+    with conda_store.get_db() as db:
+        auth.authorize_request(
+            request,
+            namespace,
+            {
+                Permissions.NAMESPACE_UPDATE,
+            },
+            require=True,
+        )
+
+        namespace_orm = api.get_namespace(db, namespace)
+        if namespace_orm is None:
+            raise HTTPException(status_code=404, detail="namespace does not exist")
+
+        try:
+            api.update_namespace_metadata(db, namespace, metadata_=metadata)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e.args[0]))
+        db.commit()
+        return {"status": "ok"}
+
+
+@router_api.get("/namespace/{namespace}/roles", response_model=schema.APIResponse)
+async def api_get_namespace_roles(
+    namespace: str,
+    request: Request,
+    auth=Depends(dependencies.get_auth),
+    conda_store=Depends(dependencies.get_conda_store),
+):
+    with conda_store.get_db() as db:
+        auth.authorize_request(
+            request,
+            namespace,
+            {
+                Permissions.NAMESPACE_READ,
+                Permissions.NAMESPACE_ROLE_MAPPING_READ,
+            },
+            require=True,
+        )
+
+        namespace_orm = api.get_namespace(db, namespace)
+        if namespace_orm is None:
+            raise HTTPException(status_code=404, detail="namespace does not exist")
+
+        try:
+            data = api.get_namespace_roles(db, namespace)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e.args[0]))
+        db.commit()
+        return {
+            "status": "ok",
+            "data": [x.dict() for x in data],
+        }
+
+
+@router_api.delete("/namespace/{namespace}/roles", response_model=schema.APIAckResponse)
+async def api_delete_namespace_roles(
+    namespace: str,
+    request: Request,
+    auth=Depends(dependencies.get_auth),
+    conda_store=Depends(dependencies.get_conda_store),
+):
+    with conda_store.get_db() as db:
+        auth.authorize_request(
+            request,
+            namespace,
+            {
+                Permissions.NAMESPACE_READ,
+                Permissions.NAMESPACE_ROLE_MAPPING_DELETE,
+            },
+            require=True,
+        )
+
+        namespace_orm = api.get_namespace(db, namespace)
+        if namespace_orm is None:
+            raise HTTPException(status_code=404, detail="namespace does not exist")
+
+        try:
+            api.delete_namespace_roles(db, namespace)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e.args[0]))
+        db.commit()
+        return {"status": "ok"}
+
+
+@router_api.get("/namespace/{namespace}/role", response_model=schema.APIResponse)
+async def api_get_namespace_role(
+    namespace: str,
+    request: Request,
+    other_namespace: str,
+    auth=Depends(dependencies.get_auth),
+    conda_store=Depends(dependencies.get_conda_store),
+):
+    with conda_store.get_db() as db:
+        auth.authorize_request(
+            request,
+            namespace,
+            {
+                Permissions.NAMESPACE_READ,
+                Permissions.NAMESPACE_ROLE_MAPPING_READ,
+            },
+            require=True,
+        )
+
+        namespace_orm = api.get_namespace(db, namespace)
+        if namespace_orm is None:
+            raise HTTPException(status_code=404, detail="namespace does not exist")
+
+        try:
+            data = api.get_namespace_role(db, namespace, other=other_namespace)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e.args[0]))
+        db.commit()
+        if data is None:
+            raise HTTPException(status_code=404, detail="failed to find role")
+        return {
+            "status": "ok",
+            "data": data.dict(),
+        }
+
+
+@router_api.post("/namespace/{namespace}/role", response_model=schema.APIAckResponse)
+async def api_create_namespace_role(
+    namespace: str,
+    request: Request,
+    role_mapping: schema.APIPostNamespaceRole,
+    auth=Depends(dependencies.get_auth),
+    conda_store=Depends(dependencies.get_conda_store),
+):
+    with conda_store.get_db() as db:
+        auth.authorize_request(
+            request,
+            namespace,
+            {
+                Permissions.NAMESPACE_READ,
+                Permissions.NAMESPACE_ROLE_MAPPING_CREATE,
+            },
+            require=True,
+        )
+
+        namespace_orm = api.get_namespace(db, namespace)
+        if namespace_orm is None:
+            raise HTTPException(status_code=404, detail="namespace does not exist")
+
+        try:
+            api.create_namespace_role(
+                db,
+                namespace,
+                other=role_mapping.other_namespace,
+                role=role_mapping.role,
+            )
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e.args[0]))
+        db.commit()
+        return {"status": "ok"}
+
+
+@router_api.put("/namespace/{namespace}/role", response_model=schema.APIAckResponse)
+async def api_update_namespace_role(
+    namespace: str,
+    request: Request,
+    role_mapping: schema.APIPutNamespaceRole,
+    auth=Depends(dependencies.get_auth),
+    conda_store=Depends(dependencies.get_conda_store),
+):
+    with conda_store.get_db() as db:
+        auth.authorize_request(
+            request,
+            namespace,
+            {
+                Permissions.NAMESPACE_READ,
+                Permissions.NAMESPACE_ROLE_MAPPING_UPDATE,
+            },
+            require=True,
+        )
+
+        namespace_orm = api.get_namespace(db, namespace)
+        if namespace_orm is None:
+            raise HTTPException(status_code=404, detail="namespace does not exist")
+
+        try:
+            api.update_namespace_role(
+                db,
+                namespace,
+                other=role_mapping.other_namespace,
+                role=role_mapping.role,
+            )
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e.args[0]))
+        db.commit()
+        return {"status": "ok"}
+
+
+@router_api.delete("/namespace/{namespace}/role", response_model=schema.APIAckResponse)
+async def api_delete_namespace_role(
+    namespace: str,
+    request: Request,
+    role_mapping: schema.APIDeleteNamespaceRole,
+    auth=Depends(dependencies.get_auth),
+    conda_store=Depends(dependencies.get_conda_store),
+):
+    with conda_store.get_db() as db:
+        auth.authorize_request(
+            request,
+            namespace,
+            {
+                Permissions.NAMESPACE_READ,
+                Permissions.NAMESPACE_ROLE_MAPPING_DELETE,
+            },
+            require=True,
+        )
+
+        namespace_orm = api.get_namespace(db, namespace)
+        if namespace_orm is None:
+            raise HTTPException(status_code=404, detail="namespace does not exist")
+
+        try:
+            api.delete_namespace_role(db, namespace, other=role_mapping.other_namespace)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e.args[0]))
+        db.commit()
+        return {"status": "ok"}
+
+
 @router_api.delete("/namespace/{namespace}/", response_model=schema.APIAckResponse)
 async def api_delete_namespace(
     namespace: str,

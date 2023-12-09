@@ -3,6 +3,7 @@ from typing import Any, Dict, List
 
 from conda_store_server import conda_utils, orm, schema, utils
 from sqlalchemy import distinct, func, null, or_
+from sqlalchemy.orm import aliased
 
 
 def list_namespaces(db, show_soft_deleted: bool = False):
@@ -80,6 +81,176 @@ def update_namespace(
     db.commit()
 
     return namespace
+
+
+# v2 API
+def update_namespace_metadata(
+    db,
+    name: str,
+    metadata_: Dict[str, Any] = None,
+):
+    namespace = get_namespace(db, name)
+    if namespace is None:
+        raise ValueError(f"Namespace='{name}' not found")
+
+    if metadata_ is not None:
+        namespace.metadata_ = metadata_
+
+    return namespace
+
+
+# v2 API
+def get_namespace_roles(
+    db,
+    name: str,
+):
+    """Which namespaces can access namespace 'name'?"""
+    namespace = get_namespace(db, name)
+    if namespace is None:
+        raise ValueError(f"Namespace='{name}' not found")
+
+    nrm = aliased(orm.NamespaceRoleMappingV2)
+    this = aliased(orm.Namespace)
+    other = aliased(orm.Namespace)
+    q = (
+        db.query(nrm.id, this.name, other.name, nrm.role)
+        .filter(nrm.namespace_id == namespace.id)
+        .filter(nrm.namespace_id == this.id)
+        .filter(nrm.other_namespace_id == other.id)
+        .all()
+    )
+    return [schema.NamespaceRoleMappingV2.from_list(x) for x in q]
+
+
+# v2 API
+def get_other_namespace_roles(
+    db,
+    name: str,
+):
+    """To which namespaces does namespace 'name' have access?"""
+    namespace = get_namespace(db, name)
+    if namespace is None:
+        raise ValueError(f"Namespace='{name}' not found")
+
+    nrm = aliased(orm.NamespaceRoleMappingV2)
+    this = aliased(orm.Namespace)
+    other = aliased(orm.Namespace)
+    q = (
+        db.query(nrm.id, this.name, other.name, nrm.role)
+        .filter(nrm.other_namespace_id == namespace.id)
+        .filter(nrm.namespace_id == this.id)
+        .filter(nrm.other_namespace_id == other.id)
+        .all()
+    )
+    return [schema.NamespaceRoleMappingV2.from_list(x) for x in q]
+
+
+# v2 API
+def delete_namespace_roles(
+    db,
+    name: str,
+):
+    namespace = get_namespace(db, name)
+    if namespace is None:
+        raise ValueError(f"Namespace='{name}' not found")
+
+    nrm = orm.NamespaceRoleMappingV2
+    db.query(nrm).filter(nrm.namespace_id == namespace.id).delete()
+
+
+# v2 API
+def get_namespace_role(
+    db,
+    name: str,
+    other: str,
+):
+    namespace = get_namespace(db, name)
+    if namespace is None:
+        raise ValueError(f"Namespace='{name}' not found")
+
+    other_namespace = get_namespace(db, other)
+    if other_namespace is None:
+        raise ValueError(f"Namespace='{other}' not found")
+
+    nrm = aliased(orm.NamespaceRoleMappingV2)
+    this = aliased(orm.Namespace)
+    other = aliased(orm.Namespace)
+    q = (
+        db.query(nrm.id, this.name, other.name, nrm.role)
+        .filter(nrm.namespace_id == namespace.id)
+        .filter(nrm.other_namespace_id == other_namespace.id)
+        .filter(nrm.namespace_id == this.id)
+        .filter(nrm.other_namespace_id == other.id)
+        .first()
+    )
+    if q is None:
+        return None
+    return schema.NamespaceRoleMappingV2.from_list(q)
+
+
+# v2 API
+def create_namespace_role(
+    db,
+    name: str,
+    other: str,
+    role: str,
+):
+    namespace = get_namespace(db, name)
+    if namespace is None:
+        raise ValueError(f"Namespace='{name}' not found")
+
+    other_namespace = get_namespace(db, other)
+    if other_namespace is None:
+        raise ValueError(f"Namespace='{other}' not found")
+
+    db.add(
+        orm.NamespaceRoleMappingV2(
+            namespace_id=namespace.id,
+            other_namespace_id=other_namespace.id,
+            role=role,
+        )
+    )
+
+
+# v2 API
+def update_namespace_role(
+    db,
+    name: str,
+    other: str,
+    role: str,
+):
+    namespace = get_namespace(db, name)
+    if namespace is None:
+        raise ValueError(f"Namespace='{name}' not found")
+
+    other_namespace = get_namespace(db, other)
+    if other_namespace is None:
+        raise ValueError(f"Namespace='{other}' not found")
+
+    nrm = orm.NamespaceRoleMappingV2
+    db.query(nrm).filter(nrm.namespace_id == namespace.id).filter(
+        nrm.other_namespace_id == other_namespace.id
+    ).update({"role": role})
+
+
+# v2 API
+def delete_namespace_role(
+    db,
+    name: str,
+    other: str,
+):
+    namespace = get_namespace(db, name)
+    if namespace is None:
+        raise ValueError(f"Namespace='{name}' not found")
+
+    other_namespace = get_namespace(db, other)
+    if other_namespace is None:
+        raise ValueError(f"Namespace='{other}' not found")
+
+    nrm = orm.NamespaceRoleMappingV2
+    db.query(nrm).filter(nrm.namespace_id == namespace.id).filter(
+        nrm.other_namespace_id == other_namespace.id
+    ).delete()
 
 
 def delete_namespace(db, name: str = None, id: int = None):
