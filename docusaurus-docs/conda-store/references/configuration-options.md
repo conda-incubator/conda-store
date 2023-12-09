@@ -47,6 +47,9 @@ for symlinking Conda environment builds. Available keys:
 store_directory, namespace, name. The default will put all
 environments in the same namespace within the same directory.
 
+`CondaStore.build_key_version` is the [build key version](#build-key-versions)
+to use: 1 (long, legacy), 2 (short, default).
+
 `CondaStore.validate_specification` callable function taking
 `conda_store` and `specification` as input arguments to apply for
 validating and modifying a given specification. If there are
@@ -168,17 +171,20 @@ filesystem.
 `CondaStore.default_uid` is the uid (user id) to assign to all
 files and directories in a given built environment. This setting is
 useful if you want to protect environments from modification from
-certain users and groups.
+certain users and groups. Note: this configuration option is not
+supported on Windows.
 
 `CondaStore.default_gid` is the gid (group id) to assign to all
 files and directories in a given built environment. This setting is
 useful if you want to protect environments from modification from
-certain users and groups.
+certain users and groups. Note: this configuration option is not
+supported on Windows.
 
 `CondaStore.default_permissions` is the filesystem permissions to
 assign to all files and directories in a given built environment. This
 setting is useful if you want to protect environments from
-modification from certain users and groups.
+modification from certain users and groups. Note: this configuration
+option is not supported on Windows.
 
 `CondaStore.default_docker_base_image` default base image used for the
 Dockerized environments. Make sure to have a proper glibc within image
@@ -361,6 +367,51 @@ should be fully configurable from those options.
 `GithubOAuthAuthentication.jupyterhub_url` is the url for connecting
 to JupyterHub. The URL should not include the `/hub/`.
 
+### `conda_store_server.server.auth.RBACAuthorizationBackend`
+
+`RBACAuthorizationBackend.role_mappings_version` specifies the role mappings
+version to use: 1 (default, legacy), 2 (new, recommended).
+
+This option can be set via the config as follows:
+
+```python
+c.RBACAuthorizationBackend.role_mappings_version = <version>
+```
+
+When an invalid version is specified, an error message will be printed to the
+terminal when attempting to log in:
+
+```
+c.RBACAuthorizationBackend.role_mappings_version: invalid role mappings version: <version>, expected: (1, 2)
+```
+
+The role mappings version determines which database table is used when a call to
+`RBACAuthorizationBackend.authorize` is made in one of the HTTP route handlers.
+
+For authorization to work properly, clients must use a set of HTTP APIs matching
+the selected role mappings version.
+
+Role mappings version 2 is the recommended version to use. It relies on the
+following HTTP APIs to update namespace metadata and set the roles:
+
+```
+PUT    /api/v1/namespace/{namespace}/metadata
+GET    /api/v1/namespace/{namespace}/roles
+DELETE /api/v1/namespace/{namespace}/roles
+GET    /api/v1/namespace/{namespace}/role
+POST   /api/v1/namespace/{namespace}/role
+PUT    /api/v1/namespace/{namespace}/role
+DELETE /api/v1/namespace/{namespace}/role
+```
+
+Role mappings version 1 is a legacy version that exists for compatibility
+reasons and is not recommended. It uses this API endpoint to update namespace
+metadata and set the roles:
+
+```
+PUT /api/v1/namespace/{namespace}/
+```
+
 ### `conda_store_server.server.app.CondaStoreServer`
 
 `CondaStoreServer.log_level` is the level for all server
@@ -383,7 +434,7 @@ metrics endpoints. Default True.
 to. The default is all IP addresses `0.0.0.0`.
 
 `CondaStoreServer.port` is the port for conda-store server to
-use. Default is `5000`.
+use. Default is `8080`.
 
 `CondaStoreServer.registry_external_url` is the external hostname and
 port to access docker registry cannot contain `http://` or `https://`.

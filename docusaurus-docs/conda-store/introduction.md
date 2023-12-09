@@ -42,6 +42,8 @@ pip install conda-store conda-store-server
 conda-store-server  --standalone
 ```
 
+You can then access conda-store at `localhost:8080` of the machine running it.
+
 3. Use the CLI
 
 ```bash
@@ -51,5 +53,3 @@ conda-store --help
 <!-- External links -->
 
 [conda-store-repo]: https://github.com/conda-incubator/conda-store
-
-<!-- Internal links -->

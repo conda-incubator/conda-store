@@ -46,7 +46,7 @@ If your installation worked you should be able to port forward the
 conda-store web server.
 
 ```shell
-kubectl port-forward service/conda-store-server 5000:5000
+kubectl port-forward service/conda-store-server 8080:8080
 ```
 
 Then visit via your web browser [http://localhost:8080](http://localhost:8080)

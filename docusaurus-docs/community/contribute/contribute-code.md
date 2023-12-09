@@ -34,7 +34,7 @@ The following resources will be available:
 
 | Resource | Localhost port | username | password |
 |----------|----------------|----------|----------|
-| conda-store web server | [localhost:5000](http://localhost:5000)| `admin` | `password`|
+| conda-store web server | [localhost:8080](http://localhost:8080)| `admin` | `password`|
 | [JupyterHub](https://jupyter.org/hub) | [localhost:8000](http://localhost:8000) | any | `test` |
 | [MinIO](https://min.io/) S3 |  [localhost:9000](http://localhost:9000) | `admin` | `password` |
 | [PostgreSQL](https://www.postgresql.org/) (database: `conda-store`)| [localhost:5432](http://localhost:5432) | `admin` | `password` |
@@ -60,6 +60,8 @@ docker-compose up --build
 2. Install the development dependencies and activate the environment:
 
 ```shell
+# replace this with environment-macos-dev.yaml or environment-windows-dev.yaml
+# if you are on Mac or Windows
 conda env create -f conda-store-server/environment-dev.yaml
 conda activate conda-store-server-dev
 ```
@@ -67,8 +69,8 @@ conda activate conda-store-server-dev
 3. Running `conda-store` in `--standalone` mode launches celery as a
 subprocess of the web server.
 
-```shell
-python -m conda_store_server.server --standalone tests/assets/conda_store_standalone_config.py
+```
+python -m conda_store_server.server --standalone
 ```
 
 4. Visit [localhost:8080](http://localhost:8080/)

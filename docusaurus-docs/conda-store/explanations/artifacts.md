@@ -14,7 +14,7 @@ In the conda-store UI, these are available in the "Logs and Artifacts" section a
 
 The following sections describe the various artifacts generated and how to create environments with them.
 
-### YAML file
+### YAML file (pinned)
 
 YAML files that follow the conda specification is a common way to create environments.
 conda-store creates a "pinned" YAML, where all the exact versions of requested packages (including `pip` packages) as well as all their dependencies are specified, to ensure new environments created match the original environment as closely as possible.
@@ -93,7 +93,11 @@ source my_env/bin/activate
 conda-unpack
 ```
 
-### Docker Registry
+###
+
+:::note
+Docker image creation is currently only supported on Linux.
+:::
 
 conda-store acts as a docker registry which allows for interesting
 ways to handle Conda environment. In addition this registry leverages
@@ -101,7 +105,7 @@ ways to handle Conda environment. In addition this registry leverages
 builds docker images without docker allowing for advanced caching,
 reduced image sizes, and does not require elevated privileges. Click
 on the `docker` link this will copy a url to your clipboard. Note the
-beginning of the url for example `localhost:5000/`. This is required to tell
+beginning of the url for example `localhost:8080/`. This is required to tell
 docker where the docker registry is located. Otherwise by default it
 will try and user docker hub. Your url will likely be different.
 
@@ -121,7 +125,7 @@ docker run -it <docker-url> python
 #### General usage
 
 ```shell
-docker run -it localhost:5000/<namespace>/<environment-name>
+docker run -it localhost:8080/<namespace>/<environment-name>
 ```
 
 If you want to use a specific build (say one that was built in the
@@ -133,7 +137,7 @@ key. An example would be
 `localhost:5000/filesystem/python-numpy-env:583dd55140491c6b4cfa46e36c203e10280fe7e180190aa28c13f6fc35702f8f-20210825-180211-244815-3-python-numpy-env`.
 
 ```shell
-docker run -it localhost:5000/<namespace>/<environment-name>:<build_key>
+docker run -it localhost:8080/<namespace>/<environment-name>:<build_key>
 ```
 
 #### On Demand Docker Image

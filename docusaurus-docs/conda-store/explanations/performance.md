@@ -17,7 +17,7 @@ seen.
 When conda-store builds a given environment it has to locally install
 the environment in the directory specified in the
 [Traitlets](https://traitlets.readthedocs.io/en/stable/using_traitlets.html)
-configuration `CondaStore.store_directroy`. Conda environments consist
+configuration `CondaStore.store_directory`. Conda environments consist
 of many hardlinks to small files. This means that the
 `store_directory` is limited to the number of
 [IOPS](https://en.wikipedia.org/wiki/IOPS) the directory can
