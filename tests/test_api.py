@@ -1017,7 +1017,11 @@ def test_api_cancel_build_auth(testclient):
         time.sleep(5)
 
         # Ensure status is Failed
-        response = testclient.get(f"api/v1/build/{new_build_id}")
+        try:
+            response = testclient.get(f"api/v1/build/{new_build_id}")
+        except requests.exceptions.ConnectionError:
+            time.sleep(5)
+            continue
         response.raise_for_status()
 
         r = schema.APIGetBuild.parse_obj(response.json())
