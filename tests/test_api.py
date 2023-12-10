@@ -1011,14 +1011,20 @@ def test_api_cancel_build_auth(testclient):
     assert r.status == schema.APIStatus.OK
     assert r.message == f"build {new_build_id} canceled"
 
-    # Delay to ensure the build is marked as failed
-    time.sleep(10)
+    failed = False
+    for _ in range(10):
+        # Delay to ensure the build is marked as failed
+        time.sleep(5)
 
-    # Ensure status is Failed
-    response = testclient.get(f"api/v1/build/{new_build_id}")
-    response.raise_for_status()
+        # Ensure status is Failed
+        response = testclient.get(f"api/v1/build/{new_build_id}")
+        response.raise_for_status()
 
-    r = schema.APIGetBuild.parse_obj(response.json())
-    assert r.status == schema.APIStatus.OK
-    assert r.data.id == new_build_id
-    assert r.data.status == schema.BuildStatus.FAILED.value
+        r = schema.APIGetBuild.parse_obj(response.json())
+        assert r.status == schema.APIStatus.OK
+        assert r.data.id == new_build_id
+        if r.data.status == schema.BuildStatus.FAILED.value:
+            failed = True
+            break
+
+    assert failed is True
