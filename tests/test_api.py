@@ -983,7 +983,7 @@ def test_api_cancel_build(testclient):
         if r.data.status == schema.BuildStatus.BUILDING.value:
             building = True
             break
-        time.sleep(30)
+        time.sleep(5)
 
     assert building is True
 
