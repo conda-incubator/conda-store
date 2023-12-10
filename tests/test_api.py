@@ -996,7 +996,7 @@ def test_api_cancel_build(testclient):
     assert "canceled" in r.message
 
     # delay to ensure the build is marked as failed
-    time.sleep(30)
+    time.sleep(10)
 
     # Ensure status is Failed
     response = testclient.get(f"api/v1/build/{new_build_id}")
