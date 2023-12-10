@@ -962,7 +962,17 @@ def test_delete_build_auth(testclient):
     # assert r.status == schema.APIStatus.ERROR
 
 
-def test_api_cancel_build(testclient):
+def test_api_cancel_build_unauth(testclient):
+    build_id = 1
+
+    response = testclient.put(f"api/v1/build/{build_id}/cancel")
+    assert response.status_code == 403
+
+    r = schema.APIResponse.parse_obj(response.json())
+    assert r.status == schema.APIStatus.ERROR
+
+
+def test_api_cancel_build_auth(testclient):
     build_id = 1
 
     testclient.login()
