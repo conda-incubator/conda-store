@@ -1005,6 +1005,7 @@ def test_api_cancel_build_auth(testclient):
 
     # The new build should have kicked off, so now we will request to cancel it
     response = testclient.put(f"api/v1/build/{new_build_id}/cancel")
+    response.raise_for_status()
 
     r = schema.APIResponse.parse_obj(response.json())
     assert r.status == schema.APIStatus.OK
