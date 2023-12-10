@@ -995,6 +995,7 @@ def test_api_cancel_build_auth(testclient):
         response.raise_for_status()
 
         r = schema.APIGetBuild.parse_obj(response.json())
+        assert r.status == schema.APIStatus.OK
         if r.data.status == schema.BuildStatus.BUILDING.value:
             building = True
             break
