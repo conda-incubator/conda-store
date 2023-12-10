@@ -18,6 +18,7 @@ from typing import List
 import aiohttp
 import conda_store_server
 import pytest
+import requests
 from conda_store_server import schema
 from pydantic import parse_obj_as
 
@@ -976,7 +977,11 @@ def test_api_cancel_build(testclient):
     building = False
     start = time.time()
     while time.time() - start < build_timeout:
-        response = testclient.get(f"api/v1/build/{new_build_id}")
+        try:
+            response = testclient.get(f"api/v1/build/{new_build_id}")
+        except requests.exceptions.ConnectionError:
+            time.sleep(5)
+            continue
         response.raise_for_status()
 
         r = schema.APIGetBuild.parse_obj(response.json())
