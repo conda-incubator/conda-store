@@ -993,7 +993,7 @@ def test_api_cancel_build(testclient):
     r = schema.APIResponse.parse_obj(response.json())
 
     assert r.status == schema.APIStatus.OK
-    assert "canceled" in r.message
+    assert r.message == f"build {new_build_id} canceled"
 
     # delay to ensure the build is marked as failed
     time.sleep(10)
