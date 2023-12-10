@@ -982,7 +982,7 @@ def test_api_cancel_build_auth(testclient):
 
     new_build_id = r.data.build_id
 
-    # delay to ensure the build kicks off
+    # Delay to ensure the build kicks off
     build_timeout = 180
     building = False
     start = time.time()
@@ -1007,11 +1007,10 @@ def test_api_cancel_build_auth(testclient):
     response = testclient.put(f"api/v1/build/{new_build_id}/cancel")
 
     r = schema.APIResponse.parse_obj(response.json())
-
     assert r.status == schema.APIStatus.OK
     assert r.message == f"build {new_build_id} canceled"
 
-    # delay to ensure the build is marked as failed
+    # Delay to ensure the build is marked as failed
     time.sleep(10)
 
     # Ensure status is Failed
