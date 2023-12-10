@@ -967,7 +967,7 @@ async def api_put_build_cancel(
             [
                 f"build-{build_id}-conda-env-export",
                 f"build-{build_id}-conda-pack",
-                f"build-{build_id}-conda-docker",
+                f"build-{build_id}-docker",
                 f"build-{build_id}-environment",
             ],
             terminate=True,
