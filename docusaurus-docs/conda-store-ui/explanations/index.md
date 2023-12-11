@@ -1,11 +1,9 @@
 ---
 sidebar_position: 2
-description: Tutorials
+description: Explanations
 ---
 
-# Tutorials
-
-Learn to use the conda-store-ui with the following step-wise tutorials.
+# Explanations
 
 import DocCardList from '@theme/DocCardList';
 import {useCurrentSidebarCategory} from '@docusaurus/theme-common';

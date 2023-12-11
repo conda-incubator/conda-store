@@ -72,3 +72,13 @@ $ docker-compose up --build
 $ hatch env run -e dev playwright-test
 $ hatch env run -e dev integration-test
 ```
+
+## conda-store-ui
+
+We currently use jest in order to run unit tests.
+
+```bash
+yarn test     // find every test with the .test.[tsx|ts] extension
+yarn report   // show coverage collected after running the first command in the browser
+yarn report test/AddChannel.test.tsx     // run a single test instead of all
+```

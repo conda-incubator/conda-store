@@ -2,8 +2,6 @@
 description: Contribute to conda-store's documentation
 ---
 
-# Contribute documentation
-
 > **Note**
 > This page in active development.
 
