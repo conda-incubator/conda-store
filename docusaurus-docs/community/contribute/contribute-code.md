@@ -134,3 +134,15 @@ the API make sure the update the OpenAPI/Swagger specification in
 endpoint when running conda-store. Ensure that the
 `c.CondaStoreServer.url_prefix` is set to `/` when generating the
 endpoints.
+<!-- TODO -->
+
+## Workflows
+
+### Changes to API
+
+The REST API is considered somewhat stable. If any changes are made to
+the API make sure the update the OpenAPI/Swagger specification in
+`docs/_static/openapi.json`. This may be downloaded from the `/docs`
+endpoint when running conda-store. Ensure that the
+`c.CondaStoreServer.url_prefix` is set to `/` when generating the
+endpoints.
