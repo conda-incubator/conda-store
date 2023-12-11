@@ -196,7 +196,7 @@ Choose the `<version>` number. It should follow [Semantic
 Versioning](https://semver.org/) and the established pattern of
 `v<x>.<y>.<z>`.
 
-Ensure that `CHANGELOG.md` is up to date with all the changes since
+Ensure that [`CHANGELOG.md`](https://github.com/conda-incubator/conda-store/blob/main/CHANGELOG.md) is up-to-date with all the changes since
 the last release following the template provided within the markdown
 file.
 
