@@ -75,13 +75,54 @@ python -m conda_store_server.server --standalone
 
 4. Visit [localhost:8080](http://localhost:8080/)
 
-## conda-store-ui
+## Set up development environment -- conda-store-ui
 
-<!-- TODO -->
+To get started with conda-store-ui development, there are a couple of options. This guide will help you to set up your local development environment.
+
+### Prerequisites
+
+Before setting up conda-store ui, you must prepare your environment.
+
+We use [Docker Compose](https://docs.docker.com/compose/) to set up the infrastructure before starting ensure that you have docker-compose installed. If you need to install docker-compose, please see their [installation documentation](https://docs.docker.com/compose/install/)
+
+1. Clone the [conda-store-ui](https://github.com/conda-incubator/conda-store-ui.git) repository.
+2. Copy `.env.example` to `.env`. All default settings should work, but if you want to test against a differenct version of conda-store-server, you can specify if in the `.env` file by setting the `CONDA_STORE_SERVER_VERSION` variable to the desired version
+
+### Local Development with conda-store-ui running in Docker
+
+Running conda-store-ui in Docker is the simplest way to setup your local development environment.
+
+1. Run `yarn run start:docker` to start the entire development stack.
+2. Open you local browser and go to [http://localhost:8000](http://localhost:8000) so see conda-store-ui.
+3. You can then login using the default username of `username` and default password of `password`.
+
+**Note:** Hot reloading is enabled, so when you make changes to source files, your browser will reload and reflect the changes.
+
+### Local Development without running conda-store-ui in Docker
+
+This setup still uses Docker for supporting services but runs conda-store-ui locally.
+
+#### Set up your environment
+
+This project uses [Conda](https://conda.io) for package management. To set up Conda, please see their [installation documentation](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html).
+1. Change to the project root ` cd conda-store-ui`
+2. From the project root create the conda environment `conda env create -f environment_dev.yml`
+3. Activate the development environment `conda activate cs-ui-dev-env`
+4. Install yarn dependencies `yarn install`
+
+#### Run the application
+
+1. Run `yarn run start` and wait for the application to finish starting up
+2. Open you local browser and go to [http://localhost:8000](http://localhost:8000) so see conda-store-ui.
+3. You can then login using the default username of `username` and default password of `password`.
+
+**Note:** Hot reloading is enabled, so when you make changes to source files, your browser will reload and reflect the changes.
+
+<!-- TODO
 
 ## jupyterlab-conda-store
 
-<!-- TODO -->
+-->
 
 ## Workflows
 
@@ -93,56 +134,3 @@ the API make sure the update the OpenAPI/Swagger specification in
 endpoint when running conda-store. Ensure that the
 `c.CondaStoreServer.url_prefix` is set to `/` when generating the
 endpoints.
-
-## Set up development environment - conda-store-ui
-
-There are multiple ways to utilize `conda-store-ui`. Here, we'll be looking at the supported methods of installation.
-
-## Local Installation
-
-**Note** that for installing from source, you will stil need a running conda-store somewhere. The easiest way to do this locally is by running conda-store with docker-compose.
-
-1) Clone the [conda-store-ui](https://github.com/conda-incubator/conda-store-ui.git) repository.
-
-2) If you have an instance of conda-store you plan to connect to, skip this step. Otherwise, start it using docker.
-
-```bash
-git clone https://github.com/conda-incubator/conda-store-ui.git
-cd conda-store-ui
-docker-compose -f docker-compose-dev.yml up --build
-```
-
-3) Create a conda environment with yarn:
-
-```bash
-conda create -n "conda-store-ui"
-conda activate "conda-store-ui"
-conda install -c conda-forge yarn
-```
-
-4) Create a configuration file for the frontend. Refer to the Configuration section.
-
-5) From the root of the repository, run:
-
-```bash
-yarn
-yarn run build
-yarn run start
-```
-
-## Docker Installation
-
-We provide a oneshot docker-compose file for development purposes. This has been tested with the latest version of docker desktop and docker-compose, and it provides a fresh instance of conda-store.
-
-1) Clone the [conda-store-ui](https://github.com/conda-incubator/conda-store-ui.git) repository.
-
-2) Start the docker-compose stack.
-
-```bash
-cd conda-store-ui
-docker compose up --build
-```
-
-3) Access conda-store-ui at [localhost](http://localhost/)
-
-4) Login by locating the login icon, and clicking on it. The default login combination is `username/password`.
