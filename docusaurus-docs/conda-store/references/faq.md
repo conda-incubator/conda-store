@@ -40,12 +40,12 @@ for several reasons:
 
 ## Build path length
 
-Conda packages are guaranteed to be [relocatable] as long as the environment
+Conda packages are guaranteed to be [relocatable][relocatable] as long as the environment
 prefix length is <= 255 characters. In conda-store, the said prefix is specified
 in `Build.build_path`. When building an environment, you might see an error like
 this:
 
-```
+```shell
 build_path too long: must be <= 255 characters
 ```
 
@@ -63,7 +63,7 @@ The part of the build path that identifies a particular environment build is the
 build key. Originally, conda-store used the following format, known as version
 1:
 
-```
+```shell
 c7afdeffbe2bda7d16ca69beecc8bebeb29280a95d4f3ed92849e4047710923b-20231105-035410-510258-12345678-this-is-a-long-environment-name
 ^ (1)                                                            ^ (2)                  ^ (3)    ^ (4)
 ```
@@ -101,14 +101,14 @@ version 2 format. No changes are needed for existing deployments of conda-store.
 There is no real reason to use the version 1 format anymore, but it can be
 explicitly set via the config:
 
-```
+```shell
 c.CondaStore.build_key_version = 1
 ```
 
 The version 2 format can also be explicitly set if needed (this is the same as
 the default):
 
-```
+```shell
 c.CondaStore.build_key_version = 2
 ```
 
@@ -117,7 +117,7 @@ c.CondaStore.build_key_version = 2
 conda-store supports Windows in standalone mode. However, when creating
 environments with certain packages, you may see errors like
 
-```
+```shell
 ERROR:root:[WinError 206] The filename or extension is too long: 'C:\\...'
 ```
 
