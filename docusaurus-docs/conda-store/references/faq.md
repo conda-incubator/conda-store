@@ -41,7 +41,7 @@ for several reasons:
 ## Build path length
 
 Conda packages are guaranteed to be [relocatable][relocatable] as long as the environment
-prefix length is <= 255 characters. In conda-store, the said prefix is specified
+prefix length is `<=` 255 characters. In conda-store, the said prefix is specified
 in `Build.build_path`. When building an environment, you might see an error like
 this:
 
