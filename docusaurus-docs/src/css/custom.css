@@ -40,3 +40,9 @@ div[class^="announcementBarContent_"] {
   font-size: 1rem;
   padding: 20px 0;
 }
+
+img {
+  border-color: var(--ifm-color-primary);
+  border-width: 2px;
+  border-style: solid;
+}
