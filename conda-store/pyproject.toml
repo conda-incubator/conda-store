@@ -39,7 +39,8 @@ Homepage = "https://conda.store/"
 Source = "https://github.com/conda-incubator/conda-store"
 
 [tool.hatch.version]
-path = "conda_store/__init__.py"
+source = "vcs"
+# raw-options = { local_scheme = "no-local-version" }
 
 [project.optional-dependencies]
 dev = ["build", "twine"]
