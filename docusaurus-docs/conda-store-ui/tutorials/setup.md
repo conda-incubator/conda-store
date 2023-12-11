@@ -68,4 +68,4 @@ Once logged-in, you can click on the same button to log-out when needed.
 
 <!-- Internal links -->
 
-[contribution-guidelines]: ../community/contribute/contribute-code#linux
+[contribution-guidelines]: /community/contribute/contribute-code#linux
