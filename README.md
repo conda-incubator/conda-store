@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./docs/_static/images/conda-store-logo-vertical-lockup.svg" alt="conda-store logo" width="30%">
+  <img src="./docusaurus-docs/community/images/logos/conda-store-logo-vertical-lockup.svg" alt="conda-store logo" width="30%">
   <p>
   Data science environments, for collaboration.
 

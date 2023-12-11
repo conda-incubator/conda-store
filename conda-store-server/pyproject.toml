@@ -73,7 +73,6 @@ dependencies = [
 
 [tool.hatch.envs.dev.scripts]
 lint = ["pre-commit run --all"]
-docs = "sphinx-build -b html ../docs ../docs/_build"
 unit-test = "pytest tests -v"
 playwright-test = [
   "playwright install",
