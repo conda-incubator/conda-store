@@ -1,9 +1,9 @@
 ---
-sidebar_position: 2
-description: Tutorials
+sidebar_position: 3
+description: Policies for community governance
 ---
 
-# Tutorials
+# Governance policies
 
 import DocCardList from '@theme/DocCardList';
 import {useCurrentSidebarCategory} from '@docusaurus/theme-common';
