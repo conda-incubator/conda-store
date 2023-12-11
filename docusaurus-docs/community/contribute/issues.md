@@ -4,7 +4,7 @@ description: Best practices for opening issues
 
 # Create and improve issues
 
-## Submit bug report or feature request
+## Submit a bug report or feature request
 
 The conda-store issue trackers are the preferred channel for bug reports, documentation requests, and submitting pull requests.
 
@@ -32,7 +32,7 @@ A few more tips:
 
 - **Getting info about your conda-store installation and environment**: You can use the command line interface to print details and even format them as Markdown to copy-paste into GitHub issues.
 
-- **Sharing long blocks of code or logs**: If you need to include long code, logs or trace backs, you can wrap them in `<details>` and `</details>`.
+- **Sharing long blocks of code or logs**: If you need to include long code, logs or tracebacks, you can wrap them in `<details>` and `</details>`.
   This collapses the content, so it only becomes visible on click, making the issue easier to read and follow.
 
 :::tip
@@ -46,10 +46,10 @@ If an issue is affecting you, start at the top of this list and complete as many
 1. Check the issue tracker, if there is an open issue for this same problem, add a reaction or more details to the issue
    to indicate that it’s affecting you (tip: make sure to also check the open pull requests for ongoing work).
 2. If there is an open issue, and you can add more detail, write a comment describing how the problem is affecting you (tip: learn to improve issues in the next section),
-   OR if you can, write up a work-around or improvement for the issue.
+   OR if you can, write up a workaround or improvement for the issue.
 3. If there is not an issue, write the most complete description of what’s happening including reproduction steps.
-4. [Optional] - Offer to help fix the issue (and it is totally expected that you ask for help; open-source maintainers want to help contributors).
-5. [Optional] - If you decide to help to fix the issue, deliver a well-crafted, tested PR.
+4. [Optional] - Offer to help fix the issue (and it is expected that you ask for help; open-source maintainers want to help contributors).
+5. [Optional] - If you decide to help fix the issue, deliver a well-crafted, tested PR.
 
 ## Improve existing issues
 
@@ -60,7 +60,7 @@ The following actions are typically useful:
 - Add missing elements that are blocking progress such as code samples to reproduce the problem.
 - Suggest better use of code formatting.
 - Suggest reformulating the title and description to make them more explicit about the problem to be solved.
-- Link to related issues or discussions while briefly describing how they are related, for instance “See also #xyz for a similar attempt at this” or “See also #xyz where the same thing happened in another cloud provider" provides context and helps the discussion.
+- Link to related issues or discussions while briefly describing how they are related, for instance, “See also #xyz for a similar attempt at this” or “See also #xyz where the same thing happened in another cloud provider" provides context and helps the discussion.
 - Summarize long discussions on issues to help new and existing contributors quickly understand the background, current status, and course of action for the issue.
 
 You can further [contribute to triaging efforts with these guidelines][triage].

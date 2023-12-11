@@ -12,7 +12,7 @@ The new conda-store documentation website is built using [Docusaurus 2](https://
 ### Pre-requisites
 
 1. Fork and clone the conda-store repository: `git clone https://github.com/<your-username>/conda-store.git`
-2. Install [Node.js](https://nodejs.org/en), and verify the installation with: `node -v`
+2. Install [Node.js](https://nodejs.org/en), and verify the installation with `node -`v`
 
 ### Local development
 
