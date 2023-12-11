@@ -117,5 +117,5 @@ Release captain responsible - <@gh_username>
 
 [^github-activity]: If you wish, use [`github-activity` to generate a changelog](https://github.com/choldgraf/github-activity), eg `github-activity conda-incubator/conda-store --since 2023.9.1 --until 2023.10.1`.
 
-
+```
 <!-- TODO: Add conda-store-ui and jupyterlab -->
