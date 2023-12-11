@@ -69,6 +69,29 @@ def test_solve_lockfile(conda_store, specification, request):
     assert len(context.result["package"]) != 0
 
 
+def test_solve_lockfile_valid_conda_flags(conda_store, simple_specification):
+    context = action.action_solve_lockfile(
+        conda_command=conda_store.conda_command,
+        specification=simple_specification,
+        platforms=[conda_utils.conda_platform()],
+        conda_flags="--strict-channel-priority",
+    )
+    assert len(context.result["package"]) != 0
+
+
+# Checks that conda_flags is used by conda-lock
+def test_solve_lockfile_invalid_conda_flags(conda_store, simple_specification):
+    with pytest.raises(Exception, match=(
+        r"Command.*--this-is-invalid.*returned non-zero exit status"
+    )):
+        action.action_solve_lockfile(
+            conda_command=conda_store.conda_command,
+            specification=simple_specification,
+            platforms=[conda_utils.conda_platform()],
+            conda_flags="--this-is-invalid",
+        )
+
+
 @pytest.mark.parametrize(
     "specification",
     [
