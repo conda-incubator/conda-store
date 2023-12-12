@@ -36,7 +36,7 @@ pip install conda-store conda-store-server
 
 </Tabs>
 
-2. Start standalone local instance and use the conda-store UI
+2. Start a standalone local instance and use the conda-store UI
 
 ```bash
 conda-store-server  --standalone

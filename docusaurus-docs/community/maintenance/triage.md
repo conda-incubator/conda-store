@@ -13,7 +13,7 @@ Triage can happen asynchronously and continuously, or in regularly scheduled mee
 
 ## Why is triaging beneficial?
 
-Projects that triage regularly say it offers a number of benefits, such as:
+Projects that triage regularly say it offers several benefits, such as:
 
 - Speeding up issue management
 - Keeping contributors engaged by shortening response times
@@ -54,7 +54,7 @@ You can also use the [conda-store project board](https://github.com/orgs/conda-i
    1. Depending on your permissions, either close or comment on any issues that are identified as support requests, duplicates, or not-reproducible bugs, or that lack enough information from the reporter (see sections below).
    2. Make sure that the title accurately reflects the issue. If you have the necessary permissions edit it yourself if it's not clear.
    3. Add the relevant labels.
-      Detailed rationale on our labelling system can be found in the [GitHub conventions section][github-conventions] of our documentation.
+      Detailed rationale for our labelling system can be found in the [GitHub conventions section][github-conventions] of our documentation.
 
 :::tip
 Assign one and only one `type:` label to the issue and as many `area:` labels as are relevant.

@@ -46,7 +46,7 @@ $ cd conda-store-server
 $ hatch env run -e dev lint
 ```
 
-Checking that package builds
+Checking that the package builds
 
 ```shell
 $ cd conda-store-server
