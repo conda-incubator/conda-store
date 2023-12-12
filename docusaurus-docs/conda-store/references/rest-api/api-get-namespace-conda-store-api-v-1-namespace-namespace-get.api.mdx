@@ -1,0 +1,52 @@
+---
+id: api-get-namespace-conda-store-api-v-1-namespace-namespace-get
+title: "Api Get Namespace"
+description: "Api Get Namespace"
+sidebar_label: "Api Get Namespace"
+hide_title: true
+hide_table_of_contents: true
+api: eJydVW1v0zAQ/iuRNSHQmqYt+0IlBIVNYxIvYyt8oNqqW+Km3lI7s52KEoXfzp2btM5aNsSnOOe7x8/dPT6XzEJq2HDCIBfsqsNUzjVYoeRZwoZknKbcTiUsuMkh5tNYyQSmxirNp7S77Hub/pLiWIfloNFmuaZDSqb5fSE0R2yrC95hJp7zBbBhyaywGccjPzcQGGxXOZmM1UKmrOowwkeD9HyEREMOds4qpK/RrqThhiAHvR59Em5iLXJKCl0vizjmxsyKLLionREF07JcWnKHPM9E7GoQ3RqKKffQHJ2fnXLrk92mNkHGYAuDxgQsUFnrTNTNLY9dWTQV2oo10dq9DX/ZYHBZLAhU3dGP1koTYjurkQzIre5dl2rljv5LYX2uImF1YZ/kia4e4FmybZHA8qVcb3vUPtcJwaIKiOv1ZBT+gPBXL3wVHk7fHjx7c/27+/rq8GC34xXiIWsDaQvyU23a4+9CjgaD3cZ/h0wkrjzBiSvif3T9w3h8vsVpYB4vWsItiMxHOV5bNoGgNaxIypYvWirYPcpvXKZitCxM2iA92T+K8OA/qnXCjzABufoyczf34V0sd1p/5bqFdP6lU41h6+pSDMZk3d/XdW8f6D4XAd7DwBc3jpu5ounVTCCcDUMWuckVuskV4eSKlv1oM0eicrOsIjdUZsrn5sXWsoHYyaYeSF8LkEakczqv0NhsNrc2N8Moum92urFaUNqoMk4zZxv87vI4eBm+z6Bwo6gdj+2TRhU65l2l06iONhEGhZsghF3ihF2XpNc96vYHZMuVsQuQ3lH7ytUq6Karlv+0UZ4Bjteq5lTWpZw8KAe9HEigX4+RBnfo/5A250iHosvyBgz/prOqIvN9wfUK7bhcghZwQxVHwSXC0BobOYPM8B2im8vLnl/Ut+JFsJVOO4FG35LUvYSsoD9c3vFV6z1BESNRDgkKmkis90f4ZOTWi9yZFvT2bHR3ejJGyf4BWfB8xw==
+sidebar_class_name: "get api-method"
+info_path: conda-store/references/rest-api/conda-store
+custom_edit_url: null
+---
+
+import ApiTabs from "@theme/ApiTabs";
+import DiscriminatorTabs from "@theme/DiscriminatorTabs";
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import SecuritySchemes from "@theme/ApiExplorer/SecuritySchemes";
+import MimeTabs from "@theme/MimeTabs";
+import ParamsItem from "@theme/ParamsItem";
+import ResponseSamples from "@theme/ResponseSamples";
+import SchemaItem from "@theme/SchemaItem";
+import SchemaTabs from "@theme/SchemaTabs";
+import TabItem from "@theme/TabItem";
+
+<h1 className={"openapi__heading"}>Api Get Namespace</h1>
+
+<MethodEndpoint method={"get"} path={"/conda-store/api/v1/namespace/{namespace}/"}></MethodEndpoint>
+
+
+
+Api Get Namespace
+
+## Request
+
+<details style={{"marginBottom":"1rem"}} className={"openapi-markdown__details"} data-collapsed={false} open={true}><summary style={{}}><h3 className={"openapi-markdown__details-summary-header-params"}>Path Parameters</h3></summary><div><ul><ParamsItem className={"paramsItem"} param={{"required":true,"schema":{"title":"Namespace","type":"string"},"name":"namespace","in":"path"}}></ParamsItem></ul></div></details><div><div><ApiTabs><TabItem label={"200"} value={"200"}><div>
+
+Successful Response
+
+</div><div><MimeTabs className={"openapi-tabs__mime"} schemaType={"response"}><TabItem label={"application/json"} value={"application/json"}><SchemaTabs className={"openapi-tabs__schema"}><TabItem label={"Schema"} value={"Schema"}><details style={{}} className={"openapi-markdown__details response"} data-collapsed={false} open={true}><summary style={{}} className={"openapi-markdown__details-summary-response"}><strong>Schema</strong></summary><div style={{"textAlign":"left","marginLeft":"1rem"}}></div><ul style={{"marginLeft":"1rem"}}><SchemaItem collapsible={false} name={"status"} required={true} schemaName={"APIStatus"} qualifierMessage={"**Possible values:** [`ok`, `error`]"} schema={{"title":"APIStatus","enum":["ok","error"],"description":"An enumeration."}}></SchemaItem><SchemaItem collapsible={true} className={"schemaItem"}><details style={{}} className={"openapi-markdown__details"}><summary style={{}}><span className={"openapi-schema__container"}><strong className={"openapi-schema__property"}>data</strong><span className={"openapi-schema__name"}> object</span><span className={"openapi-schema__divider"}></span><span className={"openapi-schema__required"}>required</span></span></summary><div style={{"marginLeft":"1rem"}}><SchemaItem collapsible={false} name={"id"} required={true} schemaName={"Id"} qualifierMessage={undefined} schema={{"title":"Id","type":"integer"}}></SchemaItem><SchemaItem collapsible={false} name={"name"} required={true} schemaName={"Name"} qualifierMessage={"**Possible values:** Value must match regular expression `^[A-Za-z0-9-+_@$&?^~.=]+$`"} schema={{"title":"Name","pattern":"^[A-Za-z0-9-+_@$&?^~.=]+$","type":"string"}}></SchemaItem></div></details></SchemaItem><SchemaItem collapsible={false} name={"message"} required={false} schemaName={"Message"} qualifierMessage={undefined} schema={{"title":"Message","type":"string"}}></SchemaItem></ul></details></TabItem><TabItem label={"Example (from schema)"} value={"Example (from schema)"}><ResponseSamples responseExample={"{\n  \"data\": {\n    \"id\": 0,\n    \"name\": \"string\"\n  },\n  \"message\": \"string\"\n}"} language={"json"}></ResponseSamples></TabItem></SchemaTabs></TabItem></MimeTabs></div></TabItem><TabItem label={"422"} value={"422"}><div>
+
+Validation Error
+
+</div><div><MimeTabs className={"openapi-tabs__mime"} schemaType={"response"}><TabItem label={"application/json"} value={"application/json"}><SchemaTabs className={"openapi-tabs__schema"}><TabItem label={"Schema"} value={"Schema"}><details style={{}} className={"openapi-markdown__details response"} data-collapsed={false} open={true}><summary style={{}} className={"openapi-markdown__details-summary-response"}><strong>Schema</strong></summary><div style={{"textAlign":"left","marginLeft":"1rem"}}></div><ul style={{"marginLeft":"1rem"}}><SchemaItem collapsible={true} className={"schemaItem"}><details style={{}} className={"openapi-markdown__details"}><summary style={{}}><span className={"openapi-schema__container"}><strong className={"openapi-schema__property"}>detail</strong><span className={"openapi-schema__name"}> object[]</span></span></summary><div style={{"marginLeft":"1rem"}}><li><div style={{"fontSize":"var(--ifm-code-font-size)","opacity":"0.6","marginLeft":"-.5rem","paddingBottom":".5rem"}}>Array [</div></li><SchemaItem collapsible={true} className={"schemaItem"}><details style={{}} className={"openapi-markdown__details"}><summary style={{}}><span className={"openapi-schema__container"}><strong className={"openapi-schema__property"}>loc</strong><span className={"openapi-schema__name"}> object[]</span><span className={"openapi-schema__divider"}></span><span className={"openapi-schema__required"}>required</span></span></summary><div style={{"marginLeft":"1rem"}}><li><div style={{"fontSize":"var(--ifm-code-font-size)","opacity":"0.6","marginLeft":"-.5rem","paddingBottom":".5rem"}}>Array [</div></li><div><span className={"badge badge--info"}>anyOf</span><SchemaTabs><TabItem label={"MOD1"} value={"0-item-properties"}><div style={{"marginTop":".5rem","marginBottom":".5rem","marginLeft":"1rem"}}>
+
+string
+
+</div></TabItem><TabItem label={"MOD2"} value={"1-item-properties"}><div style={{"marginTop":".5rem","marginBottom":".5rem","marginLeft":"1rem"}}>
+
+integer
+
+</div></TabItem></SchemaTabs></div><li><div style={{"fontSize":"var(--ifm-code-font-size)","opacity":"0.6","marginLeft":"-.5rem"}}>]</div></li></div></details></SchemaItem><SchemaItem collapsible={false} name={"msg"} required={true} schemaName={"Message"} qualifierMessage={undefined} schema={{"title":"Message","type":"string"}}></SchemaItem><SchemaItem collapsible={false} name={"type"} required={true} schemaName={"Error Type"} qualifierMessage={undefined} schema={{"title":"Error Type","type":"string"}}></SchemaItem><li><div style={{"fontSize":"var(--ifm-code-font-size)","opacity":"0.6","marginLeft":"-.5rem"}}>]</div></li></div></details></SchemaItem></ul></details></TabItem><TabItem label={"Example (from schema)"} value={"Example (from schema)"}><ResponseSamples responseExample={"{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        0\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\"\n    }\n  ]\n}"} language={"json"}></ResponseSamples></TabItem></SchemaTabs></TabItem></MimeTabs></div></TabItem></ApiTabs></div></div>
+      

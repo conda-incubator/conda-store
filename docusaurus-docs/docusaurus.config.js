@@ -59,7 +59,22 @@ const config = {
         breadcrumbs: true,
       }),
     ],
+    [
+      "docusaurus-plugin-openapi-docs", // ref: https://github.com/PaloAltoNetworks/docusaurus-openapi-docs#configuring-docusaurusconfigjs-plugin-and-theme-usage
+      {
+        id: "rest-api",
+        docsPluginId: "classic",
+        config: {
+          condaStore: {
+            specPath: "static/openapi.json",
+            outputDir: "conda-store/references/rest-api",
+          }
+        }
+      },
+    ],
   ],
+
+  themes: ["docusaurus-theme-openapi-docs"], // export theme components for rest-api docs
 
   presets: [
     [
@@ -72,6 +87,8 @@ const config = {
           routeBasePath: "conda-store",
           editUrl:
             "https://github.com/conda-incubator/conda-store/tree/main/docusaurus-docs",
+          docLayoutComponent: "@theme/DocPage",
+          docItemComponent: "@theme/ApiItem",
         },
         theme: {
           customCss: require.resolve("./src/css/custom.css"),

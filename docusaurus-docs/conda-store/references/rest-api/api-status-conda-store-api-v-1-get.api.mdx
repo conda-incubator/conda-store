@@ -1,0 +1,40 @@
+---
+id: api-status-conda-store-api-v-1-get
+title: "Api Status"
+description: "Api Status"
+sidebar_label: "Api Status"
+hide_title: true
+hide_table_of_contents: true
+api: eJyFU8Fu2zAM/ZVA58ZOup1y69ai6KHAtmy7BEHA2Kyt1pYUiTIWGP73ka7j2cGGXWyJ4nt8eqRaRVAEtdkpcFrtb5R16IG0NU+52kjwEAgohkNmTQ68sR4PEm7Wh0OBpG6Ux+CsCcg0rbpdreSXY8i8dkLENNuYZRjCS6wW34ZkxjEjoSFJB+cqnfV109cgmFaFrMQaZEWaKmSauy9Pj0jbXk9f9xS1x1zUh0swBwK5B52dQOzxFTMR6bzcjPS7yiF9zj0So4m1kNo32XhvvTDOr3RnFpI2mJWobij9D7n3cjaX3KAPwvVfsZfECfXPITRCA3ltCtV1rKNmq6HAaf7zEPpLftdjri7n9GJ0o0YqrQzDe7cdUMmbtJ+HZT8PKc9D2qxTPtXmxU4LT7KGjkPWd9xALedfI5igi1KYo684UhK5sEnT0+UkyWwt9vKAoAzOH/Cn7f3iw/JzBbGfpzmeHTTBRp9hYn2RDuiQMmg5gph2dFetko/J+lZizgaqwUxKzRyZmdVeLCX8RamrQBuh6MW0g1u7Kx/krXHlNX+k/SWXk6S2PULAH77qOgmfIvozx3nZgNdwFEd3eyYvEXL0vGnVG55FHr8vJx42UEXsH+7Vg+r2k04+Pnzn1v8G1qFaCg==
+sidebar_class_name: "get api-method"
+info_path: conda-store/references/rest-api/conda-store
+custom_edit_url: null
+---
+
+import ApiTabs from "@theme/ApiTabs";
+import DiscriminatorTabs from "@theme/DiscriminatorTabs";
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import SecuritySchemes from "@theme/ApiExplorer/SecuritySchemes";
+import MimeTabs from "@theme/MimeTabs";
+import ParamsItem from "@theme/ParamsItem";
+import ResponseSamples from "@theme/ResponseSamples";
+import SchemaItem from "@theme/SchemaItem";
+import SchemaTabs from "@theme/SchemaTabs";
+import TabItem from "@theme/TabItem";
+
+<h1 className={"openapi__heading"}>Api Status</h1>
+
+<MethodEndpoint method={"get"} path={"/conda-store/api/v1/"}></MethodEndpoint>
+
+
+
+Api Status
+
+## Request
+
+<div><div><ApiTabs><TabItem label={"200"} value={"200"}><div>
+
+Successful Response
+
+</div><div><MimeTabs className={"openapi-tabs__mime"} schemaType={"response"}><TabItem label={"application/json"} value={"application/json"}><SchemaTabs className={"openapi-tabs__schema"}><TabItem label={"Schema"} value={"Schema"}><details style={{}} className={"openapi-markdown__details response"} data-collapsed={false} open={true}><summary style={{}} className={"openapi-markdown__details-summary-response"}><strong>Schema</strong></summary><div style={{"textAlign":"left","marginLeft":"1rem"}}></div><ul style={{"marginLeft":"1rem"}}><SchemaItem collapsible={false} name={"status"} required={true} schemaName={"APIStatus"} qualifierMessage={"**Possible values:** [`ok`, `error`]"} schema={{"title":"APIStatus","enum":["ok","error"],"description":"An enumeration."}}></SchemaItem><SchemaItem collapsible={true} className={"schemaItem"}><details style={{}} className={"openapi-markdown__details"}><summary style={{}}><span className={"openapi-schema__container"}><strong className={"openapi-schema__property"}>data</strong><span className={"openapi-schema__name"}> object</span><span className={"openapi-schema__divider"}></span><span className={"openapi-schema__required"}>required</span></span></summary><div style={{"marginLeft":"1rem"}}><SchemaItem collapsible={false} name={"version"} required={true} schemaName={"Version"} qualifierMessage={undefined} schema={{"title":"Version","type":"string"}}></SchemaItem></div></details></SchemaItem><SchemaItem collapsible={false} name={"message"} required={false} schemaName={"Message"} qualifierMessage={undefined} schema={{"title":"Message","type":"string"}}></SchemaItem></ul></details></TabItem><TabItem label={"Example (from schema)"} value={"Example (from schema)"}><ResponseSamples responseExample={"{\n  \"data\": {\n    \"version\": \"string\"\n  },\n  \"message\": \"string\"\n}"} language={"json"}></ResponseSamples></TabItem></SchemaTabs></TabItem></MimeTabs></div></TabItem></ApiTabs></div></div>
+      

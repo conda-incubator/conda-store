@@ -1,0 +1,52 @@
+---
+id: api-get-build-docker-image-url-conda-store-api-v-1-build-build-id-docker-get
+title: "Api Get Build Docker Image Url"
+description: "Api Get Build Docker Image Url"
+sidebar_label: "Api Get Build Docker Image Url"
+hide_title: true
+hide_table_of_contents: true
+api: eJyVVE1v2zAM/SuGThvgRk3WU27tWnQFNmxrs12CwlBsxlFrW4okBwsM//eRsvyRBlgxH2KZ4cfj46Ma5kRu2XLNhJbsOWZKgxFOquohY0syJjm4ZFPLIksylb6CSWQpckhqUySpqjKRWKcMJOR6mAfP8JJ4CkGUhsVMCyNKcGCoZsMM7GtpAEs5U0PMbLqDUrBlw5x0BSCCG0oUIZiYuaMmi6wc5GBYG7MKc6GlL4Y+ssJvLdyOtdiMAatVZcFSxsXlJb0ysKmRmlpE16c6TcHabV1Ej8EZs2BfDipH7kLrQqaeEf5iKaYZUbb4xOxqsThP/FsUMvNh0Z0xyvxH1qH3L6vVjzFPnybQoDYvkHpKDc3Mya7LDJyQxTTLbWcZAoUx4khUOSjt1PG81DieNStUipbS5n2m5/egUMQk/VfVNfwPJKI6ft96YQQP64yschx1czb9Z6Ke4ExKfMNRojbHCkN8MIyuvsVoRdYz7+GJ3wz1WsvoHlzUifLWKzt6oHWIfhmiGKW9U7Q4vdpRiEvG/Z5c+D3huCf8MOdes7zppdvybk+41/BWTaFOooOKROpVFOT/sxaVlfmOKuJWomXnnLZLzvf9P7NUlcQCig5I4mPwzdNt9OnicyFqr/zTeJxmZVVtUpgpk/MQbTkGXQxBmPaA+9wxdDm7ms0XZNPKulJUk1LvsndC9jBxB38c14XA1W4DwCYwu37DDd1hiGaOP55YfC8nl0NHMR5IuzvERxmaZiMsIIC2JfO+BnNEOx4PwkixoRGgIDNp6Yyz3YrCwhnYYbnZh8ewNR+jUVqnTfT6r0j9B1HU9IXHVzhOrzPUOOIEkSFowtD9fY03lnaTwLPLhK6+QYn3dytU9F/eYALD
+sidebar_class_name: "get api-method"
+info_path: conda-store/references/rest-api/conda-store
+custom_edit_url: null
+---
+
+import ApiTabs from "@theme/ApiTabs";
+import DiscriminatorTabs from "@theme/DiscriminatorTabs";
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import SecuritySchemes from "@theme/ApiExplorer/SecuritySchemes";
+import MimeTabs from "@theme/MimeTabs";
+import ParamsItem from "@theme/ParamsItem";
+import ResponseSamples from "@theme/ResponseSamples";
+import SchemaItem from "@theme/SchemaItem";
+import SchemaTabs from "@theme/SchemaTabs";
+import TabItem from "@theme/TabItem";
+
+<h1 className={"openapi__heading"}>Api Get Build Docker Image Url</h1>
+
+<MethodEndpoint method={"get"} path={"/conda-store/api/v1/build/{build_id}/docker/"}></MethodEndpoint>
+
+
+
+Api Get Build Docker Image Url
+
+## Request
+
+<details style={{"marginBottom":"1rem"}} className={"openapi-markdown__details"} data-collapsed={false} open={true}><summary style={{}}><h3 className={"openapi-markdown__details-summary-header-params"}>Path Parameters</h3></summary><div><ul><ParamsItem className={"paramsItem"} param={{"required":true,"schema":{"title":"Build Id","type":"integer"},"name":"build_id","in":"path"}}></ParamsItem></ul></div></details><div><div><ApiTabs><TabItem label={"200"} value={"200"}><div>
+
+Successful Response
+
+</div><div><MimeTabs className={"openapi-tabs__mime"} schemaType={"response"}><TabItem label={"application/json"} value={"application/json"}><SchemaTabs className={"openapi-tabs__schema"}><TabItem label={"Schema"} value={"Schema"}><details style={{}} className={"openapi-markdown__details response"} data-collapsed={false} open={true}><summary style={{}} className={"openapi-markdown__details-summary-response"}><strong>Schema</strong></summary><div style={{"textAlign":"left","marginLeft":"1rem"}}></div><ul style={{"marginLeft":"1rem"}}>any</ul></details></TabItem></SchemaTabs></TabItem></MimeTabs></div></TabItem><TabItem label={"422"} value={"422"}><div>
+
+Validation Error
+
+</div><div><MimeTabs className={"openapi-tabs__mime"} schemaType={"response"}><TabItem label={"application/json"} value={"application/json"}><SchemaTabs className={"openapi-tabs__schema"}><TabItem label={"Schema"} value={"Schema"}><details style={{}} className={"openapi-markdown__details response"} data-collapsed={false} open={true}><summary style={{}} className={"openapi-markdown__details-summary-response"}><strong>Schema</strong></summary><div style={{"textAlign":"left","marginLeft":"1rem"}}></div><ul style={{"marginLeft":"1rem"}}><SchemaItem collapsible={true} className={"schemaItem"}><details style={{}} className={"openapi-markdown__details"}><summary style={{}}><span className={"openapi-schema__container"}><strong className={"openapi-schema__property"}>detail</strong><span className={"openapi-schema__name"}> object[]</span></span></summary><div style={{"marginLeft":"1rem"}}><li><div style={{"fontSize":"var(--ifm-code-font-size)","opacity":"0.6","marginLeft":"-.5rem","paddingBottom":".5rem"}}>Array [</div></li><SchemaItem collapsible={true} className={"schemaItem"}><details style={{}} className={"openapi-markdown__details"}><summary style={{}}><span className={"openapi-schema__container"}><strong className={"openapi-schema__property"}>loc</strong><span className={"openapi-schema__name"}> object[]</span><span className={"openapi-schema__divider"}></span><span className={"openapi-schema__required"}>required</span></span></summary><div style={{"marginLeft":"1rem"}}><li><div style={{"fontSize":"var(--ifm-code-font-size)","opacity":"0.6","marginLeft":"-.5rem","paddingBottom":".5rem"}}>Array [</div></li><div><span className={"badge badge--info"}>anyOf</span><SchemaTabs><TabItem label={"MOD1"} value={"0-item-properties"}><div style={{"marginTop":".5rem","marginBottom":".5rem","marginLeft":"1rem"}}>
+
+string
+
+</div></TabItem><TabItem label={"MOD2"} value={"1-item-properties"}><div style={{"marginTop":".5rem","marginBottom":".5rem","marginLeft":"1rem"}}>
+
+integer
+
+</div></TabItem></SchemaTabs></div><li><div style={{"fontSize":"var(--ifm-code-font-size)","opacity":"0.6","marginLeft":"-.5rem"}}>]</div></li></div></details></SchemaItem><SchemaItem collapsible={false} name={"msg"} required={true} schemaName={"Message"} qualifierMessage={undefined} schema={{"title":"Message","type":"string"}}></SchemaItem><SchemaItem collapsible={false} name={"type"} required={true} schemaName={"Error Type"} qualifierMessage={undefined} schema={{"title":"Error Type","type":"string"}}></SchemaItem><li><div style={{"fontSize":"var(--ifm-code-font-size)","opacity":"0.6","marginLeft":"-.5rem"}}>]</div></li></div></details></SchemaItem></ul></details></TabItem><TabItem label={"Example (from schema)"} value={"Example (from schema)"}><ResponseSamples responseExample={"{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        0\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\"\n    }\n  ]\n}"} language={"json"}></ResponseSamples></TabItem></SchemaTabs></TabItem></MimeTabs></div></TabItem></ApiTabs></div></div>
+      

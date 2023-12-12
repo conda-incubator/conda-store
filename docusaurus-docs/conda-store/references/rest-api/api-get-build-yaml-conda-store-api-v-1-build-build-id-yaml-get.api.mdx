@@ -1,0 +1,52 @@
+---
+id: api-get-build-yaml-conda-store-api-v-1-build-build-id-yaml-get
+title: "Api Get Build Yaml"
+description: "Api Get Build Yaml"
+sidebar_label: "Api Get Build Yaml"
+hide_title: true
+hide_table_of_contents: true
+api: eJyVVG1v0zAQ/iuRP4GUNWvZp35jbBpIIGArSGiaqmtyTT0c27OdiijKf+cu71sRiHxInPM99/rc1SJA7sX6XoCV4iEWxqKDII3+kIk1C7c5hu2ulCrbVlCobWp0BlsfjMMtXx+X/W3/kXRqFRkoYmHBQYEBHXuphcOnUjok48GVGAufHrAAsa5FkEEh+bxkMxG5j0WoLEukDpijE00sNNkiyeCKdKSmfwvhIBoK36G3Rnv0bHF1fs6fDH3qpOWkSPWuTFP0fl+q6LZXJiuUVUAdWB2sVTJta5A8esbUU5QNPbG4WK1ODX8HJbMWFl07Z9x/WB1zf7/ZfJnsDGb6MpjdI6ZtSR13KcguywwDSDW3ctVJRiA4BxWXKmDh54qnrqb23AtlUpIUPh8sPfwrFEbMzH80XcJ/iQR09XnfEqPX8MFJnVOr65PuP3DpOZyZi0/USshx8jDie8Gk2qYYbVh6oj0+8YumvrUyusEQdaT8QbzmkmA4GB6PgeFEvrVI2sk4aycjoclIjsuk5WlSD3RtEp6MpGXt3syDm2F73kDa8qYn/NcStJf5gf2VjrotDiFYv06Sp+FmkZqC8yaaIZN6Al/eXUVvzt4pKFuuP8dT/7Q3pUtxYVye9GifEOhsBJHZI01wV5PzxcViuWKZNT4UoGeu/livZyUd+xrwV0isAhrgpg+q7mt5/6IevJsogiW92lLSdz1bAVXnhvl5oIgYX9c78PjNqaZh8VOJriI5HY/gJOy46ES6THo+Uy/3oDyehDoOsHh120/G62iiz/MUBo5rZvgRVMl/dPyJ1XxlEY8pToSMOM0xdNdvaSvZMAOeLAxebyPzbq43xNrf6kHzVg==
+sidebar_class_name: "get api-method"
+info_path: conda-store/references/rest-api/conda-store
+custom_edit_url: null
+---
+
+import ApiTabs from "@theme/ApiTabs";
+import DiscriminatorTabs from "@theme/DiscriminatorTabs";
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import SecuritySchemes from "@theme/ApiExplorer/SecuritySchemes";
+import MimeTabs from "@theme/MimeTabs";
+import ParamsItem from "@theme/ParamsItem";
+import ResponseSamples from "@theme/ResponseSamples";
+import SchemaItem from "@theme/SchemaItem";
+import SchemaTabs from "@theme/SchemaTabs";
+import TabItem from "@theme/TabItem";
+
+<h1 className={"openapi__heading"}>Api Get Build Yaml</h1>
+
+<MethodEndpoint method={"get"} path={"/conda-store/api/v1/build/{build_id}/yaml/"}></MethodEndpoint>
+
+
+
+Api Get Build Yaml
+
+## Request
+
+<details style={{"marginBottom":"1rem"}} className={"openapi-markdown__details"} data-collapsed={false} open={true}><summary style={{}}><h3 className={"openapi-markdown__details-summary-header-params"}>Path Parameters</h3></summary><div><ul><ParamsItem className={"paramsItem"} param={{"required":true,"schema":{"title":"Build Id","type":"integer"},"name":"build_id","in":"path"}}></ParamsItem></ul></div></details><div><div><ApiTabs><TabItem label={"200"} value={"200"}><div>
+
+Successful Response
+
+</div><div><MimeTabs className={"openapi-tabs__mime"} schemaType={"response"}><TabItem label={"application/json"} value={"application/json"}><SchemaTabs className={"openapi-tabs__schema"}><TabItem label={"Schema"} value={"Schema"}><details style={{}} className={"openapi-markdown__details response"} data-collapsed={false} open={true}><summary style={{}} className={"openapi-markdown__details-summary-response"}><strong>Schema</strong></summary><div style={{"textAlign":"left","marginLeft":"1rem"}}></div><ul style={{"marginLeft":"1rem"}}>any</ul></details></TabItem></SchemaTabs></TabItem></MimeTabs></div></TabItem><TabItem label={"422"} value={"422"}><div>
+
+Validation Error
+
+</div><div><MimeTabs className={"openapi-tabs__mime"} schemaType={"response"}><TabItem label={"application/json"} value={"application/json"}><SchemaTabs className={"openapi-tabs__schema"}><TabItem label={"Schema"} value={"Schema"}><details style={{}} className={"openapi-markdown__details response"} data-collapsed={false} open={true}><summary style={{}} className={"openapi-markdown__details-summary-response"}><strong>Schema</strong></summary><div style={{"textAlign":"left","marginLeft":"1rem"}}></div><ul style={{"marginLeft":"1rem"}}><SchemaItem collapsible={true} className={"schemaItem"}><details style={{}} className={"openapi-markdown__details"}><summary style={{}}><span className={"openapi-schema__container"}><strong className={"openapi-schema__property"}>detail</strong><span className={"openapi-schema__name"}> object[]</span></span></summary><div style={{"marginLeft":"1rem"}}><li><div style={{"fontSize":"var(--ifm-code-font-size)","opacity":"0.6","marginLeft":"-.5rem","paddingBottom":".5rem"}}>Array [</div></li><SchemaItem collapsible={true} className={"schemaItem"}><details style={{}} className={"openapi-markdown__details"}><summary style={{}}><span className={"openapi-schema__container"}><strong className={"openapi-schema__property"}>loc</strong><span className={"openapi-schema__name"}> object[]</span><span className={"openapi-schema__divider"}></span><span className={"openapi-schema__required"}>required</span></span></summary><div style={{"marginLeft":"1rem"}}><li><div style={{"fontSize":"var(--ifm-code-font-size)","opacity":"0.6","marginLeft":"-.5rem","paddingBottom":".5rem"}}>Array [</div></li><div><span className={"badge badge--info"}>anyOf</span><SchemaTabs><TabItem label={"MOD1"} value={"0-item-properties"}><div style={{"marginTop":".5rem","marginBottom":".5rem","marginLeft":"1rem"}}>
+
+string
+
+</div></TabItem><TabItem label={"MOD2"} value={"1-item-properties"}><div style={{"marginTop":".5rem","marginBottom":".5rem","marginLeft":"1rem"}}>
+
+integer
+
+</div></TabItem></SchemaTabs></div><li><div style={{"fontSize":"var(--ifm-code-font-size)","opacity":"0.6","marginLeft":"-.5rem"}}>]</div></li></div></details></SchemaItem><SchemaItem collapsible={false} name={"msg"} required={true} schemaName={"Message"} qualifierMessage={undefined} schema={{"title":"Message","type":"string"}}></SchemaItem><SchemaItem collapsible={false} name={"type"} required={true} schemaName={"Error Type"} qualifierMessage={undefined} schema={{"title":"Error Type","type":"string"}}></SchemaItem><li><div style={{"fontSize":"var(--ifm-code-font-size)","opacity":"0.6","marginLeft":"-.5rem"}}>]</div></li></div></details></SchemaItem></ul></details></TabItem><TabItem label={"Example (from schema)"} value={"Example (from schema)"}><ResponseSamples responseExample={"{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        0\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\"\n    }\n  ]\n}"} language={"json"}></ResponseSamples></TabItem></SchemaTabs></TabItem></MimeTabs></div></TabItem></ApiTabs></div></div>
+      

@@ -1,0 +1,52 @@
+---
+id: post-logout-method-conda-store-logout-post
+title: "Post Logout Method"
+description: "Post Logout Method"
+sidebar_label: "Post Logout Method"
+hide_title: true
+hide_table_of_contents: true
+api: eJyVVMGO2jAQ/ZXI50Ao3RO3trtSK+12aaG9IISGZEi8deJgO6goyr93xglJFlatmgthMu955s0b18JBasViI6BymdiGQpdowEldfEnEQpTaup3Sqa7cLkeX6WQX6yKBnXXa4OXLjtNEKEowQFlomLEWBo+VNEg8B1AWQ2HjDHMQi1o46RQS/1f8zUB3LvmfdUYWqWhCURAPBYr2syzo/VihOYuGSjRoS11YtMw0n834J0EbG1ly4ZS7quIYrT1UKvjeJRMNVe6wcJwOZalk7PuMXixj6qG6hp5Q3M3nt8Q/QcnEw4IHY7T5D9a+58/r9XLgudB0Euj9C8ZeS8OTcLLtMkEHUo1Z7ttIDwRj4MxaOcztOPH2qGEuG6F0TJHcphem7b9KYcSI/lG3Df+lEijOzwfviOs59xFJGqZoaLwsPZczOuKJRgkpvuWTNjCk+haDNUdvsvsnvBrqktwbPHorB0/e5CxJ+9KugPc27cdCRN7+E2//qLV/5B160OM6RlmdRSD2FumM/a2Cwso0Y+bK0GBF5lxpF1F0vHyZxjrnFslRyP4dwB9X98H7yScFlbf1azyNqrC6MjFOtUmjDm0jAk16ENGeaEvb9mfTu+m7Oce41RyK0VFvSvNKvX6EjnY1KhXQsjZdUXWn2uZKj1Y3emG3ZawvpdT1Hiz+MKppONyuO5smkRb2anSN/MLzcDecQFV8vL8ZTmAk5xJuS0VkCAmZiklazAe6Fsox6mZjmaUf/fJ5tSbf/AEfCsIT
+sidebar_class_name: "post api-method"
+info_path: conda-store/references/rest-api/conda-store
+custom_edit_url: null
+---
+
+import ApiTabs from "@theme/ApiTabs";
+import DiscriminatorTabs from "@theme/DiscriminatorTabs";
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import SecuritySchemes from "@theme/ApiExplorer/SecuritySchemes";
+import MimeTabs from "@theme/MimeTabs";
+import ParamsItem from "@theme/ParamsItem";
+import ResponseSamples from "@theme/ResponseSamples";
+import SchemaItem from "@theme/SchemaItem";
+import SchemaTabs from "@theme/SchemaTabs";
+import TabItem from "@theme/TabItem";
+
+<h1 className={"openapi__heading"}>Post Logout Method</h1>
+
+<MethodEndpoint method={"post"} path={"/conda-store/logout/"}></MethodEndpoint>
+
+
+
+Post Logout Method
+
+## Request
+
+<details style={{"marginBottom":"1rem"}} className={"openapi-markdown__details"} data-collapsed={false} open={true}><summary style={{}}><h3 className={"openapi-markdown__details-summary-header-params"}>Query Parameters</h3></summary><div><ul><ParamsItem className={"paramsItem"} param={{"required":false,"schema":{"title":"Next","type":"string"},"name":"next","in":"query"}}></ParamsItem></ul></div></details><div><div><ApiTabs><TabItem label={"200"} value={"200"}><div>
+
+Successful Response
+
+</div><div><MimeTabs className={"openapi-tabs__mime"} schemaType={"response"}><TabItem label={"application/json"} value={"application/json"}><SchemaTabs className={"openapi-tabs__schema"}><TabItem label={"Schema"} value={"Schema"}><details style={{}} className={"openapi-markdown__details response"} data-collapsed={false} open={true}><summary style={{}} className={"openapi-markdown__details-summary-response"}><strong>Schema</strong></summary><div style={{"textAlign":"left","marginLeft":"1rem"}}></div><ul style={{"marginLeft":"1rem"}}>any</ul></details></TabItem></SchemaTabs></TabItem></MimeTabs></div></TabItem><TabItem label={"422"} value={"422"}><div>
+
+Validation Error
+
+</div><div><MimeTabs className={"openapi-tabs__mime"} schemaType={"response"}><TabItem label={"application/json"} value={"application/json"}><SchemaTabs className={"openapi-tabs__schema"}><TabItem label={"Schema"} value={"Schema"}><details style={{}} className={"openapi-markdown__details response"} data-collapsed={false} open={true}><summary style={{}} className={"openapi-markdown__details-summary-response"}><strong>Schema</strong></summary><div style={{"textAlign":"left","marginLeft":"1rem"}}></div><ul style={{"marginLeft":"1rem"}}><SchemaItem collapsible={true} className={"schemaItem"}><details style={{}} className={"openapi-markdown__details"}><summary style={{}}><span className={"openapi-schema__container"}><strong className={"openapi-schema__property"}>detail</strong><span className={"openapi-schema__name"}> object[]</span></span></summary><div style={{"marginLeft":"1rem"}}><li><div style={{"fontSize":"var(--ifm-code-font-size)","opacity":"0.6","marginLeft":"-.5rem","paddingBottom":".5rem"}}>Array [</div></li><SchemaItem collapsible={true} className={"schemaItem"}><details style={{}} className={"openapi-markdown__details"}><summary style={{}}><span className={"openapi-schema__container"}><strong className={"openapi-schema__property"}>loc</strong><span className={"openapi-schema__name"}> object[]</span><span className={"openapi-schema__divider"}></span><span className={"openapi-schema__required"}>required</span></span></summary><div style={{"marginLeft":"1rem"}}><li><div style={{"fontSize":"var(--ifm-code-font-size)","opacity":"0.6","marginLeft":"-.5rem","paddingBottom":".5rem"}}>Array [</div></li><div><span className={"badge badge--info"}>anyOf</span><SchemaTabs><TabItem label={"MOD1"} value={"0-item-properties"}><div style={{"marginTop":".5rem","marginBottom":".5rem","marginLeft":"1rem"}}>
+
+string
+
+</div></TabItem><TabItem label={"MOD2"} value={"1-item-properties"}><div style={{"marginTop":".5rem","marginBottom":".5rem","marginLeft":"1rem"}}>
+
+integer
+
+</div></TabItem></SchemaTabs></div><li><div style={{"fontSize":"var(--ifm-code-font-size)","opacity":"0.6","marginLeft":"-.5rem"}}>]</div></li></div></details></SchemaItem><SchemaItem collapsible={false} name={"msg"} required={true} schemaName={"Message"} qualifierMessage={undefined} schema={{"title":"Message","type":"string"}}></SchemaItem><SchemaItem collapsible={false} name={"type"} required={true} schemaName={"Error Type"} qualifierMessage={undefined} schema={{"title":"Error Type","type":"string"}}></SchemaItem><li><div style={{"fontSize":"var(--ifm-code-font-size)","opacity":"0.6","marginLeft":"-.5rem"}}>]</div></li></div></details></SchemaItem></ul></details></TabItem><TabItem label={"Example (from schema)"} value={"Example (from schema)"}><ResponseSamples responseExample={"{\n  \"detail\": [\n    {\n      \"loc\": [\n        \"string\",\n        0\n      ],\n      \"msg\": \"string\",\n      \"type\": \"string\"\n    }\n  ]\n}"} language={"json"}></ResponseSamples></TabItem></SchemaTabs></TabItem></MimeTabs></div></TabItem></ApiTabs></div></div>
+      

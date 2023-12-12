@@ -1,0 +1,48 @@
+---
+id: api-get-permissions-conda-store-api-v-1-permission-get
+title: "Api Get Permissions"
+description: "Api Get Permissions"
+sidebar_label: "Api Get Permissions"
+hide_title: true
+hide_table_of_contents: true
+api: eJy1VE1v2zAM/SuBzkncdDv11q1F0cOGrN1OQWEwNhurtS1FooMahv/7SNlNbKfoTsslFj8eH58oNopg59XVRoHV6mmujEUHpE15n6orMcY7pJiNhfaezT5OTJlC7Mk4jMV/WA3csYSruXLoLQcjQzfq8uJC/lL0idNWwBn6sUoS9P65ymcPfTDnMThhSRIO1uY6CVyiFy85jfJJhgXIF2nKkWGu1/d3SOsjgVB7X2mHqXTlCajybEyBQPqj2kqa2b5gIkStk45Jd0z78DH+4zsGllUhoOZVDs4ZJ4jjtq7LmYT1Ii5V25f+hPKN+Me0oaKMZZD22SAsdQGujksoWCtIMLBhwHp4NSejMzk39M92x2WGFCf1e5itYVwopalzRoP0deec/RzQ7SE8OV3uBOED/gOI2+CdrUfdTbuBNNUiM+TrUV99HDgHNYdpwmJof+fQthPBzus/BPv/qfxmdTclo7on61SzuXo2rgB+HDJSuCBdYAfFKnvYja7gR286E777nY2t1TMeyoneBVJmZA90j9oCZXyIwgZYhA0Q8QaIDqvodIuRtF0+myGZQUL/xiEJb1ymh/2/Kii93mVSpHI5WzIi66+iaP/uWSamkKnhlYCyKk7J3x5vZl8W33OowgYZ5/PdlN5ULsGlcbuoz/YRJy2OSQx7QOc7JS6WX5eryzDixlMB5aDUxyqNlDxeNeEbRTYHHZ5LYNX0Cm4mgsjqZQorkXi4yOQBZ0xCMppmCx7/uLxtxbyv0NVs588DOA1b0XnzxJUyhBQdHxr1irWQ5j1rRdkD5FUYzulibZ8GV313+5uH5C9iRh2w
+sidebar_class_name: "get api-method"
+info_path: conda-store/references/rest-api/conda-store
+custom_edit_url: null
+---
+
+import ApiTabs from "@theme/ApiTabs";
+import DiscriminatorTabs from "@theme/DiscriminatorTabs";
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import SecuritySchemes from "@theme/ApiExplorer/SecuritySchemes";
+import MimeTabs from "@theme/MimeTabs";
+import ParamsItem from "@theme/ParamsItem";
+import ResponseSamples from "@theme/ResponseSamples";
+import SchemaItem from "@theme/SchemaItem";
+import SchemaTabs from "@theme/SchemaTabs";
+import TabItem from "@theme/TabItem";
+
+<h1 className={"openapi__heading"}>Api Get Permissions</h1>
+
+<MethodEndpoint method={"get"} path={"/conda-store/api/v1/permission/"}></MethodEndpoint>
+
+
+
+Api Get Permissions
+
+## Request
+
+<div><div><ApiTabs><TabItem label={"200"} value={"200"}><div>
+
+Successful Response
+
+</div><div><MimeTabs className={"openapi-tabs__mime"} schemaType={"response"}><TabItem label={"application/json"} value={"application/json"}><SchemaTabs className={"openapi-tabs__schema"}><TabItem label={"Schema"} value={"Schema"}><details style={{}} className={"openapi-markdown__details response"} data-collapsed={false} open={true}><summary style={{}} className={"openapi-markdown__details-summary-response"}><strong>Schema</strong></summary><div style={{"textAlign":"left","marginLeft":"1rem"}}></div><ul style={{"marginLeft":"1rem"}}><SchemaItem collapsible={false} name={"status"} required={true} schemaName={"APIStatus"} qualifierMessage={"**Possible values:** [`ok`, `error`]"} schema={{"title":"APIStatus","enum":["ok","error"],"description":"An enumeration."}}></SchemaItem><SchemaItem collapsible={true} className={"schemaItem"}><details style={{}} className={"openapi-markdown__details"}><summary style={{}}><span className={"openapi-schema__container"}><strong className={"openapi-schema__property"}>data</strong><span className={"openapi-schema__name"}> object</span><span className={"openapi-schema__divider"}></span><span className={"openapi-schema__required"}>required</span></span></summary><div style={{"marginLeft":"1rem"}}><SchemaItem collapsible={false} name={"authenticated"} required={true} schemaName={"Authenticated"} qualifierMessage={undefined} schema={{"title":"Authenticated","type":"boolean"}}></SchemaItem><SchemaItem collapsible={false} name={"primary_namespace"} required={true} schemaName={"Primary Namespace"} qualifierMessage={undefined} schema={{"title":"Primary Namespace","type":"string"}}></SchemaItem><SchemaItem collapsible={true} className={"schemaItem"}><details style={{}} className={"openapi-markdown__details"}><summary style={{}}><span className={"openapi-schema__container"}><strong className={"openapi-schema__property"}>entity_permissions</strong><span className={"openapi-schema__name"}> object</span><span className={"openapi-schema__divider"}></span><span className={"openapi-schema__required"}>required</span></span></summary><div style={{"marginLeft":"1rem"}}><SchemaItem collapsible={true} className={"schemaItem"}><details style={{}} className={"openapi-markdown__details"}><summary style={{}}><span className={"openapi-schema__container"}><strong className={"openapi-schema__property"}>property name*</strong><span className={"openapi-schema__name"}> string[]</span></span></summary><div style={{"marginLeft":"1rem"}}><li><div style={{"fontSize":"var(--ifm-code-font-size)","opacity":"0.6","marginLeft":"-.5rem","paddingBottom":".5rem"}}>Array [</div></li><div style={{"marginTop":".5rem","marginBottom":".5rem","marginLeft":"1rem"}}>
+
+string
+
+</div><li><div style={{"fontSize":"var(--ifm-code-font-size)","opacity":"0.6","marginLeft":"-.5rem"}}>]</div></li></div></details></SchemaItem></div></details></SchemaItem><SchemaItem collapsible={true} className={"schemaItem"}><details style={{}} className={"openapi-markdown__details"}><summary style={{}}><span className={"openapi-schema__container"}><strong className={"openapi-schema__property"}>entity_roles</strong><span className={"openapi-schema__name"}> object</span><span className={"openapi-schema__divider"}></span><span className={"openapi-schema__required"}>required</span></span></summary><div style={{"marginLeft":"1rem"}}><SchemaItem collapsible={true} className={"schemaItem"}><details style={{}} className={"openapi-markdown__details"}><summary style={{}}><span className={"openapi-schema__container"}><strong className={"openapi-schema__property"}>property name*</strong><span className={"openapi-schema__name"}> string[]</span></span></summary><div style={{"marginLeft":"1rem"}}><li><div style={{"fontSize":"var(--ifm-code-font-size)","opacity":"0.6","marginLeft":"-.5rem","paddingBottom":".5rem"}}>Array [</div></li><div style={{"marginTop":".5rem","marginBottom":".5rem","marginLeft":"1rem"}}>
+
+string
+
+</div><li><div style={{"fontSize":"var(--ifm-code-font-size)","opacity":"0.6","marginLeft":"-.5rem"}}>]</div></li></div></details></SchemaItem></div></details></SchemaItem><SchemaItem collapsible={false} name={"expiration"} required={false} schemaName={"date-time"} qualifierMessage={undefined} schema={{"title":"Expiration","type":"string","format":"date-time"}}></SchemaItem></div></details></SchemaItem><SchemaItem collapsible={false} name={"message"} required={false} schemaName={"Message"} qualifierMessage={undefined} schema={{"title":"Message","type":"string"}}></SchemaItem></ul></details></TabItem><TabItem label={"Example (from schema)"} value={"Example (from schema)"}><ResponseSamples responseExample={"{\n  \"data\": {\n    \"authenticated\": true,\n    \"primary_namespace\": \"string\",\n    \"entity_permissions\": {},\n    \"entity_roles\": {},\n    \"expiration\": \"2023-12-12T14:39:39.294Z\"\n  },\n  \"message\": \"string\"\n}"} language={"json"}></ResponseSamples></TabItem></SchemaTabs></TabItem></MimeTabs></div></TabItem></ApiTabs></div></div>
+      
