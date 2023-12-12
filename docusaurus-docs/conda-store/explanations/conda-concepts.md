@@ -2,9 +2,9 @@
 description: Understand conda basics
 ---
 
-# Data science environments
+# Conda concepts
 
-:::warning
+:::note
 This page is in active development.
 :::
 
