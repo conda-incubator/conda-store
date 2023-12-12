@@ -179,3 +179,8 @@ This function is deprecated [reason/details], use [replacement] instead
 Under exceptional circumstances such as a serious security vulnerability which can't be fixed without breaking changes, it may be necessary to depriciate, remove, or introduce breaking changes to objects in the public API. This should be avoided if possible.
 
 All deprecations shall be communicated in documentation and as part of release notes.
+# Backwards compatibility policy
+
+:::note
+This page is in active development, and will be available soon.
+:::

@@ -56,7 +56,7 @@ For the release tag, there should be **NO** prepended `v`.
 Create an issue and copy & paste the steps below to release a new conda-store version. Close the issue when it is done.
 
 :::caution
-There are two packages the [conda-store](https://github.com/conda-incubator/conda-store) repository; [`conda-store`](https://github.com/conda-incubator/conda-store/tree/main/conda-store) and [`conda-store-server`](https://github.com/conda-incubator/conda-store/tree/main/conda-store-server). Make sure to update both packages when releasing a new version.
+There are two packages: the [conda-store](https://github.com/conda-incubator/conda-store) repository; [`conda-store`](https://github.com/conda-incubator/conda-store/tree/main/conda-store) and [`conda-store-server`](https://github.com/conda-incubator/conda-store/tree/main/conda-store-server). Make sure to update both packages when releasing a new version.
 :::
 
 ```md
@@ -82,7 +82,7 @@ Release captain responsible - <@gh_username>
 - [ ] Bump `conda-store` version in [`conda-store/conda-store/__init__.py`](https://github.com/conda-incubator/conda-store/blob/main/conda-store/conda_store/__init__.py)
 - [ ] Bump `conda-store-server` version in [`conda-store-server/conda-store-server/__init__.py`](https://github.com/conda-incubator/conda-store/blob/main/conda-store/conda_store/__init__.py)
 - [ ] Update the `conda-store-ui` version users in `conda-store-server` [`conda-store-server/hatch_build.py`](https://github.com/conda-incubator/conda-store/blob/main/conda-store-server/hatch_build.py)
-- [ ] Update the [CHANGELOG.md](./CHANGELOG.md) file with the new version, release date, and relevant changes[^github-activity].
+- [ ] Update the [CHANGELOG.md](https://github.com/conda-incubator/conda-store/blob/main/CHANGELOG.md) file with the new version, release date, and relevant changes[^github-activity].
 - [ ] Check the version locally with `hatch version`
 - [ ] Build and test locally
   - [ ] For `conda-store` and `conda-store-server`:
@@ -105,7 +105,7 @@ Release captain responsible - <@gh_username>
   - Call the release the current version, e.g. `2023.9.1`
   - In the **`Choose a Tag:`** dropdown, type in the release name (e.g., `2023.9.1`) and click "Create new tag"
   - In the **`Target:`** dropdown, pin it to the release commit that you've recently pushed.
-  - Add release notes in the field below[^github-activity], you can copy/paste the changelog from the [CHANGELOG.md](./CHANGELOG.md) file.
+  - Add release notes in the field below[^github-activity], you can copy/paste the changelog from the [CHANGELOG.md](https://github.com/conda-incubator/conda-store/blob/main/CHANGELOG.md) file.
 - [ ] Confirm that the release completed
   - [The `release` GitHub action job](https://github.com/conda-incubator/conda-store/blob/main/.github/workflows/release.yaml) has completed successfully in the [actions tab](https://github.com/pydata/pydata-sphinx-theme/actions).
   - [The `conda-store` PyPI version is updated](https://pypi.org/project/conda-store/)
@@ -117,6 +117,5 @@ Release captain responsible - <@gh_username>
 
 [^github-activity]: If you wish, use [`github-activity` to generate a changelog](https://github.com/choldgraf/github-activity), eg `github-activity conda-incubator/conda-store --since 2023.9.1 --until 2023.10.1`.
 
-```
 
 <!-- TODO: Add conda-store-ui and jupyterlab -->
