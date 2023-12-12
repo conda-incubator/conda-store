@@ -46,7 +46,7 @@ $ cd conda-store-server
 $ hatch env run -e dev lint
 ```
 
-Checking that package builds
+Checking that the package builds
 
 ```shell
 $ cd conda-store-server
@@ -71,4 +71,14 @@ $ docker-compose up --build
 # wait until the conda-store-server is running check by visiting localhos:8080
 $ hatch env run -e dev playwright-test
 $ hatch env run -e dev integration-test
+```
+
+## conda-store-ui
+
+We currently use jest in order to run unit tests.
+
+```bash
+yarn test     // find every test with the .test.[tsx|ts] extension
+yarn report   // show coverage collected after running the first command in the browser
+yarn report test/AddChannel.test.tsx     // run a single test instead of all
 ```
