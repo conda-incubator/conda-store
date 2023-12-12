@@ -53,7 +53,7 @@ For the release tag, there should be **NO** prepended `v`.
 
 ### Release checklist (conda-store)
 
-Create an [issue with the release template](https://github.com/conda-incubator/conda-store/issues/new?assignees=&labels=release+%F0%9F%8F%B7&projects=&template=new-release.md&title=%5BREL%5D+-+%3Crelease+number%3E) to release a new conda-store version. Close the issue when it is done.
+Create an [issue with the release template](https://github.com/conda-incubator/conda-store/issues/new?assignees=&labels=release+%F0%9F%8F%B7&projects=&template=new-release.md&title=%5BREL%5D+-+%3Crelease+number%3E), or copy & paste the steps below, to release a new conda-store version. Close the issue when it is done.
 
 :::caution
 There are two packages: the [conda-store](https://github.com/conda-incubator/conda-store) repository; [`conda-store`](https://github.com/conda-incubator/conda-store/tree/main/conda-store) and [`conda-store-server`](https://github.com/conda-incubator/conda-store/tree/main/conda-store-server). Make sure to update both packages when releasing a new version.
