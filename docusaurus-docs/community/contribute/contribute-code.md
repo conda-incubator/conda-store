@@ -15,7 +15,7 @@ This page is in active development, content may be inaccurate and incomplete.
 Install the following dependencies before developing on conda-store.
 
 - [Docker](https://docs.docker.com/engine/install/)
-- [ocker-compose](https://docs.docker.com/compose/install/)
+- [docker-compose](https://docs.docker.com/compose/install/)
 
 To deploy `conda-store` run the following command
 
