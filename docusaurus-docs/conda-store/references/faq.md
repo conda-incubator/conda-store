@@ -11,7 +11,7 @@ enough memory to `conda-store-workers` for solving and building the
 given environment. Solve this by increasing the memory allocated to
 the container.
 
-```shell
+```bash
 Process 'ForkPoolWorker-31' pid:90 exited with 'signal 9 (SIGKILL)'
 
 Task handler raised error: WorkerLostError('Worker exited prematurely: signal 9 (SIGKILL) Job: 348.')
@@ -41,11 +41,11 @@ for several reasons:
 ## Build path length
 
 Conda packages are guaranteed to be [relocatable] as long as the environment
-prefix length is <= 255 characters. In conda-store, the said prefix is specified
+prefix length is `<=` 255 characters. In conda-store, the said prefix is specified
 in `Build.build_path`. When building an environment, you might see an error like
 this:
 
-```
+```bash
 build_path too long: must be <= 255 characters
 ```
 
@@ -63,7 +63,7 @@ The part of the build path that identifies a particular environment build is the
 build key. Originally, conda-store used the following format, known as version
 1:
 
-```
+```bash
 c7afdeffbe2bda7d16ca69beecc8bebeb29280a95d4f3ed92849e4047710923b-20231105-035410-510258-12345678-this-is-a-long-environment-name
 ^ (1)                                                            ^ (2)                  ^ (3)    ^ (4)
 ```
@@ -80,7 +80,7 @@ It consists of:
 To help mitigate build path length issues, a shorter build key format was
 introduced, known as version 2:
 
-```
+```bash
 c7afdeff-1699156450-12345678-this-is-a-long-environment-name
 ^ (1)    ^ (2)      ^ (3)    ^ (4)
 ```
@@ -101,14 +101,14 @@ version 2 format. No changes are needed for existing deployments of conda-store.
 There is no real reason to use the version 1 format anymore, but it can be
 explicitly set via the config:
 
-```
+```python
 c.CondaStore.build_key_version = 1
 ```
 
 The version 2 format can also be explicitly set if needed (this is the same as
 the default):
 
-```
+```python
 c.CondaStore.build_key_version = 2
 ```
 
@@ -117,7 +117,7 @@ c.CondaStore.build_key_version = 2
 conda-store supports Windows in standalone mode. However, when creating
 environments with certain packages, you may see errors like
 
-```
+```bash
 ERROR:root:[WinError 206] The filename or extension is too long: 'C:\\...'
 ```
 
