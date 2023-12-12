@@ -150,11 +150,13 @@ In a public class, a breaking change is one that changes or removes attributes o
 
 ##### Functions and methods
 
-For a function or a method, breaking changes alter the signature of the method or function or the meaning of the return value. t
+For a function or a method, breaking changes alter its signature or the meaning of the return value.
 
 This means that the parameters (inputs) and return values (outputs) must be the same. Internal logic may be changed as long as it does not change return values. Extra care should be taken when making these changes however. Changing the way a return value is calculated may result in subtle changes which are not obvious. For example, rounding a decimal versus truncating it may return different results even though the function signature remains the same.
 
-The function signature also includes whether the function is an async function. Changing this is a breaking change.For example, if there is a function `def list_envs`, which is synchronous, and it should be asynchronous, a new function called `async def list_envs_async` should be added and `list_envs` should be kept as a synchronous call.
+The function signature also includes whether the function is an async function. Changing this is a breaking change.
+
+For example, if there is a function `def list_envs`, which is synchronous, and it should be asynchronous, a new function called `async def list_envs_async` should be added and `list_envs` should be kept as a synchronous call.
 
 Optional parameters may be added as long as they have a specified default value and additional fields may be added to return types if you are returning an object like a dict. These are considered non-breaking.
 
@@ -166,7 +168,7 @@ Public constants should not have their type or their value changed.
 
 #### Deprecating Python APIs
 
-Depreciated Classes, methods, and functions should have a comment in the code stating why they are depreciated and what to use instead. This will encourage developers not to use them without breaking existing code.
+Deprecated classes, methods, and functions should have a comment and a warning (if possible) in the code stating why they are deprecated and what to use instead. This will encourage developers not to use them without breaking existing code.
 
 ```python
 """
@@ -176,4 +178,4 @@ This function is deprecated [reason/details], use [replacement] instead
 
 Under exceptional circumstances such as a serious security vulnerability which can't be fixed without breaking changes, it may be necessary to depriciate, remove, or introduce breaking changes to objects in the public API. This should be avoided if possible.
 
-All depreciations shall be communicated in documentation and as part of release notes.
+All deprecations shall be communicated in documentation and as part of release notes.
