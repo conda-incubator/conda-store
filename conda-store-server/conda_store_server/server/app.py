@@ -28,6 +28,9 @@ from traitlets import (
 )
 from traitlets.config import Application, catch_config_error
 
+logger = logging.getLogger("app")
+logger.setLevel(logging.INFO)
+
 
 class CondaStoreServer(Application):
     aliases = {
@@ -340,15 +343,63 @@ class CondaStoreServer(Application):
                 name="static-storage",
             )
 
+        @app.on_event("startup")
+        async def startup_event():
+            import signal
+            import time
+
+            from conda_store_server import orm
+
+            # This adds a signal handler because uvicorn ignores all signals in
+            # the startup event. You wouldn't be able to terminate this loop via
+            # Ctrl-C otherwise
+            signal.signal(signal.SIGINT, sys.exit)
+
+            # Colors to make the output more visible
+            green = "\x1b[32m"
+            red = "\x1b[31m"
+            reset = "\x1b[0m"
+
+            # Waits in a loop for the worker to become ready, which is
+            # communicated via task_initialize_worker
+            while True:
+                with self.conda_store.session_factory() as db:
+                    q = db.query(orm.Worker).first()
+                    if q is not None and q.initialized:
+                        logger.info(f"{green}" "Worker initialized" f"{reset}")
+                        break
+
+                time.sleep(5)
+                logger.critical(
+                    f"{red}"
+                    "Waiting for worker... "
+                    "Use --standalone if running outside of docker"
+                    f"{reset}"
+                )
+
         return app
 
     def start(self):
         fastapi_app = self.init_fastapi_app()
 
+        from conda_store_server import orm
+
         with self.conda_store.session_factory() as db:
             self.conda_store.ensure_settings(db)
             self.conda_store.ensure_namespace(db)
             self.conda_store.ensure_conda_channels(db)
+
+            # We need to ensure the database has no entries in the Worker table
+            # when the server is started. This can happen when the server was
+            # terminated while the Worker table was populated in the previous
+            # run. The check in startup_event expects the worker to populate the
+            # said table (via task_initialize_worker) only if things are working
+            # as expected. The deletion code needs to be run on the server side
+            # (here) and before the worker is started to avoid a race condition.
+            # We want to make sure that the worker is able to create a new entry
+            # in the database if the worker is actually running.
+            db.query(orm.Worker).delete()
+            db.commit()
 
         # start worker if in standalone mode
         if self.standalone:

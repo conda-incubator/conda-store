@@ -11,6 +11,7 @@ from conda_store_server.utils import BuildPathError
 from sqlalchemy import (
     JSON,
     BigInteger,
+    Boolean,
     Column,
     DateTime,
     Enum,
@@ -39,6 +40,22 @@ logger = logging.getLogger("orm")
 Base = declarative_base()
 
 ARN_ALLOWED_REGEX = re.compile(schema.ARN_ALLOWED)
+
+
+class Worker(Base):
+    """Used to communicate with the worker process"""
+
+    __tablename__ = "worker"
+
+    id = Column(Integer, primary_key=True)
+
+    # Used to check whether the worker is initialized
+    initialized = Column(Boolean, default=False)
+
+    __table_args__ = (
+        # Ensures no duplicates can be added with this combination of fields.
+        UniqueConstraint("initialized", name="_uc"),
+    )
 
 
 class Namespace(Base):
