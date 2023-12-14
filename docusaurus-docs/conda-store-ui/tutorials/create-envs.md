@@ -42,7 +42,7 @@ Next, select the package version and constrain from the dropdown (you can also t
 
 ![pandas version 2.1.3 selected](../images/package-version-number.png)
 
-![pandas version set "=" 2.1.3, other options are <=, >=, etc.](../images/package-version-contraint.png)
+![pandas version set equal 2.1.3, other options are less-than-or-equal, greater-than-or-equal, etc.](../images/package-version-contraint.png)
 
 ### Add preferred channel
 
