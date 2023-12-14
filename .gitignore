@@ -15,9 +15,6 @@ data
 node_modules
 .nuxt
 
-# sphinx
-docs/_build
-
 # nix
 .direnv
 **/.DS_Store
