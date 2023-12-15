@@ -54,7 +54,7 @@ class Worker(Base):
 
     __table_args__ = (
         # Ensures no duplicates can be added with this combination of fields.
-        UniqueConstraint("initialized", name="_uc"),
+        UniqueConstraint("initialized", name="_uc_worker"),
     )
 
 
