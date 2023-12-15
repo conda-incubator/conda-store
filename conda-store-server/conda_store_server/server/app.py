@@ -343,27 +343,55 @@ class CondaStoreServer(Application):
                 name="static-storage",
             )
 
-        @app.on_event("startup")
-        async def startup_event():
-            import signal
-            import time
+        return app
 
-            from conda_store_server import orm
+    def start(self):
+        import time
+        from threading import Thread
 
-            # This adds a signal handler because uvicorn ignores all signals in
-            # the startup event. You wouldn't be able to terminate this loop via
-            # Ctrl-C otherwise
-            signal.signal(signal.SIGINT, sys.exit)
+        from conda_store_server import orm
+        from sqlalchemy.pool import QueuePool
 
-            # Colors to make the output more visible
+        fastapi_app = self.init_fastapi_app()
+
+        with self.conda_store.session_factory() as db:
+            self.conda_store.ensure_settings(db)
+            self.conda_store.ensure_namespace(db)
+            self.conda_store.ensure_conda_channels(db)
+
+            # This ensures the database has no Worker table entires when the
+            # server starts, which is necessary for the worker to signal that
+            # it's ready via task_initialize_worker. Old Worker entries could
+            # still be in the database on startup after they were added on the
+            # previous run and the server was terminated.
+            #
+            # Note that this cleanup is deliberately done on startup because the
+            # server could be terminated due to a power failure, which would
+            # leave no chance for cleanup actions to run on shutdown.
+            #
+            # The database is used for worker-server communication because it
+            # will work regardless of celery_broker_url used, which can be Redis
+            # or just point to a database connection.
+            db.query(orm.Worker).delete()
+            db.commit()
+
+        def check_worker():
+            # Uses colors to make the output more visible
             green = "\x1b[32m"
             red = "\x1b[31m"
             reset = "\x1b[0m"
 
+            # Creates a new DB connection since this will be run in a separate
+            # thread and connections cannot be shared between threads
+            session_factory = orm.new_session_factory(
+                url=self.conda_store.database_url,
+                poolclass=QueuePool,
+            )
+
             # Waits in a loop for the worker to become ready, which is
-            # communicated via task_initialize_worker
+            # communicated by the worker via task_initialize_worker
             while True:
-                with self.conda_store.session_factory() as db:
+                with session_factory() as db:
                     q = db.query(orm.Worker).first()
                     if q is not None and q.initialized:
                         logger.info(f"{green}" "Worker initialized" f"{reset}")
@@ -377,29 +405,13 @@ class CondaStoreServer(Application):
                     f"{reset}"
                 )
 
-        return app
-
-    def start(self):
-        fastapi_app = self.init_fastapi_app()
-
-        from conda_store_server import orm
-
-        with self.conda_store.session_factory() as db:
-            self.conda_store.ensure_settings(db)
-            self.conda_store.ensure_namespace(db)
-            self.conda_store.ensure_conda_channels(db)
-
-            # We need to ensure the database has no entries in the Worker table
-            # when the server is started. This can happen when the server was
-            # terminated while the Worker table was populated in the previous
-            # run. The check in startup_event expects the worker to populate the
-            # said table (via task_initialize_worker) only if things are working
-            # as expected. The deletion code needs to be run on the server side
-            # (here) and before the worker is started to avoid a race condition.
-            # We want to make sure that the worker is able to create a new entry
-            # in the database if the worker is actually running.
-            db.query(orm.Worker).delete()
-            db.commit()
+        # We cannot check whether the worker is ready right away and block. When
+        # running via docker, the worker is started *after* the server is
+        # running because it relies on config files created by the server.
+        # So we just keep checking in a separate thread until the worker is
+        # ready.
+        worker_checker = Thread(target=check_worker)
+        worker_checker.start()
 
         # start worker if in standalone mode
         if self.standalone:
@@ -442,3 +454,4 @@ class CondaStoreServer(Application):
         finally:
             if self.standalone:
                 process.join()
+            worker_checker.join()
