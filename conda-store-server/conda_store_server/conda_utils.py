@@ -132,7 +132,13 @@ def download_repodata(
             "https://repo.anaconda.com/pkgs/main"
         )
     }
-    normalized_channel_url = yarl.URL(channel) / "./"
+    # Note: this doesn't use the / operator to append the trailing / character
+    # because it's ignored on Windows. Instead, string substitution is used if
+    # the / character is not present
+    if channel.endswith("/"):
+        normalized_channel_url = yarl.URL(channel)
+    else:
+        normalized_channel_url = yarl.URL(f"{channel}/")
     channel_url = channel_replacements.get(
         str(normalized_channel_url), yarl.URL(channel)
     )
