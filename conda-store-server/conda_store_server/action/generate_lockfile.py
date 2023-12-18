@@ -26,8 +26,10 @@ def action_solve_lockfile(
         json.dump(specification.dict(), f)
 
     def print_cmd(cmd):
-        print(f"Running command: {' '.join(cmd)}")
-        print(subprocess.check_output(cmd, stderr=subprocess.STDOUT, encoding="utf-8"))
+        context.log.info(f"Running command: {' '.join(cmd)}")
+        context.log.info(
+            subprocess.check_output(cmd, stderr=subprocess.STDOUT, encoding="utf-8")
+        )
 
     # The info command can be used with either mamba or conda
     print_cmd([conda_command, "info"])
