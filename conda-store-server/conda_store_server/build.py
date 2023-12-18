@@ -64,12 +64,24 @@ def set_build_completed(db: Session, conda_store, build: orm.Build):
     db.commit()
 
 
-def build_cleanup(db: Session, conda_store):
+def build_cleanup(
+    db: Session, conda_store, build_ids: typing.List[str] = None, reason: str = None
+):
     """Walk through all builds in BUILDING state and check that they are actively running
 
     Build can get stuck in the building state due to worker
     spontaineously dying due to memory errors, killing container, etc.
     """
+    reason = (
+        reason
+        or """
+Build marked as FAILED on cleanup due to being stuck in BUILDING state
+and not present on workers. This happens for several reasons: build is
+canceled, a worker crash from out of memory errors, worker was killed,
+or error in conda-store
+"""
+    )
+
     inspect = conda_store.celery_app.control.inspect()
     active_tasks = inspect.active()
     if active_tasks is None:
@@ -86,9 +98,19 @@ def build_cleanup(db: Session, conda_store):
                 build_id, name = match.groups()
                 build_active_tasks[build_id].append(task["name"])
 
-    for build in api.list_builds(db, status=schema.BuildStatus.BUILDING):
-        if str(build.id) not in build_active_tasks and build.started_on < (
-            datetime.datetime.utcnow() - datetime.timedelta(seconds=5)
+    if build_ids:
+        builds = [api.get_build(db, build_id) for build_id in build_ids]
+    else:
+        builds = api.list_builds(db, status=schema.BuildStatus.BUILDING)
+
+    for build in builds:
+        if (
+            build.status == schema.BuildStatus.BUILDING
+            and str(build.id) not in build_active_tasks
+            and (
+                build.started_on
+                < (datetime.datetime.utcnow() - datetime.timedelta(seconds=5))
+            )
         ):
             conda_store.log.warning(
                 f"marking build {build.id} as FAILED since stuck in BUILDING state and not present on workers"
@@ -97,11 +119,7 @@ def build_cleanup(db: Session, conda_store):
                 db,
                 conda_store,
                 build,
-                """
-Build marked as FAILED on cleanup due to being stuck in BUILDING state
-and not present on workers. This happens for several reasons: from a
-worker crash usually out of memory, worker was killed, or error in conda-store
-""",
+                reason,
             )
             set_build_failed(db, build)
 
