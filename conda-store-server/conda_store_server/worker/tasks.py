@@ -60,8 +60,8 @@ class WorkerTask(Task):
         return self._worker
 
 
-# Signals to the server that the worker is running, see startup_event in
-# CondaStoreServer.init_fastapi_app
+# Signals to the server that the worker is running, see check_worker in
+# CondaStoreServer.start
 @shared_task(base=WorkerTask, name="task_initialize_worker", bind=True)
 def task_initialize_worker(self):
     from conda_store_server import orm
