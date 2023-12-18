@@ -980,6 +980,8 @@ async def api_put_build_cancel(
 
         from conda_store_server.worker import tasks
 
+        # Waits 5 seconds to ensure enough time for the task to actually be
+        # canceled
         tasks.task_cleanup_builds.si(
             build_ids=[build_id],
             reason=f"""
