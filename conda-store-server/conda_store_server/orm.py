@@ -43,13 +43,13 @@ ARN_ALLOWED_REGEX = re.compile(schema.ARN_ALLOWED)
 
 
 class Worker(Base):
-    """Used to communicate with the worker process"""
+    """For communicating with the worker process"""
 
     __tablename__ = "worker"
 
     id = Column(Integer, primary_key=True)
 
-    # Used to check whether the worker is initialized
+    # For checking whether the worker is initialized
     initialized = Column(Boolean, default=False)
 
     __table_args__ = (
