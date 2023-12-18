@@ -365,6 +365,7 @@ class CondaStoreServer(Application):
             # Note: the logger needs to be defined here for the output to show
             # up, self.log doesn't work here either
             logger = logging.getLogger("app")
+            logger.addHandler(logging.StreamHandler())
             logger.setLevel(self.log_level)
             logger.info(f"Starting server on {self.address}:{self.port}")
 
