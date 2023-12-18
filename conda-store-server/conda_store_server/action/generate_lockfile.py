@@ -15,6 +15,7 @@ def action_solve_lockfile(
     conda_command: str,
     specification: schema.CondaSpecification,
     platforms: typing.List[str] = [conda_utils.conda_platform()],
+    # Avoids package compatibility issues, see:
     # https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-channels.html
     conda_flags: str = "--strict-channel-priority",
 ):
