@@ -28,9 +28,6 @@ from traitlets import (
 )
 from traitlets.config import Application, catch_config_error
 
-logger = logging.getLogger("app")
-logger.setLevel(logging.INFO)
-
 
 class CondaStoreServer(Application):
     aliases = {
@@ -394,11 +391,11 @@ class CondaStoreServer(Application):
                 with session_factory() as db:
                     q = db.query(orm.Worker).first()
                     if q is not None and q.initialized:
-                        logger.info(f"{green}" "Worker initialized" f"{reset}")
+                        self.log.info(f"{green}" "Worker initialized" f"{reset}")
                         break
 
                 time.sleep(5)
-                logger.critical(
+                self.log.warning(
                     f"{red}"
                     "Waiting for worker... "
                     "Use --standalone if running outside of docker"
