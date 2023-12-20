@@ -5,6 +5,7 @@ import re
 import sys
 
 import pytest
+import yarl
 from conda_store_server import (
     BuildKey,
     action,
@@ -369,3 +370,13 @@ def test_api_get_build_lockfile(
         assert lockfile_url(build_key) == build.conda_lock_key
         assert lockfile_url(build_key) == res.headers['location']
         assert res.status_code == 307
+
+
+def test_get_channel_url():
+    conda_main = "https://conda.anaconda.org/main"
+    repo_main = "https://repo.anaconda.com/pkgs/main"
+    example = "https://example.com"
+
+    assert conda_utils.get_channel_url(conda_main) == yarl.URL(repo_main)
+    assert conda_utils.get_channel_url(f"{conda_main}/") == yarl.URL(repo_main)
+    assert conda_utils.get_channel_url(example) == yarl.URL(example)
