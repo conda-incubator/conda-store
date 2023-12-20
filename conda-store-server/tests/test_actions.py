@@ -1,8 +1,11 @@
 import asyncio
 import datetime
+import os
 import pathlib
 import re
+import subprocess
 import sys
+import tempfile
 
 import pytest
 import yarl
@@ -108,6 +111,43 @@ def test_solve_lockfile_multiple_platforms(conda_store, specification, request):
         platforms=["osx-64", "linux-64", "win-64", "osx-arm64"],
     )
     assert len(context.result["package"]) != 0
+
+
+@pytest.mark.parametrize(
+    "specification_name",
+    [
+        "simple_specification",
+        "simple_specification_with_pip",
+    ],
+)
+def test_generate_constructor_artifacts(conda_store, specification_name, request):
+    specification = request.getfixturevalue(specification_name)
+    with tempfile.TemporaryDirectory() as installer_dir:
+        # Creates the installer
+        context = action.action_generate_constructor_artifacts(
+            conda_command=conda_store.conda_command,
+            specification=specification,
+            installer_dir=installer_dir,
+        )
+
+        # Checks that the installer was created
+        installer = context.result
+        assert installer.exists()
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            # Runs the installer
+            out_dir = pathlib.Path(tmp_dir) / 'out'
+            subprocess.check_output([installer, '-b', '-p', str(out_dir)])
+
+            # Checks the output directory
+            assert out_dir.exists()
+            lib_dir = out_dir / 'lib'
+            if specification_name == 'simple_specification':
+                assert any(str(x).endswith('libz.so') for x in lib_dir.iterdir())
+            else:
+                # Uses rglob to not depend on the version of the python
+                # directory, which is where site-packages is located
+                assert any(str(x).endswith('site-packages/flask') for x in lib_dir.rglob('*'))
 
 
 def test_fetch_and_extract_conda_packages(tmp_path, simple_conda_lock):
