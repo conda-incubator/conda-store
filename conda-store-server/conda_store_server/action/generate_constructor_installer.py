@@ -13,7 +13,7 @@ def action_generate_constructor_installer(
     context,
     conda_command: str,
     specification: schema.CondaSpecification,
-    installer_dir: str,
+    installer_dir: pathlib.Path,
 ):
     # Helpers
     def print_cmd(cmd):
@@ -42,7 +42,6 @@ def action_generate_constructor_installer(
     # Creates the construct.yaml file and post_install script
     ext = ".exe" if sys.platform == "win32" else ".sh"
     pi_ext = ".bat" if sys.platform == "win32" else ".sh"
-    installer_dir = pathlib.Path(installer_dir)
     installer_filename = (installer_dir / specification.name).with_suffix(ext)
 
     os.makedirs(installer_dir)
