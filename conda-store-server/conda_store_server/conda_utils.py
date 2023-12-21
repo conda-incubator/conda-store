@@ -109,6 +109,27 @@ def conda_lock(specification: "CondaSpecification", conda_exe: str = "mamba"):  
     return {"conda": conda_packages, "pip": pip_packages}
 
 
+def get_channel_url(channel: str) -> yarl.URL:
+    # the conda main channel does not have a channeldata.json within
+    # the https://conda.anaconda.org/<channel>/channeldata.json
+    # so we replace the given url with it's equivalent alias
+    channel_replacements = {
+        "https://conda.anaconda.org/main/": yarl.URL(
+            "https://repo.anaconda.com/pkgs/main"
+        )
+    }
+
+    # Note: this doesn't use the / operator to append the trailing / character
+    # because it's ignored on Windows. Instead, string substitution is used if
+    # the / character is not present
+    if channel.endswith("/"):
+        normalized_channel_url = yarl.URL(channel)
+    else:
+        normalized_channel_url = yarl.URL(f"{channel}/")
+
+    return channel_replacements.get(str(normalized_channel_url), yarl.URL(channel))
+
+
 def download_repodata(
     channel: str,
     last_update: datetime.datetime = None,
@@ -124,18 +145,7 @@ def download_repodata(
     """
     subdirs = set(subdirs or [conda_platform(), "noarch"])
 
-    # the conda main channel does not have a channeldata.json within
-    # the https://conda.anaconda.org/<channel>/channeldata.json
-    # so we replace the given url with it's equivalent alias
-    channel_replacements = {
-        "https://conda.anaconda.org/main/": yarl.URL(
-            "https://repo.anaconda.com/pkgs/main"
-        )
-    }
-    normalized_channel_url = yarl.URL(channel) / "./"
-    channel_url = channel_replacements.get(
-        str(normalized_channel_url), yarl.URL(channel)
-    )
+    channel_url = get_channel_url(channel)
 
     headers = {}
     if last_update:

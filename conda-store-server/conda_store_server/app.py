@@ -688,6 +688,8 @@ class CondaStore(LoggingConfigurable):
         # must import tasks after a celery app has been initialized
         from conda_store_server.worker import tasks
 
+        # Note: task ids used here must also be in api_put_build_cancel
+
         artifact_tasks = []
         if schema.BuildArtifactType.YAML in settings.build_artifacts:
             artifact_tasks.append(

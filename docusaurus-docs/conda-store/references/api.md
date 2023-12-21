@@ -1,5 +1,9 @@
 ---
-description: API docs
+description: REST API reference
 ---
 
-# API docs
+# REST API reference
+
+:::note
+This page is in development and will be available soon.
+:::

@@ -46,6 +46,11 @@
                 <ion-icon name="trash"></ion-icon>
             </button>
             {% endif %}
+            {% if build.status.value in ["BUILDING"] %}
+            <button type="button" data-action="cancel" data-id="{{ build.id }}" class="btn btn-primary mb-2">
+                <ion-icon name="ban-outline"></ion-icon>
+            </button>
+            {% endif %}
         </div>
     </li>
     {% endfor %}
@@ -115,6 +120,21 @@
      }
  }
 
+ async function cancelBuild(event) {
+     event.preventDefault();
+     let buildId = event.currentTarget.getAttribute('data-id');
+
+     let url = `{{ url_for('api_list_builds') }}${ buildId }/cancel/`;
+     let response = await fetch(url, { method: 'PUT' });
+
+     if (response.ok) {
+         window.location.reload(true);
+     } else {
+         let data = await response.json();
+         bannerMessage(`<div class="alert alert-danger col">${data.message}</div>`);
+     }
+ }
+
  document.querySelectorAll('button[data-action="set-current"]').forEach(item => {
      item.addEventListener('click', (event) => setCurrentEnvironmentBuild(event));
  })
@@ -125,6 +145,10 @@
 
  document.querySelectorAll('button[data-action="delete"]').forEach(item => {
      item.addEventListener('click', (event) => deleteBuild(event));
+ })
+
+ document.querySelectorAll('button[data-action="cancel"]').forEach(item => {
+     item.addEventListener('click', (event) => cancelBuild(event));
  })
 
  async function deleteEnvironment(event) {

@@ -64,7 +64,7 @@ Here are a few guidelines for how to categorize impact across a few major types 
   Is of particular importance to a key community.
 - `impact: med`: Useful to many users but not an overwhelming amount. Will be a less-obvious improvement.
   Most issues should be in this category.
-- `impact: low`: Useful but not a critical part of workflows. Is a niche use-case that only a few users may need.
+- `impact: low`: Useful but not a critical part of workflows. Is a niche use case that only a few users may need.
 
 **Bugs**
 
@@ -72,7 +72,7 @@ Here are a few guidelines for how to categorize impact across a few major types 
   (for example, instances won't work at all).
 - `impact: med`: Disruptive to some users, but not in a critical way. Only noticeable under circumstances that aren't very common.
   Most issues should be in this category.
-- `impact: low`: Minimally disruptive or cosmetic, or only affects a few users or niche use-cases.
+- `impact: low`: Minimally disruptive or cosmetic, or only affects a few users or niche use cases.
   Note that `accessibility` related issues should be `impact: high` as these are never purely cosmetic changes.
 
 ### Area tag
@@ -110,28 +110,28 @@ A few labels exist to denote particular situations:
 
 - `Close?`: to denote an issue that might need closing, either because the discussion has dried out or there are no concrete follow-up actions
 - `DO-NOT-MERGE`: to denote a PR that should not be merged yet
-- `good first issue`: these issues represents self-contained work that would make a good introduction to project development for a new contributor
+- `good first issue`: these issues represent self-contained work that would make a good introduction to project development for a new contributor
 - `Roadmap 🚀`: this issue is part of the project roadmap
 
 ## Pull requests
 
-Pull requests are usually associated with or linked to issues. The natural path is to start with an issue and move onto a pull request for resolution.
+Pull requests are usually associated with or linked to issues. The natural path is to start with an issue and move on to a pull request for resolution.
 But sometimes a new pull request is created without an associated issue.
-In such cases a new issue should be created for that pull request to engage people in a general discussion, not the technical review which is performed in the pull request itself.
+In such cases, a new issue should be created for that pull request to engage people in a general discussion, not the technical review which is performed in the pull request itself.
 
 If the PR does not need a discussion (trivial fixes, tasks, and so on), the opening of an associated issue may be skipped, but the pull request must be labeled accordingly.
 
 We use mutually exclusive GitHub labels with the prefix`status:` to classify PR's.
 
 - `status: abandoned 🗑`: this pull request has not seen activity in a while (at least a month)
-- `status: stale 🥖`: a "stale" pull request is one that is no longer up to date with the main line of development, and it needs to be updated before it can be merged into the project.
+- `status: stale 🥖`: a "stale" pull request is no longer up to date with the main line of development, and it needs to be updated before it can be merged into the project.
 - `status: in progress 🏗`: this PR is currently being worked on
 - `status: in review 👀`: this PR is currently being reviewed by the team
 - `status: declined 🙅🏻‍♀️`: this PR has been reviewed and declined for merged
 - `status: approved 💪🏾`: this PR has been reviewed and approved for merge
 - `status: blocked ⛔️`: this PR is blocked by another PR or issue
 
-GitHub notifies team member when labels are changed, so it is useful to keep the status of each pull request as close as possible with the reality.
+GitHub notifies team members when labels are changed, so it is useful to keep the status of each pull request as close as possible to reality.
 For example, if you realize that your PR needs more work after a first pass review, then change the label to `status: in progress 🏗`.
 
 **All PR's must be tagged with a status at all times**
