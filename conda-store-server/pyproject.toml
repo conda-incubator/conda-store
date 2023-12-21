@@ -1,17 +1,15 @@
 [build-system]
-# https://github.com/ofek/hatch-vcs
-requires = ["hatchling>=1.14.0", "hatch-vcs"]
+requires = ["hatchling>=1.14.0", "hatch-vcs", "hatch-fancy-pypi-readme"]
 build-backend = "hatchling.build"
 
 [project]
 name = "conda-store-server"
 description = "Conda Environment Management, Builds, and Serve"
-readme = "README.md"
 license = "BSD-3-Clause"
 requires-python = ">=3.8"
 keywords = ["conda"]
 authors = [
-  { name = "Christopher Ostrouchov", email = "crhsi.ostrouchov@gmail.com" },
+  { name = "Christopher Ostrouchov", email = "chris.ostrouchov@gmail.com" },
 ]
 classifiers = [
   "Development Status :: 3 - Alpha",
@@ -46,7 +44,7 @@ dependencies = [
   "python-docker"
   # conda (which should not be included here)
 ]
-dynamic = ["version"]
+dynamic = ["version", "readme"]
 
 [project.urls]
 Homepage = "https://conda.store/"
@@ -56,6 +54,28 @@ Source = "https://github.com/conda-incubator/conda-store/conda-store-server"
 source = "vcs"
 # need to specify root as .git is one level up
 raw-options = {root="../", relative_to="pyproject.toml", local_scheme="node-and-date"}
+
+[tool.hatch.metadata.hooks.fancy-pypi-readme]
+content-type = "text/markdown"
+
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.fragments]]
+text = """<p align="center">
+  <a href="https://conda.store/">
+    <img src="https://github.com/conda-incubator/conda-store/blob/main/docusaurus-docs/static/img/logo.svg" width="35%" alt="conda-store logo - conda.store homepage" />
+  </a>
+</p>
+
+"""
+
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.fragments]]
+path = "README.md"
+
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.fragments]]
+text = "## About the conda-store ecosystem"
+
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.fragments]]
+path = "../README.md"
+start-after = "<!-- teaser-begin -->"
 
 [project.optional-dependencies]
 dev = ["build", "twine"]
