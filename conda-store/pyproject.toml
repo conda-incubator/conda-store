@@ -1,5 +1,4 @@
 [build-system]
-# https://github.com/ofek/hatch-vcs
 requires = ["hatchling>=1.14.0", "hatch-vcs"]
 build-backend = "hatchling.build"
 
@@ -36,11 +35,12 @@ dynamic = ["version"]
 
 [project.urls]
 Homepage = "https://conda.store/"
-Source = "https://github.com/conda-incubator/conda-store"
+Source = "https://github.com/conda-incubator/conda-store/conda-store"
 
 [tool.hatch.version]
 source = "vcs"
-# raw-options = { local_scheme = "no-local-version" }
+# need to specify root as .git is one level up
+raw-options = {root="../", relative_to="pyproject.toml", local_scheme="node-and-date"}
 
 [project.optional-dependencies]
 dev = ["build", "twine"]

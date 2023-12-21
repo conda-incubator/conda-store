@@ -36,8 +36,6 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
     hooks:
-      - id: trailing-whitespace
-        files: ".*\\.py"
       - id: check-added-large-files
       - id: check-toml
       - id: end-of-file-fixer

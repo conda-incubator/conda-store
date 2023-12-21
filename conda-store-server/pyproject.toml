@@ -50,10 +50,12 @@ dynamic = ["version"]
 
 [project.urls]
 Homepage = "https://conda.store/"
-Source = "https://github.com/conda-incubator/conda-store"
+Source = "https://github.com/conda-incubator/conda-store/conda-store-server"
 
 [tool.hatch.version]
-path = "conda_store_server/__init__.py"
+source = "vcs"
+# need to specify root as .git is one level up
+raw-options = {root="../", relative_to="pyproject.toml", local_scheme="node-and-date"}
 
 [project.optional-dependencies]
 dev = ["build", "twine"]
@@ -91,7 +93,7 @@ conda-store-worker = "conda_store_server.worker.__main__:main"
 
 [tool.black]
 line-length = 88
-target-version = ['py37', 'py38', 'py39']
+target-version = ['py38', 'py39']
 
 [tool.ruff]
 ignore = [
