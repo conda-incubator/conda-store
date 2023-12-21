@@ -1,3 +1,4 @@
+import os
 import pathlib
 import subprocess
 import sys
@@ -39,13 +40,16 @@ def action_generate_constructor_artifacts(
 
     # Creates the construct.yaml file and post_install script
     ext = ".exe" if sys.platform == "win32" else ".sh"
+    pi_ext = ".bat" if sys.platform == "win32" else ".sh"
     installer_dir = pathlib.Path(installer_dir)
     installer_filename = (installer_dir / specification.name).with_suffix(ext)
 
-    with tempfile.TemporaryDirectory() as tmp_dir:
+    os.makedirs(installer_dir)
+
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp_dir:
         tmp_dir = pathlib.Path(tmp_dir)
         construct_file = tmp_dir / "construct.yaml"
-        post_install_file = tmp_dir / "post-install.sh"
+        post_install_file = (tmp_dir / "post_install").with_suffix(pi_ext)
         env_dir = tmp_dir / "env"
 
         construct = {
@@ -58,14 +62,20 @@ def action_generate_constructor_artifacts(
             "version": 1,
         }
 
-        # XXX: Support Windows
-        post_install = """\
+        if sys.platform == "win32":
+            post_install = """\
+call "%PREFIX%\Scripts\activate.bat
+"""
+        else:
+            post_install = """\
 #!/usr/bin/env bash
 set -euxo pipefail
+source "$PREFIX/etc/profile.d/conda.sh"
+conda activate "$PREFIX"
 """
         if pip_dependencies:
             post_install += f"""
-conda run -p "$PREFIX" pip install {' '.join(pip_dependencies)}
+pip install {' '.join(pip_dependencies)}
 """
 
         # Writes files to disk

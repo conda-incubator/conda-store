@@ -120,34 +120,43 @@ def test_solve_lockfile_multiple_platforms(conda_store, specification, request):
         "simple_specification_with_pip",
     ],
 )
-def test_generate_constructor_artifacts(conda_store, specification_name, request):
+def test_generate_constructor_artifacts(conda_store, specification_name, request, tmp_path):
     specification = request.getfixturevalue(specification_name)
-    with tempfile.TemporaryDirectory() as installer_dir:
-        # Creates the installer
-        context = action.action_generate_constructor_artifacts(
-            conda_command=conda_store.conda_command,
-            specification=specification,
-            installer_dir=installer_dir,
-        )
+    installer_dir = tmp_path / "installer_dir"
 
-        # Checks that the installer was created
-        installer = context.result
-        assert installer.exists()
+    # Creates the installer
+    context = action.action_generate_constructor_artifacts(
+        conda_command=conda_store.conda_command,
+        specification=specification,
+        installer_dir=installer_dir,
+    )
 
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            # Runs the installer
-            out_dir = pathlib.Path(tmp_dir) / 'out'
-            subprocess.check_output([installer, '-b', '-p', str(out_dir)])
+    # Checks that the installer was created
+    installer = context.result
+    assert installer.exists()
 
-            # Checks the output directory
-            assert out_dir.exists()
-            lib_dir = out_dir / 'lib'
-            if specification_name == 'simple_specification':
-                assert any(str(x).endswith('libz.so') for x in lib_dir.iterdir())
-            else:
-                # Uses rglob to not depend on the version of the python
-                # directory, which is where site-packages is located
-                assert any(str(x).endswith('site-packages/flask') for x in lib_dir.rglob('*'))
+    tmp_dir = tmp_path / "tmp"
+
+    # Runs the installer
+    out_dir = pathlib.Path(tmp_dir) / 'out'
+    if sys.platform == 'win32':
+        subprocess.check_output([installer, '/S', f'/D={out_dir}'])
+    else:
+        subprocess.check_output([installer, '-b', '-p', str(out_dir)])
+
+    # Checks the output directory
+    assert out_dir.exists()
+    lib_dir = out_dir / 'lib'
+    if specification_name == 'simple_specification':
+        if sys.platform == 'win32':
+            assert any(str(x).endswith('zlib.dll') for x in out_dir.iterdir())
+        else:
+            assert any(str(x).endswith('libz.so') for x in lib_dir.iterdir())
+    else:
+        # Uses rglob to not depend on the version of the python
+        # directory, which is where site-packages is located
+        flask = pathlib.Path('site-packages') / 'flask'
+        assert any(str(x).endswith(str(flask)) for x in out_dir.rglob('*'))
 
 
 def test_fetch_and_extract_conda_packages(tmp_path, simple_conda_lock):
