@@ -15,6 +15,7 @@ from conda_store_server.build import (
     build_conda_env_export,
     build_conda_environment,
     build_conda_pack,
+    build_constructor_installer,
     solve_conda_environment,
 )
 from conda_store_server.worker.app import CondaStoreWorker
@@ -235,6 +236,14 @@ def task_build_conda_docker(self, build_id):
     with conda_store.session_factory() as db:
         build = api.get_build(db, build_id)
         build_conda_docker(db, conda_store, build)
+
+
+@shared_task(base=WorkerTask, name="task_build_constructor_installer", bind=True)
+def task_build_constructor_installer(self, build_id):
+    conda_store = self.worker.conda_store
+    with conda_store.session_factory() as db:
+        build = api.get_build(db, build_id)
+        build_constructor_installer(db, conda_store, build)
 
 
 @shared_task(base=WorkerTask, name="task_update_environment_build", bind=True)

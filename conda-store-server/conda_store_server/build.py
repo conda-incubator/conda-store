@@ -382,3 +382,42 @@ def build_conda_docker(db: Session, conda_store, build: orm.Build):
         conda_store.log.exception(e)
         append_to_logs(db, conda_store, build, traceback.format_exc())
         raise e
+
+
+def build_constructor_installer(db: Session, conda_store, build: orm.Build):
+    conda_prefix = build.build_path(conda_store)
+
+    settings = conda_store.get_settings(
+        db=db,
+        namespace=build.environment.namespace.name,
+        environment_name=build.environment.name,
+    )
+
+    with utils.timer(
+        conda_store.log, f"creating installer for conda environment={conda_prefix}"
+    ):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            context = action.action_generate_constructor_installer(
+                conda_command=settings.conda_command,
+                specification=schema.CondaSpecification.parse_obj(
+                    build.specification.spec
+                ),
+                installer_dir=pathlib.Path(tmpdir),
+            )
+            output_filename = context.result
+            append_to_logs(
+                db,
+                conda_store,
+                build,
+                "::group::action_generate_constructor_installer\n"
+                + context.stdout.getvalue()
+                + "\n::endgroup::\n",
+            )
+            conda_store.storage.fset(
+                db,
+                build.id,
+                build.constructor_installer_key,
+                output_filename,
+                content_type="application/octet-stream",
+                artifact_type=schema.BuildArtifactType.CONSTRUCTOR_INSTALLER,
+            )

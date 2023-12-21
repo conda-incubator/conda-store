@@ -724,6 +724,15 @@ class CondaStore(LoggingConfigurable):
                 )
             )
 
+        if schema.BuildArtifactType.CONSTRUCTOR_INSTALLER in settings.build_artifacts:
+            artifact_tasks.append(
+                tasks.task_build_constructor_installer.subtask(
+                    args=(build.id,),
+                    task_id=f"build-{build.id}-constructor-installer",
+                    immutable=True,
+                )
+            )
+
         (
             tasks.task_update_storage_metrics.si()
             | tasks.task_build_conda_environment.subtask(
