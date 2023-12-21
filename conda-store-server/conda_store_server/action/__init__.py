@@ -32,6 +32,6 @@ from conda_store_server.action.add_conda_prefix_packages import (
 from conda_store_server.action.add_lockfile_packages import (
     action_add_lockfile_packages,  # noqa
 )
-from conda_store_server.action.generate_constructor_artifacts import (
-    action_generate_constructor_artifacts,  # noqa
+from conda_store_server.action.generate_constructor_installer import (
+    action_generate_constructor_installer,  # noqa
 )

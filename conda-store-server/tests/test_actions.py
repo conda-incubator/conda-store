@@ -120,12 +120,12 @@ def test_solve_lockfile_multiple_platforms(conda_store, specification, request):
         "simple_specification_with_pip",
     ],
 )
-def test_generate_constructor_artifacts(conda_store, specification_name, request, tmp_path):
+def test_generate_constructor_installer(conda_store, specification_name, request, tmp_path):
     specification = request.getfixturevalue(specification_name)
     installer_dir = tmp_path / "installer_dir"
 
     # Creates the installer
-    context = action.action_generate_constructor_artifacts(
+    context = action.action_generate_constructor_installer(
         conda_command=conda_store.conda_command,
         specification=specification,
         installer_dir=installer_dir,

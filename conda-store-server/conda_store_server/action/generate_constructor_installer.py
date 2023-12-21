@@ -9,7 +9,7 @@ from conda_store_server import action, schema
 
 
 @action.action
-def action_generate_constructor_artifacts(
+def action_generate_constructor_installer(
     context,
     conda_command: str,
     specification: schema.CondaSpecification,
