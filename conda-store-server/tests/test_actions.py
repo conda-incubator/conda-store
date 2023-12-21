@@ -150,6 +150,8 @@ def test_generate_constructor_artifacts(conda_store, specification_name, request
     if specification_name == 'simple_specification':
         if sys.platform == 'win32':
             assert any(str(x).endswith('zlib.dll') for x in out_dir.iterdir())
+        elif sys.platform == 'darwin':
+            assert any(str(x).endswith('libz.dylib') for x in lib_dir.iterdir())
         else:
             assert any(str(x).endswith('libz.so') for x in lib_dir.iterdir())
     else:
