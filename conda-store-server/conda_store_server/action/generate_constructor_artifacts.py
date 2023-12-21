@@ -30,7 +30,8 @@ def action_generate_constructor_artifacts(
     # pip dependencies are not directly supported by constructor, they will be
     # installed via the post_install script:
     # https://github.com/conda/constructor/issues/515
-    dependencies = []
+    # conda and pip need to be in dependencies for the post_install script
+    dependencies = ["conda", "pip"]
     pip_dependencies = []
     for d in specification.dependencies:
         if type(d) is schema.CondaSpecificationPip:
