@@ -1,6 +1,7 @@
 import datetime
 import os
 import shutil
+import typing
 
 import yaml
 from celery import Task, shared_task
@@ -78,10 +79,10 @@ def task_update_storage_metrics(self):
 
 
 @shared_task(base=WorkerTask, name="task_cleanup_builds", bind=True)
-def task_cleanup_builds(self):
+def task_cleanup_builds(self, build_ids: typing.List[str] = None, reason: str = None):
     conda_store = self.worker.conda_store
     with conda_store.session_factory() as db:
-        build_cleanup(db, conda_store)
+        build_cleanup(db, conda_store, build_ids, reason)
 
 
 """

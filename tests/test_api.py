@@ -18,6 +18,7 @@ from typing import List
 import aiohttp
 import conda_store_server
 import pytest
+import requests
 from conda_store_server import schema
 from pydantic import parse_obj_as
 
@@ -104,6 +105,7 @@ def test_api_permissions_auth(testclient):
                 schema.Permissions.ENVIRONMENT_UPDATE.value,
                 schema.Permissions.ENVIRONMENT_DELETE.value,
                 schema.Permissions.ENVIRONMENT_SOLVE.value,
+                schema.Permissions.BUILD_CANCEL.value,
                 schema.Permissions.BUILD_DELETE.value,
                 schema.Permissions.NAMESPACE_CREATE.value,
                 schema.Permissions.NAMESPACE_READ.value,
@@ -958,3 +960,75 @@ def test_delete_build_auth(testclient):
 
     # r = schema.APIResponse.parse_obj(response.json())
     # assert r.status == schema.APIStatus.ERROR
+
+
+def test_api_cancel_build_unauth(testclient):
+    build_id = 1
+
+    response = testclient.put(f"api/v1/build/{build_id}/cancel")
+    assert response.status_code == 403
+
+    r = schema.APIResponse.parse_obj(response.json())
+    assert r.status == schema.APIStatus.ERROR
+
+
+def test_api_cancel_build_auth(testclient):
+    build_id = 1
+
+    testclient.login()
+    response = testclient.put(f"api/v1/build/{build_id}")
+    r = schema.APIPostSpecification.parse_obj(response.json())
+    assert r.status == schema.APIStatus.OK
+
+    new_build_id = r.data.build_id
+
+    # Delay to ensure the build kicks off
+    build_timeout = 180
+    building = False
+    start = time.time()
+    while time.time() - start < build_timeout:
+        try:
+            response = testclient.get(f"api/v1/build/{new_build_id}")
+        except requests.exceptions.ConnectionError:
+            time.sleep(5)
+            continue
+        response.raise_for_status()
+
+        r = schema.APIGetBuild.parse_obj(response.json())
+        assert r.status == schema.APIStatus.OK
+        if r.data.status == schema.BuildStatus.BUILDING.value:
+            building = True
+            break
+        time.sleep(5)
+
+    assert building is True
+
+    # The new build should have kicked off, so now we will request to cancel it
+    response = testclient.put(f"api/v1/build/{new_build_id}/cancel")
+    response.raise_for_status()
+
+    r = schema.APIResponse.parse_obj(response.json())
+    assert r.status == schema.APIStatus.OK
+    assert r.message == f"build {new_build_id} canceled"
+
+    failed = False
+    for _ in range(10):
+        # Delay to ensure the build is marked as failed
+        time.sleep(5)
+
+        # Ensure status is Failed
+        try:
+            response = testclient.get(f"api/v1/build/{new_build_id}")
+        except requests.exceptions.ConnectionError:
+            time.sleep(5)
+            continue
+        response.raise_for_status()
+
+        r = schema.APIGetBuild.parse_obj(response.json())
+        assert r.status == schema.APIStatus.OK
+        assert r.data.id == new_build_id
+        if r.data.status == schema.BuildStatus.FAILED.value:
+            failed = True
+            break
+
+    assert failed is True
