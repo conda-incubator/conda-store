@@ -6,7 +6,7 @@ In software development, it is essential to strike a balance between progress an
 
 ## Breaking versus non-breaking changes
 
-Breaking changes in code refer to modifications or updates made to software that have the potential to disrupt the functionality of existing applications, integrations, or systems. Breaking changes involve:
+Breaking code changes refer to modifications or updates made to software that have the potential to disrupt the functionality of existing applications, integrations, or systems. Breaking changes involve:
 
 - removing existing functionality
 - altering existing functionality
