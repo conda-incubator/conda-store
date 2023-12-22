@@ -26,6 +26,15 @@ const config = {
     locales: ["en"],
   },
 
+  // Add Plausible snippet as script
+  scripts: [
+    {
+      src: "https://plausible.io/js/script.js",
+      defer: true,
+      "data-domain": "conda.store",
+    }
+  ],
+
   // Install plugins, then add here
   plugins: [
     require.resolve("docusaurus-lunr-search"),
