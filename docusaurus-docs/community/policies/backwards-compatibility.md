@@ -14,8 +14,9 @@ Breaking code changes refer to modifications or updates made to software that
 have the potential to disrupt the functionality of existing applications,
 integrations, or systems. Breaking changes involve:
 
-- removing existing functionality - altering existing functionality - adding new
-requirements such as making a previously optional parameter required.
+- removing existing functionality
+- altering existing functionality
+- adding new requirements such as making a previously optional parameter required.
 
 These changes can lead to compatibility issues, causing frustration for
 end-users, higher maintenance costs, and even system downtime, thus undermining
@@ -24,8 +25,7 @@ breaking if they impact users through the REST API, the Python API, or the
 Database.
 
 In contrast, non-breaking changes can add functionality or reduce requirements
-such as making a previously required
-
+such as making a previously required parameter optional.
 These changes allow software to evolve and grow without negatively impacting
 existing users.
 
@@ -134,19 +134,38 @@ It is not recommended to remove versions of API endpoints. Removing API
 endpoints, or versions of endpoints, breaks backwards compatibility and should
 only be done under exceptional circumstances such as a security vulnerability.
 
+If the desire is to prevent a developer from relying on an API endpoint, adding
+a warning to the API documentation along with a recommended alternative should
+be used rather than a deprecation or removal.
+
 In the case of a removed endpoint, or endpoint version, conda-store should
 return a status code of `410 Gone` to indicate the endpoint has been removed
 along with a json object stating when and why the endpoint was removed and what
 version of the endpoint is available currently (if any).
 
-```python { "reference_pull_request":
-"https://github.com/conda-incubator/conda-store/pull/0000", # the pull request
-that removed the endpoint "removal_date": "2021-06-24", # the date the endpoint
-was removed "removal_reason": "Removed to address CVE-2021-32677
-(https://nvd.nist.gov/vuln/detail/CVE-2021-32677)", # the reason for the
-removal, ideally with a link to a CVE if one is available "new_endpoint":
-"api/v3/this/should/be/used/instead", # the endpoint that developers should use
-as a replacement } ```
+```python
+{
+  # the pull request that removed the endpoint
+  "reference_pull_request": "https://github.com/conda-incubator/conda-store/pull/0000",
+  # the date the endpoint was removed
+  "removal_date": "2021-06-24",
+  # the reason for the removal, ideally with a link to a CVE if one is available
+  "removal_reason": "Removed to address CVE-2021-32677 (https://nvd.nist.gov/vuln/detail/CVE-2021-32677)",
+  # the endpoint that developers should use as a replacement
+  "new_endpoint": "api/v3/this/should/be/used/instead",
+}
+```
+
+If an API endpoint must be deprecated, a deprecation warning should be added 
+for at least one release before the endpoint is removed. This requirement may
+be waived in the case of a serious security vulnerability.
+
+It should always be clearly communicated in release notes and documentation
+when an API endpoint is deprecated or removed. This should include:
+- version number of the release where this was deprecated
+- provide suggestions for alternatives (if possible).
+- provide justification for the removal (such as a link to the issue
+  or CVE that necessitated the removal)
 
 ### Python API
 
@@ -164,22 +183,55 @@ The highest-level entity determines the visibility level.
 
 For example:
 
-```py class _Private:
-# everything is private here even without underscores
-def this_is_also_private(self): pass ```
+```py
+class _Private:
+  # everything is private here even without underscores
+  def this_is_also_private(self): pass
+```
 
 or
 
-```py def _foo(): def inner():
-# inner is also private - no way to call it without calling _foo, which is
-# private.
-``` Tests are never considered to be part of the public API. Any code within the
+```py
+  def _foo():
+    def inner():
+    # inner is also private - no way to call it without calling _foo, which is
+    # private.
+```
+
+Tests are never considered to be part of the public API. Any code within the
 `tests/` directory is always considered to be private.
 
 Developers are encouraged to make code private by default and only expose
 objects as public if there is an explicit need to do so. Keeping code private by
 default limits the public API that the conda-store project developers are
 committing to supporting.
+
+#### Deprecating Python APIs
+
+Under exceptional circumstances such as a serious security vulnerability which
+can't be fixed without breaking changes, it may be necessary to deprecate,
+remove, or introduce breaking changes to objects in the public Python API. 
+This should be avoided if possible.
+
+If the desire is to prevent a developer from relying on a part of the Python
+API, adding a warning to the documentation along with a recommended alternative
+and a comment in the code should be used rather than a deprecation or removal.
+
+```python 
+  """
+  This function is deprecated [reason/details], use [replacement] instead
+  """
+```
+If part of the Python API must be deprecated or removed, a deprecation warning
+should be added for at least one release before the endpoint is removed. This
+requirement may be waived in the case of a serious security vulnerability.
+
+The deprecation or removal should always be clearly communicated in release
+notes and documentation This should include:
+- version number of the release where this was deprecated
+- provide suggestions for alternatives (if possible).
+- provide a reason for the deprecation or removal (such
+  as a link to a CVE or issue that necessitated the removal
 
 #### Types of objects
 
@@ -213,9 +265,9 @@ results even though the function signature remains the same.
 The function signature also includes whether the function is an async function.
 Changing this is a breaking change.
 
-For example, if there is a function `def list_envs`, which is synchronous, and
-it should be asynchronous, a new function called `async def list_envs_async`
-should be added and `list_envs` should be kept as a synchronous call.
+For example, if there is a function `list_envs`, which is synchronous, and
+it should be asynchronous, a new function called ` list_envs_async` should be
+added and `list_envs` should be kept as a synchronous call.
 
 Optional parameters may be added as long as they have a specified default value
 and additional fields may be added to return types if you are returning an
@@ -226,21 +278,3 @@ object like a dict. These are considered non-breaking.
 Public variables should not have their type changed.
 
 Public constants should not have their type or their value changed.
-
-#### Deprecating Python APIs
-
-Deprecated classes, methods, and functions should have a comment and a warning
-(if possible) in the code stating why they are deprecated and what to use
-instead. This will encourage developers not to use them without breaking
-existing code.
-
-```python """ This function is deprecated [reason/details], use [replacement]
-instead """ ```
-
-Under exceptional circumstances such as a serious security vulnerability which
-can't be fixed without breaking changes, it may be necessary to deprecate,
-remove, or introduce breaking changes to objects in the public API. This should
-be avoided if possible.
-
-All deprecations shall be communicated in documentation and as part of release
-notes.
