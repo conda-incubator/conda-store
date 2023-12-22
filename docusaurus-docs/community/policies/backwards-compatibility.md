@@ -10,14 +10,11 @@ Breaking code changes refer to modifications or updates made to software that ha
 
 - removing existing functionality
 - altering existing functionality
-- adding new requirements.
+- adding new requirements such as making a previously optional parameter required.
 
 These changes can lead to compatibility issues, causing frustration for end-users, higher maintenance costs, and even system downtime, thus undermining the trust and reputation of the software or service provider. Changes are only breaking if they impact users through the REST API, the Python API, or the Database.
 
-In contrast, non-breaking changes can:
-
-- add functionality
-- reduce requirements
+In contrast, non-breaking changes can add functionality or reduce requirements such as making a previously required
 
 These changes allow software to evolve and grow without negatively impacting existing users.
 
@@ -37,15 +34,14 @@ Introducing breaking changes to the database can be destructive to data and prev
 - New columns or tables should be added instead of removing or altering existing ones.
 - Columns and tables should not be renamed. Aliases should be used for poorly named existing columns or tables.
 
-
 ### REST API endpoints
 
 REST API endpoints are versioned on a per-endpoint basis. New endpoints will start at `v1`.
 
 Non-breaking changes do not require a new version of an endpoint. For REST API endpoints, examples on non-breaking changes are:
 
-- Adding a parameter to the return value of an endpoint
-- making a previously mandatory input optional
+- adding a parameter to the return value of an endpoint
+- making a previously mandatory input optional.
 
 These changes can be done without a new endpoint version.
 
@@ -57,6 +53,10 @@ However, changes such as:
 
 are breaking changes and **require** a new endpoint version.
 
+When a new version of an endpoint is created, then all new features will be added to the new version. 
+
+Older versions of API endpoints are still considered supported and will receive bug fixes and security updates to their features but new features will not be backported to them.
+
 #### Experimental changes
 
 conda-store will expose experimental features within the `experimental` namespace.
@@ -67,8 +67,7 @@ Using the `experimental` namespace is not mandatory. However, deploying a versio
 
 Experimental routes have no guarantees attached to them, they can be removed or changed at any time without warning. This allows testing features with users in real-world scenarios without needing to commit to support that feature as is.
 
-Once endpoints are determined to stable and functional, they will be moved into the existing latest version of the API endpoint for non breaking changes or a new version for breaking changes.
-
+Once endpoints are determined to be stable and functional, they will be moved into the existing latest version of the API endpoint for non-breaking changes or a new version for breaking changes.
 
 #### Example HTTP routes
 
@@ -79,7 +78,9 @@ https://example.com/api/v1/user
 https://example.com/api/v2/user
 ```
 
-Explanation: This route has breaking changes between `v1` and `v2`. Code written for the `v1` endpoint will continue to function, but all new features will only be available in the `v2` version of the endpoint. This empowers users to upgrade when they wish to rather than forcing them to do so.
+Explanation: This route has breaking changes between `v1` and `v2`. 
+Code written for the `v1` endpoint will continue to function, but all new features will only be available in the `v2` version of the endpoint. 
+This empowers users to upgrade when they wish to rather than forcing them to do so.
 
 
 ##### Route that has never had breaking changes
@@ -96,18 +97,20 @@ Explanation: This route has never had breaking changes introduced. Any code writ
 https://example.com/api/experimental/user/
 ```
 
-Explanation: this is an experimental route. It can be changed or removed at any moment without prior notice. This route should be used to test new features and get community feedback.
+Explanation: This is an experimental route. It can be changed or removed at any moment without prior notice. This route should be used to test new features and get community feedback.
 
 #### Removing versions of API endpoints
 
 It is not recommended to remove versions of API endpoints. Removing API endpoints, or versions of endpoints, breaks backwards compatibility and should only be done under exceptional circumstances such as a security vulnerability.
 
 In the case of a removed endpoint, or endpoint version, conda-store should return a status code of `410 Gone` to indicate the endpoint has been removed along with a json object stating when and why the endpoint was removed and what version of the endpoint is available currently (if any).
-```
+
+```python
 {
-	"removal_date": "2021-06-24"
-	"removal_reason": "Removed to address CVE-2021-32677 (https://nvd.nist.gov/vuln/detail/CVE-2021-32677)"
-	"new_endpoint" : "api/v3/this/should/be/used/instead"
+	"reference_pull_request": "https://github.com/conda-incubator/conda-store/pull/0000", # the pull request that removed the endpoint
+	"removal_date": "2021-06-24", # the date the endpoint was removed
+	"removal_reason": "Removed to address CVE-2021-32677 (https://nvd.nist.gov/vuln/detail/CVE-2021-32677)", # the reason for the removal, ideally with a link to a CVE if one is available
+	"new_endpoint": "api/v3/this/should/be/used/instead", # the endpoint that developers should use as a replacement
 }
 ```
 
@@ -154,7 +157,10 @@ A breaking change for a module means that any element of the module's public API
 
 ##### Classes
 
-In a public class, a breaking change is one that changes or removes attributes or methods or alters their meanings. Rather than changing methods or attributes, new methods or attributes should be added if needed. For example, if you wanted to change a user id from an int, to a uuid, a new attribute of User.uuid should be added, and all new code should use User.uuid. Existing methods can use the new attribute or methods as well as long as that doesn't introduce breaking changes for the method.
+In a public class, a breaking change is one that changes or removes attributes or methods or alters their meanings.
+Rather than changing methods or attributes, new methods or attributes should be added if needed.
+For example, if you wanted to change a user id from an `int`, to a `uuid`, a new attribute `User.uuid` should be added, and all new code should use `User.uuid`.
+Existing methods can use the new attribute or methods as well as long as that doesn't introduce breaking changes for the method.
 
 ##### Functions and methods
 
