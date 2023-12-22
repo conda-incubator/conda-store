@@ -14,6 +14,7 @@ def action_generate_constructor_installer(
     conda_command: str,
     specification: schema.CondaSpecification,
     installer_dir: pathlib.Path,
+    version: str,
 ):
     # Helpers
     def print_cmd(cmd):
@@ -58,8 +59,7 @@ def action_generate_constructor_installer(
             "name": specification.name,
             "channels": specification.channels,
             "specs": dependencies,
-            # XXX: This is required: use the env hash and datetime?
-            "version": 1,
+            "version": version,
         }
 
         if sys.platform == "win32":

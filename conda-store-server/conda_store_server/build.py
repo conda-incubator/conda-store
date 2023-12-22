@@ -403,6 +403,7 @@ def build_constructor_installer(db: Session, conda_store, build: orm.Build):
                     build.specification.spec
                 ),
                 installer_dir=pathlib.Path(tmpdir),
+                version=build.build_key,
             )
             output_filename = context.result
             append_to_logs(

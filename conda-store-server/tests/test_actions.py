@@ -129,6 +129,7 @@ def test_generate_constructor_installer(conda_store, specification_name, request
         conda_command=conda_store.conda_command,
         specification=specification,
         installer_dir=installer_dir,
+        version="1",
     )
 
     # Checks that the installer was created
