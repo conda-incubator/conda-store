@@ -21,7 +21,11 @@ In contrast, non-breaking changes can:
 
 These changes allow software to evolve and grow without negatively impacting existing users.
 
-To summarize, users of Conda-Store should be able to upgrade to newer versions without worrying about breaking existing integrations. Newer features will be available for users to adopt when needed, while all existing code should continue to work.
+:::info[TLD;R]
+
+conda-store users should be able to upgrade to newer versions without worrying about breaking existing integrations. Newer features will be available for users to adopt when needed, while all existing code should continue to work.
+
+:::
 
 ## Specific implementation guidance
 
