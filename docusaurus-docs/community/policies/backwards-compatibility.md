@@ -2,7 +2,7 @@
 
 ## Introduction
 
-In software development, it is essential to strike a balance between progress and maintaining a stable environment for existing users. This policy provides guidance on how the conda-store project will handle changes to software and services, ensuring that they do not disrupt the workflows of current users, while still enabling innovation and forward progress.
+In software development, it is essential to strike a balance between progress and maintaining a stable environment for existing users. This policy guides how the conda-store project will handle changes to software and services, ensuring that they do not disrupt the workflows of current users, while still enabling innovation and forward progress.
 
 ## Breaking versus non-breaking changes
 
