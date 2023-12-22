@@ -1,3 +1,4 @@
+import sys
 from typing import Optional
 
 import yaml
@@ -63,6 +64,7 @@ async def ui_list_environments(
             "environments": orm_environments.all(),
             "registry_external_url": server.registry_external_url,
             "entity": entity,
+            "platform": "Windows" if sys.platform == "win32" else "Linux, macOS",
         }
 
         return templates.TemplateResponse("home.html", context)
@@ -208,6 +210,7 @@ async def ui_get_build(
             "registry_external_url": server.registry_external_url,
             "entity": entity,
             "spec": yaml.dump(build.specification.spec),
+            "platform": "Windows" if sys.platform == "win32" else "Linux, macOS",
         }
 
         return templates.TemplateResponse("build.html", context)
