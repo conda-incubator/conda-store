@@ -73,6 +73,9 @@ def test_conda_store_register_environment_workflow(db, conda_store, celery_worke
         task = AsyncResult(f"build-{build.id}-docker")
         task.wait(timeout=2 * 60)
 
+    task = AsyncResult(f"build-{build.id}-constructor-installer")
+    task.wait(timeout=60)
+
     db.expire_all()
     assert build.status == schema.BuildStatus.COMPLETED
 
