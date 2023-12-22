@@ -79,6 +79,9 @@
         {% if build.has_conda_pack %}
         <li class="list-group-item"><a href="https://github.com/conda/conda-pack">Conda-Pack</a> archive: <a href="{{ url_for('api_get_build_archive', build_id=build.id) }}">environment.tar.gz</a></li>
         {% endif %}
+        {% if build.has_constructor_installer %}
+        <li class="list-group-item"><a href="https://github.com/conda/constructor">Constructor</a> installer: <a href="{{ url_for('api_get_build_installer', build_id=build.id) }}">installer</a></li>
+        {% endif %}
         {% if build.has_docker_manifest %}
         <li class="list-group-item">Docker image registry url: {{ registry_external_url }}/{{ build.environment.namespace.name }}/{{ build.environment.name }}:{{ build.build_key }}</a></li>
         {% endif %}
