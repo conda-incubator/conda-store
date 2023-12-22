@@ -55,7 +55,7 @@ However, changes such as:
 - altering the meaning of a value
 - making a formerly optional parameter mandatory
 
-are breaking changes and would require a new endpoint version.
+are breaking changes and **require** a new endpoint version.
 
 #### Experimental changes
 
