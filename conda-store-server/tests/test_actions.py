@@ -423,6 +423,58 @@ def test_api_get_build_lockfile(
         assert res.status_code == 307
 
 
+def test_api_get_build_installer(
+    request, conda_store, db, simple_specification_with_pip, conda_prefix
+):
+    # initializes data needed to get the installer
+    specification = simple_specification_with_pip
+    specification.name = "my-env"
+    namespace = "pytest"
+
+    class MyAuthentication(DummyAuthentication):
+        # Skips auth (used in api_get_build_installer). Test version of request
+        # has no state attr, which is returned in the real impl of this method.
+        # So I have to overwrite the method itself.
+        def authorize_request(self, *args, **kwargs):
+            pass
+
+    auth = MyAuthentication()
+    build_id = conda_store.register_environment(
+        db, specification=specification, namespace=namespace
+    )
+    db.commit()
+
+    build = api.get_build(db, build_id=build_id)
+
+    # creates build artifacts
+    build_artifact = orm.BuildArtifact(
+        build_id=build_id,
+        build=build,
+        artifact_type=schema.BuildArtifactType.CONSTRUCTOR_INSTALLER,
+        key=build.constructor_installer_key,
+    )
+    db.add(build_artifact)
+    db.commit()
+
+    # gets installer for this build
+    res = asyncio.run(
+        server.views.api.api_get_build_installer(
+            request=request,
+            conda_store=conda_store,
+            auth=auth,
+            build_id=build_id,
+    ))
+
+    # redirects to installer
+    def installer_url(build_key):
+        return f"installer/{build_key}"
+
+    assert type(res) is RedirectResponse
+    assert build.constructor_installer_key == res.headers['location']
+    assert installer_url(build.build_key) == build.constructor_installer_key
+    assert res.status_code == 307
+
+
 def test_get_channel_url():
     conda_main = "https://conda.anaconda.org/main"
     repo_main = "https://repo.anaconda.com/pkgs/main"

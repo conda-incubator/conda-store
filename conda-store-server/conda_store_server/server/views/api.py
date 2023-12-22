@@ -1280,6 +1280,34 @@ async def api_get_build_docker_image_url(
             )
 
 
+@router_api.get("/build/{build_id}/installer/")
+async def api_get_build_installer(
+    build_id: int,
+    request: Request,
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
+):
+    with conda_store.get_db() as db:
+        build = api.get_build(db, build_id)
+        auth.authorize_request(
+            request,
+            f"{build.environment.namespace.name}/{build.environment.name}",
+            {Permissions.ENVIRONMENT_READ},
+            require=True,
+        )
+
+        if build.has_constructor_installer:
+            return RedirectResponse(
+                conda_store.storage.get_url(build.constructor_installer_key)
+            )
+
+        else:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Build {build_id} doesn't have an installer",
+            )
+
+
 @router_api.get(
     "/setting/",
     response_model=schema.APIGetSetting,
