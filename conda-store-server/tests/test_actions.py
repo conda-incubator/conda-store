@@ -467,7 +467,8 @@ def test_api_get_build_installer(
 
     # redirects to installer
     def installer_url(build_key):
-        return f"installer/{build_key}"
+        ext = "exe" if sys.platform == "win32" else "sh"
+        return f"installer/{build_key}.{ext}"
 
     assert type(res) is RedirectResponse
     assert build.constructor_installer_key == res.headers['location']
