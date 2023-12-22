@@ -40,7 +40,7 @@ Introducing breaking changes to the database can be destructive to data and prev
 
 ### REST API endpoints
 
-REST API endpoints need to be versioned on a per endpoint basis to allow endpoints to be versioned independently. New endpoints will start at `v1`.
+REST API endpoints are versioned on a per-endpoint basis. New endpoints will start at `v1`.
 
 Non-breaking changes do not require a new version of an endpoint. For REST API endpoints, examples on non-breaking changes are:
 
