@@ -44,7 +44,7 @@ def action_generate_constructor_installer(
     pi_ext = ".bat" if sys.platform == "win32" else ".sh"
     installer_filename = (installer_dir / specification.name).with_suffix(ext)
 
-    os.makedirs(installer_dir)
+    os.makedirs(installer_dir, exist_ok=True)
 
     with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp_dir:
         tmp_dir = pathlib.Path(tmp_dir)
