@@ -61,7 +61,9 @@ are breaking changes and **require** a new endpoint version.
 
 conda-store will expose experimental features within the `experimental` namespace.
 
-For example, if a new version of the `example.com/api/v1/user` endpoint is being tested, but not yet considered stable, it can be made available at the `example.com/api/experimental/user` route. This allows conda-store contributors to test new changes and get community feedback without commiting to supporting a new version of an API endpoint. Using the `experimental` namespace is not mandatory. However, deploying a versioned endpoint does mean a commitment to support that code going forward, so it is highly recommended that developers use the `experimental` namespace to test new endpoints and features before deploying them as stable.
+For example, if a new version of the `example.com/api/v1/user` endpoint is being tested, but not yet considered stable, it can be made available at the `example.com/api/experimental/user` route.
+This allows conda-store contributors to test new changes and get community feedback without committing to supporting a new version of an API endpoint.
+Using the `experimental` namespace is not mandatory. However, deploying a versioned endpoint expresses a commitment to support that code going forward, so it is highly recommended that developers use the `experimental` namespace to test new endpoints and features before marking them as stable.
 
 Experimental routes have no guarantees attached to them, they can be removed or changed at any time without warning. This allows testing features with users in real-world scenarios without needing to commit to support that feature as is.
 
