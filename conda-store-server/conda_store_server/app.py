@@ -263,6 +263,7 @@ class CondaStore(LoggingConfigurable):
             schema.BuildArtifactType.LOCKFILE,
             schema.BuildArtifactType.YAML,
             schema.BuildArtifactType.CONDA_PACK,
+            schema.BuildArtifactType.CONSTRUCTOR_INSTALLER,
             *(
                 [
                     schema.BuildArtifactType.DOCKER_MANIFEST,

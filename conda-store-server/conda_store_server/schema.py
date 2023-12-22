@@ -343,6 +343,7 @@ class Settings(BaseModel):
             BuildArtifactType.LOCKFILE,
             BuildArtifactType.YAML,
             BuildArtifactType.CONDA_PACK,
+            BuildArtifactType.CONSTRUCTOR_INSTALLER,
             *(
                 [
                     BuildArtifactType.DOCKER_MANIFEST,
