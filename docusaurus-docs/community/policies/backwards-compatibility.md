@@ -140,7 +140,7 @@ def _foo():
 ```
 Tests are never considered to be part of the public API. Any code within the `tests/` directory is always considered to be private.
 
-Developers are encouraged to make code private by default and only expose objects as public if there is an explicit need to do so. Keeping code private by default limits the public API that the conda-store project developers are commiting to supporting.
+Developers are encouraged to make code private by default and only expose objects as public if there is an explicit need to do so. Keeping code private by default limits the public API that the conda-store project developers are committing to supporting.
 
 #### Types of objects
 
