@@ -31,7 +31,9 @@ conda-store users should be able to upgrade to newer versions without worrying a
 
 ### Database changes
 
-Databases are one of the most critical areas to ensure there are no breaking changes. Databases hold state for the application. Introducing breaking changes to the database can be destructive to data and prevent rolling back to earlier versions of conda-store. To maintain backwards compatiblity:
+Databases are one of the most critical areas to ensure there are no breaking changes. Databases hold the state for the application.
+Introducing breaking changes to the database can be destructive to data and prevent rolling back to earlier versions of conda-store. To maintain backward compatibility we follow these principles:
+
 - New columns or tables should be added instead of removing or altering existing ones.
 - Columns and tables should not be renamed. Aliases should be used for poorly named existing columns or tables.
 
