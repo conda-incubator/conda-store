@@ -93,7 +93,7 @@ source my_env/bin/activate
 conda-unpack
 ```
 
-###
+### Docker images
 
 :::note
 Docker image creation is currently only supported on Linux.
@@ -158,7 +158,24 @@ name. `<registry-url>:<registry-port>/conda-store-dynamic/python.lt.3.8/numpy.gt
 will then create the following environment and the docker image will
 download upon the docker image being built.
 
+### Installers
+
+conda-store uses [constructor] to generate an installer for the current platform
+(where the server is running):
+
+- on Linux and macOS, it generates a `.sh` installer
+- on Windows, it generates a `.exe` installer using NSIS.
+
+conda-store automatically adds `conda` and `pip` to the target environment
+because these are required for the installer to work.
+
+Also note that `constructor` uses a separate dependency solver instead of
+utilizing the generated lockfile, so the package versions used by the installer
+might be different compared to the environment available in conda-store. There
+are plans to address this issue in the future.
+
 <!-- External links -->
 [conda-docs]: https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/environments.html
 [conda-forge-immutability-policy]: https://conda-forge.org/docs/maintainer/updating_pkgs.html#packages-on-conda-forge-are-immutable
 [conda-lock-github]: https://github.com/conda-incubator/conda-lock
+[constructor]: https://github.com/conda/constructor
