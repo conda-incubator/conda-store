@@ -449,7 +449,7 @@ def test_create_specification_auth_extended_prefix(win_extended_length_prefix, t
         r = schema.APIGetBuild.parse_obj(response.json())
         assert r.status == schema.APIStatus.OK
         assert r.data.specification.name == environment_name
-        if r.data.status in ["QUEUED", "BUILDING"]:
+        if r.data.status in ("QUEUED", "BUILDING"):
             continue  # checked too fast, try again
 
         if win_extended_length_prefix:
@@ -465,7 +465,7 @@ def test_create_specification_auth_extended_prefix(win_extended_length_prefix, t
 
     # If we're here, the task didn't update the status on failure
     if not is_updated:
-        assert False, f"failed to get status"
+        assert False, "failed to update status"
 
 
 def test_create_specification_auth(testclient, celery_worker, authenticate):
