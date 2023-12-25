@@ -64,7 +64,7 @@ def action_generate_constructor_installer(
 
         if sys.platform == "win32":
             post_install = """\
-call "%PREFIX%\Scripts\activate.bat"
+call "%PREFIX%\Scripts\\activate.bat"
 """
         else:
             post_install = """\
