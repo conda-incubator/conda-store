@@ -33,3 +33,5 @@ dependencies:
   - python-multipart
   # artifact storage
   - minio
+  # installer
+  - constructor
