@@ -414,6 +414,8 @@ def build_constructor_installer(db: Session, conda_store, build: orm.Build):
                 + context.stdout.getvalue()
                 + "\n::endgroup::\n",
             )
+            if output_filename is None:
+                return
             conda_store.storage.fset(
                 db,
                 build.id,

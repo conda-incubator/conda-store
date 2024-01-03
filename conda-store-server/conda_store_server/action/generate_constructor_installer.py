@@ -3,6 +3,7 @@ import pathlib
 import subprocess
 import sys
 import tempfile
+import warnings
 
 import yaml
 from conda_store_server import action, schema
@@ -28,6 +29,19 @@ def action_generate_constructor_installer(
             context.log.info(f"{filename}:\n{s}")
             f.write(s)
 
+    # Checks if constructor is available
+    try:
+        command = [
+            "constructor",
+            "--help",
+        ]
+        print_cmd(command)
+    except FileNotFoundError:
+        warnings.warn(
+            "Installer generation requires constructor: https://github.com/conda/constructor"
+        )
+        return
+
     # pip dependencies are not directly supported by constructor, they will be
     # installed via the post_install script:
     # https://github.com/conda/constructor/issues/515
@@ -51,7 +65,6 @@ def action_generate_constructor_installer(
         tmp_dir = pathlib.Path(tmp_dir)
         construct_file = tmp_dir / "construct.yaml"
         post_install_file = (tmp_dir / "post_install").with_suffix(pi_ext)
-        env_dir = tmp_dir / "env"
 
         construct = {
             "installer_filename": str(installer_filename),
@@ -82,24 +95,8 @@ python -m pip install {' '.join(pip_dependencies)}
         write_file(construct_file, yaml.dump(construct))
         write_file(post_install_file, post_install)
 
-        # Installs constructor
-        command = [
-            conda_command,
-            "create",
-            "-y",
-            "-p",
-            str(env_dir),
-            "constructor",
-        ]
-        print_cmd(command)
-
         # Calls constructor
         command = [
-            conda_command,
-            "run",
-            "-p",
-            str(env_dir),
-            "--no-capture-output",
             "constructor",
             str(tmp_dir),
         ]
