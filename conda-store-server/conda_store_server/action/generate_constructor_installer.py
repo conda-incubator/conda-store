@@ -9,6 +9,15 @@ import yaml
 from conda_store_server import action, schema
 
 
+def get_installer_platform():
+    # This is how the default platform name is generated internally by
+    # constructor. For example: osx-arm64, linux-64, win-64.
+    # https://github.com/conda/constructor/blob/main/CONSTRUCT.md#available-platforms
+    from conda.base.context import context
+
+    return context.subdir
+
+
 @action.action
 def action_generate_constructor_installer(
     context,
@@ -98,6 +107,8 @@ python -m pip install {' '.join(pip_dependencies)}
         # Calls constructor
         command = [
             "constructor",
+            "--platform",
+            get_installer_platform(),
             str(tmp_dir),
         ]
         print_cmd(command)

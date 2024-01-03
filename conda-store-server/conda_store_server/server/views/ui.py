@@ -1,8 +1,10 @@
-import sys
 from typing import Optional
 
 import yaml
 from conda_store_server import api
+from conda_store_server.action.generate_constructor_installer import (
+    get_installer_platform,
+)
 from conda_store_server.schema import Permissions
 from conda_store_server.server import dependencies
 from fastapi import APIRouter, Depends, Request
@@ -64,7 +66,7 @@ async def ui_list_environments(
             "environments": orm_environments.all(),
             "registry_external_url": server.registry_external_url,
             "entity": entity,
-            "platform": sys.platform,
+            "platform": get_installer_platform(),
         }
 
         return templates.TemplateResponse("home.html", context)
@@ -210,7 +212,7 @@ async def ui_get_build(
             "registry_external_url": server.registry_external_url,
             "entity": entity,
             "spec": yaml.dump(build.specification.spec),
-            "platform": sys.platform,
+            "platform": get_installer_platform(),
         }
 
         return templates.TemplateResponse("build.html", context)
