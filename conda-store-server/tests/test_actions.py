@@ -5,6 +5,7 @@ import re
 import sys
 
 import pytest
+import yarl
 from conda_store_server import (
     BuildKey,
     action,
@@ -67,6 +68,29 @@ def test_solve_lockfile(conda_store, specification, request):
         platforms=[conda_utils.conda_platform()],
     )
     assert len(context.result["package"]) != 0
+
+
+def test_solve_lockfile_valid_conda_flags(conda_store, simple_specification):
+    context = action.action_solve_lockfile(
+        conda_command=conda_store.conda_command,
+        specification=simple_specification,
+        platforms=[conda_utils.conda_platform()],
+        conda_flags="--strict-channel-priority",
+    )
+    assert len(context.result["package"]) != 0
+
+
+# Checks that conda_flags is used by conda-lock
+def test_solve_lockfile_invalid_conda_flags(conda_store, simple_specification):
+    with pytest.raises(Exception, match=(
+        r"Command.*--this-is-invalid.*returned non-zero exit status"
+    )):
+        action.action_solve_lockfile(
+            conda_command=conda_store.conda_command,
+            specification=simple_specification,
+            platforms=[conda_utils.conda_platform()],
+            conda_flags="--this-is-invalid",
+        )
 
 
 @pytest.mark.parametrize(
@@ -346,3 +370,13 @@ def test_api_get_build_lockfile(
         assert lockfile_url(build_key) == build.conda_lock_key
         assert lockfile_url(build_key) == res.headers['location']
         assert res.status_code == 307
+
+
+def test_get_channel_url():
+    conda_main = "https://conda.anaconda.org/main"
+    repo_main = "https://repo.anaconda.com/pkgs/main"
+    example = "https://example.com"
+
+    assert conda_utils.get_channel_url(conda_main) == yarl.URL(repo_main)
+    assert conda_utils.get_channel_url(f"{conda_main}/") == yarl.URL(repo_main)
+    assert conda_utils.get_channel_url(example) == yarl.URL(example)
