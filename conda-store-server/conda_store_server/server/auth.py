@@ -146,6 +146,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
                 schema.Permissions.NAMESPACE_ROLE_MAPPING_READ,
             },
             "developer": {
+                schema.Permissions.BUILD_CANCEL,
                 schema.Permissions.ENVIRONMENT_CREATE,
                 schema.Permissions.ENVIRONMENT_READ,
                 schema.Permissions.ENVIRONMENT_UPDATE,
@@ -156,6 +157,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
             },
             "admin": {
                 schema.Permissions.BUILD_DELETE,
+                schema.Permissions.BUILD_CANCEL,
                 schema.Permissions.ENVIRONMENT_CREATE,
                 schema.Permissions.ENVIRONMENT_DELETE,
                 schema.Permissions.ENVIRONMENT_READ,

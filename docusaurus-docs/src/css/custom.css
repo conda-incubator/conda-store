@@ -46,3 +46,8 @@ img {
   border-width: 2px;
   border-style: solid;
 }
+
+/* Remove border (only) for conda-store logo in the top navbar */
+.navbar__logo img {
+  border-width: 0;
+}

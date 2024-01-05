@@ -1,9 +1,11 @@
 import datetime
 import os
 import shutil
+import sys
+import typing
 
 import yaml
-from celery import Task, shared_task
+from celery import Task, platforms, shared_task
 from celery.execute import send_task
 from celery.signals import worker_ready
 from conda_store_server import api, environment, schema, utils
@@ -43,6 +45,17 @@ class WorkerTask(Task):
 
             self._worker.initialize()
 
+        # Installs a signal handler that terminates the process on Ctrl-C
+        # (SIGINT)
+        # Note: the following would not be enough to terminate beat and other
+        # tasks, which is why the code below explicitly calls sys.exit
+        # > from celery.apps.worker import install_worker_term_hard_handler
+        # > install_worker_term_hard_handler(self._worker, sig='SIGINT')
+        def _shutdown(*args, **kwargs):
+            return sys.exit(1)
+
+        platforms.signals["INT"] = _shutdown
+
         return self._worker
 
 
@@ -78,10 +91,10 @@ def task_update_storage_metrics(self):
 
 
 @shared_task(base=WorkerTask, name="task_cleanup_builds", bind=True)
-def task_cleanup_builds(self):
+def task_cleanup_builds(self, build_ids: typing.List[str] = None, reason: str = None):
     conda_store = self.worker.conda_store
     with conda_store.session_factory() as db:
-        build_cleanup(db, conda_store)
+        build_cleanup(db, conda_store, build_ids, reason)
 
 
 """
