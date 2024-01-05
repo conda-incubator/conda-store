@@ -4,35 +4,41 @@
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
-The project changed to `CalVer` in September, 2023.
+The project changed to `CalVer` in September 2023.
 
 ## [2024.1.1-rc1] - 2024-01-05
 
 ([full changelog](https://github.com/conda-incubator/conda-store/compare/2023.10.1...ec606641f6d0bb7bde39b2e9f11cf515077feee8))
 
-## Merged PRs
+### Added
 
 - MAINT - Add plausible tracking snippet [#716](https://github.com/conda-incubator/conda-store/pull/716) ([@pavithraes](https://github.com/pavithraes))
-- ENH - Use string substitution in `normalized_channel_url` [#710](https://github.com/conda-incubator/conda-store/pull/710) ([@nkaretnikov](https://github.com/nkaretnikov))
 - ENH - Terminate worker tasks on SIGINT [#709](https://github.com/conda-incubator/conda-store/pull/709) ([@nkaretnikov](https://github.com/nkaretnikov))
-- MAINT - Bump the npm_and_yarn group group in /docusaurus-docs with 1 update [#706](https://github.com/conda-incubator/conda-store/pull/706) ([@dependabot](https://github.com/dependabot))
-- MAINT - Update npm dependencies for docusaurus v3 [#704](https://github.com/conda-incubator/conda-store/pull/704) ([@pavithraes](https://github.com/pavithraes))
 - DOC -Add brand and design guidelines [#701](https://github.com/conda-incubator/conda-store/pull/701) ([@pavithraes](https://github.com/pavithraes))
 - DOC - Misc clean-up docs structure [#700](https://github.com/conda-incubator/conda-store/pull/700) ([@pavithraes](https://github.com/pavithraes))
-- BUG - Remove links to changelog [#698](https://github.com/conda-incubator/conda-store/pull/698) ([@trallard](https://github.com/trallard))
 - MAINT - Remove Sphinx docs  [#695](https://github.com/conda-incubator/conda-store/pull/695) ([@pavithraes](https://github.com/pavithraes))
 - DOC - Add basic conda-store-ui docs [#694](https://github.com/conda-incubator/conda-store/pull/694) ([@pavithraes](https://github.com/pavithraes))
 - ENH - Set channel priority to strict, print config info [#693](https://github.com/conda-incubator/conda-store/pull/693) ([@nkaretnikov](https://github.com/nkaretnikov))
 - DEV - Place a bound on docker-py [#689](https://github.com/conda-incubator/conda-store/pull/689) ([@nkaretnikov](https://github.com/nkaretnikov))
-- DOC - Basic migration of conda-store (core) docs [#685](https://github.com/conda-incubator/conda-store/pull/685) ([@pavithraes](https://github.com/pavithraes))
-- DEV - Disable code that depends on conda-docker [#667](https://github.com/conda-incubator/conda-store/pull/667) ([@nkaretnikov](https://github.com/nkaretnikov))
 - ENH - Check the size of `build_path` [#653](https://github.com/conda-incubator/conda-store/pull/653) ([@nkaretnikov](https://github.com/nkaretnikov))
 - ENH - Use shorter `build_key` [#652](https://github.com/conda-incubator/conda-store/pull/652) ([@nkaretnikov](https://github.com/nkaretnikov))
-- ENH - replace port 5000 with port 8080 [#642](https://github.com/conda-incubator/conda-store/pull/642) ([@dcmcand](https://github.com/dcmcand))
 - ENH - Windows support [#640](https://github.com/conda-incubator/conda-store/pull/640) ([@nkaretnikov](https://github.com/nkaretnikov))
 - ENH - Store the state and database files in ~/.conda-store by default [#639](https://github.com/conda-incubator/conda-store/pull/639) ([@nkaretnikov](https://github.com/nkaretnikov))
 - ENH - Change API to be able to assign roles to namespaces [#607](https://github.com/conda-incubator/conda-store/pull/607) ([@nkaretnikov](https://github.com/nkaretnikov))
 - ENH - Adding build canceling (only works with compatible celery brokers redis and rabbitmq) [#531](https://github.com/conda-incubator/conda-store/pull/531) ([@costrouc](https://github.com/costrouc))
+
+### Changed
+
+- ENH - Use string substitution in `normalized_channel_url` [#710](https://github.com/conda-incubator/conda-store/pull/710) ([@nkaretnikov](https://github.com/nkaretnikov))
+- MAINT - Bump the npm_and_yarn group group in /docusaurus-docs with 1 update [#706](https://github.com/conda-incubator/conda-store/pull/706) ([@dependabot](https://github.com/dependabot))
+- MAINT - Update npm dependencies for docusaurus v3 [#704](https://github.com/conda-incubator/conda-store/pull/704) ([@pavithraes](https://github.com/pavithraes))
+- DOC - Basic migration of conda-store (core) docs [#685](https://github.com/conda-incubator/conda-store/pull/685) ([@pavithraes](https://github.com/pavithraes))
+- DEV - Disable code that depends on conda-docker [#667](https://github.com/conda-incubator/conda-store/pull/667) ([@nkaretnikov](https://github.com/nkaretnikov))
+
+### Fixed
+
+- BUG - Remove links to changelog [#698](https://github.com/conda-incubator/conda-store/pull/698) ([@trallard](https://github.com/trallard))
+- ENH - replace port 5000 with port 8080 [#642](https://github.com/conda-incubator/conda-store/pull/642) ([@dcmcand](https://github.com/dcmcand))
 
 ## Contributors to this release
 
