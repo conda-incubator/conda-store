@@ -42,9 +42,9 @@ to adopt when needed, while all existing code should continue to work.
 ### Database changes
 
 Databases are one of the most critical areas to ensure there are no breaking
-changes. Databases hold the state for the application.  Introducing breaking
+changes. Databases hold the state for the application. Introducing breaking
 changes to the database can be destructive to data and prevent rolling back to
-earlier versions of conda-store. To maintain backward compatibility we follow
+earlier versions of conda-store. To maintain backwards compatibility we follow
 these principles:
 
 - New columns or tables should be added instead of removing or altering existing
@@ -60,15 +60,16 @@ start at `v1`.
 Non-breaking changes do not require a new version of an endpoint. For REST API
 endpoints, examples on non-breaking changes are:
 
-- adding a parameter to the return value of an endpoint - making a previously
-mandatory input optional.
+- adding a parameter to the return value of an endpoint
+- making a previously mandatory input optional.
 
 These changes can be done without a new endpoint version.
 
 However, changes such as:
 
-- removing a parameter from the return value - altering the meaning of a value -
-making a formerly optional parameter mandatory
+- removing a parameter from the return value
+- altering the meaning of a value
+- making a formerly optional parameter mandatory
 
 are breaking changes and **require** a new endpoint version.
 
@@ -86,9 +87,9 @@ namespace.
 
 For example, if a new version of the `example.com/api/v1/user` endpoint is being
 tested, but not yet considered stable, it can be made available at the
-`example.com/api/experimental/user` route.  This allows conda-store contributors
+`example.com/api/experimental/user` route. This allows conda-store contributors
 to test new changes and get community feedback without committing to supporting
-a new version of an API endpoint.  Using the `experimental` namespace is not
+a new version of an API endpoint. Using the `experimental` namespace is not
 mandatory. However, deploying a versioned endpoint expresses a commitment to
 support that code going forward, so it is highly recommended that developers use
 the `experimental` namespace to test new endpoints and features before marking
@@ -106,24 +107,31 @@ a new version for breaking changes.
 
 ##### Versioned stable route
 
-``` https://example.com/api/v1/user https://example.com/api/v2/user ```
+```
+https://example.com/api/v1/user
+https://example.com/api/v2/user
+```
 
-Explanation: This route has breaking changes between `v1` and `v2`.  Code
+Explanation: This route has breaking changes between `v1` and `v2`. Code
 written for the `v1` endpoint will continue to function, but all new features
-will only be available in the `v2` version of the endpoint.  This empowers users
+will only be available in the `v2` version of the endpoint. This empowers users
 to upgrade when they wish to rather than forcing them to do so.
 
 
 ##### Route that has never had breaking changes
 
-``` https://example.com/api/v1/user ```
+```
+https://example.com/api/v1/user
+```
 
 Explanation: This route has never had breaking changes introduced. Any code
 written against this endpoint will function regardless of when it was written.
 
 ##### New `experimental` route
 
-``` https://example.com/api/experimental/user/ ```
+```
+https://example.com/api/experimental/user
+```
 
 Explanation: This is an experimental route. It can be changed or removed at any
 moment without prior notice. This route should be used to test new features and
@@ -164,9 +172,9 @@ be waived in the case of a serious security vulnerability.
 It should always be clearly communicated in release notes and documentation
 when an API endpoint is deprecated or removed. This should include:
 - version number of the release where this was deprecated
-- provide suggestions for alternatives (if possible).
+- provide suggestions for alternatives (if possible)
 - provide justification for the removal (such as a link to the issue
-  or CVE that necessitated the removal)
+  or CVE that necessitated the removal).
 
 ### Python API
 
@@ -175,10 +183,15 @@ public APIs and subject to the same considerations as REST API endpoints. Any
 object with a leading underscore is not considered to be public. This convention
 is used in the Python community to designate an object as private.
 
-Private examples: - `_private_func_or_method` - `_PrivateClass` -
-`_PRIVATE_VAR`.
+Private examples:
+- `_private_func_or_method`
+- `_PrivateClass`
+- `_PRIVATE_VAR`.
 
-Public examples: - `public_func_or_method` - `PublicClass` - `PUBLIC_VAR`.
+Public examples:
+- `public_func_or_method`
+- `PublicClass`
+- `PUBLIC_VAR`.
 
 The highest-level entity determines the visibility level.
 
@@ -228,11 +241,11 @@ should be added for at least one release before the endpoint is removed. This
 requirement may be waived in the case of a serious security vulnerability.
 
 The deprecation or removal should always be clearly communicated in release
-notes and documentation This should include:
+notes and documentation. This should include:
 - version number of the release where this was deprecated
-- provide suggestions for alternatives (if possible).
+- provide suggestions for alternatives (if possible)
 - provide a reason for the deprecation or removal (such
-  as a link to a CVE or issue that necessitated the removal
+  as a link to a CVE or issue that necessitated the removal).
 
 #### Types of objects
 
@@ -244,10 +257,10 @@ has a breaking change.
 ##### Classes
 
 In a public class, a breaking change is one that changes or removes attributes
-or methods or alters their meanings.  Rather than changing methods or
-attributes, new methods or attributes should be added if needed.  For example,
-if you wanted to change a user id from an `int`, to a `uuid`, a new attribute
-`User.uuid` should be added, and all new code should use `User.uuid`.  Existing
+or methods or alters their meanings. Rather than changing methods or
+attributes, new methods or attributes should be added if needed. For example,
+if you wanted to change a user id from an `int` to a `uuid`, a new attribute
+`User.uuid` should be added, and all new code should use `User.uuid`. Existing
 methods can use the new attribute or methods as well as long as that doesn't
 introduce breaking changes for the method.
 
