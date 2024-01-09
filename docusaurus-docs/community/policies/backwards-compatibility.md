@@ -48,8 +48,9 @@ earlier versions of conda-store. To maintain backward compatibility we follow
 these principles:
 
 - New columns or tables should be added instead of removing or altering existing
-ones.  - Columns and tables should not be renamed. Aliases should be used for
-poorly named existing columns or tables.
+  ones. 
+- Columns and tables should not be renamed. Aliases should be used for
+  poorly named existing columns or tables.
 
 ### REST API endpoints
 
