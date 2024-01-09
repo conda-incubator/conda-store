@@ -29,7 +29,7 @@ such as making a previously required parameter optional.
 These changes allow software to evolve and grow without negatively impacting
 existing users.
 
-:::info[TLD;R]
+:::info[TL;DR]
 
 conda-store users should be able to upgrade to newer versions without worrying
 about breaking existing integrations. Newer features will be available for users
