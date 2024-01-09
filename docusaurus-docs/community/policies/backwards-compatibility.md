@@ -267,7 +267,7 @@ The function signature also includes whether the function is an async function.
 Changing this is a breaking change.
 
 For example, if there is a function `list_envs`, which is synchronous, and
-it should be asynchronous, a new function called ` list_envs_async` should be
+it should be asynchronous, a new function called `list_envs_async` should be
 added and `list_envs` should be kept as a synchronous call.
 
 Optional parameters may be added as long as they have a specified default value
