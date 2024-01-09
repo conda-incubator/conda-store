@@ -60,7 +60,7 @@ Check out the [Community documentation][community] for details.
 [install-kubernetes]: ./how-tos/install-kubernetes
 [install-vagrant]: ./how-tos/install-vagrant
 [performance]: ./explanations/performance
-[configuration]: ./references/configuration
+[configuration]: ./references/configuration-options
 [ref-arch]: ./references/architecture
 [ref-auth]: ./references/database
 [ref-database]: ./references/auth
