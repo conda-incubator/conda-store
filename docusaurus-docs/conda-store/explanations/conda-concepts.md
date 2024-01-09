@@ -78,7 +78,7 @@ The dependencies of NumPy and pandas, and the dependencies of those dependencies
 
 Since conda-store focuses on [environments](#environments), the terms *dependencies* usually refers to the full set of compatible dependencies for all the packages specified in an environment.
 
-## Environment creation and improving reproducibility
+## Environment creation
 
 Given an `environment.yaml` file, this is how conda perform a build (in brief):
 
@@ -106,11 +106,7 @@ is because in general , non-URL channels are expected to be present at `https://
 
 For a detailed walkthrough, check out the [conda install deep dive in the conda documentation][conda-docs-install].
 
-In the above process, there are two spots where runtime reproducibility can be improved:
-
-* Auto-tracking when an `environment.yaml` (which is created and updated manually) file has changes. This can be easily tracked by taking a sha256 of the file, which is what conda-store does but sorts the dependencies to make sure it has a way of not triggering a rebuild if the order of two packages changes in the dependencies list.
-* In step (2) `repodata.json` is updated regularly. When conda solves for a user's environment it tries to use the latest version of each package. Since `repodata.json` could be updated the very next minute, the same solve for the same
-`environment.yaml` file can result in different solves. To enable reproducibility, conda-store auto-generates certain artifacts like lockfiles and tarballs that capture the actual versions of packages and can be used reliably re-create the same environment. Learn more about them in the [artifacts documentation][artifacts].
+Understand how conda-store builds on conda for improved reproducibility in [conda-store concepts page][conda-store-concepts].
 
 <!-- External links -->
 [conda-docs]: https://docs.conda.io/
@@ -123,4 +119,4 @@ In the above process, there are two spots where runtime reproducibility can be i
 [conda-docs-install]: https://docs.conda.io/projects/conda/en/stable/dev-guide/deep-dives/install.html#fetching-the-index
 
 <!-- Internal links -->
-[artifacts]: artifacts.md
+[conda-store-concepts]: conda-store-concepts
