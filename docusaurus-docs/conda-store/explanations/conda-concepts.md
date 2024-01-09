@@ -22,7 +22,7 @@ conda needs to be downloaded separately (through a distribution like Anaconda or
 
 ## Channels (conda)
 
-The [conda documentation](conda-docs-channels) defines:
+The [conda documentation][conda-docs-channels] defines:
 
 > Conda channels are the locations where packages are stored. They serve as the base for hosting and managing packages. Conda packages are downloaded from remote channels, which are URLs to directories containing conda packages.
 
