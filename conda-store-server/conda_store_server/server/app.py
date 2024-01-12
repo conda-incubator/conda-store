@@ -362,6 +362,13 @@ class CondaStoreServer(Application):
             process.start()
 
         try:
+            # Note: the logger needs to be defined here for the output to show
+            # up, self.log doesn't work here either
+            logger = logging.getLogger("app")
+            logger.addHandler(logging.StreamHandler())
+            logger.setLevel(self.log_level)
+            logger.info(f"Starting server on {self.address}:{self.port}")
+
             uvicorn.run(
                 fastapi_app,
                 host=self.address,
@@ -376,6 +383,11 @@ class CondaStoreServer(Application):
                     else []
                 ),
             )
+        except:
+            import traceback
+
+            traceback.print_exc()
+            raise
         finally:
             if self.standalone:
                 process.join()
