@@ -48,7 +48,7 @@ earlier versions of conda-store. To maintain backwards compatibility we follow
 these principles:
 
 - New columns or tables should be added instead of removing or altering existing
-  ones. 
+  ones.
 - Columns and tables should not be renamed. Aliases should be used for
   poorly named existing columns or tables.
 
@@ -74,7 +74,7 @@ However, changes such as:
 are breaking changes and **require** a new endpoint version.
 
 When a new version of an endpoint is created, then all new features will be
-added to the new version. 
+added to the new version.
 
 Older versions of API endpoints are still considered supported and will receive
 bug fixes and security updates to their features but new features will not be
@@ -165,7 +165,7 @@ version of the endpoint is available currently (if any).
 }
 ```
 
-If an API endpoint must be deprecated, a deprecation warning should be added 
+If an API endpoint must be deprecated, a deprecation warning should be added
 for at least one release before the endpoint is removed. This requirement may
 be waived in the case of a serious security vulnerability.
 
@@ -224,14 +224,14 @@ committing to supporting.
 
 Under exceptional circumstances such as a serious security vulnerability which
 can't be fixed without breaking changes, it may be necessary to deprecate,
-remove, or introduce breaking changes to objects in the public Python API. 
+remove, or introduce breaking changes to objects in the public Python API.
 This should be avoided if possible.
 
 If the desire is to prevent a developer from relying on a part of the Python
 API, adding a warning to the documentation along with a recommended alternative
 and a comment in the code should be used rather than a deprecation or removal.
 
-```python 
+```python
   """
   This function is deprecated [reason/details], use [replacement] instead
   """
