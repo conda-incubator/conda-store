@@ -115,6 +115,7 @@ python -m pip install {' '.join(pip_dependencies)}
         # fail.
         command = [
             "constructor",
+            "-v",
             "--cache-dir",
             str(cache_dir),
             "--platform",
