@@ -72,6 +72,10 @@ def action_generate_constructor_installer(
 
     with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp_dir:
         tmp_dir = pathlib.Path(tmp_dir)
+        cache_dir = tmp_dir / "pkgs"
+        tmp_dir /= "build"
+        os.makedirs(cache_dir, exist_ok=True)
+        os.makedirs(tmp_dir, exist_ok=True)
         construct_file = tmp_dir / "construct.yaml"
         post_install_file = (tmp_dir / "post_install").with_suffix(pi_ext)
 
@@ -105,8 +109,14 @@ python -m pip install {' '.join(pip_dependencies)}
         write_file(post_install_file, post_install)
 
         # Calls constructor
+        # Note: `cache_dir` is the same as the conda `pkgs` directory. It needs
+        # to be specified here because the default `pkgs` directory is not
+        # available in Docker, which was causing conda's `create_cache_dir` to
+        # fail.
         command = [
             "constructor",
+            "--cache-dir",
+            str(cache_dir),
             "--platform",
             get_installer_platform(),
             str(tmp_dir),
