@@ -5,14 +5,14 @@ description: Upstream contribution policy
 # Upstream contribution policy
 
 conda-store builds on top of several open source libraries, and critically, many projects in the conda ecosystem.
-Contributing back to upstream projects good open source citizenship and the conda-store development team aims to do so wherever relevant.
+Contributing back to upstream projects shows good open source citizenship and the conda-store development team aims to do so wherever relevant.
 This policy document outlines some best practices and considerations for upstream contributions.
 
 ## Upstream first
 
-As the grounding principle, always prefer contributing features or patches to upstream projects before implementing workarounds or developing conda-store-specific solutions.
-This helps us develop better and more sustainable solutions that can benefit a larger community.
-If you can unsure about when or how to contribute, open an issue in any conda-store repository and mention the [`@conda-incubator/conda-store`](https://github.com/orgs/conda-incubator/teams/conda-store) team for input.
+As the grounding principle, we always prefer contributing features or patches to upstream projects before implementing workarounds or developing conda-store-specific solutions.
+This helps us develop better, more sustainable solutions that benefit a larger community.
+If you are unsure about when or how to contribute, open an issue in any conda-store repository and mention the [`@conda-incubator/conda-store`](https://github.com/orgs/conda-incubator/teams/conda-store) team for input.
 
 ## Critical upstream projects
 
@@ -26,7 +26,7 @@ To aid in decision-making, the following projects are considered critical for co
 * conda-pack
 * conda-docker
 
-While other project like FastAPI, and pyyaml (see the complete list of dependencies in [`pyproject.toml`][conda-store-server-pyproject] and [on GitHub][conda-store-dependencies]) are not deemed critical, contributions like opening issues and feature requests is encouraged. As direct users of these libraries, conda-store development team in well positioned to share feedback with upstream libraries.
+While other project like FastAPI, and pyyaml (see the complete list of dependencies in [`pyproject.toml`][conda-store-server-pyproject] and [on GitHub][conda-store-dependencies]) are not deemed critical, contributions like opening issues and feature requests is encouraged. As direct users of these libraries, the conda-store development team is well-positioned to share feedback with upstream libraries.
 
 ## Contribution guidelines
 
