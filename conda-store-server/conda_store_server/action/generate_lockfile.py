@@ -42,6 +42,8 @@ def action_solve_lockfile(
     # the with_cuda parameter, see:
     # https://github.com/conda-incubator/conda-store/issues/719
     # https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-virtual.html#overriding-detected-packages
+    # TODO: Support all variables once upstream fixes are made to conda-lock,
+    # see the discussion in issue 719.
     if specification.variables is not None:
         cuda_version = specification.variables.get("CONDA_OVERRIDE_CUDA")
     else:
