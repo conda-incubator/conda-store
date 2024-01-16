@@ -26,6 +26,8 @@ def upgrade():
             type_=sa.VARCHAR(length=21),
             existing_nullable=False,
         )
+    if not str(op.get_bind().engine.url).startswith("sqlite"):
+        op.execute("DROP TYPE buildartifacttype")
 
 
 def downgrade():
