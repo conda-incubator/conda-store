@@ -5,7 +5,7 @@ description: How to install conda-store locally in standalone mode
 
 # Standalone (local) installation
 
-The standalone mode is the quickest way to start using conda-store.
+The standalone mode is an **experimental feature**, and the quickest way to start using conda-store.
 It provisions a complete local setup with conda-store-server running in the background along with [conda-store UI][conda-store-ui] running on localhost.
 
 This installation is recommend for individual users.
