@@ -22,40 +22,21 @@ def upgrade():
         batch_op.alter_column(
             "artifact_type",
             existing_type=sa.VARCHAR(length=18),
-            type_=sa.Enum(
-                "DIRECTORY",
-                "LOCKFILE",
-                "LOGS",
-                "YAML",
-                "CONDA_PACK",
-                "DOCKER_BLOB",
-                "DOCKER_MANIFEST",
-                "CONTAINER_REGISTRY",
-                "CONSTRUCTOR_INSTALLER",
-                name="buildartifacttype",
-            ),
+            type_=sa.VARCHAR(length=21),
             existing_nullable=False,
         )
 
 
 def downgrade():
+    op.execute(
+        'DELETE FROM build_artifact WHERE artifact_type = "CONSTRUCTOR_INSTALLER"'
+    )
     with op.batch_alter_table(
         "build_artifact", schema=None, recreate="always"
     ) as batch_op:
         batch_op.alter_column(
             "artifact_type",
-            existing_type=sa.Enum(
-                "DIRECTORY",
-                "LOCKFILE",
-                "LOGS",
-                "YAML",
-                "CONDA_PACK",
-                "DOCKER_BLOB",
-                "DOCKER_MANIFEST",
-                "CONTAINER_REGISTRY",
-                "CONSTRUCTOR_INSTALLER",
-                name="buildartifacttype",
-            ),
+            existing_type=sa.VARCHAR(length=21),
             type_=sa.VARCHAR(length=18),
             existing_nullable=False,
         )
