@@ -174,6 +174,15 @@ utilizing the generated lockfile, so the package versions used by the installer
 might be different compared to the environment available in conda-store. There
 are plans to address this issue in the future.
 
+#### Existing Deployments
+
+conda-store saves environment settings and doesn't automatically update them on
+startup (see `CondaStore.ensure_settings`). Existing deployments need to
+manually enable installer builds via the admin interface. This can be done by
+going to `<CondaStoreServer.url_prefix>/admin/setting/<namespace>/<env>/` (or
+clicking on the `Settings` button on the environment page) and adding
+`"CONSTRUCTOR_INSTALLER"` to `build_artifacts`.
+
 <!-- External links -->
 [conda-docs]: https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/environments.html
 [conda-forge-immutability-policy]: https://conda-forge.org/docs/maintainer/updating_pkgs.html#packages-on-conda-forge-are-immutable
