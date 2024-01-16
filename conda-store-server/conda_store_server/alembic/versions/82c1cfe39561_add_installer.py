@@ -17,7 +17,8 @@ depends_on = None
 
 def upgrade():
     with op.batch_alter_table(
-        "build_artifact", schema=None, recreate="always"
+        "build_artifact",
+        schema=None,
     ) as batch_op:
         batch_op.alter_column(
             "artifact_type",
@@ -32,7 +33,8 @@ def downgrade():
         'DELETE FROM build_artifact WHERE artifact_type = "CONSTRUCTOR_INSTALLER"'
     )
     with op.batch_alter_table(
-        "build_artifact", schema=None, recreate="always"
+        "build_artifact",
+        schema=None,
     ) as batch_op:
         batch_op.alter_column(
             "artifact_type",
