@@ -32,7 +32,7 @@ def upgrade():
 
 def downgrade():
     op.execute(
-        'DELETE FROM build_artifact WHERE artifact_type = "CONSTRUCTOR_INSTALLER"'
+        "DELETE FROM build_artifact WHERE artifact_type = 'CONSTRUCTOR_INSTALLER'"
     )
     with op.batch_alter_table(
         "build_artifact",
