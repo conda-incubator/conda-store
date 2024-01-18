@@ -403,10 +403,10 @@ def win_extended_length_prefix(request):
     # Overrides the attribute before other fixtures are called
     from conda_store_server.app import CondaStore
     assert type(CondaStore.win_extended_length_prefix) is traitlets.Bool
-    old_prefix = CondaStore.win_extended_length_prefix.default_value
-    CondaStore.win_extended_length_prefix.default_value = request.param
+    old_prefix = CondaStore.win_extended_length_prefix
+    CondaStore.win_extended_length_prefix = request.param
     yield request.param
-    CondaStore.win_extended_length_prefix.default_value = old_prefix
+    CondaStore.win_extended_length_prefix = old_prefix
 
 
 @pytest.mark.skipif(sys.platform != "win32", reason="tests a Windows issue")
