@@ -3,6 +3,7 @@ import sys
 import time
 
 import pytest
+import traitlets
 import yaml
 from conda_store_server import __version__, schema
 
@@ -400,9 +401,12 @@ def test_create_specification_auth_env_name_too_long(testclient, celery_worker, 
 @pytest.fixture
 def win_extended_length_prefix(request):
     # Overrides the attribute before other fixtures are called
-    import conda_store_server
-    conda_store_server.app.CondaStore.win_extended_length_prefix = request.param
+    from conda_store_server.app import CondaStore
+    assert type(CondaStore.win_extended_length_prefix) is traitlets.Bool
+    old_prefix = CondaStore.win_extended_length_prefix.default_value
+    CondaStore.win_extended_length_prefix.default_value = request.param
     yield request.param
+    CondaStore.win_extended_length_prefix.default_value = old_prefix
 
 
 @pytest.mark.skipif(sys.platform != "win32", reason="tests a Windows issue")
