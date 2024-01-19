@@ -11,6 +11,7 @@ import typing
 import yaml
 from conda_store_server import action, api, conda_utils, orm, schema, utils
 from conda_store_server.utils import BuildPathError
+from conda_lock._vendor.poetry.puzzle.exceptions import SolverProblemError
 from sqlalchemy.orm import Session
 
 
@@ -227,6 +228,11 @@ def build_conda_environment(db: Session, conda_store, build):
         set_build_completed(db, conda_store, build)
     # Always mark build as failed first since other functions may throw an
     # exception
+    except SolverProblemError as e:
+        set_build_failed(db, build)
+        conda_store.log.exception(e)
+        append_to_logs(db, conda_store, build, traceback.format_exc())
+        raise e
     except subprocess.CalledProcessError as e:
         set_build_failed(db, build)
         conda_store.log.exception(e)
