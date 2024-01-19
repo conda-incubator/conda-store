@@ -9,9 +9,9 @@ import traceback
 import typing
 
 import yaml
+from conda_lock._vendor.poetry.puzzle.exceptions import SolverProblemError
 from conda_store_server import action, api, conda_utils, orm, schema, utils
 from conda_store_server.utils import BuildPathError
-from conda_lock._vendor.poetry.puzzle.exceptions import SolverProblemError
 from sqlalchemy.orm import Session
 
 
