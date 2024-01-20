@@ -3,6 +3,7 @@ import os
 import posixpath
 import sys
 import time
+from enum import Enum
 from threading import Thread
 
 import conda_store_server
@@ -30,6 +31,12 @@ from traitlets import (
     validate,
 )
 from traitlets.config import Application, catch_config_error
+
+
+class _Color(str, Enum):
+    GREEN = "\x1b[32m"
+    RED = "\x1b[31m"
+    RESET = "\x1b[0m"
 
 
 class CondaStoreServer(Application):
@@ -346,11 +353,6 @@ class CondaStoreServer(Application):
         return app
 
     def _check_worker(self, delay=5):
-        # Uses colors to make the output more visible
-        green = "\x1b[32m"
-        red = "\x1b[31m"
-        reset = "\x1b[0m"
-
         # Creates a new DB connection since this will be run in a separate
         # thread and connections cannot be shared between threads
         session_factory = orm.new_session_factory(
@@ -364,15 +366,17 @@ class CondaStoreServer(Application):
             with session_factory() as db:
                 q = db.query(orm.Worker).first()
                 if q is not None and q.initialized:
-                    self.log.info(f"{green}" "Worker initialized" f"{reset}")
+                    self.log.info(
+                        f"{_Color.GREEN}" "Worker initialized" f"{_Color.RESET}"
+                    )
                     break
 
             time.sleep(delay)
             self.log.warning(
-                f"{red}"
+                f"{_Color.RED}"
                 "Waiting for worker... "
                 "Use --standalone if running outside of docker"
-                f"{reset}"
+                f"{_Color.RESET}"
             )
 
     def start(self):
