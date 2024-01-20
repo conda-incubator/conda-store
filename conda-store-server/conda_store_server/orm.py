@@ -52,11 +52,6 @@ class Worker(Base):
     # For checking whether the worker is initialized
     initialized = Column(Boolean, default=False)
 
-    __table_args__ = (
-        # Ensures no duplicates can be added with this combination of fields.
-        UniqueConstraint("initialized", name="_uc_worker"),
-    )
-
 
 class Namespace(Base):
     """Namespace for resources"""

@@ -21,7 +21,6 @@ def upgrade():
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("initialized", sa.Boolean(), nullable=True),
         sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint("initialized", name="_uc_worker"),
     )
 
 
