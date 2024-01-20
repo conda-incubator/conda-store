@@ -387,7 +387,7 @@ class CondaStoreServer(Application):
             self.conda_store.ensure_namespace(db)
             self.conda_store.ensure_conda_channels(db)
 
-            # This ensures the database has no Worker table entires when the
+            # This ensures the database has no Worker table entries when the
             # server starts, which is necessary for the worker to signal that
             # it's ready via task_initialize_worker. Old Worker entries could
             # still be in the database on startup after they were added on the
