@@ -2,11 +2,13 @@ import logging
 import os
 import posixpath
 import sys
+import time
+from threading import Thread
 
 import conda_store_server
 import conda_store_server.dbutil as dbutil
 import uvicorn
-from conda_store_server import __version__, storage
+from conda_store_server import __version__, orm, storage
 from conda_store_server.app import CondaStore
 from conda_store_server.server import auth, views
 from fastapi import FastAPI, HTTPException, Request
@@ -14,6 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from sqlalchemy.pool import QueuePool
 from starlette.middleware.sessions import SessionMiddleware
 from traitlets import (
     Bool,
@@ -343,12 +346,6 @@ class CondaStoreServer(Application):
         return app
 
     def start(self):
-        import time
-        from threading import Thread
-
-        from conda_store_server import orm
-        from sqlalchemy.pool import QueuePool
-
         fastapi_app = self.init_fastapi_app()
 
         with self.conda_store.session_factory() as db:
