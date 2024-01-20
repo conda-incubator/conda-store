@@ -345,6 +345,36 @@ class CondaStoreServer(Application):
 
         return app
 
+    def _check_worker(self, delay=5):
+        # Uses colors to make the output more visible
+        green = "\x1b[32m"
+        red = "\x1b[31m"
+        reset = "\x1b[0m"
+
+        # Creates a new DB connection since this will be run in a separate
+        # thread and connections cannot be shared between threads
+        session_factory = orm.new_session_factory(
+            url=self.conda_store.database_url,
+            poolclass=QueuePool,
+        )
+
+        # Waits in a loop for the worker to become ready, which is
+        # communicated by the worker via task_initialize_worker
+        while True:
+            with session_factory() as db:
+                q = db.query(orm.Worker).first()
+                if q is not None and q.initialized:
+                    self.log.info(f"{green}" "Worker initialized" f"{reset}")
+                    break
+
+            time.sleep(delay)
+            self.log.warning(
+                f"{red}"
+                "Waiting for worker... "
+                "Use --standalone if running outside of docker"
+                f"{reset}"
+            )
+
     def start(self):
         fastapi_app = self.init_fastapi_app()
 
@@ -369,42 +399,12 @@ class CondaStoreServer(Application):
             db.query(orm.Worker).delete()
             db.commit()
 
-        def check_worker():
-            # Uses colors to make the output more visible
-            green = "\x1b[32m"
-            red = "\x1b[31m"
-            reset = "\x1b[0m"
-
-            # Creates a new DB connection since this will be run in a separate
-            # thread and connections cannot be shared between threads
-            session_factory = orm.new_session_factory(
-                url=self.conda_store.database_url,
-                poolclass=QueuePool,
-            )
-
-            # Waits in a loop for the worker to become ready, which is
-            # communicated by the worker via task_initialize_worker
-            while True:
-                with session_factory() as db:
-                    q = db.query(orm.Worker).first()
-                    if q is not None and q.initialized:
-                        self.log.info(f"{green}" "Worker initialized" f"{reset}")
-                        break
-
-                time.sleep(5)
-                self.log.warning(
-                    f"{red}"
-                    "Waiting for worker... "
-                    "Use --standalone if running outside of docker"
-                    f"{reset}"
-                )
-
         # We cannot check whether the worker is ready right away and block. When
         # running via docker, the worker is started *after* the server is
         # running because it relies on config files created by the server.
         # So we just keep checking in a separate thread until the worker is
         # ready.
-        worker_checker = Thread(target=check_worker)
+        worker_checker = Thread(target=self._check_worker)
         worker_checker.start()
 
         # start worker if in standalone mode
