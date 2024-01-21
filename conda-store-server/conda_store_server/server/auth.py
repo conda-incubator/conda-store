@@ -143,7 +143,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
         schema.Permissions.NAMESPACE_READ,
         schema.Permissions.NAMESPACE_ROLE_MAPPING_READ,
     }
-    _developer_permissions = {
+    _editor_permissions = {
         schema.Permissions.BUILD_CANCEL,
         schema.Permissions.ENVIRONMENT_CREATE,
         schema.Permissions.ENVIRONMENT_READ,
@@ -176,8 +176,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
     role_mappings = Dict(
         {
             "viewer": _viewer_permissions,
-            "developer": _developer_permissions,
-            "editor": _developer_permissions,  # alias
+            "editor": _editor_permissions,
             "admin": _admin_permissions,
         },
         help="default role to permissions mapping to use",
@@ -276,7 +275,23 @@ class RBACAuthorizationBackend(LoggingConfigurable):
     def convert_roles_to_permissions(self, roles):
         permissions = set()
         for role in roles:
-            permissions = permissions | self.role_mappings[role]
+            # 'editor' is the new alias of 'developer'. The new name is
+            # preferred in user-visible settings (like 'role_mappings') and when
+            # calling the role-mappings HTTP APIs, but it's ALWAYS mapped to
+            # 'developer' in the database for compatibility reasons.
+            # Additionally, this code allows for legacy 'role_mappings' that
+            # used to specify the role as 'developer'. Because it's a
+            # user-visible setting, we cannot break compatibility here
+            assert role != "editor"  # must NEVER be 'editor' in the DB
+            if role == "developer":
+                # Checks the new user-visible name first, then tries the legacy
+                # one. This will raise an exception if both keys are not found
+                role_mappings = (
+                    self.role_mappings.get("editor") or self.role_mappings["developer"]
+                )
+            else:
+                role_mappings = self.role_mappings[role]
+            permissions = permissions | role_mappings
         return permissions
 
     def get_entity_binding_permissions(self, entity: schema.AuthenticationToken):
