@@ -141,8 +141,53 @@ def test_authorization(conda_store, entity_bindings, arn, permissions, authorize
     assert authorized == authorization.authorize(entity, arn, permissions)
 
 
+_viewer_permissions = {
+    Permissions.ENVIRONMENT_READ,
+    Permissions.NAMESPACE_READ,
+    Permissions.NAMESPACE_ROLE_MAPPING_READ,
+}
+_developer_permissions = {
+    Permissions.BUILD_CANCEL,
+    Permissions.ENVIRONMENT_CREATE,
+    Permissions.ENVIRONMENT_READ,
+    Permissions.ENVIRONMENT_UPDATE,
+    Permissions.ENVIRONMENT_SOLVE,
+    Permissions.NAMESPACE_READ,
+    Permissions.NAMESPACE_ROLE_MAPPING_READ,
+    Permissions.SETTING_READ,
+}
+_admin_permissions = {
+    Permissions.BUILD_DELETE,
+    Permissions.BUILD_CANCEL,
+    Permissions.ENVIRONMENT_CREATE,
+    Permissions.ENVIRONMENT_DELETE,
+    Permissions.ENVIRONMENT_READ,
+    Permissions.ENVIRONMENT_UPDATE,
+    Permissions.ENVIRONMENT_SOLVE,
+    Permissions.NAMESPACE_CREATE,
+    Permissions.NAMESPACE_DELETE,
+    Permissions.NAMESPACE_READ,
+    Permissions.NAMESPACE_UPDATE,
+    Permissions.NAMESPACE_ROLE_MAPPING_CREATE,
+    Permissions.NAMESPACE_ROLE_MAPPING_READ,
+    Permissions.NAMESPACE_ROLE_MAPPING_UPDATE,
+    Permissions.NAMESPACE_ROLE_MAPPING_DELETE,
+    Permissions.SETTING_READ,
+    Permissions.SETTING_UPDATE,
+}
+
+
+@pytest.mark.parametrize(
+    "role, permissions",
+    [
+        ("viewer", _viewer_permissions),
+        ("developer", _developer_permissions),
+        ("editor", _developer_permissions),
+        ("admin", _admin_permissions),
+    ],
+)
 @pytest.mark.parametrize("role_mappings_version", [1, 2])
-def test_end_to_end_auth_flow_v1(conda_store_server, testclient, authenticate, role_mappings_version):
+def test_end_to_end_auth_flow_v1(conda_store_server, testclient, authenticate, role_mappings_version, role, permissions):
     # Configures authentication
     namespace = f"this-{uuid.uuid4()}"
     other_namespace = f"other-{uuid.uuid4()}"
@@ -173,24 +218,7 @@ def test_end_to_end_auth_flow_v1(conda_store_server, testclient, authenticate, r
             role_bindings=token_model.role_bindings,
         ),
         f"{other_namespace}/example-name",
-        {
-            Permissions.BUILD_DELETE,
-            Permissions.ENVIRONMENT_CREATE,
-            Permissions.ENVIRONMENT_DELETE,
-            Permissions.ENVIRONMENT_READ,
-            Permissions.ENVIRONMENT_UPDATE,
-            Permissions.ENVIRONMENT_SOLVE,
-            Permissions.NAMESPACE_CREATE,
-            Permissions.NAMESPACE_DELETE,
-            Permissions.NAMESPACE_READ,
-            Permissions.NAMESPACE_UPDATE,
-            Permissions.NAMESPACE_ROLE_MAPPING_CREATE,
-            Permissions.NAMESPACE_ROLE_MAPPING_READ,
-            Permissions.NAMESPACE_ROLE_MAPPING_UPDATE,
-            Permissions.NAMESPACE_ROLE_MAPPING_DELETE,
-            Permissions.SETTING_READ,
-            Permissions.SETTING_UPDATE,
-        },
+        permissions,
     )
     # No default roles
     assert authorize() is False
@@ -213,7 +241,7 @@ def test_end_to_end_auth_flow_v1(conda_store_server, testclient, authenticate, r
     response = testclient.put(
         f"api/v1/namespace/{namespace}",
         json={"role_mappings": {
-            f"{other_namespace}/ex*-name": ["admin"],
+            f"{other_namespace}/ex*-name": [role],
         }}
     )
     response.raise_for_status()
@@ -235,8 +263,17 @@ def test_end_to_end_auth_flow_v1(conda_store_server, testclient, authenticate, r
     assert authorize() is False
 
 
+@pytest.mark.parametrize(
+    "role, permissions",
+    [
+        ("viewer", _viewer_permissions),
+        ("developer", _developer_permissions),
+        ("editor", _developer_permissions),
+        ("admin", _admin_permissions),
+    ],
+)
 @pytest.mark.parametrize("role_mappings_version", [1, 2])
-def test_end_to_end_auth_flow_v2(conda_store_server, testclient, authenticate, role_mappings_version):
+def test_end_to_end_auth_flow_v2(conda_store_server, testclient, authenticate, role_mappings_version, role, permissions):
     # Configures authentication
     namespace = f"this-{uuid.uuid4()}"
     other_namespace = f"other-{uuid.uuid4()}"
@@ -267,24 +304,7 @@ def test_end_to_end_auth_flow_v2(conda_store_server, testclient, authenticate, r
                 role_bindings=token_model.role_bindings,
             ),
             f"{other_namespace}/example-name",
-            {
-                Permissions.BUILD_DELETE,
-                Permissions.ENVIRONMENT_CREATE,
-                Permissions.ENVIRONMENT_DELETE,
-                Permissions.ENVIRONMENT_READ,
-                Permissions.ENVIRONMENT_UPDATE,
-                Permissions.ENVIRONMENT_SOLVE,
-                Permissions.NAMESPACE_CREATE,
-                Permissions.NAMESPACE_DELETE,
-                Permissions.NAMESPACE_READ,
-                Permissions.NAMESPACE_UPDATE,
-                Permissions.NAMESPACE_ROLE_MAPPING_CREATE,
-                Permissions.NAMESPACE_ROLE_MAPPING_READ,
-                Permissions.NAMESPACE_ROLE_MAPPING_UPDATE,
-                Permissions.NAMESPACE_ROLE_MAPPING_DELETE,
-                Permissions.SETTING_READ,
-                Permissions.SETTING_UPDATE,
-            },
+            permissions,
         )
     # No default roles
     assert authorize() is False
@@ -307,7 +327,7 @@ def test_end_to_end_auth_flow_v2(conda_store_server, testclient, authenticate, r
         f"api/v1/namespace/{other_namespace}/role",
         json={
             "other_namespace": namespace,
-            "role": "admin"
+            "role": role
         },
     )
     response.raise_for_status()
