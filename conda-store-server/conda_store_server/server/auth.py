@@ -138,42 +138,47 @@ class RBACAuthorizationBackend(LoggingConfigurable):
             )
         return proposal.value
 
+    _viewer_permissions = {
+        schema.Permissions.ENVIRONMENT_READ,
+        schema.Permissions.NAMESPACE_READ,
+        schema.Permissions.NAMESPACE_ROLE_MAPPING_READ,
+    }
+    _developer_permissions = {
+        schema.Permissions.BUILD_CANCEL,
+        schema.Permissions.ENVIRONMENT_CREATE,
+        schema.Permissions.ENVIRONMENT_READ,
+        schema.Permissions.ENVIRONMENT_UPDATE,
+        schema.Permissions.ENVIRONMENT_SOLVE,
+        schema.Permissions.NAMESPACE_READ,
+        schema.Permissions.NAMESPACE_ROLE_MAPPING_READ,
+        schema.Permissions.SETTING_READ,
+    }
+    _admin_permissions = {
+        schema.Permissions.BUILD_DELETE,
+        schema.Permissions.BUILD_CANCEL,
+        schema.Permissions.ENVIRONMENT_CREATE,
+        schema.Permissions.ENVIRONMENT_DELETE,
+        schema.Permissions.ENVIRONMENT_READ,
+        schema.Permissions.ENVIRONMENT_UPDATE,
+        schema.Permissions.ENVIRONMENT_SOLVE,
+        schema.Permissions.NAMESPACE_CREATE,
+        schema.Permissions.NAMESPACE_DELETE,
+        schema.Permissions.NAMESPACE_READ,
+        schema.Permissions.NAMESPACE_UPDATE,
+        schema.Permissions.NAMESPACE_ROLE_MAPPING_CREATE,
+        schema.Permissions.NAMESPACE_ROLE_MAPPING_READ,
+        schema.Permissions.NAMESPACE_ROLE_MAPPING_UPDATE,
+        schema.Permissions.NAMESPACE_ROLE_MAPPING_DELETE,
+        schema.Permissions.SETTING_READ,
+        schema.Permissions.SETTING_UPDATE,
+    }
+
     role_mappings = Dict(
         {
-            "viewer": {
-                schema.Permissions.ENVIRONMENT_READ,
-                schema.Permissions.NAMESPACE_READ,
-                schema.Permissions.NAMESPACE_ROLE_MAPPING_READ,
-            },
-            "developer": {
-                schema.Permissions.BUILD_CANCEL,
-                schema.Permissions.ENVIRONMENT_CREATE,
-                schema.Permissions.ENVIRONMENT_READ,
-                schema.Permissions.ENVIRONMENT_UPDATE,
-                schema.Permissions.ENVIRONMENT_SOLVE,
-                schema.Permissions.NAMESPACE_READ,
-                schema.Permissions.NAMESPACE_ROLE_MAPPING_READ,
-                schema.Permissions.SETTING_READ,
-            },
-            "admin": {
-                schema.Permissions.BUILD_DELETE,
-                schema.Permissions.BUILD_CANCEL,
-                schema.Permissions.ENVIRONMENT_CREATE,
-                schema.Permissions.ENVIRONMENT_DELETE,
-                schema.Permissions.ENVIRONMENT_READ,
-                schema.Permissions.ENVIRONMENT_UPDATE,
-                schema.Permissions.ENVIRONMENT_SOLVE,
-                schema.Permissions.NAMESPACE_CREATE,
-                schema.Permissions.NAMESPACE_DELETE,
-                schema.Permissions.NAMESPACE_READ,
-                schema.Permissions.NAMESPACE_UPDATE,
-                schema.Permissions.NAMESPACE_ROLE_MAPPING_CREATE,
-                schema.Permissions.NAMESPACE_ROLE_MAPPING_READ,
-                schema.Permissions.NAMESPACE_ROLE_MAPPING_UPDATE,
-                schema.Permissions.NAMESPACE_ROLE_MAPPING_DELETE,
-                schema.Permissions.SETTING_READ,
-                schema.Permissions.SETTING_UPDATE,
-            },
+            "viewer": _viewer_permissions,
+            "developer": _developer_permissions,
+            "editor": _developer_permissions,  # alias
+            "admin": _admin_permissions,
         },
         help="default role to permissions mapping to use",
         config=True,

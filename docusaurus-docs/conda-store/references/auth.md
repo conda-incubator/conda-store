@@ -101,7 +101,9 @@ c.RBACAuthorizationBackend.role_mappings = {
 }
 ```
 
-Lets go through a few examples to make this more concrete and assume
+Additionally, the role `editor` can be used, which is an alias for `developer`.
+
+Let's go through a few examples to make this more concrete and assume
 the default configuration of conda-store.
 
 > Suppose we have an unauthenticated user trying to view the

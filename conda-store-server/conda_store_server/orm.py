@@ -83,6 +83,8 @@ class NamespaceRoleMapping(Base):
 
     @validates("role")
     def validate_role(self, key, role):
+        if role == "editor":
+            role = "developer"  # alias
         if role not in ["admin", "viewer", "developer"]:
             raise ValueError(f"invalid entity={role}")
 
@@ -108,6 +110,8 @@ class NamespaceRoleMappingV2(Base):
 
     @validates("role")
     def validate_role(self, key, role):
+        if role == "editor":
+            role = "developer"  # alias
         if role not in ["admin", "viewer", "developer"]:
             raise ValueError(f"invalid role={role}")
         return role
