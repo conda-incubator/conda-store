@@ -146,7 +146,7 @@ _viewer_permissions = {
     Permissions.NAMESPACE_READ,
     Permissions.NAMESPACE_ROLE_MAPPING_READ,
 }
-_developer_permissions = {
+_editor_permissions = {
     Permissions.BUILD_CANCEL,
     Permissions.ENVIRONMENT_CREATE,
     Permissions.ENVIRONMENT_READ,
@@ -181,8 +181,8 @@ _admin_permissions = {
     "role, permissions",
     [
         ("viewer", _viewer_permissions),
-        ("developer", _developer_permissions),
-        ("editor", _developer_permissions),
+        ("developer", _editor_permissions),
+        ("editor", _editor_permissions),
         ("admin", _admin_permissions),
     ],
 )
@@ -267,8 +267,8 @@ def test_end_to_end_auth_flow_v1(conda_store_server, testclient, authenticate, r
     "role, permissions",
     [
         ("viewer", _viewer_permissions),
-        ("developer", _developer_permissions),
-        ("editor", _developer_permissions),
+        ("developer", _editor_permissions),
+        ("editor", _editor_permissions),
         ("admin", _admin_permissions),
     ],
 )
