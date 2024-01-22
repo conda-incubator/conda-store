@@ -656,7 +656,14 @@ def test_update_namespace_noauth(testclient):
     assert r.status == schema.APIStatus.ERROR
 
 
-def test_update_namespace_auth(testclient):
+@pytest.mark.parametrize(
+    "editor_role",
+    [
+        "editor",
+        "developer",
+    ],
+)
+def test_update_namespace_auth(testclient, editor_role):
     namespace = f"filesystem"
 
     testclient.login()
@@ -664,7 +671,7 @@ def test_update_namespace_auth(testclient):
     test_role_mappings = {
         f"{namespace}/*": ["viewer"],
         f"{namespace}/admin": ["admin"],
-        f"{namespace}/test": ["admin", "viewer", "developer"],
+        f"{namespace}/test": ["admin", "viewer", editor_role],
     }
 
     # Updates both the metadata and the role mappings
