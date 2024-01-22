@@ -87,7 +87,7 @@ c.RBACAuthorizationBackend.role_mappings = {
     "viewer": {
         Permissions.ENVIRONMENT_READ
     },
-    "developer": {
+    "editor": {
         Permissions.ENVIRONMENT_CREATE,
         Permissions.ENVIRONMENT_READ,
         Permissions.ENVIRONMENT_UPDATE,
@@ -101,7 +101,8 @@ c.RBACAuthorizationBackend.role_mappings = {
 }
 ```
 
-Additionally, the role `editor` can be used, which is an alias for `developer`.
+Additionally, the role `developer` is supported, which is a legacy alias of
+`editor`. The name `editor` is preferred.
 
 Let's go through a few examples to make this more concrete and assume
 the default configuration of conda-store.
