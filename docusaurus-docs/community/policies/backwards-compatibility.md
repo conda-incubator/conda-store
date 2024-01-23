@@ -133,7 +133,7 @@ written against this endpoint will function regardless of when it was written.
 https://example.com/api/experimental/user
 ```
 
-Explanation: This is an experimental route. It can be changed or removed at any
+**Explanation**: This is an experimental route. It can be changed or removed at any
 moment without prior notice. This route should be used to test new features and
 get community feedback.
 
@@ -212,8 +212,10 @@ or
     # private.
 ```
 
+:::important
 Tests are never considered to be part of the public API. Any code within the
 `tests/` directory is always considered to be private.
+:::
 
 Developers are encouraged to make code private by default and only expose
 objects as public if there is an explicit need to do so. Keeping code private by
