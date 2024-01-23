@@ -124,7 +124,7 @@ to upgrade when they wish to rather than forcing them to do so.
 https://example.com/api/v1/user
 ```
 
-Explanation: This route has never had breaking changes introduced. Any code
+**Explanation**: This route has never had breaking changes introduced. Any code
 written against this endpoint will function regardless of when it was written.
 
 ##### New `experimental` route
