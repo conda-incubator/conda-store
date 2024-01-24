@@ -9,6 +9,8 @@ ordering for tests.
 
 """
 import asyncio
+import collections
+import datetime
 import json
 import time
 import uuid
@@ -465,6 +467,100 @@ def test_create_specification_auth(testclient):
 
     r = schema.APIGetEnvironment.parse_obj(response.json())
     assert r.data.namespace.name == namespace
+
+
+def test_create_specification_parallel_auth(testclient):
+    namespace = "default"
+    environment_name = f"pytest-{uuid.uuid4()}"
+
+    # Builds different versions to avoid caching
+    versions = ["6.2.0", "6.2.1", "6.2.2", "6.2.3", "6.2.4", "6.2.5", "7.1.1", "7.1.2", "7.3.1", "7.4.0"]
+    num_builds = len(versions)
+    limit_seconds = 60 * 15
+    build_ids = collections.deque([])
+
+    # Spins up 'num_builds' builds and adds them to 'build_ids'
+    for version in versions:
+        testclient.login()
+        response = testclient.post(
+            "api/v1/specification",
+            json={
+                "namespace": namespace,
+                "specification": json.dumps({
+                    "name": environment_name,
+                    "channels": ["main"],
+                    "dependencies": [f"pytest={version}"],
+                }),
+            },
+            timeout=10,
+        )
+        response.raise_for_status()
+        r = schema.APIPostSpecification.parse_obj(response.json())
+        assert r.status == schema.APIStatus.OK
+        build_ids.append(r.data.build_id)
+
+    # How long it takes to do a single build
+    build_delta = None
+
+    # Checks whether the builds are done (in the order they were scheduled in)
+    start = datetime.datetime.now()
+    while True:
+        # Prints the current build ids in the queue. Visually, if the server is
+        # configured to run N jobs in parallel, the queue should have N jobs
+        # less almost instantly once the first batch is done processing. After
+        # that, the queue should keep shrinking at a steady pace after each of
+        # the workers is done
+        print("build_ids", build_ids)
+
+        # Checks whether the time limit is reached
+        now = datetime.datetime.now()
+        delta_seconds = (now - start).total_seconds()
+        if delta_seconds > limit_seconds:
+            break
+
+        # Measures how long it takes to do a single build
+        if not build_delta and len(build_ids) < num_builds:
+            build_delta = delta_seconds
+
+        # Gets the oldest build in the queue as it's the one that's most likely
+        # to be done
+        try:
+            build_id = build_ids.popleft()
+        except IndexError:
+            break
+
+        # Checks the status
+        response = testclient.get(f"api/v1/build/{build_id}", timeout=10)
+        response.raise_for_status()
+        r = schema.APIGetBuild.parse_obj(response.json())
+        assert r.status == schema.APIStatus.OK
+        assert r.data.specification.name == environment_name
+
+        # Exit immediately on failure
+        assert r.data.status != 'FAILED'
+
+        # If not done, adds the id back to the end of the queue
+        if r.data.status != 'COMPLETED':
+            build_ids.append(build_id)
+
+        # Adds a small delay to avoid making too many requests too fast. The
+        # build takes significantly longer than 1 second, so this shouldn't
+        # impact the measurements
+        time.sleep(1)
+
+    # Measures how long it took to run the loop
+    loop_delta = (datetime.datetime.now() - start).total_seconds()
+    print("build_delta", build_delta)
+    print("loop_delta", loop_delta)
+
+    # If there are jobs in the queue, the loop didn't complete in the allocated
+    # time. So something went wrong, like a build getting stuck or parallel
+    # builds not working
+    assert len(build_ids) == 0
+
+    # If all jobs are done twice as fast as they would do sequentially, then
+    # parallel builds are working
+    assert loop_delta < build_delta * (num_builds / 2)
 
 
 # Only testing size values that will always cause errors. Smaller values could
