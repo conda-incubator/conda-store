@@ -519,7 +519,7 @@ def test_create_specification_parallel_auth(testclient):
             break
 
         # Measures how long it takes to do a single build
-        if not build_delta and len(build_ids) < num_builds:
+        if build_delta is not None and len(build_ids) < num_builds:
             build_delta = delta_seconds
 
         # Gets the oldest build in the queue as it's the one that's most likely
