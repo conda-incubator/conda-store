@@ -197,6 +197,7 @@ def build_conda_environment(db: Session, conda_store, build):
                 conda_lock_spec=conda_lock_spec,
                 conda_prefix=conda_prefix,
             )
+            tmp_pkgs_dir = context.result
             append_to_logs(
                 db,
                 conda_store,
@@ -223,6 +224,8 @@ def build_conda_environment(db: Session, conda_store, build):
 
         context = action.action_get_conda_prefix_stats(conda_prefix)
         build.size = context.result["disk_usage"]
+
+        tmp_pkgs_dir.cleanup()
 
         set_build_completed(db, conda_store, build)
     # Always mark build as failed first since other functions may throw an
