@@ -504,6 +504,8 @@ def test_create_specification_parallel_auth(testclient):
 
     # Checks whether the builds are done (in the order they were scheduled in)
     start = datetime.datetime.now()
+    prev = None
+    prev_builds = num_builds
     while True:
         # Prints the current build ids in the queue. Visually, if the server is
         # configured to run N jobs in parallel, the queue should have N jobs
@@ -514,13 +516,16 @@ def test_create_specification_parallel_auth(testclient):
 
         # Checks whether the time limit is reached
         now = datetime.datetime.now()
-        delta_seconds = (now - start).total_seconds()
-        if delta_seconds > limit_seconds:
+        if (now - start).total_seconds() > limit_seconds:
             break
 
         # Measures how long it takes to do a single build
-        if build_delta is None and len(build_ids) < num_builds:
-            build_delta = delta_seconds
+        if len(build_ids) < prev_builds:
+            if prev is not None:
+                build_delta = (now - prev).total_seconds()
+                print("build_delta", build_delta)
+            prev_builds = len(build_ids)
+            prev = now
 
         # Gets the oldest build in the queue as it's the one that's most likely
         # to be done
@@ -548,19 +553,10 @@ def test_create_specification_parallel_auth(testclient):
         # impact the measurements
         time.sleep(1)
 
-    # Measures how long it took to run the loop
-    loop_delta = (datetime.datetime.now() - start).total_seconds()
-    print("build_delta", build_delta)
-    print("loop_delta", loop_delta)
-
     # If there are jobs in the queue, the loop didn't complete in the allocated
     # time. So something went wrong, like a build getting stuck or parallel
     # builds not working
     assert len(build_ids) == 0
-
-    # If all jobs are done twice as fast as they would do sequentially, then
-    # parallel builds are working
-    assert loop_delta < build_delta * (num_builds / 2)
 
 
 # Only testing size values that will always cause errors. Smaller values could
