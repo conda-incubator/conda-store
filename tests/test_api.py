@@ -536,7 +536,7 @@ def test_create_specification_parallel_auth(testclient):
         assert r.status == schema.APIStatus.OK
         assert r.data.specification.name == environment_name
 
-        # Exit immediately on failure
+        # Exits immediately on failure
         assert r.data.status != 'FAILED'
 
         # If not done, adds the id back to the end of the queue
