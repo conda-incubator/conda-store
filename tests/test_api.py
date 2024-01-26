@@ -12,6 +12,7 @@ import asyncio
 import collections
 import datetime
 import json
+import statistics
 import time
 import uuid
 from functools import partial
@@ -500,7 +501,7 @@ def test_create_specification_parallel_auth(testclient):
         build_ids.append(r.data.build_id)
 
     # How long it takes to do a single build
-    build_delta = None
+    build_deltas = []
 
     # Checks whether the builds are done (in the order they were scheduled in)
     start = datetime.datetime.now()
@@ -524,6 +525,7 @@ def test_create_specification_parallel_auth(testclient):
             if prev is not None:
                 build_delta = (now - prev).total_seconds()
                 print("build_delta", build_delta)
+                build_deltas.append(build_delta)
             prev_builds = len(build_ids)
             prev = now
 
@@ -557,6 +559,67 @@ def test_create_specification_parallel_auth(testclient):
     # time. So something went wrong, like a build getting stuck or parallel
     # builds not working
     assert len(build_ids) == 0
+
+    # Because this is an integration test, we cannot change the server
+    # c.CondaStoreWorker.concurrency value, which is set to 4 by default. But
+    # it's possible to devise a statistical test based on locally collected
+    # data, using 'build_deltas' above:
+    #
+    # concurrency = 4 with 2 CPUs, so equivalent to concurrency = 2:
+    # c4_2cpu = [
+    #     1.027987,
+    #     67.234371,
+    #     1.272288,
+    #     43.966526,
+    #     7.171627,
+    #     68.563222,
+    #     4.143675,
+    #     46.872263,
+    #     1.018258,
+    # ]
+    #
+    # concurrency = 1, same machine:
+    # c1 = [
+    #     19.394085,
+    #     33.70623,
+    #     22.815429,
+    #     62.555845,
+    #     68.438333,
+    #     29.794979,
+    #     63.370743,
+    #     32.118421,
+    #     29.88376,
+    # ]
+    #
+    # Here's another set of measurements from a different machine, which should
+    # have 4 CPUs, with concurrency = 4:
+    # ci = [
+    #     1.02644,
+    #     33.591736,
+    #     1.016269,
+    #     19.299738,
+    #     7.115025,
+    #     20.342442,
+    #     12.222805,
+    #     6.103751,
+    #     1.016237,
+    # ]
+    #
+    # These values will vary depending on workload and the number of CPUs. But
+    # the main observation here is this: if parallel builds are working,
+    # there will be a number of values that are relatively small compared to the
+    # time it takes to run a single build when not running concurrently.
+    #
+    # So the test below looks at the value of the first quartile, which is the
+    # median of the lower half of the dataset, where all these small values will
+    # be located, and compares it to a certain threshold, which is unlikely to
+    # be reached based on how long it takes a single build to run
+    # non-concurrently on average:
+    threshold = 5
+    quartiles = statistics.quantiles(build_deltas, method='inclusive')
+    print("build_deltas", build_deltas)
+    print("stats", min(build_deltas), quartiles)
+    assert quartiles[0] < threshold
 
 
 # Only testing size values that will always cause errors. Smaller values could
