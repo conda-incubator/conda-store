@@ -282,7 +282,8 @@ class RBACAuthorizationBackend(LoggingConfigurable):
             # Additionally, this code allows for legacy 'role_mappings' that
             # used to specify the role as 'developer'. Because it's a
             # user-visible setting, we cannot break compatibility here
-            assert role != "editor"  # must NEVER be 'editor' in the DB
+            if role == "editor":
+                raise ValueError("role must never be 'editor' in the database")
             if role == "developer":
                 # Checks the new user-visible name first, then tries the legacy
                 # one. This will raise an exception if both keys are not found
