@@ -4,6 +4,7 @@ import os
 import pathlib
 import re
 import shutil
+import sys
 
 from conda_store_server import conda_utils, schema, utils
 from conda_store_server.environment import validate_environment
@@ -266,7 +267,12 @@ class Build(Base):
         # https://github.com/conda-incubator/conda-store/issues/649
         if len(str(res)) > 255:
             raise BuildPathError("build_path too long: must be <= 255 characters")
-        return res
+        # Note: cannot use the '/' operator to prepend the extended-length
+        # prefix
+        if sys.platform == "win32" and conda_store.win_extended_length_prefix:
+            return pathlib.Path(f"\\\\?\\{res}")
+        else:
+            return res
 
     def environment_path(self, conda_store):
         """Environment path is the path for the symlink to the build
@@ -276,11 +282,17 @@ class Build(Base):
         store_directory = os.path.abspath(conda_store.store_directory)
         namespace = self.environment.namespace.name
         name = self.specification.name
-        return pathlib.Path(
+        res = pathlib.Path(
             conda_store.environment_directory.format(
                 store_directory=store_directory, namespace=namespace, name=name
             )
         )
+        # Note: cannot use the '/' operator to prepend the extended-length
+        # prefix
+        if sys.platform == "win32" and conda_store.win_extended_length_prefix:
+            return pathlib.Path(f"\\\\?\\{res}")
+        else:
+            return res
 
     @property
     def build_key(self):

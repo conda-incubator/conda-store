@@ -120,6 +120,12 @@ class CondaStore(LoggingConfigurable):
         except Exception as e:
             raise TraitError(f"c.CondaStore.build_key_version: {e}")
 
+    win_extended_length_prefix = Bool(
+        False,
+        help="Use the extended-length prefix '\\\\?\\' (Windows-only), default: False",
+        config=True,
+    )
+
     conda_command = Unicode(
         "mamba",
         help="conda executable to use for solves",
