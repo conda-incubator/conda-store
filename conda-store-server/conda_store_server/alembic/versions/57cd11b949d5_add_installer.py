@@ -1,16 +1,16 @@
 """add installer
 
-Revision ID: 82c1cfe39561
-Revises: 771180018e1b
-Create Date: 2024-01-15 07:13:06.261592
+Revision ID: 57cd11b949d5
+Revises: 0f7e23ff24ee
+Create Date: 2024-01-28 14:31:35.723505
 
 """
 import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = "82c1cfe39561"
-down_revision = "771180018e1b"
+revision = "57cd11b949d5"
+down_revision = "0f7e23ff24ee"
 branch_labels = None
 depends_on = None
 
