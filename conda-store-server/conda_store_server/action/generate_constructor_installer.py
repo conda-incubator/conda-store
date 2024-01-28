@@ -27,10 +27,12 @@ def action_generate_constructor_installer(
     version: str,
 ):
     # Helpers
-    def print_cmd(cmd):
+    def print_cmd(cmd, **kwargs):
         context.log.info(f"Running command: {' '.join(cmd)}")
         context.log.info(
-            subprocess.check_output(cmd, stderr=subprocess.STDOUT, encoding="utf-8")
+            subprocess.check_output(
+                cmd, stderr=subprocess.STDOUT, encoding="utf-8", **kwargs
+            )
         )
 
     def write_file(filename, s):
@@ -44,7 +46,7 @@ def action_generate_constructor_installer(
             "constructor",
             "--help",
         ]
-        print_cmd(command)
+        print_cmd(command, timeout=10)
     except FileNotFoundError:
         warnings.warn(
             "Installer generation requires constructor: https://github.com/conda/constructor"
