@@ -13,6 +13,8 @@ def get_installer_platform():
     # This is how the default platform name is generated internally by
     # constructor. For example: osx-arm64, linux-64, win-64.
     # https://github.com/conda/constructor/blob/main/CONSTRUCT.md#available-platforms
+    # Note: constructor is cross-friendly, see:
+    # https://github.com/conda-incubator/conda-store/pull/714#discussion_r1465115323
     from conda.base.context import context
 
     return context.subdir
