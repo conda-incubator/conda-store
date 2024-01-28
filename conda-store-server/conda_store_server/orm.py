@@ -337,6 +337,11 @@ class Build(Base):
     def docker_manifest_key(self):
         return f"docker/manifest/{self.build_key}"
 
+    @property
+    def constructor_installer_key(self):
+        ext = "exe" if sys.platform == "win32" else "sh"
+        return f"installer/{self.build_key}.{ext}"
+
     def docker_blob_key(self, blob_hash):
         return f"docker/blobs/{blob_hash}"
 
@@ -365,6 +370,13 @@ class Build(Base):
     def has_docker_manifest(self):
         return any(
             artifact.artifact_type == schema.BuildArtifactType.DOCKER_MANIFEST
+            for artifact in self.build_artifacts
+        )
+
+    @hybrid_property
+    def has_constructor_installer(self):
+        return any(
+            artifact.artifact_type == schema.BuildArtifactType.CONSTRUCTOR_INSTALLER
             for artifact in self.build_artifacts
         )
 

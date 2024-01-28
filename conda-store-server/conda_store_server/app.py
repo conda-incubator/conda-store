@@ -263,6 +263,7 @@ class CondaStore(LoggingConfigurable):
             schema.BuildArtifactType.LOCKFILE,
             schema.BuildArtifactType.YAML,
             schema.BuildArtifactType.CONDA_PACK,
+            schema.BuildArtifactType.CONSTRUCTOR_INSTALLER,
             *(
                 [
                     schema.BuildArtifactType.DOCKER_MANIFEST,
@@ -721,6 +722,15 @@ class CondaStore(LoggingConfigurable):
             artifact_tasks.append(
                 tasks.task_build_conda_docker.subtask(
                     args=(build.id,), task_id=f"build-{build.id}-docker", immutable=True
+                )
+            )
+
+        if schema.BuildArtifactType.CONSTRUCTOR_INSTALLER in settings.build_artifacts:
+            artifact_tasks.append(
+                tasks.task_build_constructor_installer.subtask(
+                    args=(build.id,),
+                    task_id=f"build-{build.id}-constructor-installer",
+                    immutable=True,
                 )
             )
 
