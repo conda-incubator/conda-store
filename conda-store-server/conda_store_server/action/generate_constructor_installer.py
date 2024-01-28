@@ -1,12 +1,12 @@
 import os
 import pathlib
-import subprocess
 import sys
 import tempfile
 import warnings
 
 import yaml
 from conda_store_server import action, schema
+from conda_store_server.action.utils import logged_command
 
 
 def get_installer_platform():
@@ -26,15 +26,6 @@ def action_generate_constructor_installer(
     installer_dir: pathlib.Path,
     version: str,
 ):
-    # Helpers
-    def print_cmd(cmd, **kwargs):
-        context.log.info(f"Running command: {' '.join(cmd)}")
-        context.log.info(
-            subprocess.check_output(
-                cmd, stderr=subprocess.STDOUT, encoding="utf-8", **kwargs
-            )
-        )
-
     def write_file(filename, s):
         with open(filename, "w") as f:
             context.log.info(f"{filename}:\n{s}")
@@ -46,7 +37,7 @@ def action_generate_constructor_installer(
             "constructor",
             "--help",
         ]
-        print_cmd(command, timeout=10)
+        logged_command(context, command, timeout=10)
     except FileNotFoundError:
         warnings.warn(
             "Installer generation requires constructor: https://github.com/conda/constructor"
@@ -124,6 +115,6 @@ python -m pip install {' '.join(pip_dependencies)}
             get_installer_platform(),
             str(tmp_dir),
         ]
-        print_cmd(command)
+        logged_command(context, command)
 
     return installer_filename
