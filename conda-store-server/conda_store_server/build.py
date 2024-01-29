@@ -48,6 +48,15 @@ def set_build_failed(
     db.commit()
 
 
+def set_build_canceled(
+    db: Session, build: orm.Build, status_info: typing.Optional[str] = None
+):
+    build.status = schema.BuildStatus.CANCELED
+    build.status_info = status_info
+    build.ended_on = datetime.datetime.utcnow()
+    db.commit()
+
+
 def set_build_completed(db: Session, conda_store, build: orm.Build):
     build.status = schema.BuildStatus.COMPLETED
     build.ended_on = datetime.datetime.utcnow()
@@ -65,7 +74,11 @@ def set_build_completed(db: Session, conda_store, build: orm.Build):
 
 
 def build_cleanup(
-    db: Session, conda_store, build_ids: typing.List[str] = None, reason: str = None
+    db: Session,
+    conda_store,
+    build_ids: typing.List[str] = None,
+    reason: str = None,
+    is_canceled: bool = False,
 ):
     """Walk through all builds in BUILDING state and check that they are actively running
 
@@ -121,7 +134,10 @@ or error in conda-store
                 build,
                 reason,
             )
-            set_build_failed(db, build)
+            if is_canceled:
+                set_build_canceled(db, build)
+            else:
+                set_build_failed(db, build)
 
 
 def build_conda_environment(db: Session, conda_store, build):
