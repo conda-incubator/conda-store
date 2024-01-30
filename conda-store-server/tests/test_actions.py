@@ -1,8 +1,11 @@
 import asyncio
 import datetime
+import os
 import pathlib
 import re
+import subprocess
 import sys
+import tempfile
 
 import pytest
 import yarl
@@ -108,6 +111,55 @@ def test_solve_lockfile_multiple_platforms(conda_store, specification, request):
         platforms=["osx-64", "linux-64", "win-64", "osx-arm64"],
     )
     assert len(context.result["package"]) != 0
+
+
+@pytest.mark.parametrize(
+    "specification_name",
+    [
+        "simple_specification",
+        "simple_specification_with_pip",
+    ],
+)
+def test_generate_constructor_installer(conda_store, specification_name, request, tmp_path):
+    specification = request.getfixturevalue(specification_name)
+    installer_dir = tmp_path / "installer_dir"
+
+    # Creates the installer
+    context = action.action_generate_constructor_installer(
+        conda_command=conda_store.conda_command,
+        specification=specification,
+        installer_dir=installer_dir,
+        version="1",
+    )
+
+    # Checks that the installer was created
+    installer = context.result
+    assert installer.exists()
+
+    tmp_dir = tmp_path / "tmp"
+
+    # Runs the installer
+    out_dir = pathlib.Path(tmp_dir) / 'out'
+    if sys.platform == 'win32':
+        subprocess.check_output([installer, '/S', f'/D={out_dir}'])
+    else:
+        subprocess.check_output([installer, '-b', '-p', str(out_dir)])
+
+    # Checks the output directory
+    assert out_dir.exists()
+    lib_dir = out_dir / 'lib'
+    if specification_name == 'simple_specification':
+        if sys.platform == 'win32':
+            assert any(str(x).endswith('zlib.dll') for x in out_dir.iterdir())
+        elif sys.platform == 'darwin':
+            assert any(str(x).endswith('libz.dylib') for x in lib_dir.iterdir())
+        else:
+            assert any(str(x).endswith('libz.so') for x in lib_dir.iterdir())
+    else:
+        # Uses rglob to not depend on the version of the python
+        # directory, which is where site-packages is located
+        flask = pathlib.Path('site-packages') / 'flask'
+        assert any(str(x).endswith(str(flask)) for x in out_dir.rglob('*'))
 
 
 def test_fetch_and_extract_conda_packages(tmp_path, simple_conda_lock):
@@ -370,6 +422,59 @@ def test_api_get_build_lockfile(
         assert lockfile_url(build_key) == build.conda_lock_key
         assert lockfile_url(build_key) == res.headers['location']
         assert res.status_code == 307
+
+
+def test_api_get_build_installer(
+    request, conda_store, db, simple_specification_with_pip, conda_prefix
+):
+    # initializes data needed to get the installer
+    specification = simple_specification_with_pip
+    specification.name = "my-env"
+    namespace = "pytest"
+
+    class MyAuthentication(DummyAuthentication):
+        # Skips auth (used in api_get_build_installer). Test version of request
+        # has no state attr, which is returned in the real impl of this method.
+        # So I have to overwrite the method itself.
+        def authorize_request(self, *args, **kwargs):
+            pass
+
+    auth = MyAuthentication()
+    build_id = conda_store.register_environment(
+        db, specification=specification, namespace=namespace
+    )
+    db.commit()
+
+    build = api.get_build(db, build_id=build_id)
+
+    # creates build artifacts
+    build_artifact = orm.BuildArtifact(
+        build_id=build_id,
+        build=build,
+        artifact_type=schema.BuildArtifactType.CONSTRUCTOR_INSTALLER,
+        key=build.constructor_installer_key,
+    )
+    db.add(build_artifact)
+    db.commit()
+
+    # gets installer for this build
+    res = asyncio.run(
+        server.views.api.api_get_build_installer(
+            request=request,
+            conda_store=conda_store,
+            auth=auth,
+            build_id=build_id,
+    ))
+
+    # redirects to installer
+    def installer_url(build_key):
+        ext = "exe" if sys.platform == "win32" else "sh"
+        return f"installer/{build_key}.{ext}"
+
+    assert type(res) is RedirectResponse
+    assert build.constructor_installer_key == res.headers['location']
+    assert installer_url(build.build_key) == build.constructor_installer_key
+    assert res.status_code == 307
 
 
 def test_get_channel_url():

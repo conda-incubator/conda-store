@@ -34,6 +34,8 @@ dependencies:
   - alembic
   # artifact storage
   - minio
+  # installer
+  - constructor
   # CLI
   - typer
 

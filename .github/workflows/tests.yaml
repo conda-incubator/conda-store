@@ -62,7 +62,20 @@ jobs:
 
       - name: "Unit tests ✅"
         run: |
-          pytest tests
+          pytest -m "not extended_prefix" tests
+
+      # https://github.com/actions/runner-images/issues/1052
+      - name: "Windows extended prefix unit tests ✅"
+        shell: pwsh
+        run: |
+          Set-ItemProperty "HKLM:\System\CurrentControlSet\Control\FileSystem" `
+            -Name "LongPathsEnabled" `
+            -Value 0 `
+            -Type DWord
+          (Get-ItemProperty "HKLM:System\CurrentControlSet\Control\FileSystem").LongPathsEnabled
+          pytest -m "extended_prefix" tests
+        if: matrix.os == 'windows'
+
 
   integration-test-conda-store-server:
     name: "integration-test conda-store-server"

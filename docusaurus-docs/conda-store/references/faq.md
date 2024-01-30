@@ -115,29 +115,60 @@ c.CondaStore.build_key_version = 2
 ## Long paths on Windows
 
 conda-store supports Windows in standalone mode. However, when creating
-environments with certain packages, you may see errors like
+environments with certain packages, you may see errors like:
 
 ```bash
 ERROR:root:[WinError 206] The filename or extension is too long: 'C:\\...'
 ```
 
 This error is due to the fact that Windows has a limitation that file paths
-cannot be more than 260 characters. The fix is to set the registry key
-`Computer\HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FileSystem\LongPathsEnabled
-(Type: REG_DWORD)` to `1`, which removes this MAX_PATH limitation. See [this
-Microsoft support
-article](https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation)
-for more details on how to set this registry key.
+cannot be more than 260 characters.
 
-If it is not possible to set this registry key, for instance, because you do
-not have access to administrator privileges, you should configure the
+See [conda-store issue #588][max-path-issue] for more details.
+
+### Solution 1: Extended-length path prefix (`\\?\`)
+
+If you *don't have administrator privileges*, try using the following config
+option:
+
+```python
+c.CondaStore.win_extended_length_prefix = True
+```
+
+This adds the extended-length path prefix (`\\?\`) to conda-store `build_path`
+and `environment_path` methods, which should allow for a maximum total path
+length of 32,767 characters when building packages.
+
+See [this Microsoft support article][max-path] for more details on the
+extended-length path prefix.
+
+### Solution 2: `LongPathsEnabled`
+
+If you *have administrator privileges*, set the registry key
+`Computer\HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FileSystem\LongPathsEnabled
+(Type: REG_DWORD)` to `1`, which removes this `MAX_PATH` limitation.
+
+See [this Microsoft support article][max-path] for more details on how to set
+this registry key.
+
+### Solution 3: `store_directory`
+
+If it is not possible to set the registry key, for instance, because you *do
+not have access to administrator privileges*, you should configure the
 conda-store `CondaStore.store_directory` to be as close to the filesystem root
 as possible, so that the total length of the paths of package files is
 minimized.
 
-See [conda-store issue
-#588](https://github.com/conda-incubator/conda-store/issues/588) for more
-details.
+### Solution 4: `build_key_version`
+
+Use the short build key version as explained [above](#build-key-versions):
+
+```python
+c.CondaStore.build_key_version = 2
+```
+
+[max-path-issue]: https://github.com/conda-incubator/conda-store/issues/588
+[max-path]: https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation
 
 ## What are the resource requirements for `conda-store-server`
 

@@ -41,6 +41,9 @@
         {% if environment.current_build.has_docker_manifest %}
         <a class="card-link" onclick="setClipboard('{{ registry_external_url }}/{{ environment.namespace.name }}/{{ environment.name }}:{{ environment.current_build.build_key }}')" role="button" data-toggle="popover" data-trigger="hover focus" data-content="Click to copy!"><ion-icon name="logo-docker"></ion-icon> Docker</a>
         {% endif %}
+        {% if environment.current_build.has_constructor_installer %}
+        <a class="card-link" href="{{ url_for('api_get_build_installer', build_id=environment.current_build_id) }}" download><ion-icon name="archive-outline"></ion-icon> Installer ({{ platform }})</a>
+        {% endif %}
     </div>
 </div>
 {% endfor %}
