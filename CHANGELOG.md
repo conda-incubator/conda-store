@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 The project changed to `CalVer` in September 2023.
 
-## [2024.1.1-rc1] - 2024-01-05
+## [2024.1.1] - 2024-01-30
 
 ([full changelog](https://github.com/conda-incubator/conda-store/compare/2023.10.1...ec606641f6d0bb7bde39b2e9f11cf515077feee8))
 
@@ -31,7 +31,7 @@ The project changed to `CalVer` in September 2023.
 
 - ENH - Use string substitution in `normalized_channel_url` [#710](https://github.com/conda-incubator/conda-store/pull/710) ([@nkaretnikov](https://github.com/nkaretnikov))
 - MAINT - Bump the npm_and_yarn group group in /docusaurus-docs with 1 update [#706](https://github.com/conda-incubator/conda-store/pull/706) ([@dependabot](https://github.com/dependabot))
-- MAINT - Update npm dependencies for docusaurus v3 [#704](https://github.com/conda-incubator/conda-store/pull/704) ([@pavithraes](https://github.com/pavithraes))
+- MAINT - Update npm dependencies for Docusaurus v3 [#704](https://github.com/conda-incubator/conda-store/pull/704) ([@pavithraes](https://github.com/pavithraes))
 - DOC - Basic migration of conda-store (core) docs [#685](https://github.com/conda-incubator/conda-store/pull/685) ([@pavithraes](https://github.com/pavithraes))
 - DEV - Disable code that depends on conda-docker [#667](https://github.com/conda-incubator/conda-store/pull/667) ([@nkaretnikov](https://github.com/nkaretnikov))
 
