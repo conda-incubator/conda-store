@@ -125,42 +125,6 @@ jobs:
           export PYTHONPATH=$PYTHONPATH:$PWD
           pytest ../tests/test_api.py ../tests/test_metrics.py
 
-      - name: "Get Docker logs 🔍"
-        if: ${{ failure() }}
-        run: |
-          docker-compose logs
-
-  user-journey-test-conda-store-server:
-    name: "user-journey-test conda-store-server"
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash -el {0}
-        working-directory: conda-store-server
-    steps:
-      - name: "Checkout Repository 🛎"
-        uses: actions/checkout@v4
-
-      - name: "Set up env 🐍"
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-          environment-file: conda-store-server/environment-dev.yaml
-          miniforge-version: latest
-
-      - name: "Install build dependencies 📦"
-        run: |
-          pip install hatch
-          sudo apt install wait-for-it -y
-
-      - name: "Deploy docker-compose"
-        run: |
-          docker-compose up -d
-          docker ps
-
-          wait-for-it localhost:5432 # postgresql
-          wait-for-it localhost:9000 # minio
-          wait-for-it localhost:8080 # conda-store-server
-
       - name: "Run user journey tests ✅"
         run: |
           pytest -m "user_journey"
