@@ -108,5 +108,5 @@ ignore = ["W004"]
 markers = [
   "playwright: mark a test as a playwright test",
   "integration: mark a test as an integration test",
-  "user-journey: mark a test as a user journey test",
+  "user_journey: mark a test as a user journey test",
 ]

@@ -62,7 +62,7 @@ jobs:
 
       - name: "Unit tests ✅"
         run: |
-          pytest -m "not extended_prefix" tests
+          pytest -m "not extended_prefix and not user_journey" tests
 
       # https://github.com/actions/runner-images/issues/1052
       - name: "Windows extended prefix unit tests ✅"
@@ -124,6 +124,10 @@ jobs:
         run: |
           export PYTHONPATH=$PYTHONPATH:$PWD
           pytest ../tests/test_api.py ../tests/test_metrics.py
+
+      - name: "Run user journey tests ✅"
+        run: |
+          pytest -m "user_journey"
 
       - name: "Get Docker logs 🔍"
         if: ${{ failure() }}
