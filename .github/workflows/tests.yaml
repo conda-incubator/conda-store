@@ -131,7 +131,7 @@ jobs:
           docker-compose logs
 
   user-journey-test-conda-store-server:
-    name: "integration-test conda-store-server"
+    name: "user-journey-test conda-store-server"
     runs-on: ubuntu-latest
     defaults:
       run:
