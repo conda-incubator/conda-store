@@ -80,7 +80,7 @@ playwright-test = [
 ]
 integration-test = ["pytest ../tests/test_api.py ../tests/test_metrics.py"]
 
-user-journey-test = ["pytest -m user-journey"]
+user-journey-test = ["pytest -m user_journey"]
 
 [tool.hatch.build.hooks.custom]
 
