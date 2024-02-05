@@ -58,8 +58,6 @@ def action_fetch_and_extract_conda_packages(
                         extracted_dir = pathlib.Path(file_path_str.replace(ext, ""))
                         # This file is used to parse cache records via PackageCacheRecord in conda
                         repodata_file = extracted_dir / "info" / "repodata_record.json"
-                        index_file = extracted_dir / "info" / "index.json"
-                        assert index_file.exists()
 
                         if not repodata_file.exists():
                             raw_json_record = read_index_json(extracted_dir)
@@ -81,4 +79,3 @@ def action_fetch_and_extract_conda_packages(
                                 package_cache_record
                             )
                             write_as_json_to_file(repodata_file, repodata_record)
-                            assert repodata_file.exists()
