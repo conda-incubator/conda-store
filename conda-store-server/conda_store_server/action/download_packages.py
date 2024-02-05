@@ -44,14 +44,18 @@ def action_fetch_and_extract_conda_packages(
             with filelock.FileLock(str(lock_filename)):
                 # This magic file, which is currently set to "urls.txt", is used
                 # to check cache permissions in conda, see _check_writable in
-                # PackageCacheData. Sometimes this file is not yet created while
-                # this action is running. But without this magic file,
-                # PackageCacheData cache query functions, like query_all, will
-                # return nothing, so packages will be downloaded outside of this
-                # action, which will corrupt the cache. Without the magic file,
-                # this error might be thrown when installing the lockfile:
+                # PackageCacheData.
+                #
+                # Sometimes this file is not yet created while this action is
+                # running. Without this magic file, PackageCacheData cache
+                # query functions, like query_all, will return nothing.
+                #
+                # If the magic file is not present, this error might be thrown
+                # during the lockfile install action:
+                #
                 # File "/opt/conda/lib/python3.10/site-packages/conda/misc.py", line 110, in explicit
                 #   raise AssertionError("No package cache records found")
+                #
                 # The code below is from create_package_cache_directory in
                 # conda, which creates the package cache, but we only need the
                 # magic file part here:
@@ -72,6 +76,70 @@ def action_fetch_and_extract_conda_packages(
                     with file_path.open("wb") as f:
                         shutil.copyfileobj(conda_package_stream, f)
                     conda_package_handling.api.extract(file_path_str)
+
+                    # This code is needed to avoid failures when building in
+                    # parallel while using the shared cache.
+                    #
+                    # There are tarballs that only have the info/index.json file
+                    # and no info/repodata_record.json. The latter is used to
+                    # interact with the cache, so _make_single_record from
+                    # PackageCacheData would create the missing json file during
+                    # the lockfile install action.
+                    #
+                    # The code that does that in conda is similar to the code
+                    # below. However, there is an important difference. The
+                    # code in conda would fail to read the url and return None
+                    # here:
+                    #
+                    #   url = self._urls_data.get_url(package_filename)
+                    #
+                    # And that would result in the channel field of the json
+                    # file being set to "<unknown>". This is a problem because
+                    # the channel is used when querying cache entries, via
+                    # match_individual from MatchSpec, which would always result
+                    # in a mismatch because the proper channel value is
+                    # different.
+                    #
+                    # That would make conda think that the package is not
+                    # available in the cache, so it would try to download it
+                    # outside of this action, where no locking is implemented.
+                    #
+                    # As of now, conda's cache is not atomic, so the same
+                    # dependencies requested by different builds would overwrite
+                    # each other causing random failures during the build
+                    # process.
+                    #
+                    # To avoid this problem, the code below does what the code
+                    # in conda does but also sets the url properly, which would
+                    # make the channel match properly during the query process
+                    # later. So no dependencies would be downloaded outside of
+                    # this action and cache corruption is prevented.
+                    #
+                    # To illustrate, here's a diff of an old conda entry, which
+                    # didn't work, versus the new one created by this action:
+                    #
+                    # --- /tmp/old.txt        2024-02-05 01:08:16.879751010 +0100
+                    # +++ /tmp/new.txt        2024-02-05 01:08:02.919319887 +0100
+                    # @@ -2,7 +2,7 @@
+                    #    "arch": "x86_64",
+                    #    "build": "conda_forge",
+                    #    "build_number": 0,
+                    # -  "channel": "<unknown>",
+                    # +  "channel": "https://conda.anaconda.org/conda-forge/linux-64",
+                    #    "constrains": [],
+                    #    "depends": [],
+                    #    "features": "",
+                    # @@ -15,5 +15,6 @@
+                    #    "subdir": "linux-64",
+                    #    "timestamp": 1578324546067,
+                    #    "track_features": "",
+                    # +  "url": "https://conda.anaconda.org/conda-forge/linux-64/_libgcc_mutex-0.1-conda_forge.tar.bz2",
+                    #    "version": "0.1"
+                    #  }
+                    #
+                    # Also see the comment above about the cache magic file.
+                    # Without the magic file, cache queries would fail even if
+                    # repodata_record.json files have proper channels specified.
 
                     # Otherwise .conda, do nothing in that case
                     ext = ".tar.bz2"
