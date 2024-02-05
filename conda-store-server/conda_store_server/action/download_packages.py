@@ -55,13 +55,10 @@ def action_fetch_and_extract_conda_packages(
                 # The code below is from create_package_cache_directory in
                 # conda, which creates the package cache, but we only need the
                 # magic file part here:
-                cache_magic_file = os.path.join(pkgs_dir, PACKAGE_CACHE_MAGIC_FILE)
-                sudo_safe = expand(pkgs_dir).startswith(expand("~"))
-                touch(
-                    cache_magic_file,
-                    mkdir=True,
-                    sudo_safe=sudo_safe,
-                )
+                cache_magic_file = pkgs_dir / PACKAGE_CACHE_MAGIC_FILE
+                if not cache_magic_file.exists():
+                    sudo_safe = expand(pkgs_dir).startswith(expand("~"))
+                    touch(cache_magic_file, mkdir=True, sudo_safe=sudo_safe)
 
                 file_path_str = str(file_path)
                 if file_path.exists():
