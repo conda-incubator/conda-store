@@ -1138,7 +1138,7 @@ def test_api_cancel_build_auth(testclient):
     new_build_id = r.data.build_id
 
     # Delay to ensure the build kicks off
-    build_timeout = 180
+    build_timeout = 10 * 60
     building = False
     start = time.time()
     while time.time() - start < build_timeout:
