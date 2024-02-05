@@ -543,8 +543,14 @@ def test_create_specification_parallel_auth(testclient):
         assert r.status == schema.APIStatus.OK
         assert r.data.specification.name == environment_name
 
+        # Gets build logs
+        def get_logs():
+            response = testclient.get(f"api/v1/build/{build_id}/logs", timeout=10)
+            response.raise_for_status()
+            return response.text
+
         # Exits immediately on failure
-        assert r.data.status != 'FAILED'
+        assert r.data.status != 'FAILED', get_logs()
 
         # If not done, adds the id back to the end of the queue
         if r.data.status != 'COMPLETED':
