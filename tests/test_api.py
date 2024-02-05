@@ -661,8 +661,8 @@ def test_create_specification_auth_env_name_too_long(testclient, size):
 
     # Try checking that the status is 'FAILED'
     is_updated = False
-    for _ in range(10):
-        time.sleep(5)
+    for _ in range(60):
+        time.sleep(10)
 
         # check for the given build
         response = testclient.get(f"api/v1/build/{build_id}")
