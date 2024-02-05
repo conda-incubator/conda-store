@@ -20,8 +20,12 @@ class BuildPathError(CondaStoreError):
 
 
 def symlink(source, target):
-    if os.path.islink(target):
+    # Do not use an if block to check whether the file exists, this is prone to
+    # race conditions. Try unlinking right away instead
+    try:
         os.unlink(target)
+    except FileNotFoundError:
+        pass
     os.symlink(source, target)
 
 
