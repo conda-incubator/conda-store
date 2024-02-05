@@ -9,6 +9,8 @@ import conda.gateways.logging  # noqa
 import conda_package_handling.api
 import conda_package_streaming.url
 import filelock
+from conda.base.constants import PACKAGE_CACHE_MAGIC_FILE
+from conda.common.path import expand
 from conda.core.package_cache_data import (
     PackageCacheRecord,
     PackageRecord,
@@ -16,6 +18,7 @@ from conda.core.package_cache_data import (
     read_index_json,
     write_as_json_to_file,
 )
+from conda.gateways.disk.update import touch
 from conda_store_server import action, conda_utils
 
 
@@ -39,6 +42,27 @@ def action_fetch_and_extract_conda_packages(
             file_path = pkgs_dir / filename
             count_message = f"{packages_searched} of {total_packages}"
             with filelock.FileLock(str(lock_filename)):
+                # This magic file, which is currently set to "urls.txt", is used
+                # to check cache permissions in conda, see _check_writable in
+                # PackageCacheData. Sometimes this file is not yet created while
+                # this action is running. But without this magic file,
+                # PackageCacheData cache query functions, like query_all, will
+                # return nothing, so packages will be downloaded outside of this
+                # action, which will corrupt the cache. Without the magic file,
+                # this error might be thrown when installing the lockfile:
+                # File "/opt/conda/lib/python3.10/site-packages/conda/misc.py", line 110, in explicit
+                #   raise AssertionError("No package cache records found")
+                # The code below is from create_package_cache_directory in
+                # conda, which creates the package cache, but we only need the
+                # magic file part here:
+                cache_magic_file = os.path.join(pkgs_dir, PACKAGE_CACHE_MAGIC_FILE)
+                sudo_safe = expand(pkgs_dir).startswith(expand("~"))
+                touch(
+                    cache_magic_file,
+                    mkdir=True,
+                    sudo_safe=sudo_safe,
+                )
+
                 file_path_str = str(file_path)
                 if file_path.exists():
                     context.log.info(f"SKIPPING {filename} | FILE EXISTS\n")
