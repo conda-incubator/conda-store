@@ -1,12 +1,12 @@
 import json
 import os
 import pathlib
-import subprocess
 import typing
 
 import yaml
 from conda_lock.conda_lock import run_lock
 from conda_store_server import action, conda_utils, schema
+from conda_store_server.action.utils import logged_command
 
 
 @action.action
@@ -25,17 +25,11 @@ def action_solve_lockfile(
     with environment_filename.open("w") as f:
         json.dump(specification.dict(), f)
 
-    def print_cmd(cmd):
-        context.log.info(f"Running command: {' '.join(cmd)}")
-        context.log.info(
-            subprocess.check_output(cmd, stderr=subprocess.STDOUT, encoding="utf-8")
-        )
-
     # The info command can be used with either mamba or conda
-    print_cmd([conda_command, "info"])
+    logged_command(context, [conda_command, "info"])
     # The config command is not supported by mamba
-    print_cmd(["conda", "config", "--show"])
-    print_cmd(["conda", "config", "--show-sources"])
+    logged_command(context, ["conda", "config", "--show"])
+    logged_command(context, ["conda", "config", "--show-sources"])
 
     # conda-lock ignores variables defined in the specification, so this code
     # gets the value of CONDA_OVERRIDE_CUDA and passes it to conda-lock via

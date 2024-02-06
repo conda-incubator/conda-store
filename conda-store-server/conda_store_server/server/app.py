@@ -2,11 +2,14 @@ import logging
 import os
 import posixpath
 import sys
+import time
+from enum import Enum
+from threading import Thread
 
 import conda_store_server
 import conda_store_server.dbutil as dbutil
 import uvicorn
-from conda_store_server import __version__, storage
+from conda_store_server import __version__, orm, storage
 from conda_store_server.app import CondaStore
 from conda_store_server.server import auth, views
 from fastapi import FastAPI, HTTPException, Request
@@ -14,6 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from sqlalchemy.pool import QueuePool
 from starlette.middleware.sessions import SessionMiddleware
 from traitlets import (
     Bool,
@@ -27,6 +31,12 @@ from traitlets import (
     validate,
 )
 from traitlets.config import Application, catch_config_error
+
+
+class _Color(str, Enum):
+    GREEN = "\x1b[32m"
+    RED = "\x1b[31m"
+    RESET = "\x1b[0m"
 
 
 class CondaStoreServer(Application):
@@ -342,6 +352,33 @@ class CondaStoreServer(Application):
 
         return app
 
+    def _check_worker(self, delay=5):
+        # Creates a new DB connection since this will be run in a separate
+        # thread and connections cannot be shared between threads
+        session_factory = orm.new_session_factory(
+            url=self.conda_store.database_url,
+            poolclass=QueuePool,
+        )
+
+        # Waits in a loop for the worker to become ready, which is
+        # communicated by the worker via task_initialize_worker
+        while True:
+            with session_factory() as db:
+                q = db.query(orm.Worker).first()
+                if q is not None and q.initialized:
+                    self.log.info(
+                        f"{_Color.GREEN}" "Worker initialized" f"{_Color.RESET}"
+                    )
+                    break
+
+            time.sleep(delay)
+            self.log.warning(
+                f"{_Color.RED}"
+                "Waiting for worker... "
+                "Use --standalone if running outside of docker"
+                f"{_Color.RESET}"
+            )
+
     def start(self):
         fastapi_app = self.init_fastapi_app()
 
@@ -349,6 +386,30 @@ class CondaStoreServer(Application):
             self.conda_store.ensure_settings(db)
             self.conda_store.ensure_namespace(db)
             self.conda_store.ensure_conda_channels(db)
+
+            # This ensures the database has no Worker table entries when the
+            # server starts, which is necessary for the worker to signal that
+            # it's ready via task_initialize_worker. Old Worker entries could
+            # still be in the database on startup after they were added on the
+            # previous run and the server was terminated.
+            #
+            # Note that this cleanup is deliberately done on startup because the
+            # server could be terminated due to a power failure, which would
+            # leave no chance for cleanup actions to run on shutdown.
+            #
+            # The database is used for worker-server communication because it
+            # will work regardless of celery_broker_url used, which can be Redis
+            # or just point to a database connection.
+            db.query(orm.Worker).delete()
+            db.commit()
+
+        # We cannot check whether the worker is ready right away and block. When
+        # running via docker, the worker is started *after* the server is
+        # running because it relies on config files created by the server.
+        # So we just keep checking in a separate thread until the worker is
+        # ready.
+        worker_checker = Thread(target=self._check_worker)
+        worker_checker.start()
 
         # start worker if in standalone mode
         if self.standalone:
@@ -391,3 +452,4 @@ class CondaStoreServer(Application):
         finally:
             if self.standalone:
                 process.join()
+            worker_checker.join()

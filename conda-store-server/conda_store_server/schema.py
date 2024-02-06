@@ -148,6 +148,7 @@ class BuildArtifactType(enum.Enum):
     DOCKER_BLOB = "DOCKER_BLOB"
     DOCKER_MANIFEST = "DOCKER_MANIFEST"
     CONTAINER_REGISTRY = "CONTAINER_REGISTRY"
+    CONSTRUCTOR_INSTALLER = "CONSTRUCTOR_INSTALLER"
 
 
 class BuildStatus(enum.Enum):
@@ -342,6 +343,7 @@ class Settings(BaseModel):
             BuildArtifactType.LOCKFILE,
             BuildArtifactType.YAML,
             BuildArtifactType.CONDA_PACK,
+            BuildArtifactType.CONSTRUCTOR_INSTALLER,
             *(
                 [
                     BuildArtifactType.DOCKER_MANIFEST,
