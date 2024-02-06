@@ -10,7 +10,7 @@ import conda_package_handling.api
 import conda_package_streaming.url
 import filelock
 from conda.base.constants import PACKAGE_CACHE_MAGIC_FILE
-from conda.common.path import expand
+from conda.common.path import expand, strip_pkg_extension
 from conda.core.package_cache_data import (
     PackageCacheRecord,
     PackageRecord,
@@ -141,30 +141,28 @@ def action_fetch_and_extract_conda_packages(
                     # Without the magic file, cache queries would fail even if
                     # repodata_record.json files have proper channels specified.
 
-                    # Otherwise .conda, do nothing in that case
-                    ext = ".tar.bz2"
-                    if file_path_str.endswith(ext):
-                        extracted_dir = pathlib.Path(file_path_str.replace(ext, ""))
-                        # This file is used to parse cache records via PackageCacheRecord in conda
-                        repodata_file = extracted_dir / "info" / "repodata_record.json"
+                    extracted_dir = pathlib.Path(strip_pkg_extension(file_path_str)[0])
+                    # This file is used to parse cache records via PackageCacheRecord in conda
+                    repodata_file = extracted_dir / "info" / "repodata_record.json"
 
-                        if not repodata_file.exists():
-                            raw_json_record = read_index_json(extracted_dir)
-                            fn = os.path.basename(file_path_str)
-                            md5 = package["hash"]["md5"]
-                            size = getsize(file_path_str)
+                    if not repodata_file.exists():
+                        raw_json_record = read_index_json(extracted_dir)
+                        fn = os.path.basename(file_path_str)
+                        md5 = package["hash"]["md5"]
+                        size = getsize(file_path_str)
 
-                            package_cache_record = PackageCacheRecord.from_objects(
-                                raw_json_record,
-                                url=url,
-                                fn=fn,
-                                md5=md5,
-                                size=size,
-                                package_tarball_full_path=file_path_str,
-                                extracted_package_dir=str(extracted_dir),
-                            )
+                        package_cache_record = PackageCacheRecord.from_objects(
+                            raw_json_record,
+                            url=url,
+                            fn=fn,
+                            md5=md5,
+                            size=size,
+                            package_tarball_full_path=file_path_str,
+                            extracted_package_dir=str(extracted_dir),
+                        )
 
-                            repodata_record = PackageRecord.from_objects(
-                                package_cache_record
-                            )
-                            write_as_json_to_file(repodata_file, repodata_record)
+                        repodata_record = PackageRecord.from_objects(
+                            package_cache_record
+                        )
+
+                        write_as_json_to_file(repodata_file, repodata_record)
