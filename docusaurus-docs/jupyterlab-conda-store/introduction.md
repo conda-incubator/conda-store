@@ -5,11 +5,11 @@ description: Introduction to JupyterLab Extension.
 
 # conda-store JupyterLab extension
 
-A tool to use the [conda-store UI][conda-store-ui] - a React-based frontend for conda-store, within JupyterLab.
+A extension to use the [conda-store UI][conda-store-ui] - a React-based frontend for conda-store, within JupyterLab.
 
 ## Install 📦
 
-1. Pre-requisites: Make sure you have `conda-store`, JupyterLab `>=` 3.0;`<=` 4.0, and Python `>=` 3.8 installed.
+1. Pre-requisites: `conda-store-server`, JupyterLab `>=` 3.0 and `<=` 4.0, and Python `>=` 3.8 installed.
 
 2. Install the extension:
 
@@ -59,12 +59,9 @@ pip uninstall jupyterlab-conda-store
 </TabItem>
 </Tabs>
 
-
 ## Usage
 
-In JupyterLab, click on `conda-store` menu item to open the UI in a new window within JupyterLab:
-
-<!-- TODO: Add image -->
+In the JupyterLab window, click on `conda-store` menu-bar item to open the UI in a new window within JupyterLab.
 
 Learn to use the interface with [conda-store UI tutorials][cs-ui-tutorials].
 
