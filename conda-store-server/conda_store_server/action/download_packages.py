@@ -1,6 +1,7 @@
 import os
 import pathlib
 import shutil
+import tempfile
 import typing
 
 # This import is needed to avoid the following error on conda imports:
@@ -64,105 +65,121 @@ def action_fetch_and_extract_conda_packages(
                     sudo_safe = expand(pkgs_dir).startswith(expand("~"))
                     touch(cache_magic_file, mkdir=True, sudo_safe=sudo_safe)
 
-                file_path_str = str(file_path)
                 if file_path.exists():
                     context.log.info(f"SKIPPING {filename} | FILE EXISTS\n")
                 else:
-                    context.log.info(f"DOWNLOAD {filename} | {count_message}\n")
-                    (
-                        filename,
-                        conda_package_stream,
-                    ) = conda_package_streaming.url.conda_reader_for_url(url)
-                    with file_path.open("wb") as f:
-                        shutil.copyfileobj(conda_package_stream, f)
-                    conda_package_handling.api.extract(file_path_str)
+                    with tempfile.TemporaryDirectory() as tmp_dir:
+                        tmp_dir = pathlib.Path(tmp_dir)
+                        file_path = tmp_dir / filename
+                        file_path_str = str(file_path)
+                        context.log.info(f"DOWNLOAD {filename} | {count_message}\n")
+                        (
+                            filename,
+                            conda_package_stream,
+                        ) = conda_package_streaming.url.conda_reader_for_url(url)
+                        with file_path.open("wb") as f:
+                            shutil.copyfileobj(conda_package_stream, f)
+                        conda_package_handling.api.extract(file_path_str)
 
-                    # This code is needed to avoid failures when building in
-                    # parallel while using the shared cache.
-                    #
-                    # There are tarballs that only have the info/index.json file
-                    # and no info/repodata_record.json. The latter is used to
-                    # interact with the cache, so _make_single_record from
-                    # PackageCacheData would create the missing json file during
-                    # the lockfile install action.
-                    #
-                    # The code that does that in conda is similar to the code
-                    # below. However, there is an important difference. The
-                    # code in conda would fail to read the url and return None
-                    # here:
-                    #
-                    #   url = self._urls_data.get_url(package_filename)
-                    #
-                    # And that would result in the channel field of the json
-                    # file being set to "<unknown>". This is a problem because
-                    # the channel is used when querying cache entries, via
-                    # match_individual from MatchSpec, which would always result
-                    # in a mismatch because the proper channel value is
-                    # different.
-                    #
-                    # That would make conda think that the package is not
-                    # available in the cache, so it would try to download it
-                    # outside of this action, where no locking is implemented.
-                    #
-                    # As of now, conda's cache is not atomic, so the same
-                    # dependencies requested by different builds would overwrite
-                    # each other causing random failures during the build
-                    # process.
-                    #
-                    # To avoid this problem, the code below does what the code
-                    # in conda does but also sets the url properly, which would
-                    # make the channel match properly during the query process
-                    # later. So no dependencies would be downloaded outside of
-                    # this action and cache corruption is prevented.
-                    #
-                    # To illustrate, here's a diff of an old conda entry, which
-                    # didn't work, versus the new one created by this action:
-                    #
-                    # --- /tmp/old.txt        2024-02-05 01:08:16.879751010 +0100
-                    # +++ /tmp/new.txt        2024-02-05 01:08:02.919319887 +0100
-                    # @@ -2,7 +2,7 @@
-                    #    "arch": "x86_64",
-                    #    "build": "conda_forge",
-                    #    "build_number": 0,
-                    # -  "channel": "<unknown>",
-                    # +  "channel": "https://conda.anaconda.org/conda-forge/linux-64",
-                    #    "constrains": [],
-                    #    "depends": [],
-                    #    "features": "",
-                    # @@ -15,5 +15,6 @@
-                    #    "subdir": "linux-64",
-                    #    "timestamp": 1578324546067,
-                    #    "track_features": "",
-                    # +  "url": "https://conda.anaconda.org/conda-forge/linux-64/_libgcc_mutex-0.1-conda_forge.tar.bz2",
-                    #    "version": "0.1"
-                    #  }
-                    #
-                    # Also see the comment above about the cache magic file.
-                    # Without the magic file, cache queries would fail even if
-                    # repodata_record.json files have proper channels specified.
+                        # This code is needed to avoid failures when building in
+                        # parallel while using the shared cache.
+                        #
+                        # There are tarballs that only have the info/index.json file
+                        # and no info/repodata_record.json. The latter is used to
+                        # interact with the cache, so _make_single_record from
+                        # PackageCacheData would create the missing json file during
+                        # the lockfile install action.
+                        #
+                        # The code that does that in conda is similar to the code
+                        # below. However, there is an important difference. The
+                        # code in conda would fail to read the url and return None
+                        # here:
+                        #
+                        #   url = self._urls_data.get_url(package_filename)
+                        #
+                        # And that would result in the channel field of the json
+                        # file being set to "<unknown>". This is a problem because
+                        # the channel is used when querying cache entries, via
+                        # match_individual from MatchSpec, which would always result
+                        # in a mismatch because the proper channel value is
+                        # different.
+                        #
+                        # That would make conda think that the package is not
+                        # available in the cache, so it would try to download it
+                        # outside of this action, where no locking is implemented.
+                        #
+                        # As of now, conda's cache is not atomic, so the same
+                        # dependencies requested by different builds would overwrite
+                        # each other causing random failures during the build
+                        # process.
+                        #
+                        # To avoid this problem, the code below does what the code
+                        # in conda does but also sets the url properly, which would
+                        # make the channel match properly during the query process
+                        # later. So no dependencies would be downloaded outside of
+                        # this action and cache corruption is prevented.
+                        #
+                        # To illustrate, here's a diff of an old conda entry, which
+                        # didn't work, versus the new one created by this action:
+                        #
+                        # --- /tmp/old.txt        2024-02-05 01:08:16.879751010 +0100
+                        # +++ /tmp/new.txt        2024-02-05 01:08:02.919319887 +0100
+                        # @@ -2,7 +2,7 @@
+                        #    "arch": "x86_64",
+                        #    "build": "conda_forge",
+                        #    "build_number": 0,
+                        # -  "channel": "<unknown>",
+                        # +  "channel": "https://conda.anaconda.org/conda-forge/linux-64",
+                        #    "constrains": [],
+                        #    "depends": [],
+                        #    "features": "",
+                        # @@ -15,5 +15,6 @@
+                        #    "subdir": "linux-64",
+                        #    "timestamp": 1578324546067,
+                        #    "track_features": "",
+                        # +  "url": "https://conda.anaconda.org/conda-forge/linux-64/_libgcc_mutex-0.1-conda_forge.tar.bz2",
+                        #    "version": "0.1"
+                        #  }
+                        #
+                        # Also see the comment above about the cache magic file.
+                        # Without the magic file, cache queries would fail even if
+                        # repodata_record.json files have proper channels specified.
 
-                    extracted_dir = pathlib.Path(strip_pkg_extension(file_path_str)[0])
-                    # This file is used to parse cache records via PackageCacheRecord in conda
-                    repodata_file = extracted_dir / "info" / "repodata_record.json"
-
-                    if not repodata_file.exists():
-                        raw_json_record = read_index_json(extracted_dir)
-                        fn = os.path.basename(file_path_str)
-                        md5 = package["hash"]["md5"]
-                        size = getsize(file_path_str)
-
-                        package_cache_record = PackageCacheRecord.from_objects(
-                            raw_json_record,
-                            url=url,
-                            fn=fn,
-                            md5=md5,
-                            size=size,
-                            package_tarball_full_path=file_path_str,
-                            extracted_package_dir=str(extracted_dir),
+                        extracted_dir = pathlib.Path(
+                            strip_pkg_extension(file_path_str)[0]
                         )
+                        # This file is used to parse cache records via PackageCacheRecord in conda
+                        repodata_file = extracted_dir / "info" / "repodata_record.json"
 
-                        repodata_record = PackageRecord.from_objects(
-                            package_cache_record
-                        )
+                        if not repodata_file.exists():
+                            raw_json_record = read_index_json(extracted_dir)
+                            fn = os.path.basename(file_path_str)
+                            md5 = package["hash"]["md5"]
+                            size = getsize(file_path_str)
 
-                        write_as_json_to_file(repodata_file, repodata_record)
+                            package_cache_record = PackageCacheRecord.from_objects(
+                                raw_json_record,
+                                url=url,
+                                fn=fn,
+                                md5=md5,
+                                size=size,
+                                package_tarball_full_path=file_path_str,
+                                extracted_package_dir=str(extracted_dir),
+                            )
+
+                            repodata_record = PackageRecord.from_objects(
+                                package_cache_record
+                            )
+                            write_as_json_to_file(repodata_file, repodata_record)
+
+                        # This is to ensure _make_single_record in conda never
+                        # sees the extracted package directory without our
+                        # repodata_record file being there. Otherwise, conda
+                        # would attempt to create the repodata file, with the
+                        # channel field set to "<unknown>", which would make the
+                        # above code pointless. Using symlinks here would be
+                        # better since those are atomic on Linux, but I don't
+                        # want to create any permanent directories on the
+                        # filesystem.
+                        os.rename(file_path, pkgs_dir / file_path.name)
+                        os.rename(extracted_dir, pkgs_dir / extracted_dir.name)
