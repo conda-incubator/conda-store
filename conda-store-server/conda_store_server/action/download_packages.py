@@ -187,6 +187,7 @@ def action_fetch_and_extract_conda_packages(
                         shutil.copytree(
                             extracted_dir,
                             pkgs_dir / extracted_dir.name,
+                            symlinks=True,
                             dirs_exist_ok=True,
                         )
                         shutil.copyfile(file_path, pkgs_dir / file_path.name)
