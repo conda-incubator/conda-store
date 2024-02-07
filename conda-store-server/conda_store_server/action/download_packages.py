@@ -75,6 +75,7 @@ def action_fetch_and_extract_conda_packages(
                         extracted_dir = pathlib.Path(
                             strip_pkg_extension(file_path_str)[0]
                         )
+                        extracted_dir_str = str(extracted_dir)
                         context.log.info(f"DOWNLOAD {filename} | {count_message}\n")
                         (
                             filename,
@@ -166,7 +167,7 @@ def action_fetch_and_extract_conda_packages(
                                 md5=md5,
                                 size=size,
                                 package_tarball_full_path=file_path_str,
-                                extracted_package_dir=str(extracted_dir),
+                                extracted_package_dir=extracted_dir_str,
                             )
 
                             repodata_record = PackageRecord.from_objects(
