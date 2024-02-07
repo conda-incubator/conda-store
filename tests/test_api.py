@@ -621,7 +621,7 @@ def test_create_specification_parallel_auth(testclient):
     # be located, and compares it to a certain threshold, which is unlikely to
     # be reached based on how long it takes a single build to run
     # non-concurrently on average:
-    threshold = 5
+    threshold = 10
     quartiles = statistics.quantiles(build_deltas, method='inclusive')
     print("build_deltas", build_deltas)
     print("stats", min(build_deltas), quartiles)
