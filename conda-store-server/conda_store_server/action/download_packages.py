@@ -184,10 +184,6 @@ def action_fetch_and_extract_conda_packages(
                         # better since those are atomic on Linux, but I don't
                         # want to create any permanent directories on the
                         # filesystem.
-                        shutil.copytree(
-                            extracted_dir,
-                            pkgs_dir / extracted_dir.name,
-                            symlinks=True,
-                            dirs_exist_ok=True,
-                        )
-                        shutil.copyfile(file_path, pkgs_dir / file_path.name)
+                        shutil.rmtree(pkgs_dir / extracted_dir.name, ignore_errors=True)
+                        shutil.move(extracted_dir, pkgs_dir / extracted_dir.name)
+                        shutil.move(file_path, pkgs_dir / file_path.name)
