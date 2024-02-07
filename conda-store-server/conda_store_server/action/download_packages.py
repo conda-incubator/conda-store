@@ -72,6 +72,9 @@ def action_fetch_and_extract_conda_packages(
                         tmp_dir = pathlib.Path(tmp_dir)
                         file_path = tmp_dir / filename
                         file_path_str = str(file_path)
+                        extracted_dir = pathlib.Path(
+                            strip_pkg_extension(file_path_str)[0]
+                        )
                         context.log.info(f"DOWNLOAD {filename} | {count_message}\n")
                         (
                             filename,
@@ -79,7 +82,9 @@ def action_fetch_and_extract_conda_packages(
                         ) = conda_package_streaming.url.conda_reader_for_url(url)
                         with file_path.open("wb") as f:
                             shutil.copyfileobj(conda_package_stream, f)
-                        conda_package_handling.api.extract(file_path_str)
+                        conda_package_handling.api.extract(
+                            file_path_str, dest_dir=extracted_dir
+                        )
 
                         # This code is needed to avoid failures when building in
                         # parallel while using the shared cache.
@@ -145,9 +150,6 @@ def action_fetch_and_extract_conda_packages(
                         # Without the magic file, cache queries would fail even if
                         # repodata_record.json files have proper channels specified.
 
-                        extracted_dir = pathlib.Path(
-                            strip_pkg_extension(file_path_str)[0]
-                        )
                         # This file is used to parse cache records via PackageCacheRecord in conda
                         repodata_file = extracted_dir / "info" / "repodata_record.json"
 
