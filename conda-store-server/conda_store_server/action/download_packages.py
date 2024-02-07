@@ -181,5 +181,5 @@ def action_fetch_and_extract_conda_packages(
                         # better since those are atomic on Linux, but I don't
                         # want to create any permanent directories on the
                         # filesystem.
-                        os.rename(file_path, pkgs_dir / file_path.name)
                         os.rename(extracted_dir, pkgs_dir / extracted_dir.name)
+                        os.rename(file_path, pkgs_dir / file_path.name)
