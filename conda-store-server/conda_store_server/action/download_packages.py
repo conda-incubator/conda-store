@@ -90,11 +90,14 @@ def action_fetch_and_extract_conda_packages(
                         # This code is needed to avoid failures when building in
                         # parallel while using the shared cache.
                         #
-                        # There are tarballs that only have the info/index.json file
-                        # and no info/repodata_record.json. The latter is used to
-                        # interact with the cache, so _make_single_record from
-                        # PackageCacheData would create the missing json file during
-                        # the lockfile install action.
+                        # Package tarballs contain the info/index.json file,
+                        # which is used by conda to create the
+                        # info/repodata_record.json file. The latter is used to
+                        # interact with the cache. _make_single_record from
+                        # PackageCacheData would create the repodata json file
+                        # if it's not present, which would happen in conda-store
+                        # during the lockfile install action. The repodata file
+                        # is not created if it already exists.
                         #
                         # The code that does that in conda is similar to the code
                         # below. However, there is an important difference. The
