@@ -154,26 +154,25 @@ def action_fetch_and_extract_conda_packages(
                         # This file is used to parse cache records via PackageCacheRecord in conda
                         repodata_file = extracted_dir / "info" / "repodata_record.json"
 
-                        if not repodata_file.exists():
-                            raw_json_record = read_index_json(extracted_dir)
-                            fn = os.path.basename(file_path_str)
-                            md5 = package["hash"]["md5"]
-                            size = getsize(file_path_str)
+                        raw_json_record = read_index_json(extracted_dir)
+                        fn = os.path.basename(file_path_str)
+                        md5 = package["hash"]["md5"]
+                        size = getsize(file_path_str)
 
-                            package_cache_record = PackageCacheRecord.from_objects(
-                                raw_json_record,
-                                url=url,
-                                fn=fn,
-                                md5=md5,
-                                size=size,
-                                package_tarball_full_path=file_path_str,
-                                extracted_package_dir=extracted_dir_str,
-                            )
+                        package_cache_record = PackageCacheRecord.from_objects(
+                            raw_json_record,
+                            url=url,
+                            fn=fn,
+                            md5=md5,
+                            size=size,
+                            package_tarball_full_path=file_path_str,
+                            extracted_package_dir=extracted_dir_str,
+                        )
 
-                            repodata_record = PackageRecord.from_objects(
-                                package_cache_record
-                            )
-                            write_as_json_to_file(repodata_file, repodata_record)
+                        repodata_record = PackageRecord.from_objects(
+                            package_cache_record
+                        )
+                        write_as_json_to_file(repodata_file, repodata_record)
 
                         # This is to ensure _make_single_record in conda never
                         # sees the extracted package directory without our
