@@ -656,7 +656,14 @@ def test_update_namespace_noauth(testclient):
     assert r.status == schema.APIStatus.ERROR
 
 
-def test_update_namespace_auth(testclient):
+@pytest.mark.parametrize(
+    "editor_role",
+    [
+        "editor",
+        "developer",
+    ],
+)
+def test_update_namespace_auth(testclient, editor_role):
     namespace = f"filesystem"
 
     testclient.login()
@@ -664,7 +671,7 @@ def test_update_namespace_auth(testclient):
     test_role_mappings = {
         f"{namespace}/*": ["viewer"],
         f"{namespace}/admin": ["admin"],
-        f"{namespace}/test": ["admin", "viewer", "developer"],
+        f"{namespace}/test": ["admin", "viewer", editor_role],
     }
 
     # Updates both the metadata and the role mappings
@@ -770,7 +777,14 @@ def test_update_namespace_metadata_v2(testclient, auth):
 
 
 @pytest.mark.parametrize("auth", [True, False])
-def test_crud_namespace_roles_v2(testclient, auth):
+@pytest.mark.parametrize(
+    "editor_role",
+    [
+        "editor",
+        "developer",
+    ],
+)
+def test_crud_namespace_roles_v2(testclient, auth, editor_role):
     other_namespace = f"pytest-{uuid.uuid4()}"
     namespace = f"filesystem"
     make_request = partial(_crud_common, testclient=testclient, auth=auth)
@@ -793,7 +807,7 @@ def test_crud_namespace_roles_v2(testclient, auth):
         route=f"api/v1/namespace/{namespace}/role",
         json={
             "other_namespace": other_namespace,
-            "role": "developer"
+            "role": editor_role,
         },
     )
 
@@ -807,7 +821,7 @@ def test_crud_namespace_roles_v2(testclient, auth):
         data_pred=lambda data: (
             data['namespace'] == 'filesystem' and
             data['other_namespace'] == other_namespace and
-            data['role'] == 'developer'
+            data['role'] == 'developer'  # always developer in the DB
         ),
     )
 

@@ -71,7 +71,14 @@ def test_namespace_role_mapping(db):
     NamespaceRoleMapping(namespace=namespace, namespace_id=namespace.id, entity="*/*")
 
 
-def test_namespace_role_mapping_v2(db):
+@pytest.mark.parametrize(
+    "editor_role",
+    [
+        "editor",
+        "developer",
+    ],
+)
+def test_namespace_role_mapping_v2(db, editor_role):
     namespace_name = "pytest-namespace"
     other_namespace_name1 = "pytest-other-namespace1"
     other_namespace_name2 = "pytest-other-namespace2"
@@ -109,11 +116,11 @@ def test_namespace_role_mapping_v2(db):
                    r"namespace_role_mapping_v2.other_namespace_id")):
         # Runs in a nested transaction since a constraint violation will cause a rollback
         with db.begin_nested():
-            api.create_namespace_role(db, name=namespace_name, other=other_namespace_name2, role="developer")
+            api.create_namespace_role(db, name=namespace_name, other=other_namespace_name2, role=editor_role)
             db.commit()
 
     # Updates a role mapping
-    api.update_namespace_role(db, name=namespace_name, other=other_namespace_name2, role="developer")
+    api.update_namespace_role(db, name=namespace_name, other=other_namespace_name2, role=editor_role)
     db.commit()
 
     # Gets all role mappings
@@ -129,7 +136,7 @@ def test_namespace_role_mapping_v2(db):
     assert roles[1].id == 2
     assert roles[1].namespace == namespace_name
     assert roles[1].other_namespace == other_namespace_name2
-    assert roles[1].role == 'developer'
+    assert roles[1].role == 'developer'  # always developer in the DB
 
     assert roles[2].id == 3
     assert roles[2].namespace == namespace_name
