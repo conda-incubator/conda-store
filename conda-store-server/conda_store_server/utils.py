@@ -8,6 +8,8 @@ import subprocess
 import sys
 import time
 
+from filelock import FileLock
+
 
 class CondaStoreError(Exception):
     @property
@@ -20,9 +22,14 @@ class BuildPathError(CondaStoreError):
 
 
 def symlink(source, target):
-    if os.path.islink(target):
-        os.unlink(target)
-    os.symlink(source, target)
+    # Multiple builds call this, so this lock avoids race conditions on unlink
+    # and symlink operations
+    with FileLock(f"{target}.lock"):
+        try:
+            os.unlink(target)
+        except FileNotFoundError:
+            pass
+        os.symlink(source, target)
 
 
 def chmod(directory, permissions):

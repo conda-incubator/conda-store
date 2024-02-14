@@ -9,7 +9,10 @@ ordering for tests.
 
 """
 import asyncio
+import collections
+import datetime
 import json
+import statistics
 import time
 import uuid
 from functools import partial
@@ -467,6 +470,164 @@ def test_create_specification_auth(testclient):
     assert r.data.namespace.name == namespace
 
 
+def test_create_specification_parallel_auth(testclient):
+    namespace = "default"
+    environment_name = f"pytest-{uuid.uuid4()}"
+
+    # Builds different versions to avoid caching
+    versions = ["6.2.0", "6.2.1", "6.2.2", "6.2.3", "6.2.4", "6.2.5", "7.1.1", "7.1.2", "7.3.1", "7.4.0"]
+    num_builds = len(versions)
+    limit_seconds = 60 * 15
+    build_ids = collections.deque([])
+
+    # Spins up 'num_builds' builds and adds them to 'build_ids'
+    for version in versions:
+        testclient.login()
+        response = testclient.post(
+            "api/v1/specification",
+            json={
+                "namespace": namespace,
+                "specification": json.dumps({
+                    "name": environment_name,
+                    "channels": ["main"],
+                    "dependencies": [f"pytest={version}"],
+                }),
+            },
+            timeout=10,
+        )
+        response.raise_for_status()
+        r = schema.APIPostSpecification.parse_obj(response.json())
+        assert r.status == schema.APIStatus.OK
+        build_ids.append(r.data.build_id)
+
+    # How long it takes to do a single build
+    build_deltas = []
+
+    # Checks whether the builds are done (in the order they were scheduled in)
+    start = datetime.datetime.now()
+    prev = None
+    prev_builds = num_builds
+    while True:
+        # Prints the current build ids in the queue. Visually, if the server is
+        # configured to run N jobs in parallel, the queue should have N jobs
+        # less almost instantly once the first batch is done processing. After
+        # that, the queue should keep shrinking at a steady pace after each of
+        # the workers is done
+        print("build_ids", build_ids)
+
+        # Checks whether the time limit is reached
+        now = datetime.datetime.now()
+        if (now - start).total_seconds() > limit_seconds:
+            break
+
+        # Measures how long it takes to do a single build
+        if len(build_ids) < prev_builds:
+            if prev is not None:
+                build_delta = (now - prev).total_seconds()
+                print("build_delta", build_delta)
+                build_deltas.append(build_delta)
+            prev_builds = len(build_ids)
+            prev = now
+
+        # Gets the oldest build in the queue as it's the one that's most likely
+        # to be done
+        try:
+            build_id = build_ids.popleft()
+        except IndexError:
+            break
+
+        # Checks the status
+        response = testclient.get(f"api/v1/build/{build_id}", timeout=10)
+        response.raise_for_status()
+        r = schema.APIGetBuild.parse_obj(response.json())
+        assert r.status == schema.APIStatus.OK
+        assert r.data.specification.name == environment_name
+
+        # Gets build logs
+        def get_logs():
+            response = testclient.get(f"api/v1/build/{build_id}/logs", timeout=10)
+            response.raise_for_status()
+            return response.text
+
+        # Exits immediately on failure
+        assert r.data.status != 'FAILED', get_logs()
+
+        # If not done, adds the id back to the end of the queue
+        if r.data.status != 'COMPLETED':
+            build_ids.append(build_id)
+
+        # Adds a small delay to avoid making too many requests too fast. The
+        # build takes significantly longer than 1 second, so this shouldn't
+        # impact the measurements
+        time.sleep(1)
+
+    # If there are jobs in the queue, the loop didn't complete in the allocated
+    # time. So something went wrong, like a build getting stuck or parallel
+    # builds not working
+    assert len(build_ids) == 0
+
+    # Because this is an integration test, we cannot change the server
+    # c.CondaStoreWorker.concurrency value, which is set to 4 by default. But
+    # it's possible to devise a statistical test based on locally collected
+    # data, using 'build_deltas' above:
+    #
+    # concurrency = 4 with 2 CPUs, so equivalent to concurrency = 2:
+    # c4_2cpu = [
+    #     1.027987,
+    #     67.234371,
+    #     1.272288,
+    #     43.966526,
+    #     7.171627,
+    #     68.563222,
+    #     4.143675,
+    #     46.872263,
+    #     1.018258,
+    # ]
+    #
+    # concurrency = 1, same machine:
+    # c1 = [
+    #     19.394085,
+    #     33.70623,
+    #     22.815429,
+    #     62.555845,
+    #     68.438333,
+    #     29.794979,
+    #     63.370743,
+    #     32.118421,
+    #     29.88376,
+    # ]
+    #
+    # Here's another set of measurements from a different machine, which should
+    # have 4 CPUs, with concurrency = 4:
+    # ci = [
+    #     1.02644,
+    #     33.591736,
+    #     1.016269,
+    #     19.299738,
+    #     7.115025,
+    #     20.342442,
+    #     12.222805,
+    #     6.103751,
+    #     1.016237,
+    # ]
+    #
+    # These values will vary depending on workload and the number of CPUs. But
+    # the main observation here is this: if parallel builds are working,
+    # there will be a number of values that are relatively small compared to the
+    # time it takes to run a single build when not running concurrently.
+    #
+    # So the test below looks at the value of the first quartile, which is the
+    # median of the lower half of the dataset, where all these small values will
+    # be located, and compares it to a certain threshold, which is unlikely to
+    # be reached based on how long it takes a single build to run
+    # non-concurrently on average:
+    threshold = 10
+    quartiles = statistics.quantiles(build_deltas, method='inclusive')
+    print("build_deltas", build_deltas)
+    print("stats", min(build_deltas), quartiles)
+    assert quartiles[0] < threshold
+
+
 # Only testing size values that will always cause errors. Smaller values could
 # cause errors as well, but would be flaky since the test conda-store state
 # directory might have different lengths on different systems, for instance,
@@ -506,8 +667,8 @@ def test_create_specification_auth_env_name_too_long(testclient, size):
 
     # Try checking that the status is 'FAILED'
     is_updated = False
-    for _ in range(5):
-        time.sleep(5)
+    for _ in range(60):
+        time.sleep(10)
 
         # check for the given build
         response = testclient.get(f"api/v1/build/{build_id}")
@@ -997,7 +1158,7 @@ def test_api_cancel_build_auth(testclient):
     new_build_id = r.data.build_id
 
     # Delay to ensure the build kicks off
-    build_timeout = 180
+    build_timeout = 10 * 60
     building = False
     start = time.time()
     while time.time() - start < build_timeout:
