@@ -1,9 +1,8 @@
 """User journey tests for the API."""
 import os
-import uuid
 
 import pytest
-from helpers import helpers as h
+import utils.api_utils as utils
 
 
 @pytest.fixture(scope="session")
@@ -20,23 +19,25 @@ def token(base_url) -> str:
 
 
 @pytest.mark.user_journey
-@pytest.mark.parametrize("filename", [
-    ("tests/user_journeys/test_data/simple_environment.yaml"),
-    # ("test_data/complex-environment.yaml")
-    ])
-def test_admin_user_can_create_environment(base_url, token, filename) -> None:
+@pytest.mark.parametrize(
+    "specification_path",
+    [
+        ("tests/user_journeys/test_data/simple_environment.yaml"),
+    ],
+)
+def test_admin_user_can_create_environment(
+    base_url: str, token: str, specification_path: str
+) -> None:
     """Test that an admin user can create an environment."""
-    namespace = uuid.uuid4().hex  # Generate a random namespace
-    print(os.path.abspath(filename))
-    api = h.APIHelper(base_url=base_url, token=token)
-    specification_path = f"{filename}"
-    response = h.create_environment(api, namespace, specification_path)
-    assert response.status_code == 200
+    namespace = utils.gen_random_namespace()
+    api = utils.API(base_url=base_url, token=token)
+    utils.create_namespace(api, namespace)
+    response = utils.create_environment(api, namespace, specification_path)
     data = response.json()["data"]
     assert "build_id" in data
     build_id = data["build_id"]
     assert build_id is not None
-    build = h.wait_for_successful_build(api, build_id)
+    build = utils.wait_for_successful_build(api, build_id)
     environment_name = build.json()["data"]["specification"]["name"]
-    h.delete_environment(api, namespace, environment_name)
-    h.delete_namespace(api, namespace)
+    utils.delete_environment(api, namespace, environment_name)
+    utils.delete_namespace(api, namespace)
