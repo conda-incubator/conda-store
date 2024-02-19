@@ -1,8 +1,7 @@
 """Helper functions for user journeys."""
-from enum import Enum
 import time
-
 import uuid
+from enum import Enum
 
 import requests
 import time_utils
@@ -67,10 +66,9 @@ class API:
             default_namespace: str = "default"
             ) -> requests.Response:
         """ Create a token with a specified role in a specified namespace. """
-        one_hour_in_future = time_utils.get_time_in_future(1)
         json_data = {
             "primary_namespace": default_namespace,
-            "expiration": one_hour_in_future.isoformat(),
+            "expiration": time_utils.get_iso8601_time(1),
             "role_bindings": {
                 f"{namespace}/*": [role]
             }
@@ -110,8 +108,7 @@ class API:
             response = self._make_request(
                 f"api/v1/build/{build_id}", method="GET")
             status = response.json()["data"]["status"]
-            if status == BuildStatus.FAILED.value:
-                raise AssertionError("Build failed")
+            assert status != BuildStatus.FAILED.value, "Build failed"
             iterations += 1
             time.sleep(sleep_time)
         return response
