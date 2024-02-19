@@ -4,7 +4,7 @@ import uuid
 from enum import Enum
 
 import requests
-import time_utils
+import utils.time_utils as time_utils
 
 TIMEOUT = 10
 
