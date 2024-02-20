@@ -4,6 +4,7 @@ import os
 import pathlib
 import re
 import shutil
+import sys
 
 from conda_store_server import conda_utils, schema, utils
 from conda_store_server.environment import validate_environment
@@ -11,6 +12,7 @@ from conda_store_server.utils import BuildPathError
 from sqlalchemy import (
     JSON,
     BigInteger,
+    Boolean,
     Column,
     DateTime,
     Enum,
@@ -39,6 +41,17 @@ logger = logging.getLogger("orm")
 Base = declarative_base()
 
 ARN_ALLOWED_REGEX = re.compile(schema.ARN_ALLOWED)
+
+
+class Worker(Base):
+    """For communicating with the worker process"""
+
+    __tablename__ = "worker"
+
+    id = Column(Integer, primary_key=True)
+
+    # For checking whether the worker is initialized
+    initialized = Column(Boolean, default=False)
 
 
 class Namespace(Base):
@@ -83,6 +96,8 @@ class NamespaceRoleMapping(Base):
 
     @validates("role")
     def validate_role(self, key, role):
+        if role == "editor":
+            role = "developer"  # alias
         if role not in ["admin", "viewer", "developer"]:
             raise ValueError(f"invalid entity={role}")
 
@@ -108,6 +123,8 @@ class NamespaceRoleMappingV2(Base):
 
     @validates("role")
     def validate_role(self, key, role):
+        if role == "editor":
+            role = "developer"  # alias
         if role not in ["admin", "viewer", "developer"]:
             raise ValueError(f"invalid role={role}")
         return role
@@ -254,7 +271,12 @@ class Build(Base):
         # https://github.com/conda-incubator/conda-store/issues/649
         if len(str(res)) > 255:
             raise BuildPathError("build_path too long: must be <= 255 characters")
-        return res
+        # Note: cannot use the '/' operator to prepend the extended-length
+        # prefix
+        if sys.platform == "win32" and conda_store.win_extended_length_prefix:
+            return pathlib.Path(f"\\\\?\\{res}")
+        else:
+            return res
 
     def environment_path(self, conda_store):
         """Environment path is the path for the symlink to the build
@@ -264,11 +286,17 @@ class Build(Base):
         store_directory = os.path.abspath(conda_store.store_directory)
         namespace = self.environment.namespace.name
         name = self.specification.name
-        return pathlib.Path(
+        res = pathlib.Path(
             conda_store.environment_directory.format(
                 store_directory=store_directory, namespace=namespace, name=name
             )
         )
+        # Note: cannot use the '/' operator to prepend the extended-length
+        # prefix
+        if sys.platform == "win32" and conda_store.win_extended_length_prefix:
+            return pathlib.Path(f"\\\\?\\{res}")
+        else:
+            return res
 
     @property
     def build_key(self):
@@ -313,6 +341,11 @@ class Build(Base):
     def docker_manifest_key(self):
         return f"docker/manifest/{self.build_key}"
 
+    @property
+    def constructor_installer_key(self):
+        ext = "exe" if sys.platform == "win32" else "sh"
+        return f"installer/{self.build_key}.{ext}"
+
     def docker_blob_key(self, blob_hash):
         return f"docker/blobs/{blob_hash}"
 
@@ -341,6 +374,13 @@ class Build(Base):
     def has_docker_manifest(self):
         return any(
             artifact.artifact_type == schema.BuildArtifactType.DOCKER_MANIFEST
+            for artifact in self.build_artifacts
+        )
+
+    @hybrid_property
+    def has_constructor_installer(self):
+        return any(
+            artifact.artifact_type == schema.BuildArtifactType.CONSTRUCTOR_INSTALLER
             for artifact in self.build_artifacts
         )
 
