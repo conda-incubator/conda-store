@@ -15,6 +15,7 @@ from conda_store_server.build import (
     build_conda_env_export,
     build_conda_environment,
     build_conda_pack,
+    build_constructor_installer,
     solve_conda_environment,
 )
 from conda_store_server.worker.app import CondaStoreWorker
@@ -25,6 +26,7 @@ from sqlalchemy.orm import Session
 @worker_ready.connect
 def at_start(sender, **k):
     with sender.app.connection():
+        sender.app.send_task("task_initialize_worker")
         sender.app.send_task("task_update_conda_channels")
         sender.app.send_task("task_watch_paths")
         sender.app.send_task("task_cleanup_builds")
@@ -57,6 +59,19 @@ class WorkerTask(Task):
         platforms.signals["INT"] = _shutdown
 
         return self._worker
+
+
+# Signals to the server that the worker is running, see _check_worker in
+# CondaStoreServer
+@shared_task(base=WorkerTask, name="task_initialize_worker", bind=True)
+def task_initialize_worker(self):
+    from conda_store_server import orm
+
+    conda_store = self.worker.conda_store
+
+    with conda_store.session_factory() as db:
+        db.add(orm.Worker(initialized=True))
+        db.commit()
 
 
 @shared_task(base=WorkerTask, name="task_watch_paths", bind=True)
@@ -221,6 +236,14 @@ def task_build_conda_docker(self, build_id):
     with conda_store.session_factory() as db:
         build = api.get_build(db, build_id)
         build_conda_docker(db, conda_store, build)
+
+
+@shared_task(base=WorkerTask, name="task_build_constructor_installer", bind=True)
+def task_build_constructor_installer(self, build_id):
+    conda_store = self.worker.conda_store
+    with conda_store.session_factory() as db:
+        build = api.get_build(db, build_id)
+        build_constructor_installer(db, conda_store, build)
 
 
 @shared_task(base=WorkerTask, name="task_update_environment_build", bind=True)
