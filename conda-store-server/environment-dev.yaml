@@ -12,6 +12,7 @@ dependencies:
   - conda-pack
   - conda-lock >=1.0.5
   - conda-package-handling
+  - conda-package-streaming
   # web server
   - celery
   - flower
