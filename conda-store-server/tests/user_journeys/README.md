@@ -4,7 +4,7 @@ This repository contains user journey tests for the API. User journey tests
 are end-to-end tests that simulate real user scenarios to ensure the API
 functions correctly in different scenarios.
 
-These tests will use the high privileged token to create a randomly named
+These tests will use the high-privileged token to create a randomly-named
 namespace (using a UUID) to prevent conflicts with existing namespaces. At the
 end of the test, it will delete any environments created and then delete the
 namespace.
