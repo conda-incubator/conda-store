@@ -53,7 +53,7 @@ variables:
 
 ## Running the tests
 
-To run the tests run `pytest -m user_journey` from the `conda-store-server`
+To run the tests, run `pytest -m user_journey` from the `conda-store-server`
 directory.
 
 ## Current scenarios tested
