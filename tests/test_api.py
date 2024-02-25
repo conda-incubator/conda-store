@@ -1198,7 +1198,7 @@ def test_api_cancel_build_auth(testclient):
     assert r.status == schema.APIStatus.OK
     assert r.message == f"build {new_build_id} canceled"
 
-    failed = False
+    canceled = False
     for _ in range(10):
         # Delay to ensure the build is marked as failed
         time.sleep(5)
@@ -1214,8 +1214,8 @@ def test_api_cancel_build_auth(testclient):
         r = schema.APIGetBuild.parse_obj(response.json())
         assert r.status == schema.APIStatus.OK
         assert r.data.id == new_build_id
-        if r.data.status == schema.BuildStatus.FAILED.value:
-            failed = True
+        if r.data.status == schema.BuildStatus.CANCELED.value:
+            canceled = True
             break
 
-    assert failed is True
+    assert canceled is True
