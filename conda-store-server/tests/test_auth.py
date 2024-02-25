@@ -129,7 +129,6 @@ def test_expired_token():
     ],
 )
 def test_authorization(conda_store, entity_bindings, arn, permissions, authorized):
-
     authorization = RBACAuthorizationBackend(
         authentication_db=conda_store.session_factory
     )
@@ -187,7 +186,14 @@ _admin_permissions = {
     ],
 )
 @pytest.mark.parametrize("role_mappings_version", [1, 2])
-def test_end_to_end_auth_flow_v1(conda_store_server, testclient, authenticate, role_mappings_version, role, permissions):
+def test_end_to_end_auth_flow_v1(
+    conda_store_server,
+    testclient,
+    authenticate,
+    role_mappings_version,
+    role,
+    permissions,
+):
     # Configures authentication
     namespace = f"this-{uuid.uuid4()}"
     other_namespace = f"other-{uuid.uuid4()}"
@@ -209,40 +215,41 @@ def test_end_to_end_auth_flow_v1(conda_store_server, testclient, authenticate, r
 
     authorization = RBACAuthorizationBackend(
         authentication_db=conda_store.session_factory,
-        role_mappings_version = role_mappings_version,
+        role_mappings_version=role_mappings_version,
     )
+
     def authorize():
         return authorization.authorize(
-        AuthenticationToken(
-            primary_namespace=token_model.primary_namespace,
-            role_bindings=token_model.role_bindings,
-        ),
-        f"{other_namespace}/example-name",
-        permissions,
-    )
+            AuthenticationToken(
+                primary_namespace=token_model.primary_namespace,
+                role_bindings=token_model.role_bindings,
+            ),
+            f"{other_namespace}/example-name",
+            permissions,
+        )
+
     # No default roles
     assert authorize() is False
 
     # Creates new namespaces
     for n in (namespace, other_namespace):
-        response = testclient.post(
-            f"api/v1/namespace/{n}"
-        )
+        response = testclient.post(f"api/v1/namespace/{n}")
         response.raise_for_status()
 
     # Deletes roles to start with a clean state
     response = testclient.put(
-        f"api/v1/namespace/{namespace}",
-        json={"role_mappings": {}}
+        f"api/v1/namespace/{namespace}", json={"role_mappings": {}}
     )
     response.raise_for_status()
 
     # Creates role for 'namespace' with access to 'other_namespace'
     response = testclient.put(
         f"api/v1/namespace/{namespace}",
-        json={"role_mappings": {
-            f"{other_namespace}/ex*-name": [role],
-        }}
+        json={
+            "role_mappings": {
+                f"{other_namespace}/ex*-name": [role],
+            }
+        },
     )
     response.raise_for_status()
 
@@ -254,8 +261,7 @@ def test_end_to_end_auth_flow_v1(conda_store_server, testclient, authenticate, r
 
     # Deletes created roles
     response = testclient.put(
-        f"api/v1/namespace/{namespace}",
-        json={"role_mappings": {}}
+        f"api/v1/namespace/{namespace}", json={"role_mappings": {}}
     )
     response.raise_for_status()
 
@@ -273,7 +279,14 @@ def test_end_to_end_auth_flow_v1(conda_store_server, testclient, authenticate, r
     ],
 )
 @pytest.mark.parametrize("role_mappings_version", [1, 2])
-def test_end_to_end_auth_flow_v2(conda_store_server, testclient, authenticate, role_mappings_version, role, permissions):
+def test_end_to_end_auth_flow_v2(
+    conda_store_server,
+    testclient,
+    authenticate,
+    role_mappings_version,
+    role,
+    permissions,
+):
     # Configures authentication
     namespace = f"this-{uuid.uuid4()}"
     other_namespace = f"other-{uuid.uuid4()}"
@@ -295,8 +308,9 @@ def test_end_to_end_auth_flow_v2(conda_store_server, testclient, authenticate, r
 
     authorization = RBACAuthorizationBackend(
         authentication_db=conda_store.session_factory,
-        role_mappings_version = role_mappings_version,
+        role_mappings_version=role_mappings_version,
     )
+
     def authorize():
         return authorization.authorize(
             AuthenticationToken(
@@ -306,29 +320,23 @@ def test_end_to_end_auth_flow_v2(conda_store_server, testclient, authenticate, r
             f"{other_namespace}/example-name",
             permissions,
         )
+
     # No default roles
     assert authorize() is False
 
     # Creates new namespaces
     for n in (namespace, other_namespace):
-        response = testclient.post(
-            f"api/v1/namespace/{n}"
-        )
+        response = testclient.post(f"api/v1/namespace/{n}")
         response.raise_for_status()
 
     # Deletes roles to start with a clean state
-    response = testclient.delete(
-        f"api/v1/namespace/{other_namespace}/roles"
-    )
+    response = testclient.delete(f"api/v1/namespace/{other_namespace}/roles")
     response.raise_for_status()
 
     # Creates role for 'namespace' with access to 'other_namespace'
     response = testclient.post(
         f"api/v1/namespace/{other_namespace}/role",
-        json={
-            "other_namespace": namespace,
-            "role": role
-        },
+        json={"other_namespace": namespace, "role": role},
     )
     response.raise_for_status()
 
@@ -339,9 +347,7 @@ def test_end_to_end_auth_flow_v2(conda_store_server, testclient, authenticate, r
         assert authorize() is False
 
     # Deletes created roles
-    response = testclient.delete(
-        f"api/v1/namespace/{other_namespace}/roles"
-    )
+    response = testclient.delete(f"api/v1/namespace/{other_namespace}/roles")
     response.raise_for_status()
 
     # Should fail again

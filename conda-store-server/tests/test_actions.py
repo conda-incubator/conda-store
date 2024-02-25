@@ -1,11 +1,9 @@
 import asyncio
 import datetime
-import os
 import pathlib
 import re
 import subprocess
 import sys
-import tempfile
 
 import pytest
 import yarl
@@ -20,7 +18,6 @@ from conda_store_server import (
     utils,
 )
 from conda_store_server.server.auth import DummyAuthentication
-from fastapi import Request
 from fastapi.responses import RedirectResponse
 from traitlets import TraitError
 
@@ -35,12 +32,20 @@ def test_action_decorator():
             context.run(["cmd", "/c", "echo subprocess"])
             context.run("echo subprocess_stdout", shell=True)
             context.run("echo subprocess_stderr>&2", shell=True)
-            context.run("echo subprocess_stderr_no_redirect>&2", shell=True, redirect_stderr=False)
+            context.run(
+                "echo subprocess_stderr_no_redirect>&2",
+                shell=True,
+                redirect_stderr=False,
+            )
         else:
             context.run(["echo", "subprocess"])
             context.run("echo subprocess_stdout", shell=True)
             context.run("echo subprocess_stderr 1>&2", shell=True)
-            context.run("echo subprocess_stderr_no_redirect 1>&2", shell=True, redirect_stderr=False)
+            context.run(
+                "echo subprocess_stderr_no_redirect 1>&2",
+                shell=True,
+                redirect_stderr=False,
+            )
         context.log.info("log")
         return pathlib.Path.cwd()
 
@@ -85,9 +90,9 @@ def test_solve_lockfile_valid_conda_flags(conda_store, simple_specification):
 
 # Checks that conda_flags is used by conda-lock
 def test_solve_lockfile_invalid_conda_flags(conda_store, simple_specification):
-    with pytest.raises(Exception, match=(
-        r"Command.*--this-is-invalid.*returned non-zero exit status"
-    )):
+    with pytest.raises(
+        Exception, match=(r"Command.*--this-is-invalid.*returned non-zero exit status")
+    ):
         action.action_solve_lockfile(
             conda_command=conda_store.conda_command,
             specification=simple_specification,
@@ -120,7 +125,9 @@ def test_solve_lockfile_multiple_platforms(conda_store, specification, request):
         "simple_specification_with_pip",
     ],
 )
-def test_generate_constructor_installer(conda_store, specification_name, request, tmp_path):
+def test_generate_constructor_installer(
+    conda_store, specification_name, request, tmp_path
+):
     specification = request.getfixturevalue(specification_name)
     installer_dir = tmp_path / "installer_dir"
 
@@ -139,27 +146,27 @@ def test_generate_constructor_installer(conda_store, specification_name, request
     tmp_dir = tmp_path / "tmp"
 
     # Runs the installer
-    out_dir = pathlib.Path(tmp_dir) / 'out'
-    if sys.platform == 'win32':
-        subprocess.check_output([installer, '/S', f'/D={out_dir}'])
+    out_dir = pathlib.Path(tmp_dir) / "out"
+    if sys.platform == "win32":
+        subprocess.check_output([installer, "/S", f"/D={out_dir}"])
     else:
-        subprocess.check_output([installer, '-b', '-p', str(out_dir)])
+        subprocess.check_output([installer, "-b", "-p", str(out_dir)])
 
     # Checks the output directory
     assert out_dir.exists()
-    lib_dir = out_dir / 'lib'
-    if specification_name == 'simple_specification':
-        if sys.platform == 'win32':
-            assert any(str(x).endswith('zlib.dll') for x in out_dir.iterdir())
-        elif sys.platform == 'darwin':
-            assert any(str(x).endswith('libz.dylib') for x in lib_dir.iterdir())
+    lib_dir = out_dir / "lib"
+    if specification_name == "simple_specification":
+        if sys.platform == "win32":
+            assert any(str(x).endswith("zlib.dll") for x in out_dir.iterdir())
+        elif sys.platform == "darwin":
+            assert any(str(x).endswith("libz.dylib") for x in lib_dir.iterdir())
         else:
-            assert any(str(x).endswith('libz.so') for x in lib_dir.iterdir())
+            assert any(str(x).endswith("libz.so") for x in lib_dir.iterdir())
     else:
         # Uses rglob to not depend on the version of the python
         # directory, which is where site-packages is located
-        flask = pathlib.Path('site-packages') / 'flask'
-        assert any(str(x).endswith(str(flask)) for x in out_dir.rglob('*'))
+        flask = pathlib.Path("site-packages") / "flask"
+        assert any(str(x).endswith(str(flask)) for x in out_dir.rglob("*"))
 
 
 def test_fetch_and_extract_conda_packages(tmp_path, simple_conda_lock):
@@ -199,7 +206,7 @@ def test_generate_conda_export(conda_store, conda_prefix):
     )
     # The env name won't be correct because conda only sets the env name when
     # an environment is in an envs dir. See the discussion on PR #549.
-    context.result['name'] = 'test-prefix'
+    context.result["name"] = "test-prefix"
 
     schema.CondaSpecification.parse_obj(context.result)
 
@@ -215,9 +222,12 @@ def test_generate_conda_pack(tmp_path, conda_prefix):
     assert output_filename.exists()
 
 
-@pytest.mark.xfail(reason=(
-    "Generating Docker images is currently not supported, see "
-    "https://github.com/conda-incubator/conda-store/issues/666"))
+@pytest.mark.xfail(
+    reason=(
+        "Generating Docker images is currently not supported, see "
+        "https://github.com/conda-incubator/conda-store/issues/666"
+    )
+)
 def test_generate_conda_docker(conda_store, conda_prefix):
     action.action_generate_conda_docker(
         conda_prefix=conda_prefix,
@@ -253,7 +263,9 @@ def test_remove_conda_prefix(tmp_path, simple_conda_lock):
     assert not conda_prefix.exists()
 
 
-@pytest.mark.skipif(sys.platform == "win32", reason="permissions are not supported on Windows")
+@pytest.mark.skipif(
+    sys.platform == "win32", reason="permissions are not supported on Windows"
+)
 def test_set_conda_prefix_permissions(tmp_path, conda_store, simple_conda_lock):
     conda_prefix = tmp_path / "test"
 
@@ -322,14 +334,23 @@ def test_add_lockfile_packages(
     ],
 )
 def test_api_get_build_lockfile(
-    request, conda_store, db, simple_specification_with_pip, conda_prefix, is_legacy_build, build_key_version
+    request,
+    conda_store,
+    db,
+    simple_specification_with_pip,
+    conda_prefix,
+    is_legacy_build,
+    build_key_version,
 ):
     # sets build_key_version
     if build_key_version == 0:  # invalid
-        with pytest.raises(TraitError, match=(
-            r"c.CondaStore.build_key_version: invalid build key version: 0, "
-            r"expected: \(1, 2\)"
-        )):
+        with pytest.raises(
+            TraitError,
+            match=(
+                r"c.CondaStore.build_key_version: invalid build key version: 0, "
+                r"expected: \(1, 2\)"
+            ),
+        ):
             conda_store.build_key_version = build_key_version
         return  # invalid, nothing more to test
     conda_store.build_key_version = build_key_version
@@ -389,7 +410,8 @@ def test_api_get_build_lockfile(
             namespace=namespace,
             environment_name=environment.name,
             build_id=build_id,
-    ))
+        )
+    )
 
     if key == "":
         # legacy build: returns pinned package list
@@ -404,6 +426,7 @@ def test_api_get_build_lockfile(
         # new build: redirects to lockfile generated by conda-lock
         def lockfile_url(build_key):
             return f"lockfile/{build_key}.yml"
+
         if build_key_version == 1:
             build_key = (
                 "c7afdeffbe2bda7d16ca69beecc8bebeb29280a95d4f3ed92849e4047710923b-"
@@ -414,13 +437,13 @@ def test_api_get_build_lockfile(
         else:
             raise ValueError(f"unexpected build_key_version: {build_key_version}")
         assert type(res) is RedirectResponse
-        assert key == res.headers['location']
+        assert key == res.headers["location"]
         assert build.build_key == build_key
         assert BuildKey.get_build_key(build) == build_key
         assert build.parse_build_key(build_key) == 12345678
         assert BuildKey.parse_build_key(build_key) == 12345678
         assert lockfile_url(build_key) == build.conda_lock_key
-        assert lockfile_url(build_key) == res.headers['location']
+        assert lockfile_url(build_key) == res.headers["location"]
         assert res.status_code == 307
 
 
@@ -464,7 +487,8 @@ def test_api_get_build_installer(
             conda_store=conda_store,
             auth=auth,
             build_id=build_id,
-    ))
+        )
+    )
 
     # redirects to installer
     def installer_url(build_key):
@@ -472,7 +496,7 @@ def test_api_get_build_installer(
         return f"installer/{build_key}.{ext}"
 
     assert type(res) is RedirectResponse
-    assert build.constructor_installer_key == res.headers['location']
+    assert build.constructor_installer_key == res.headers["location"]
     assert installer_url(build.build_key) == build.constructor_installer_key
     assert res.status_code == 307
 

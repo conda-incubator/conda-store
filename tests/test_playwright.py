@@ -7,7 +7,10 @@ from playwright.sync_api import Page
 @pytest.mark.playwright
 def test_integration(page: Page, server_port):
     # Go to http://localhost:{server_port}/conda-store/admin/
-    page.goto(f"http://localhost:{server_port}/conda-store/admin/", wait_until="domcontentloaded")
+    page.goto(
+        f"http://localhost:{server_port}/conda-store/admin/",
+        wait_until="domcontentloaded",
+    )
     page.screenshot(path="test-results/conda-store-unauthenticated.png")
 
     # Click text=Login
