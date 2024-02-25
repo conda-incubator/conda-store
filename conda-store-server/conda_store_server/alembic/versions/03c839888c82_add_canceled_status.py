@@ -39,13 +39,3 @@ def upgrade():
 
 def downgrade():
     op.execute("DELETE FROM build WHERE status = 'CANCELED'")
-    with op.batch_alter_table(
-        "build",
-        schema=None,
-    ) as batch_op:
-        batch_op.alter_column(
-            "status",
-            existing_type=sa.VARCHAR(length=9),
-            type_=sa.VARCHAR(length=9),
-            existing_nullable=False,
-        )
