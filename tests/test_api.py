@@ -1216,6 +1216,10 @@ def test_api_cancel_build_auth(testclient):
         assert r.data.id == new_build_id
         if r.data.status == schema.BuildStatus.CANCELED.value:
             canceled = True
+            response = testclient.get(f"api/v1/build/{new_build_id}/logs", timeout=10)
+            response.raise_for_status()
+            assert (f"build {new_build_id} marked as CANCELED "
+                    f"due to being canceled from the REST API") in response.text
             break
 
     assert canceled is True
