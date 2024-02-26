@@ -38,10 +38,7 @@ def upgrade():
 
 
 def downgrade():
-    # There is a foreign key constraint linking these two tables, so need to
-    # remove matching build artifacts first
-    op.execute(
-        "DELETE FROM build_artifact WHERE build_artifact.build_id IN "
-        "(SELECT id FROM build WHERE status = 'CANCELED')"
-    )
-    op.execute("DELETE FROM build WHERE status = 'CANCELED'")
+    # There are foreign key constraints linking build ids to other tables. So
+    # just mark the builds as failed, which was the status previously used for
+    # canceled builds
+    op.execute("UPDATE build SET status = 'FAILED' WHERE status = 'CANCELED'")
