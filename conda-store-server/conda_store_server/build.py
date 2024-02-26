@@ -85,10 +85,11 @@ def build_cleanup(
     Build can get stuck in the building state due to worker
     spontaineously dying due to memory errors, killing container, etc.
     """
+    status = "CANCELED" if is_canceled else "FAILED"
     reason = (
         reason
-        or """
-Build marked as FAILED on cleanup due to being stuck in BUILDING state
+        or f"""
+Build marked as {status} on cleanup due to being stuck in BUILDING state
 and not present on workers. This happens for several reasons: build is
 canceled, a worker crash from out of memory errors, worker was killed,
 or error in conda-store
@@ -126,7 +127,7 @@ or error in conda-store
             )
         ):
             conda_store.log.warning(
-                f"marking build {build.id} as FAILED since stuck in BUILDING state and not present on workers"
+                f"marking build {build.id} as {status} since stuck in BUILDING state and not present on workers"
             )
             append_to_logs(
                 db,
