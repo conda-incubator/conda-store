@@ -47,9 +47,11 @@ conda-store-server --standalone
 
 ## Authentication
 
+<!-- TODO: Update images to use Playwright-generated ones -->
+
 While you can view certain namespaces and environments, you need to be logged-in to create and edit environments in conda-store.
 
-Locate the `Log in` button in the left sidebar, and click on it.
+Locate the `login` button in the left sidebar, and click on it.
 
 ![conda-store-ui with login button highlighted](../images/login.png)
 
@@ -61,6 +63,8 @@ The default login combination is:
 :::
 
 Once logged-in, you can click on the same button to log-out when needed.
+
+![conda-store-ui authentication screen](../images/authentication.png)
 
 <!-- Internal links -->
 
