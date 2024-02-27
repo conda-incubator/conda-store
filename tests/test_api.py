@@ -16,14 +16,12 @@ import statistics
 import time
 import uuid
 from functools import partial
-from typing import List
 
 import aiohttp
 import conda_store_server
 import pytest
 import requests
 from conda_store_server import schema
-from pydantic import parse_obj_as
 
 from .conftest import CONDA_STORE_BASE_URL
 
@@ -80,14 +78,16 @@ def test_api_permissions_unauth(testclient):
 
     r = schema.APIGetPermission.parse_obj(response.json())
     assert r.status == schema.APIStatus.OK
-    assert r.data.authenticated == False
+    assert r.data.authenticated is False
     assert r.data.primary_namespace == "default"
     assert r.data.entity_permissions == {
-        "default/*": sorted([
-            schema.Permissions.ENVIRONMENT_READ.value,
-            schema.Permissions.NAMESPACE_READ.value,
-            schema.Permissions.NAMESPACE_ROLE_MAPPING_READ.value,
-        ])
+        "default/*": sorted(
+            [
+                schema.Permissions.ENVIRONMENT_READ.value,
+                schema.Permissions.NAMESPACE_READ.value,
+                schema.Permissions.NAMESPACE_ROLE_MAPPING_READ.value,
+            ]
+        )
     }
 
 
@@ -98,7 +98,7 @@ def test_api_permissions_auth(testclient):
 
     r = schema.APIGetPermission.parse_obj(response.json())
     assert r.status == schema.APIStatus.OK
-    assert r.data.authenticated == True
+    assert r.data.authenticated is True
     assert r.data.primary_namespace == "username"
     assert r.data.entity_permissions == {
         "*/*": sorted(
@@ -475,7 +475,18 @@ def test_create_specification_parallel_auth(testclient):
     environment_name = f"pytest-{uuid.uuid4()}"
 
     # Builds different versions to avoid caching
-    versions = ["6.2.0", "6.2.1", "6.2.2", "6.2.3", "6.2.4", "6.2.5", "7.1.1", "7.1.2", "7.3.1", "7.4.0"]
+    versions = [
+        "6.2.0",
+        "6.2.1",
+        "6.2.2",
+        "6.2.3",
+        "6.2.4",
+        "6.2.5",
+        "7.1.1",
+        "7.1.2",
+        "7.3.1",
+        "7.4.0",
+    ]
     num_builds = len(versions)
     limit_seconds = 60 * 15
     build_ids = collections.deque([])
@@ -487,11 +498,13 @@ def test_create_specification_parallel_auth(testclient):
             "api/v1/specification",
             json={
                 "namespace": namespace,
-                "specification": json.dumps({
-                    "name": environment_name,
-                    "channels": ["main"],
-                    "dependencies": [f"pytest={version}"],
-                }),
+                "specification": json.dumps(
+                    {
+                        "name": environment_name,
+                        "channels": ["main"],
+                        "dependencies": [f"pytest={version}"],
+                    }
+                ),
             },
             timeout=10,
         )
@@ -550,10 +563,10 @@ def test_create_specification_parallel_auth(testclient):
             return response.text
 
         # Exits immediately on failure
-        assert r.data.status != 'FAILED', get_logs()
+        assert r.data.status != "FAILED", get_logs()
 
         # If not done, adds the id back to the end of the queue
-        if r.data.status != 'COMPLETED':
+        if r.data.status != "COMPLETED":
             build_ids.append(build_id)
 
         # Adds a small delay to avoid making too many requests too fast. The
@@ -622,7 +635,7 @@ def test_create_specification_parallel_auth(testclient):
     # be reached based on how long it takes a single build to run
     # non-concurrently on average:
     threshold = 10
-    quartiles = statistics.quantiles(build_deltas, method='inclusive')
+    quartiles = statistics.quantiles(build_deltas, method="inclusive")
     print("build_deltas", build_deltas)
     print("stats", min(build_deltas), quartiles)
     assert quartiles[0] < threshold
@@ -646,7 +659,7 @@ def test_create_specification_parallel_auth(testclient):
 )
 def test_create_specification_auth_env_name_too_long(testclient, size):
     namespace = "default"
-    environment_name = 'A' * size
+    environment_name = "A" * size
 
     testclient.login()
     response = testclient.post(
@@ -686,7 +699,7 @@ def test_create_specification_auth_env_name_too_long(testclient, size):
 
     # If we're here, the task didn't update the status on failure
     if not is_updated:
-        assert False, f"failed to update status"
+        assert False, "failed to update status"
 
 
 def test_create_specification_auth_no_namespace_specified(testclient):
@@ -773,7 +786,7 @@ def test_create_namespace_auth(testclient):
 
 
 def test_update_namespace_noauth(testclient):
-    namespace = f"filesystem"
+    namespace = "filesystem"
     # namespace = f"pytest-{uuid.uuid4()}"
 
     test_role_mappings = {
@@ -825,7 +838,7 @@ def test_update_namespace_noauth(testclient):
     ],
 )
 def test_update_namespace_auth(testclient, editor_role):
-    namespace = f"filesystem"
+    namespace = "filesystem"
 
     testclient.login()
 
@@ -898,7 +911,9 @@ def test_create_get_delete_namespace_auth(testclient):
     assert r.status == schema.APIStatus.ERROR
 
 
-def _crud_common(testclient, auth, method, route, params=None, json=None, data_pred=None):
+def _crud_common(
+    testclient, auth, method, route, params=None, json=None, data_pred=None
+):
     if auth:
         testclient.login()
 
@@ -927,7 +942,7 @@ def _crud_common(testclient, auth, method, route, params=None, json=None, data_p
 
 @pytest.mark.parametrize("auth", [True, False])
 def test_update_namespace_metadata_v2(testclient, auth):
-    namespace = f"filesystem"
+    namespace = "filesystem"
     make_request = partial(_crud_common, testclient=testclient, auth=auth)
 
     make_request(
@@ -947,7 +962,7 @@ def test_update_namespace_metadata_v2(testclient, auth):
 )
 def test_crud_namespace_roles_v2(testclient, auth, editor_role):
     other_namespace = f"pytest-{uuid.uuid4()}"
-    namespace = f"filesystem"
+    namespace = "filesystem"
     make_request = partial(_crud_common, testclient=testclient, auth=auth)
 
     # Deletes roles to start with a clean state
@@ -980,9 +995,9 @@ def test_crud_namespace_roles_v2(testclient, auth, editor_role):
             "other_namespace": other_namespace,
         },
         data_pred=lambda data: (
-            data['namespace'] == 'filesystem' and
-            data['other_namespace'] == other_namespace and
-            data['role'] == 'developer'  # always developer in the DB
+            data["namespace"] == "filesystem"
+            and data["other_namespace"] == other_namespace
+            and data["role"] == "developer"  # always developer in the DB
         ),
     )
 
@@ -990,10 +1005,7 @@ def test_crud_namespace_roles_v2(testclient, auth, editor_role):
     make_request(
         method=testclient.put,
         route=f"api/v1/namespace/{namespace}/role",
-        json={
-            "other_namespace": other_namespace,
-            "role": "admin"
-        },
+        json={"other_namespace": other_namespace, "role": "admin"},
     )
 
     # Reads updated roles
@@ -1001,10 +1013,10 @@ def test_crud_namespace_roles_v2(testclient, auth, editor_role):
         method=testclient.get,
         route=f"api/v1/namespace/{namespace}/roles",
         data_pred=lambda data: (
-            data[0]['namespace'] == 'filesystem' and
-            data[0]['other_namespace'] == other_namespace and
-            data[0]['role'] == 'admin' and
-            len(data) == 1
+            data[0]["namespace"] == "filesystem"
+            and data[0]["other_namespace"] == other_namespace
+            and data[0]["role"] == "admin"
+            and len(data) == 1
         ),
     )
 
