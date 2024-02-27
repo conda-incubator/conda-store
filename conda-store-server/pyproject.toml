@@ -131,6 +131,8 @@ playwright-test = [
 ]
 integration-test = ["pytest ../tests/test_api.py ../tests/test_metrics.py"]
 
+user-journey-test = ["pytest -m user_journey"]
+
 [tool.hatch.build.hooks.custom]
 
 [tool.hatch.build.targets.sdist.hooks.custom]
@@ -154,3 +156,10 @@ ignore = [
 [tool.check-wheel-contents]
 # ignore alembic migrations https://github.com/jwodder/check-wheel-contents?tab=readme-ov-file#w004--module-is-not-located-at-importable-path
 ignore = ["W004"]
+
+[tool.pytest.ini_options]
+markers = [
+  "playwright: mark a test as a playwright test",
+  "integration: mark a test as an integration test",
+  "user_journey: mark a test as a user journey test",
+]

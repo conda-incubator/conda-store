@@ -228,9 +228,18 @@ def update_namespace_role(
         raise ValueError(f"Namespace='{other}' not found")
 
     nrm = orm.NamespaceRoleMappingV2
-    db.query(nrm).filter(nrm.namespace_id == namespace.id).filter(
-        nrm.other_namespace_id == other_namespace.id
-    ).update({"role": role})
+    q = (
+        db.query(nrm)
+        .filter(nrm.namespace_id == namespace.id)
+        .filter(nrm.other_namespace_id == other_namespace.id)
+        .first()
+    )
+    # Important: this modifies a field of a table entry and calls 'db.add'
+    # instead of using '.update({"role": role})' on the query because the latter
+    # would bypass the ORM validation logic, which maps the 'editor' role to
+    # 'developer'
+    q.role = role
+    db.add(q)
 
 
 # v2 API

@@ -1,5 +1,4 @@
 import datetime
-import os
 import pathlib
 import sys
 
@@ -7,18 +6,32 @@ import pytest
 import yaml
 from fastapi.testclient import TestClient
 
-from conda_store_server import action, api, app, dbutil, schema, storage, testing, utils  # isort:skip
+from conda_store_server import (  # isort:skip
+    action,
+    api,
+    app,
+    dbutil,
+    schema,
+    storage,
+    testing,
+    utils,
+)
+
 from conda_store_server.server import app as server_app  # isort:skip
 
 
 @pytest.fixture
 def celery_config(tmp_path, conda_store):
     config = conda_store.celery_config
-    config["traitlets"] = {"CondaStore": {
-        "database_url": conda_store.database_url,
-        "store_directory": conda_store.store_directory,
-    }}
-    config["beat_schedule_filename"] = str(tmp_path / ".conda-store" / "celerybeat-schedule")
+    config["traitlets"] = {
+        "CondaStore": {
+            "database_url": conda_store.database_url,
+            "store_directory": conda_store.store_directory,
+        }
+    }
+    config["beat_schedule_filename"] = str(
+        tmp_path / ".conda-store" / "celerybeat-schedule"
+    )
     return config
 
 
@@ -38,7 +51,7 @@ def conda_store_config(tmp_path, request):
             CondaStore=dict(
                 storage_class=storage.LocalStorage,
                 store_directory=str(store_directory),
-                database_url=f"sqlite:///{filename}?check_same_thread=False"
+                database_url=f"sqlite:///{filename}?check_same_thread=False",
             )
         )
 
