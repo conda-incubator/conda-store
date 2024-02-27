@@ -41,6 +41,9 @@ source = "vcs"
 # need to specify root as .git is one level up
 raw-options = {root="../", relative_to="pyproject.toml", local_scheme="node-and-date"}
 
+[tool.hatch.build.hooks.vcs]
+version-file = "_version.py"
+
 [tool.hatch.metadata.hooks.fancy-pypi-readme]
 content-type = "text/markdown"
 
