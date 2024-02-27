@@ -2,6 +2,7 @@ name: Tests
 
 env:
   DEFAULT_PYTHON_VERSION: "3.10"
+  FORCE_COLOR: "1" # Make tools pretty.
 
 on:
   pull_request:
