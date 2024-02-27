@@ -6,3 +6,5 @@ node_modules/
 *.tsbuildinfo
 __pycache__
 .DS_Store
+
+_version.py
