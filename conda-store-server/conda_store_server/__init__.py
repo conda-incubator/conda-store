@@ -6,7 +6,7 @@ from pathlib import Path
 CONDA_STORE_DIR = Path.home() / ".conda-store"
 
 try:
-    __version__ = version("conda-store-server")
+    __version__ = version("conda_store_server")
 except PackageNotFoundError:
     # package is not installed
     pass
