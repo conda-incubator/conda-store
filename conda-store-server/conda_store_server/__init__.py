@@ -1,8 +1,15 @@
 import datetime
 import typing
+from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
 CONDA_STORE_DIR = Path.home() / ".conda-store"
+
+try:
+    __version__ = version("conda-store-server")
+except PackageNotFoundError:
+    # package is not installed
+    pass
 
 
 class BuildKey:
