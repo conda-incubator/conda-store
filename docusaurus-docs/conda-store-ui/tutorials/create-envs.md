@@ -86,16 +86,16 @@ To install packages published only on [PyPI][pypi] using [`pip`][pip], include a
 ### Set environment variables
 
 :::note
-This features is in the release *after* conda-store version 2024.1.1.
+This feature is available *after* conda-store-ui version 2024.1.1.
 
-Currently, only the `CONDA_OVERRIDE_CUDA` environment variable is supported to set the CUDA version for GPU-powered workflows.
+Currently, only the `CONDA_OVERRIDE_CUDA` environment variable can be specified, which allows setting the CUDA version for building packages with GPU support.
 :::
 
 You can set environment variables in the YAML-editor with the following syntax:
 
 ```yaml
 variables:
-   CONDA_OVERRIDE_CUDA: 12
+    CONDA_OVERRIDE_CUDA: '12.0'
 ```
 
 ## Trigger environment creation
