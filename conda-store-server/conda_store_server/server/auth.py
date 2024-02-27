@@ -138,42 +138,46 @@ class RBACAuthorizationBackend(LoggingConfigurable):
             )
         return proposal.value
 
+    _viewer_permissions = {
+        schema.Permissions.ENVIRONMENT_READ,
+        schema.Permissions.NAMESPACE_READ,
+        schema.Permissions.NAMESPACE_ROLE_MAPPING_READ,
+    }
+    _editor_permissions = {
+        schema.Permissions.BUILD_CANCEL,
+        schema.Permissions.ENVIRONMENT_CREATE,
+        schema.Permissions.ENVIRONMENT_READ,
+        schema.Permissions.ENVIRONMENT_UPDATE,
+        schema.Permissions.ENVIRONMENT_SOLVE,
+        schema.Permissions.NAMESPACE_READ,
+        schema.Permissions.NAMESPACE_ROLE_MAPPING_READ,
+        schema.Permissions.SETTING_READ,
+    }
+    _admin_permissions = {
+        schema.Permissions.BUILD_DELETE,
+        schema.Permissions.BUILD_CANCEL,
+        schema.Permissions.ENVIRONMENT_CREATE,
+        schema.Permissions.ENVIRONMENT_DELETE,
+        schema.Permissions.ENVIRONMENT_READ,
+        schema.Permissions.ENVIRONMENT_UPDATE,
+        schema.Permissions.ENVIRONMENT_SOLVE,
+        schema.Permissions.NAMESPACE_CREATE,
+        schema.Permissions.NAMESPACE_DELETE,
+        schema.Permissions.NAMESPACE_READ,
+        schema.Permissions.NAMESPACE_UPDATE,
+        schema.Permissions.NAMESPACE_ROLE_MAPPING_CREATE,
+        schema.Permissions.NAMESPACE_ROLE_MAPPING_READ,
+        schema.Permissions.NAMESPACE_ROLE_MAPPING_UPDATE,
+        schema.Permissions.NAMESPACE_ROLE_MAPPING_DELETE,
+        schema.Permissions.SETTING_READ,
+        schema.Permissions.SETTING_UPDATE,
+    }
+
     role_mappings = Dict(
         {
-            "viewer": {
-                schema.Permissions.ENVIRONMENT_READ,
-                schema.Permissions.NAMESPACE_READ,
-                schema.Permissions.NAMESPACE_ROLE_MAPPING_READ,
-            },
-            "developer": {
-                schema.Permissions.BUILD_CANCEL,
-                schema.Permissions.ENVIRONMENT_CREATE,
-                schema.Permissions.ENVIRONMENT_READ,
-                schema.Permissions.ENVIRONMENT_UPDATE,
-                schema.Permissions.ENVIRONMENT_SOLVE,
-                schema.Permissions.NAMESPACE_READ,
-                schema.Permissions.NAMESPACE_ROLE_MAPPING_READ,
-                schema.Permissions.SETTING_READ,
-            },
-            "admin": {
-                schema.Permissions.BUILD_DELETE,
-                schema.Permissions.BUILD_CANCEL,
-                schema.Permissions.ENVIRONMENT_CREATE,
-                schema.Permissions.ENVIRONMENT_DELETE,
-                schema.Permissions.ENVIRONMENT_READ,
-                schema.Permissions.ENVIRONMENT_UPDATE,
-                schema.Permissions.ENVIRONMENT_SOLVE,
-                schema.Permissions.NAMESPACE_CREATE,
-                schema.Permissions.NAMESPACE_DELETE,
-                schema.Permissions.NAMESPACE_READ,
-                schema.Permissions.NAMESPACE_UPDATE,
-                schema.Permissions.NAMESPACE_ROLE_MAPPING_CREATE,
-                schema.Permissions.NAMESPACE_ROLE_MAPPING_READ,
-                schema.Permissions.NAMESPACE_ROLE_MAPPING_UPDATE,
-                schema.Permissions.NAMESPACE_ROLE_MAPPING_DELETE,
-                schema.Permissions.SETTING_READ,
-                schema.Permissions.SETTING_UPDATE,
-            },
+            "viewer": _viewer_permissions,
+            "editor": _editor_permissions,
+            "admin": _admin_permissions,
         },
         help="default role to permissions mapping to use",
         config=True,
@@ -271,7 +275,24 @@ class RBACAuthorizationBackend(LoggingConfigurable):
     def convert_roles_to_permissions(self, roles):
         permissions = set()
         for role in roles:
-            permissions = permissions | self.role_mappings[role]
+            # 'editor' is the new alias of 'developer'. The new name is
+            # preferred in user-visible settings (like 'role_mappings') and when
+            # calling the role-mappings HTTP APIs, but it's ALWAYS mapped to
+            # 'developer' in the database for compatibility reasons.
+            # Additionally, this code allows for legacy 'role_mappings' that
+            # used to specify the role as 'developer'. Because it's a
+            # user-visible setting, we cannot break compatibility here
+            if role == "editor":
+                raise ValueError("role must never be 'editor' in the database")
+            if role == "developer":
+                # Checks the new user-visible name first, then tries the legacy
+                # one. This will raise an exception if both keys are not found
+                role_mappings = (
+                    self.role_mappings.get("editor") or self.role_mappings["developer"]
+                )
+            else:
+                role_mappings = self.role_mappings[role]
+            permissions = permissions | role_mappings
         return permissions
 
     def get_entity_binding_permissions(self, entity: schema.AuthenticationToken):
