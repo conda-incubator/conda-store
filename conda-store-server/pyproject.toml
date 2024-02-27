@@ -73,7 +73,7 @@ path = "README.md"
 [[tool.hatch.metadata.hooks.fancy-pypi-readme.fragments]]
 text = "## About the conda-store ecosystem"
 
-# TODO: fix this to use the top level readme
+# hack to add long readme
 [[tool.hatch.metadata.hooks.fancy-pypi-readme.fragments]]
 text="""
 conda-store provides the familiarity and flexibility of conda environments, without compromising reliability for collaborative settings.
