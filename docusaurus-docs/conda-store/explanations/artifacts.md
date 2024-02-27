@@ -173,6 +173,24 @@ name: `<registry-url>:<registry-port>/conda-store-dynamic/python.lt.3.10/numpy.g
 
 conda-store creates the environment ands builds the docker image, which you can then download.
 
+## Installers
+
+Installers are another way to share and use a set of (bundled) packages.
+conda-store uses [constructor][constructor-docs] to generate an installer for the current platform (where the server is running):
+
+- on Linux and MacOS, it generates a `.sh` installer
+- on Windows, it generates a `.exe` installer using NSIS
+
+conda-store automatically adds `conda` and `pip` to the target environment
+because these are required for the installer to work.
+
+:::note
+`constructor` uses a separate dependency solver instead of
+utilizing the generated lockfile, so the package versions used by the installer
+might be different compared to the environment available in conda-store. There
+are plans to address this issue in the future.
+:::
+
 <!-- External links -->
 [conda-docs]: https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/environments.html
 [conda-forge-immutability-policy]: https://conda-forge.org/docs/maintainer/updating_pkgs.html#packages-on-conda-forge-are-immutable
@@ -181,3 +199,4 @@ conda-store creates the environment ands builds the docker image, which you can 
 [conda-pack]: https://conda.github.io/conda-pack/
 [conda-pack-usage]: https://conda.github.io/conda-pack/index.html#commandline-usage
 [conda-docker]: https://github.com/conda-incubator/conda-docker
+[constructor-docs]: https://conda.github.io/constructor/
