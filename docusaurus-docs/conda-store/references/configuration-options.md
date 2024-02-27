@@ -275,7 +275,8 @@ the `schema.AuthenticaitonToken` all fields are optional.
 
 `AuthorizationBackend.role_mappings` is a dictionary that maps `roles`
 to application `permissions`. There are three default roles at the
-moment `viewer`, `developer`, and `admin`.
+moment `viewer`, `editor`, and `admin`. Additionally, the role `developer` is
+supported, which is a legacy alias of `editor`. The name `editor` is preferred.
 
 `AuthorizationBackend.unauthenticated_role_bindings` are the role
 bindings that an unauthenticated user assumes.

@@ -26,11 +26,13 @@ def test_api_permissions_unauth(testclient):
     assert r.data.authenticated is False
     assert r.data.primary_namespace == "default"
     assert r.data.entity_permissions == {
-        "default/*": sorted([
-            schema.Permissions.ENVIRONMENT_READ.value,
-            schema.Permissions.NAMESPACE_READ.value,
-            schema.Permissions.NAMESPACE_ROLE_MAPPING_READ.value,
-        ])
+        "default/*": sorted(
+            [
+                schema.Permissions.ENVIRONMENT_READ.value,
+                schema.Permissions.NAMESPACE_READ.value,
+                schema.Permissions.NAMESPACE_ROLE_MAPPING_READ.value,
+            ]
+        )
     }
 
 
@@ -357,9 +359,11 @@ def test_create_specification_unauth(testclient):
         256,
     ],
 )
-def test_create_specification_auth_env_name_too_long(testclient, celery_worker, authenticate, size):
+def test_create_specification_auth_env_name_too_long(
+    testclient, celery_worker, authenticate, size
+):
     namespace = "default"
-    environment_name = 'A' * size
+    environment_name = "A" * size
 
     response = testclient.post(
         "api/v1/specification",
@@ -395,13 +399,14 @@ def test_create_specification_auth_env_name_too_long(testclient, celery_worker, 
 
     # If we're here, the task didn't update the status on failure
     if not is_updated:
-        assert False, f"failed to update status"
+        assert False, "failed to update status"
 
 
 @pytest.fixture
 def win_extended_length_prefix(request):
     # Overrides the attribute before other fixtures are called
     from conda_store_server.app import CondaStore
+
     assert type(CondaStore.win_extended_length_prefix) is traitlets.Bool
     old_prefix = CondaStore.win_extended_length_prefix
     CondaStore.win_extended_length_prefix = request.param
@@ -410,11 +415,13 @@ def win_extended_length_prefix(request):
 
 
 @pytest.mark.skipif(sys.platform != "win32", reason="tests a Windows issue")
-@pytest.mark.parametrize('win_extended_length_prefix', [True, False], indirect=True)
+@pytest.mark.parametrize("win_extended_length_prefix", [True, False], indirect=True)
 @pytest.mark.extended_prefix
-def test_create_specification_auth_extended_prefix(win_extended_length_prefix, testclient, celery_worker, authenticate):
+def test_create_specification_auth_extended_prefix(
+    win_extended_length_prefix, testclient, celery_worker, authenticate
+):
     # Adds padding to cause an error if the extended prefix is not enabled
-    namespace = "default" + 'A' * 10
+    namespace = "default" + "A" * 10
     environment_name = "pytest"
 
     # The debugpy 1.8.0 package was deliberately chosen because it has long
@@ -424,14 +431,16 @@ def test_create_specification_auth_extended_prefix(win_extended_length_prefix, t
         "api/v1/specification",
         json={
             "namespace": namespace,
-            "specification": json.dumps({
-                "name": environment_name,
-                "channels": ["conda-forge"],
-                "dependencies": ["debugpy==1.8.0"],
-                "variables": None,
-                "prefix": None,
-                "description": "test"
-            }),
+            "specification": json.dumps(
+                {
+                    "name": environment_name,
+                    "channels": ["conda-forge"],
+                    "dependencies": ["debugpy==1.8.0"],
+                    "variables": None,
+                    "prefix": None,
+                    "description": "test",
+                }
+            ),
         },
         timeout=30,
     )
@@ -462,7 +471,9 @@ def test_create_specification_auth_extended_prefix(win_extended_length_prefix, t
             assert r.data.status == "FAILED"
             response = testclient.get(f"api/v1/build/{build_id}/logs", timeout=30)
             response.raise_for_status()
-            assert "[WinError 206] The filename or extension is too long" in response.text
+            assert (
+                "[WinError 206] The filename or extension is too long" in response.text
+            )
 
         is_updated = True
         break
