@@ -5,7 +5,7 @@ description: Introduction to JupyterLab Extension.
 
 # conda-store JupyterLab extension
 
-A extension to use the [conda-store UI][conda-store-ui] - a React-based frontend for conda-store, within JupyterLab.
+An extension to use the [conda-store UI][conda-store-ui] - a React-based frontend for conda-store, within JupyterLab.
 
 ## Install 📦
 
@@ -61,7 +61,7 @@ pip uninstall jupyterlab-conda-store
 
 ## Usage
 
-In the JupyterLab window, click on `conda-store` menu-bar item to open the UI in a new window within JupyterLab.
+In the JupyterLab window, click on the `conda-store` menu bar item to open the UI in a new window within JupyterLab.
 
 Learn to use the interface with [conda-store UI tutorials][cs-ui-tutorials].
 
