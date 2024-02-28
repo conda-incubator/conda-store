@@ -1,16 +1,14 @@
 import os
 import sys
-
-sys.path.append(os.path.join(os.getcwd(), "conda-store-server"))
-
 from urllib.parse import urljoin
 
 import pytest
 from requests import Session
 
-CONDA_STORE_SERVER_PORT = os.environ.get(
-    "CONDA_STORE_SERVER_PORT", f"8080"
-)
+sys.path.append(os.path.join(os.getcwd(), "conda-store-server"))
+
+
+CONDA_STORE_SERVER_PORT = os.environ.get("CONDA_STORE_SERVER_PORT", "8080")
 CONDA_STORE_BASE_URL = os.environ.get(
     "CONDA_STORE_BASE_URL", f"http://localhost:{CONDA_STORE_SERVER_PORT}/conda-store/"
 )
@@ -48,6 +46,7 @@ class CondaStoreSession(Session):
 def testclient():
     session = CondaStoreSession(CONDA_STORE_BASE_URL)
     yield session
+
 
 @pytest.fixture
 def server_port():
