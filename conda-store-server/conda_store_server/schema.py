@@ -156,6 +156,7 @@ class BuildStatus(enum.Enum):
     BUILDING = "BUILDING"
     COMPLETED = "COMPLETED"
     FAILED = "FAILED"
+    CANCELED = "CANCELED"
 
 
 class BuildArtifact(BaseModel):
