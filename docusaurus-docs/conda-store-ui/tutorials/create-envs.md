@@ -92,11 +92,11 @@ Currently, only the `CONDA_OVERRIDE_CUDA` environment variable can be specified,
 Learn more in the [conda documentation][conda-docs-override-packages]
 :::
 
-You can set environment variables in the YAML-editor with the following syntax:
+You can set environment variables in the YAML editor with the following syntax:
 
 ```yaml
 variables:
-    CONDA_OVERRIDE_CUDA: '12.0'
+  CONDA_OVERRIDE_CUDA: '12.0'
 ```
 
 ## Trigger environment creation
