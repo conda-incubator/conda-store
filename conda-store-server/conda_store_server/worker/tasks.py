@@ -106,10 +106,15 @@ def task_update_storage_metrics(self):
 
 
 @shared_task(base=WorkerTask, name="task_cleanup_builds", bind=True)
-def task_cleanup_builds(self, build_ids: typing.List[str] = None, reason: str = None):
+def task_cleanup_builds(
+    self,
+    build_ids: typing.List[str] = None,
+    reason: str = None,
+    is_canceled: bool = False,
+):
     conda_store = self.worker.conda_store
     with conda_store.session_factory() as db:
-        build_cleanup(db, conda_store, build_ids, reason)
+        build_cleanup(db, conda_store, build_ids, reason, is_canceled)
 
 
 """

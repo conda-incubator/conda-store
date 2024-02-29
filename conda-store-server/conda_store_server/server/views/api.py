@@ -986,8 +986,9 @@ async def api_put_build_cancel(
         tasks.task_cleanup_builds.si(
             build_ids=[build_id],
             reason=f"""
-    build {build_id} marked as FAILED due to being canceled from the REST API
+    build {build_id} marked as CANCELED due to being canceled from the REST API
     """,
+            is_canceled=True,
         ).apply_async(countdown=5)
 
         return {
