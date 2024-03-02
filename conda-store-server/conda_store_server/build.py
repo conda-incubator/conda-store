@@ -169,29 +169,45 @@ def build_conda_environment(db: Session, conda_store, build):
         environment_prefix = build.environment_path(conda_store)
         environment_prefix.parent.mkdir(parents=True, exist_ok=True)
 
+        is_lockfile = build.specification.is_lockfile
+
         with utils.timer(conda_store.log, f"building conda_prefix={conda_prefix}"):
-            context = action.action_solve_lockfile(
-                settings.conda_command,
-                specification=schema.CondaSpecification.parse_obj(
-                    build.specification.spec
-                ),
-                platforms=settings.conda_solve_platforms,
-            )
+            if is_lockfile:
+                context = action.action_save_lockfile(
+                    specification=schema.LockfileSpecification.parse_obj(
+                        build.specification.spec
+                    ),
+                )
+            else:
+                context = action.action_solve_lockfile(
+                    settings.conda_command,
+                    specification=schema.CondaSpecification.parse_obj(
+                        build.specification.spec
+                    ),
+                    platforms=settings.conda_solve_platforms,
+                )
 
             conda_store.storage.set(
                 db,
                 build.id,
                 build.conda_lock_key,
-                json.dumps(context.result, indent=4).encode("utf-8"),
+                json.dumps(
+                    context.result, indent=4, cls=utils.CustomJSONEncoder
+                ).encode("utf-8"),
                 content_type="application/json",
                 artifact_type=schema.BuildArtifactType.LOCKFILE,
             )
+
+            if is_lockfile:
+                lockfile_action_name = "action_save_lockfile"
+            else:
+                lockfile_action_name = "action_solve_lockfile"
 
             append_to_logs(
                 db,
                 conda_store,
                 build,
-                "::group::action_solve_lockfile\n"
+                f"::group::{lockfile_action_name}\n"
                 + context.stdout.getvalue()
                 + "\n::endgroup::\n",
             )
@@ -414,13 +430,23 @@ def build_constructor_installer(db: Session, conda_store, build: orm.Build):
         conda_store.log, f"creating installer for conda environment={conda_prefix}"
     ):
         with tempfile.TemporaryDirectory() as tmpdir:
+            is_lockfile = build.specification.is_lockfile
+
+            if is_lockfile:
+                specification = schema.LockfileSpecification.parse_obj(
+                    build.specification.spec
+                )
+            else:
+                specification = schema.CondaSpecification.parse_obj(
+                    build.specification.spec
+                )
+
             context = action.action_generate_constructor_installer(
                 conda_command=settings.conda_command,
-                specification=schema.CondaSpecification.parse_obj(
-                    build.specification.spec
-                ),
+                specification=specification,
                 installer_dir=pathlib.Path(tmpdir),
                 version=build.build_key,
+                is_lockfile=is_lockfile,
             )
             output_filename = context.result
             append_to_logs(

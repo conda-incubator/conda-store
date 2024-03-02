@@ -1,6 +1,7 @@
 from conda_store_server.action.base import action  # noqa
 
 from conda_store_server.action.generate_lockfile import action_solve_lockfile  # noqa
+from conda_store_server.action.generate_lockfile import action_save_lockfile  # noqa
 from conda_store_server.action.download_packages import (
     action_fetch_and_extract_conda_packages,  # noqa
 )
