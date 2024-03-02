@@ -627,8 +627,10 @@ class CondaStore(LoggingConfigurable):
         specification: dict,
         namespace: str = None,
         force: bool = True,
+        is_lockfile: bool = False,
     ):
         """Register a given specification to conda store with given namespace/name."""
+
         settings = self.get_settings(db)
 
         namespace = namespace or settings.default_namespace
@@ -641,12 +643,18 @@ class CondaStore(LoggingConfigurable):
             action=schema.Permissions.ENVIRONMENT_CREATE,
         )
 
-        specification_model = self.validate_specification(
-            db=db,
-            conda_store=self,
-            namespace=namespace.name,
-            specification=schema.CondaSpecification.parse_obj(specification),
-        )
+        if is_lockfile:
+            # It's a lockfile, do not do any validation in this case. If there
+            # are problems, these would be caught earlier during parsing or
+            # later when conda-lock attempts to install it.
+            specification_model = specification
+        else:
+            specification_model = self.validate_specification(
+                db=db,
+                conda_store=self,
+                namespace=namespace.name,
+                specification=schema.CondaSpecification.parse_obj(specification),
+            )
 
         spec_sha256 = utils.datastructure_hash(specification_model.dict())
         matching_specification = api.get_specification(db, sha256=spec_sha256)
@@ -660,7 +668,9 @@ class CondaStore(LoggingConfigurable):
         ):
             return None
 
-        specification = api.ensure_specification(db, specification_model)
+        specification = api.ensure_specification(
+            db, specification_model, is_lockfile=is_lockfile
+        )
         environment_was_empty = (
             api.get_environment(db, name=specification.name, namespace_id=namespace.id)
             is None
@@ -672,7 +682,9 @@ class CondaStore(LoggingConfigurable):
             description=specification.spec["description"],
         )
 
-        build = self.create_build(db, environment.id, specification.sha256)
+        build = self.create_build(
+            db, environment.id, specification.sha256, is_lockfile=is_lockfile
+        )
 
         if environment_was_empty:
             environment.current_build = build
@@ -680,7 +692,13 @@ class CondaStore(LoggingConfigurable):
 
         return build.id
 
-    def create_build(self, db: Session, environment_id: int, specification_sha256: str):
+    def create_build(
+        self,
+        db: Session,
+        environment_id: int,
+        specification_sha256: str,
+        is_lockfile: bool = False,
+    ):
         environment = api.get_environment(db, id=environment_id)
         self.validate_action(
             db=db,

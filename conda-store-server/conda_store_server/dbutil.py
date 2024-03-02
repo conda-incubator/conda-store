@@ -1,3 +1,4 @@
+import json
 import os
 
 from contextlib import contextmanager
@@ -5,6 +6,7 @@ from tempfile import TemporaryDirectory
 
 from alembic import command
 from alembic.config import Config
+from conda_store_server import utils
 from sqlalchemy import create_engine, inspect
 
 
@@ -73,7 +75,11 @@ def upgrade(db_url, revision="head"):
     revision: str [default: head]
         The alembic revision to upgrade to.
     """
-    engine = create_engine(db_url)
+    engine = create_engine(
+        db_url,
+        # See the comment on the CustomJSONEncoder class on why this is needed
+        json_serializer=lambda x: json.dumps(x, cls=utils.CustomJSONEncoder),
+    )
 
     # retrieves the names of tables in the DB
     current_table_names = set(inspect(engine).get_table_names())

@@ -1,4 +1,5 @@
 import datetime
+import json
 import logging
 import os
 import pathlib
@@ -144,20 +145,22 @@ class Specification(Base):
 
     __tablename__ = "specification"
 
-    def __init__(self, specification):
-        if not validate_environment(specification):
+    def __init__(self, specification, is_lockfile: bool = False):
+        if not is_lockfile and not validate_environment(specification):
             raise ValueError(
                 "specification={specification} is not valid conda environment.yaml"
             )
         self.name = specification["name"]
         self.spec = specification
         self.sha256 = utils.datastructure_hash(self.spec)
+        self.is_lockfile = is_lockfile
 
     id = Column(Integer, primary_key=True)
     name = Column(Unicode(255), nullable=False)
     spec = Column(JSON, nullable=False)
     sha256 = Column(Unicode(255), unique=True, nullable=False)
     created_on = Column(DateTime, default=datetime.datetime.utcnow)
+    is_lockfile = Column(Boolean, default=False)
 
     builds = relationship("Build", back_populates="specification")
     solves = relationship("Solve", back_populates="specification")
@@ -803,7 +806,12 @@ class KeyValueStore(Base):
 
 
 def new_session_factory(url="sqlite:///:memory:", reset=False, **kwargs):
-    engine = create_engine(url, **kwargs)
+    engine = create_engine(
+        url,
+        # See the comment on the CustomJSONEncoder class on why this is needed
+        json_serializer=lambda x: json.dumps(x, cls=utils.CustomJSONEncoder),
+        **kwargs,
+    )
 
     session_factory = sessionmaker(bind=engine)
     return session_factory

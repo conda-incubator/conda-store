@@ -26,6 +26,8 @@
         <label for="specification">Specification:</label>
         <div id="editor" style="height: 400px;">{{ specification or "" }}</div>
         <textarea name="specification" id="specification" style="display: none;"></textarea>
+        <input type="checkbox" name="is-lockfile" id="is-lockfile" />
+        <label for="is-lockfile">This specification contains a <a href="https://github.com/conda-incubator/conda-lock">Conda-Lock</a> lockfile</label>
     </div>
 
     <button type="submit" class="btn btn-primary mb-2">Submit</button>
@@ -64,6 +66,7 @@
      let url = "{{ url_for('api_post_specification') }}";
      let namespaceInput = document.querySelector('#namespace');
      let specificationInput = document.querySelector('#specification');
+     let isLockfileInput = document.querySelector('#is-lockfile');
 
      let response = await fetch(url, {
          method: 'POST',
@@ -73,6 +76,7 @@
          body: JSON.stringify({
              'namespace': namespaceInput.value,
              'specification': specificationInput.value,
+             'is_lockfile': isLockfileInput.checked,
          })
      });
 

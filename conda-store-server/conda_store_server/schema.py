@@ -7,7 +7,9 @@ import sys
 
 from typing import Any, Callable, Dict, List, Optional, Union
 
+from conda_lock.lockfile.v1.models import Lockfile
 from pydantic import BaseModel, Field, ValidationError, constr, validator
+from pydantic.error_wrappers import ErrorWrapper
 
 from conda_store_server import conda_utils, utils
 
@@ -463,6 +465,49 @@ class CondaSpecification(BaseModel):
                 all_errors_hr.append(human_readable_error)
 
             raise utils.CondaStoreError(all_errors_hr)
+
+
+class LockfileSpecification(BaseModel):
+    name: constr(regex=f"^[{ALLOWED_CHARACTERS}]+$")  # noqa: F722
+    description: Optional[str] = ""
+    lockfile: Lockfile
+
+    @classmethod
+    def parse_obj(cls, specification):
+        # This uses pop because the version field must not be part of Lockfile
+        # input. Otherwise, the input will be rejected. The version field is
+        # hardcoded in the Lockfile schema and is only used when the output is
+        # printed. So the code below validates that the version is 1 if present
+        # and removes it to avoid the mentioned parsing error.
+        lockfile = specification.get("lockfile")
+        version = lockfile and lockfile.pop("version", None)
+        if version not in (None, 1):
+            # https://stackoverflow.com/questions/73968566/with-pydantic-how-can-i-create-my-own-validationerror-reason
+            raise ValidationError(
+                [
+                    ErrorWrapper(
+                        ValueError("expected no version field or version equal to 1"),
+                        "lockfile -> version",
+                    )
+                ],
+                LockfileSpecification,
+            )
+
+        return super().parse_obj(specification)
+
+    def dict(self):
+        res = super().dict()
+        # The dict_for_output method includes the version field into the output
+        # and excludes unset fields. Without the version field present,
+        # conda-lock would reject a lockfile during parsing, so it wouldn't be
+        # installable, so we need to include the version
+        res["lockfile"] = self.lockfile.dict_for_output()
+        return res
+
+    def __str__(self):
+        # This makes sure the format is suitable for output if this object is
+        # converted to a string, which can also happen implicitly
+        return str(self.dict())
 
 
 ###############################
