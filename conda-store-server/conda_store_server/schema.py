@@ -500,7 +500,7 @@ class LockfileSpecification(BaseModel):
         # The dict_for_output method includes the version field into the output
         # and excludes unset fields. Without the version field present,
         # conda-lock would reject a lockfile during parsing, so it wouldn't be
-        # installable, so we need to include the version
+        # installable, that's why we need to include the version
         res["lockfile"] = self.lockfile.dict_for_output()
         return res
 
