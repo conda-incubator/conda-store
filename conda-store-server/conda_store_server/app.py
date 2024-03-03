@@ -692,13 +692,7 @@ class CondaStore(LoggingConfigurable):
 
         return build.id
 
-    def create_build(
-        self,
-        db: Session,
-        environment_id: int,
-        specification_sha256: str,
-        is_lockfile: bool = False,
-    ):
+    def create_build(self, db: Session, environment_id: int, specification_sha256: str):
         environment = api.get_environment(db, id=environment_id)
         self.validate_action(
             db=db,
