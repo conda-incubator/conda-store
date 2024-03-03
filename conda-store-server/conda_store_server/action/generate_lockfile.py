@@ -68,6 +68,8 @@ def action_save_lockfile(
     context,
     specification: schema.LockfileSpecification,
 ):
+    # Note: this calls dict on specification so that the version field is
+    # part of the output
     lockfile = specification.dict()["lockfile"]
     lockfile_filename = pathlib.Path.cwd() / "conda-lock.yaml"
 
