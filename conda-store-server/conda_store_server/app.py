@@ -682,9 +682,7 @@ class CondaStore(LoggingConfigurable):
             description=specification.spec["description"],
         )
 
-        build = self.create_build(
-            db, environment.id, specification.sha256, is_lockfile=is_lockfile
-        )
+        build = self.create_build(db, environment.id, specification.sha256)
 
         if environment_was_empty:
             environment.current_build = build
