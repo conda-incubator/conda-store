@@ -160,7 +160,7 @@ class Specification(Base):
     spec = Column(JSON, nullable=False)
     sha256 = Column(Unicode(255), unique=True, nullable=False)
     created_on = Column(DateTime, default=datetime.datetime.utcnow)
-    is_lockfile = Column(Boolean, default=False)
+    is_lockfile = Column(Boolean, nullable=False)
 
     builds = relationship("Build", back_populates="specification")
     solves = relationship("Solve", back_populates="specification")
