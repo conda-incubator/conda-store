@@ -566,6 +566,11 @@ def test_create_lockfile_specification_auth(testclient):
     # Ensures the second specification was accepted and the lockfile is the same
     assert lockfile1 == lockfile2
 
+    # Checks that initial dependencies are part of the lockfile
+    packages = json.loads(lockfile2)["package"]
+    assert any(p["name"] == "pytest" and p["manager"] == "conda" for p in packages)
+    assert any(p["name"] == "flask" and p["manager"] == "pip" for p in packages)
+
 
 def test_create_specification_parallel_auth(testclient):
     namespace = "default"
