@@ -493,85 +493,6 @@ def test_create_specification_auth(testclient):
     assert r.data.namespace.name == namespace
 
 
-def test_create_lockfile_specification_auth(testclient):
-    namespace = "default"
-    environment_name = f"pytest-{uuid.uuid4()}"
-
-    def post_specification(specification, is_lockfile):
-        response = testclient.post(
-            "api/v1/specification",
-            json={
-                "namespace": namespace,
-                "specification": specification,
-                "is_lockfile": is_lockfile,
-            },
-        )
-        response.raise_for_status()
-        r = schema.APIPostSpecification.parse_obj(response.json())
-        assert r.status == schema.APIStatus.OK
-
-        return r.data.build_id
-
-    def get_lockfile(build_id):
-        lockfile = None
-        for _ in range(50):
-            time.sleep(10)
-            response = testclient.get(f"api/v1/build/{build_id}/conda-lock.yaml")
-            if response.status_code != 200:
-                continue
-
-            lockfile = response.content.decode("utf-8")
-            break
-
-        # If this fails, the loop timed out because something went wrong
-        assert lockfile is not None
-
-        return lockfile
-
-    # Logs in
-    testclient.login()
-
-    # Submits a standard conda YAML specification
-    build_id1 = post_specification(
-        specification=json.dumps(
-            {
-                "name": environment_name,
-                "dependencies": ["pytest", "pip", {"pip": ["flask"]}],
-            }
-        ),
-        is_lockfile=False,
-    )
-
-    # Gets the first lockfile
-    lockfile1 = get_lockfile(build_id1)
-
-    # Submits a new lockfile-based specification
-    build_id2 = post_specification(
-        specification=json.dumps(
-            {
-                "name": environment_name,
-                "description": "this is a test",
-                "lockfile": json.loads(lockfile1),
-            }
-        ),
-        is_lockfile=True,
-    )
-
-    # Makes sure these are different builds
-    assert build_id1 != build_id2
-
-    # Gets the second lockfile
-    lockfile2 = get_lockfile(build_id2)
-
-    # Ensures the second specification was accepted and the lockfile is the same
-    assert lockfile1 == lockfile2
-
-    # Checks that initial dependencies are part of the lockfile
-    packages = json.loads(lockfile2)["package"]
-    assert any(p["name"] == "pytest" and p["manager"] == "conda" for p in packages)
-    assert any(p["name"] == "flask" and p["manager"] == "pip" for p in packages)
-
-
 def test_create_specification_parallel_auth(testclient):
     namespace = "default"
     environment_name = f"pytest-{uuid.uuid4()}"
@@ -1327,3 +1248,82 @@ def test_api_cancel_build_auth(testclient):
             break
 
     assert canceled is True
+
+
+def test_create_lockfile_specification_auth(testclient):
+    namespace = "default"
+    environment_name = f"pytest-{uuid.uuid4()}"
+
+    def post_specification(specification, is_lockfile):
+        response = testclient.post(
+            "api/v1/specification",
+            json={
+                "namespace": namespace,
+                "specification": specification,
+                "is_lockfile": is_lockfile,
+            },
+        )
+        response.raise_for_status()
+        r = schema.APIPostSpecification.parse_obj(response.json())
+        assert r.status == schema.APIStatus.OK
+
+        return r.data.build_id
+
+    def get_lockfile(build_id):
+        lockfile = None
+        for _ in range(50):
+            time.sleep(10)
+            response = testclient.get(f"api/v1/build/{build_id}/conda-lock.yaml")
+            if response.status_code != 200:
+                continue
+
+            lockfile = response.content.decode("utf-8")
+            break
+
+        # If this fails, the loop timed out because something went wrong
+        assert lockfile is not None
+
+        return lockfile
+
+    # Logs in
+    testclient.login()
+
+    # Submits a standard conda YAML specification
+    build_id1 = post_specification(
+        specification=json.dumps(
+            {
+                "name": environment_name,
+                "dependencies": ["pytest", "pip", {"pip": ["flask"]}],
+            }
+        ),
+        is_lockfile=False,
+    )
+
+    # Gets the first lockfile
+    lockfile1 = get_lockfile(build_id1)
+
+    # Submits a new lockfile-based specification
+    build_id2 = post_specification(
+        specification=json.dumps(
+            {
+                "name": environment_name,
+                "description": "this is a test",
+                "lockfile": json.loads(lockfile1),
+            }
+        ),
+        is_lockfile=True,
+    )
+
+    # Makes sure these are different builds
+    assert build_id1 != build_id2
+
+    # Gets the second lockfile
+    lockfile2 = get_lockfile(build_id2)
+
+    # Ensures the second specification was accepted and the lockfile is the same
+    assert lockfile1 == lockfile2
+
+    # Checks that initial dependencies are part of the lockfile
+    packages = json.loads(lockfile2)["package"]
+    assert any(p["name"] == "pytest" and p["manager"] == "conda" for p in packages)
+    assert any(p["name"] == "flask" and p["manager"] == "pip" for p in packages)
