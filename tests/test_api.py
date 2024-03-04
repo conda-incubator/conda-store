@@ -532,7 +532,7 @@ def test_create_lockfile_specification_auth(testclient):
     testclient.login()
 
     # Submits a standard conda YAML specification
-    build_id = post_specification(
+    build_id1 = post_specification(
         specification=json.dumps(
             {
                 "name": environment_name,
@@ -543,7 +543,7 @@ def test_create_lockfile_specification_auth(testclient):
     )
 
     # Gets the first lockfile
-    lockfile1 = get_lockfile(build_id)
+    lockfile1 = get_lockfile(build_id1)
 
     # Submits a new lockfile-based specification
     build_id2 = post_specification(
@@ -558,7 +558,7 @@ def test_create_lockfile_specification_auth(testclient):
     )
 
     # Makes sure these are different builds
-    assert build_id != build_id2
+    assert build_id1 != build_id2
 
     # Gets the second lockfile
     lockfile2 = get_lockfile(build_id2)
