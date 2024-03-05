@@ -48,6 +48,15 @@ def set_build_failed(
     db.commit()
 
 
+def set_build_canceled(
+    db: Session, build: orm.Build, status_info: typing.Optional[str] = None
+):
+    build.status = schema.BuildStatus.CANCELED
+    build.status_info = status_info
+    build.ended_on = datetime.datetime.utcnow()
+    db.commit()
+
+
 def set_build_completed(db: Session, conda_store, build: orm.Build):
     build.status = schema.BuildStatus.COMPLETED
     build.ended_on = datetime.datetime.utcnow()
@@ -65,17 +74,22 @@ def set_build_completed(db: Session, conda_store, build: orm.Build):
 
 
 def build_cleanup(
-    db: Session, conda_store, build_ids: typing.List[str] = None, reason: str = None
+    db: Session,
+    conda_store,
+    build_ids: typing.List[str] = None,
+    reason: str = None,
+    is_canceled: bool = False,
 ):
     """Walk through all builds in BUILDING state and check that they are actively running
 
     Build can get stuck in the building state due to worker
     spontaineously dying due to memory errors, killing container, etc.
     """
+    status = "CANCELED" if is_canceled else "FAILED"
     reason = (
         reason
-        or """
-Build marked as FAILED on cleanup due to being stuck in BUILDING state
+        or f"""
+Build marked as {status} on cleanup due to being stuck in BUILDING state
 and not present on workers. This happens for several reasons: build is
 canceled, a worker crash from out of memory errors, worker was killed,
 or error in conda-store
@@ -113,7 +127,7 @@ or error in conda-store
             )
         ):
             conda_store.log.warning(
-                f"marking build {build.id} as FAILED since stuck in BUILDING state and not present on workers"
+                f"marking build {build.id} as {status} since stuck in BUILDING state and not present on workers"
             )
             append_to_logs(
                 db,
@@ -121,7 +135,10 @@ or error in conda-store
                 build,
                 reason,
             )
-            set_build_failed(db, build)
+            if is_canceled:
+                set_build_canceled(db, build)
+            else:
+                set_build_failed(db, build)
 
 
 def build_conda_environment(db: Session, conda_store, build):

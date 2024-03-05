@@ -16,6 +16,7 @@ class BuildStatus(Enum):
     BUILDING = "BUILDING"
     COMPLETED = "COMPLETED"
     FAILED = "FAILED"
+    CANCELED = "CANCELED"
 
 
 class API:
