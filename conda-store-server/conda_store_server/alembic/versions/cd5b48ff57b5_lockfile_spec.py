@@ -18,7 +18,10 @@ depends_on = None
 def upgrade():
     op.add_column(
         "specification",
-        sa.Column("is_lockfile", sa.Boolean(), nullable=False, server_default="False"),
+        # https://github.com/sqlalchemy/sqlalchemy/issues/1403#issuecomment-1698365595
+        sa.Column(
+            "is_lockfile", sa.Boolean(), nullable=False, server_default=sa.sql.false()
+        ),
     )
 
 
