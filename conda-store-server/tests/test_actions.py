@@ -330,6 +330,7 @@ def test_add_lockfile_packages(
         (False, 0),  # invalid
         (False, 1),  # long (legacy)
         (False, 2),  # short (default)
+        (False, 3),  # short (default)
         (True, 1),  # build_key_version doesn't matter because there's no lockfile
     ],
 )
@@ -348,14 +349,14 @@ def test_api_get_build_lockfile(
             TraitError,
             match=(
                 r"c.CondaStore.build_key_version: invalid build key version: 0, "
-                r"expected: \(1, 2\)"
+                r"expected: \(1, 2, 3\)"
             ),
         ):
             conda_store.build_key_version = build_key_version
         return  # invalid, nothing more to test
     conda_store.build_key_version = build_key_version
     assert BuildKey.current_version() == build_key_version
-    assert BuildKey.versions() == (1, 2)
+    assert BuildKey.versions() == (1, 2, 3)
 
     # initializes data needed to get the lockfile
     specification = simple_specification_with_pip
@@ -434,14 +435,16 @@ def test_api_get_build_lockfile(
             )
         elif build_key_version == 2:
             build_key = "c7afdeff-1699156450-12345678-this-is-a-long-environment-name"
+        elif build_key_version == 3:
+            build_key = "c1f206a26263e1166e5b43548f69aa0c"
         else:
             raise ValueError(f"unexpected build_key_version: {build_key_version}")
         assert type(res) is RedirectResponse
         assert key == res.headers["location"]
         assert build.build_key == build_key
         assert BuildKey.get_build_key(build) == build_key
-        assert build.parse_build_key(build_key) == 12345678
-        assert BuildKey.parse_build_key(build_key) == 12345678
+        assert build.parse_build_key(conda_store, build_key) == 12345678
+        assert BuildKey.parse_build_key(conda_store, build_key) == 12345678
         assert lockfile_url(build_key) == build.conda_lock_key
         assert lockfile_url(build_key) == res.headers["location"]
         assert res.status_code == 307

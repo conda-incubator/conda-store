@@ -167,7 +167,8 @@ def build_conda_environment(db: Session, conda_store, build):
         conda_prefix.parent.mkdir(parents=True, exist_ok=True)
 
         environment_prefix = build.environment_path(conda_store)
-        environment_prefix.parent.mkdir(parents=True, exist_ok=True)
+        if environment_prefix is not None:
+            environment_prefix.parent.mkdir(parents=True, exist_ok=True)
 
         with utils.timer(conda_store.log, f"building conda_prefix={conda_prefix}"):
             context = action.action_solve_lockfile(
@@ -223,7 +224,8 @@ def build_conda_environment(db: Session, conda_store, build):
                 + "\n::endgroup::\n",
             )
 
-        utils.symlink(conda_prefix, environment_prefix)
+        if environment_prefix is not None:
+            utils.symlink(conda_prefix, environment_prefix)
 
         action.action_set_conda_prefix_permissions(
             conda_prefix=conda_prefix,

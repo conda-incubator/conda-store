@@ -108,8 +108,8 @@ class CondaStore(LoggingConfigurable):
     )
 
     build_key_version = Integer(
-        BuildKey.set_current_version(2),
-        help="Build key version to use: 1 (long, legacy), 2 (short, default)",
+        BuildKey.set_current_version(3),
+        help="Build key version to use: 1 (long, legacy), 2 (shorter hash), 3 (hash-only, default)",
         config=True,
     )
 

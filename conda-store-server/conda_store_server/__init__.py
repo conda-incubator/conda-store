@@ -1,4 +1,5 @@
 import datetime
+import hashlib
 import typing
 from pathlib import Path
 
@@ -30,6 +31,8 @@ class BuildKey:
 
     _version2_hash_size = 8
 
+    _version3_hash_size = 32
+
     def _version1_fmt(build: "Build") -> str:  # noqa: F821
         datetime_format = "%Y%m%d-%H%M%S-%f"
         hash = build.specification.sha256
@@ -46,10 +49,28 @@ class BuildKey:
         name = build.specification.name
         return f"{hash}-{timestamp}-{id}-{name}"
 
+    def _version3_fmt(build: "Build") -> str:  # noqa: F821
+        # Adds namespace here to separate builds performed by different users
+        # since all builds are stored in the same directory in v3, see
+        # Build.build_path in orm.py. Additionally, this also hashes the
+        # timestamp and build id just to make collisions very unlikely
+        namespace_name = build.environment.namespace.name
+        specification_hash = build.specification.sha256
+        tzinfo = datetime.timezone.utc
+        timestamp = int(build.scheduled_on.replace(tzinfo=tzinfo).timestamp())
+        build_id = build.id
+        hash_input = (
+            namespace_name + specification_hash + str(timestamp) + str(build_id)
+        )
+        hash = hashlib.sha256(hash_input.encode("utf-8")).hexdigest()
+        hash = hash[: BuildKey._version3_hash_size]
+        return hash
+
     # version -> fmt function
     _fmt = {
         1: _version1_fmt,
         2: _version2_fmt,
+        3: _version3_fmt,
     }
 
     @classmethod
@@ -86,8 +107,13 @@ class BuildKey:
         return cls._fmt.get(build.build_key_version)(build)
 
     @classmethod
-    def parse_build_key(cls, build_key: str) -> int:
+    def parse_build_key(
+        cls, conda_store: "CondaStore", build_key: str  # noqa: F821
+    ) -> int:
         """Returns build id from build key"""
+        # This import is here to avoid cyclic imports
+        from conda_store_server import orm
+
         parts = build_key.split("-")
         # Note: cannot rely on the number of dashes to differentiate between
         # versions because name can contain dashes. Instead, this relies on the
@@ -95,5 +121,14 @@ class BuildKey:
         # to find the id is okay.
         if build_key[cls._version2_hash_size] == "-":  # v2
             return int(parts[2])  # build_id
+        elif "-" not in build_key:  # v3
+            with conda_store.get_db() as db:
+                builds = db.query(orm.Build).all()
+                # Note: this uses a separate for-loop instead of using filter
+                # because the latter doesn't allow for passing lambdas
+                for build in builds:
+                    if cls._version3_fmt(build) == build_key:
+                        return build.id
+                return None
         else:  # v1
             return int(parts[4])  # build_id

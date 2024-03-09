@@ -94,19 +94,50 @@ It consists of:
 3. the id of a build
 4. the environment name.
 
-The version 2 format is now the default. Environments created using the version
-1 format will continue to be accessible in the UI, but new builds will use the
-version 2 format. No changes are needed for existing deployments of conda-store.
+However, version 2 build paths don't solve the problem completely because they
+include user-provided data, like the environment name, and that data can be
+arbitrary large.
 
-There is no real reason to use the version 1 format anymore, but it can be
+To solve this problem, version 3 was introduced, which will always have the same
+size. It looks like this:
+
+```bash
+64a943764b70e8fe181643404894f7ae
+```
+
+It's a truncated SHA-256 hex digest, which is calculated based on:
+
+- namespace name
+- specification hash (also SHA-256)
+- build timestamp
+- build id.
+
+See `BuildKey._version3_fmt` for details.
+
+:::note
+When version 3 is used, `Build.build_path` will not include the namespace name,
+because it's not fixed size, so all builds will be placed right into
+`CondaStore.store_directory`. Additionally, `CondaStore.environment_directory`
+will be completely ignored, so no symlinks will be created, because the
+environment directory format also includes variable-size data (the namespace and
+environment names). This shouldn't impact anything because the generated
+artifacts rely on storage or use the database, and those are not affected by
+these changes to the state directory.
+:::
+
+The version 3 format is now the default. Environments created using the version
+1 and 2 formats will continue to be accessible in the UI, but new builds will
+use the version 3 format. No changes are needed for existing deployments of
+conda-store.
+
+There is no real reason to use version 1 and 2 formats anymore, but these can be
 explicitly set via the config:
 
 ```python
 c.CondaStore.build_key_version = 1
 ```
 
-The version 2 format can also be explicitly set if needed (this is the same as
-the default):
+or
 
 ```python
 c.CondaStore.build_key_version = 2
