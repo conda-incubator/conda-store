@@ -641,10 +641,15 @@ def test_create_specification_parallel_auth(testclient):
     assert quartiles[0] < threshold
 
 
-# Only testing size values that will always cause errors. Smaller values could
-# cause errors as well, but would be flaky since the test conda-store state
-# directory might have different lengths on different systems, for instance,
-# due to different username lengths.
+# This used to fail with build_key_version < 3. With v3, the sizes of namespace
+# and environment names have no effect on the build key, so the build should
+# complete without failures. The comments below describe errors that used to
+# happen previously:
+#
+# > Only testing size values that will always cause errors. Smaller values could
+# > cause errors as well, but would be flaky since the test conda-store state
+# > directory might have different lengths on different systems, for instance,
+# > due to different username lengths.
 @pytest.mark.parametrize(
     "size",
     [
@@ -669,16 +674,13 @@ def test_create_specification_auth_env_name_too_long(testclient, size):
             "specification": json.dumps({"name": environment_name}),
         },
     )
-    if size > 255:
-        assert response.status_code == 500
-        return  # error, nothing to do
     response.raise_for_status()
 
     r = schema.APIPostSpecification.parse_obj(response.json())
     assert r.status == schema.APIStatus.OK
     build_id = r.data.build_id
 
-    # Try checking that the status is 'FAILED'
+    # Try checking that the status is 'COMPLETED'
     is_updated = False
     for _ in range(60):
         time.sleep(10)
@@ -692,8 +694,7 @@ def test_create_specification_auth_env_name_too_long(testclient, size):
         assert r.data.specification.name == environment_name
         if r.data.status == "QUEUED":
             continue  # checked too fast, try again
-        assert r.data.status == "FAILED"
-        assert r.data.status_info == "build_path too long: must be <= 255 characters"
+        assert r.data.status == "COMPLETED"
         is_updated = True
         break
 
