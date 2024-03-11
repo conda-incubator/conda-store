@@ -117,30 +117,37 @@ See `BuildKey._version3_fmt` for details.
 :::note
 When version 3 is used, `Build.build_path` will not include the namespace name,
 because it's not fixed size, so all builds will be placed right into
-`CondaStore.store_directory`. Additionally, `CondaStore.environment_directory`
-will be completely ignored, so no symlinks will be created, because the
-environment directory format also includes variable-size data (the namespace and
-environment names). This shouldn't impact anything because the generated
-artifacts rely on storage or use the database, and those are not affected by
-these changes to the state directory.
+`CondaStore.store_directory`.
+
+Additionally, `CondaStore.environment_directory` will be completely ignored, so
+no symlinks connecting an environment name to its corresponding build will be
+created, because the environment directory format also includes variable-size
+data (the namespace and environment names).
+
+The lack of symlinks doesn't prevent server artifacts from being generated,
+which are available for download via the UI (lockfiles, archives, etc.), because
+those rely on storage or use the database.
+
+But it does impact conda integration or tools that rely on it, like when
+conda-store is used with JupyterLab as part of a Nebari deployment. Without
+environment symlinks, there'll be no way to tell conda where to look for
+environments, which is done by setting `envs_dirs` in `.condarc`, so `conda env
+list` will return nothing and no environments will show up in JupyterLab.
 :::
 
-The version 3 format is now the default. Environments created using the version
-1 and 2 formats will continue to be accessible in the UI, but new builds will
-use the version 3 format. No changes are needed for existing deployments of
-conda-store.
+The version 2 format is the default because it supports environment symlinks and
+doesn't usually run into path length limitations. If you do experience problems
+with the latter and don't need the former, then consider using the version 3
+format.
 
-There is no real reason to use version 1 and 2 formats anymore, but these can be
-explicitly set via the config:
+No matter what format you choose, environments that were previously created
+using other version formats will be accessible in the conda-store web UI.
+
+There is no real reason to use version 1 format anymore, but any version can be
+explicitly set via the config, for example:
 
 ```python
 c.CondaStore.build_key_version = 1
-```
-
-or
-
-```python
-c.CondaStore.build_key_version = 2
 ```
 
 ## Long paths on Windows

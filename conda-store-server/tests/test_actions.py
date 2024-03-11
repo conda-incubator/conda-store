@@ -329,8 +329,8 @@ def test_add_lockfile_packages(
     [
         (False, 0),  # invalid
         (False, 1),  # long (legacy)
-        (False, 2),  # shorter hash
-        (False, 3),  # hash-only (default)
+        (False, 2),  # shorter hash (default)
+        (False, 3),  # hash-only
         (True, 1),  # build_key_version doesn't matter because there's no lockfile
     ],
 )
