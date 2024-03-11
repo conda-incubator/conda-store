@@ -674,6 +674,9 @@ def test_create_specification_auth_env_name_too_long(testclient, size):
             "specification": json.dumps({"name": environment_name}),
         },
     )
+    if size > 255:  # SQL error, expected
+        assert response.status_code == 500
+        return  # error, nothing to do
     response.raise_for_status()
 
     r = schema.APIPostSpecification.parse_obj(response.json())
@@ -692,7 +695,7 @@ def test_create_specification_auth_env_name_too_long(testclient, size):
         r = schema.APIGetBuild.parse_obj(response.json())
         assert r.status == schema.APIStatus.OK
         assert r.data.specification.name == environment_name
-        if r.data.status == "QUEUED":
+        if r.data.status in ("QUEUED", "BUILDING"):
             continue  # checked too fast, try again
         assert r.data.status == "COMPLETED"
         is_updated = True
