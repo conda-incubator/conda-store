@@ -1,5 +1,5 @@
 ---
-description: User personas
+description: Describes current and potential conda-store users`
 ---
 
 # User groups and personas
@@ -23,7 +23,7 @@ Staff Data Scientist | Head of Data Science | General |
 
 #### User story
 
-I want to quickly create a stable and reproducible environment for analyzing data and creating dashboards, that I can share with my team to verify and build on my work .
+I want to quickly create a stable and reproducible environment for analyzing data and creating dashboards, that I can share with my team to verify and build on my work.
 
 #### Tools they need to do their job
 
@@ -85,40 +85,34 @@ In addition to Alia’s tools, cloud/hpc tooling
 
 #### Journey with conda-store
 
-- **Discovery**
+- Discovery:
     - OSS Community, conferences, peers
     - Tries out conda-store locally and finds it useful
-- **Onboarding**
+- Onboarding:
     - Documentation, self-exploration
-- **General Use**
+- General Use:
     - Setup, deployment using the conda-store docs, within current Lab infra
     - Add team members, create default namespaces and environments, referring to the docs
     - Onboard team members to the tool with demonstrations
     - Track and limit resource utilisation
-- **Collaboration**
+- Collaboration:
     - Uses environments created by colleagues to verify their work
-- **Troubleshooting**
+- Troubleshooting:
     - Docs, issue tracker (reach out to the conda-store dev team)
 
 #### Pain points or biggest challenges
 
-Facilitating reproducible env sharing within teams by setting up relevant infra
-
-Managing and supporting team-members like Cleo
-
-May not have DevOps expertise to setup and manage conda-store for the team
-
-Reliable environments with guardrails for people new to software development principles (example, not comfortable with YAML spec)
-
-Sharing environments widely, considering different operating systems and infrastructures.
+- Facilitating reproducible env sharing within teams by setting up relevant infra
+- Managing and supporting team-members like Cleo
+- May not have DevOps expertise to setup and manage conda-store for the team
+- Reliable environments with guardrails for people new to software development principles (example, not comfortable with YAML spec)
+- Sharing environments widely, considering different operating systems and infrastructures.
 
 #### Core needs
 
-Setting up & managing packaging infra for the lab, potentially on an HPC system as as non-devops professional
-
-Visibility into groups’ package requirements and resources used
-
-Sharing environments widely, considering different operating systems and infrastructures.
+- Setting up & managing packaging infra for the lab, potentially on an HPC system as as non-devops professional
+- Visibility into groups’ package requirements and resources used
+- Sharing environments widely, considering different operating systems and infrastructures.
 
 ### User: Emma
 
@@ -172,15 +166,26 @@ I need to oversee the implementation, management, and adoption of tools like con
 
 #### Tools they need to do their job
 
+The IDEs, Platform, Misc tools used by Alia, primarily for reviews and tracking work.
+
 #### Journey with conda-store
 
-Leads the adoption of conda-store, setting organizational standards and monitoring usage to drive efficiency and alignment with business objectives.
+- Discovery:
+    - Team lead pitches it
+    - Community spaces
+- Onboarding:
+    - Team lead/member who sets up conda-store helps them onboard
+    - Documentation
+- General Use:
+    - Review resource utilization
+    - Review package and channel requests
 
 #### Pain points or biggest challenges
 
-- Strategic alignment, tool adoption across teams
+- Strategic alignment with organization goals
+- Tool adoption across teams
 
 #### Core needs
 
-- Oversight on tool efficiency, team productivity
-- Enablement of others
+- Oversight on tool efficiency and team productivity
+- Enable team members
