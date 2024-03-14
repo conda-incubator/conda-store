@@ -54,3 +54,6 @@ conda-store-server/conda_store_server/server/static/conda-store-ui/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# conda-store
+conda-store.sqlite
