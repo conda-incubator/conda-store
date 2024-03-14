@@ -28,4 +28,5 @@ jobs:
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
-        commit-message: "[auto-PR] Update openapi.json"
+        with:
+          commit-message: "[auto-PR] Update openapi.json"
