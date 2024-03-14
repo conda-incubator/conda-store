@@ -61,7 +61,7 @@
 </div>
 {% endif %}
 
-{% if build.status.value in ['BUILDING', 'COMPLETED', 'FAILED'] %}
+{% if build.status.value in ['BUILDING', 'COMPLETED', 'FAILED', 'CANCELED'] %}
 <div class="card my-2">
     <div class="card-body">
         <h3 class="card-title">Conda Environment Artifacts</h3>
@@ -89,7 +89,7 @@
 </div>
 {% endif %}
 
-{% if build.status.value in ['BUILDING', 'COMPLETED', 'FAILED'] %}
+{% if build.status.value in ['BUILDING', 'COMPLETED', 'FAILED', 'CANCELED'] %}
 <div class="card my-2">
     <div class="card-body">
         <a href="{{ url_for('api_get_build_logs', build_id=build.id) }}" class="btn btn-primary btn-block">Full Logs</a>

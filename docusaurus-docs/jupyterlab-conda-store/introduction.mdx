@@ -1,0 +1,73 @@
+---
+title: Introduction
+description: Introduction to JupyterLab Extension.
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# conda-store JupyterLab extension
+
+An extension to use the [conda-store UI][conda-store-ui] - a React-based frontend for conda-store, within JupyterLab.
+
+## Install 📦
+
+1. Pre-requisites: `conda-store-server`, JupyterLab &gt;= 3.0 and &lt;= 4.0, and Python &gt;= 3.8 installed.
+
+2. Install the extension:
+
+<Tabs>
+
+<TabItem value="conda" label="conda" default>
+
+```bash
+conda install -c conda-forge jupyter-lab-conda-store
+```
+
+</TabItem>
+
+<TabItem value="pip" label="pip" default>
+
+```bash
+pip install jupyterlab-conda-store
+```
+
+</TabItem>
+
+</Tabs>
+
+3. Start JupyterLab:
+
+```bash
+jupyter lab
+```
+
+4. (Optional) Uninstall the extension
+
+<Tabs>
+<TabItem value="conda" label="conda" default>
+
+```bash
+conda uninstall jupyter-lab-conda-store
+```
+</TabItem>
+<TabItem value="pip" label="pip" default>
+
+```bash
+pip uninstall jupyterlab-conda-store
+```
+</TabItem>
+</Tabs>
+
+## Usage
+
+In the JupyterLab window, click on the `conda-store` menu bar item to open the UI in a new window within JupyterLab:
+
+![JupyterLab window's menu bar with `conda-store` at the end of the list containing the `Conda Store Package Manager` option](./images/conda-store-menu-item.png)
+
+Learn to use the interface with [conda-store UI tutorials][cs-ui-tutorials].
+
+<!-- Internal links -->
+
+[conda-store-ui]: /conda-store-ui/introduction
+[cs-ui-tutorials]: /conda-store-ui/tutorials

@@ -83,6 +83,22 @@ To install packages published only on [PyPI][pypi] using [`pip`][pip], include a
 
 -->
 
+### Set environment variables
+
+:::note
+This feature is available *after* conda-store-ui version 2024.1.1.
+
+Currently, only the `CONDA_OVERRIDE_CUDA` environment variable can be specified, which allows setting the CUDA version for building packages with GPU support.
+Learn more in the [conda documentation][conda-docs-override-packages]
+:::
+
+You can set environment variables in the YAML editor with the following syntax:
+
+```yaml
+variables:
+  CONDA_OVERRIDE_CUDA: '12.0'
+```
+
 ## Trigger environment creation
 
 Once the name, description, required packages, and channels are specified, click on the "Create" button at the bottom of the screen to trigger environment creation:
@@ -100,3 +116,4 @@ The "Status" will change to "Status: Completed in ... min" once the environment 
 
 [pypi]: https://pypi.org
 [pip]: https://pip.pypa.io/en/stable/installation/
+[conda-docs-override-packages]: https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-virtual.html#overriding-detected-packages

@@ -15,7 +15,7 @@ You can view other versions of the environment and set them as your active envir
 2. In the "Environment Metadata" section, under "Builds:", click on the downward arrow to open the environment dropdown. This shows the all versions of your environment with build date and status. The "Active" one is your currently active environment. The "Available" environments are successfully built environments that can be activated if needed.
 3. In the dropdown, click on the build you wish to view. The page will be refreshed to display your selected environment.
 
-![](../images/versions-view.png)
+![](../images/version-select.png)
 
 ## Activate a version
 
