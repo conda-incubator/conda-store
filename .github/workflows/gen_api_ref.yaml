@@ -1,5 +1,8 @@
 name: "Generate openapi.json"
 
+env:
+  DEFAULT_PYTHON_VERSION: "3.10"
+
 on:
   release:
     types: [published]
@@ -11,6 +14,9 @@ on:
 jobs:
   update-openapi-json:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -el {0}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -18,7 +24,6 @@ jobs:
       - name: Set up Miniconda
         uses: conda-incubator/setup-miniconda@v3
         with:
-          activate-environment: conda-store-server-dev
           environment-file: conda-store-server/environment-dev.yaml
 
       - name: Install conda-store-server
@@ -27,7 +32,7 @@ jobs:
       - name: Run openapi.json generation script
         run: python docusaurus-docs/scripts/gen_api_ref.py
 
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v6
-        with:
-          commit-message: "[auto-PR] Update openapi.json"
+      # - name: Create Pull Request
+      #   uses: peter-evans/create-pull-request@v6
+      #   with:
+      #     commit-message: "[auto-PR] Update openapi.json"
