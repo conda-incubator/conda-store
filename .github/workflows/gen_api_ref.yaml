@@ -3,6 +3,9 @@ name: "Generate openapi.json"
 on:
   release:
     types: [published]
+  push: # temporary, only for testing
+    branches:
+      - "gen-openapi-json"
   workflow_dispatch:
 
 jobs:
