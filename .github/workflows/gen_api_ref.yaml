@@ -21,7 +21,11 @@ jobs:
           python-version: '3.10'
 
       - name: Install requirements
-        run: python -m pip install conda-store-server/.
+        run: python -m pip install alembic conda-store-server/.
 
       - name: Run openapi.json generation script
         run: python docusaurus-docs/scripts/gen_api_ref.py
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        commit-message: "[auto-PR] Update openapi.json"
