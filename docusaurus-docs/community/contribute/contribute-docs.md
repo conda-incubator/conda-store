@@ -1,7 +1,9 @@
 ---
-title: Contribute documentation
+sidebar_position: 2
 description: Contribute to conda-store's documentation
 ---
+
+# Contribute documentation
 
 The documentation website is built using [Docusaurus 3][docusaurus] and organized using the [Diátaxis  framework][diataxis] for each conda-store library.
 
