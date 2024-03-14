@@ -9,13 +9,16 @@ jobs:
   update-rest-api-ref:
     runs-on: ubuntu-latest
     steps:
-      - steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Set up Python 3.10
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
-      - name: Install conda-store-server
+
+      - name: Install requirements
         run: python -m pip install conda-store-server fastapi
+
       - name: Run openapi.json generation script
         run: python docusaurus-docs/scripts/gen_api_ref.py
