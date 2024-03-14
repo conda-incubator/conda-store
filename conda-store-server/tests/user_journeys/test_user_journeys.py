@@ -47,10 +47,11 @@ def test_admin_user_can_create_environment(
 def test_admin_login_and_delete_shared_environment(
     base_url: str, specification_path: str
 ) -> None:
-    """Test that a user can login and delete an environment in a shared namespace."""
+    """Test that an admin can login and create/delete an env in a shared namespace."""
     api = utils.API(base_url=base_url)
 
-    # Create a shared namespace; default permissions for namepace/environment */* is admin
+    # Create a shared namespace; default permissions for namepace/environment
+    # */* is admin
     namespace = api.create_namespace().json()["data"]["name"]
     environment = api.create_environment(
         namespace,
@@ -68,19 +69,21 @@ def test_admin_login_and_delete_shared_environment(
         ("tests/user_journeys/test_data/simple_environment.yaml"),
     ],
 )
-def test_user_login_and_delete_shared_environment(
+def test_user_login_and_create_shared_environment(
     base_url: str, specification_path: str
 ) -> None:
-    """Test that a user can login and delete an environment in a shared namespace."""
+    """Test that a user can login and create an environment in a shared namespace."""
     api = utils.API(base_url=base_url)
-    # Create a shared namespace; default permissions for namepace/environment */* is admin
+
+    # Create a shared namespace; default permissions for namepace/environment
+    # */* is admin
     namespace = api.create_namespace().json()["data"]["name"]
 
     dev_api = utils.API(
         base_url=base_url,
         token=api.create_token(
             namespace,
-            'editor',
+            'developer',
         ).json()['data']['token']
     )
 
@@ -89,5 +92,5 @@ def test_user_login_and_delete_shared_environment(
         specification_path,
     ).json()["data"]["specification"]["name"]
 
-    dev_api.delete_environment(namespace, environment)
+    api.delete_environment(namespace, environment)
     api.delete_namespace(namespace)
