@@ -56,7 +56,9 @@ def test_admin_login_and_delete_shared_environment(
     environment = api.create_environment(
         namespace,
         specification_path,
-    ).json()["data"]["specification"]["name"]
+    ).json()["data"][
+        "specification"
+    ]["name"]
 
     api.delete_environment(namespace, environment)
     api.delete_namespace(namespace)
@@ -83,14 +85,18 @@ def test_user_login_and_create_shared_environment(
         base_url=base_url,
         token=api.create_token(
             namespace,
-            'developer',
-        ).json()['data']['token']
+            "developer",
+        ).json()[
+            "data"
+        ]["token"],
     )
 
     environment = dev_api.create_environment(
         namespace,
         specification_path,
-    ).json()["data"]["specification"]["name"]
+    ).json()[
+        "data"
+    ]["specification"]["name"]
 
     api.delete_environment(namespace, environment)
     api.delete_namespace(namespace)
