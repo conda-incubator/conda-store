@@ -185,6 +185,23 @@ class API:
             f"api/v1/environment/{namespace}/{environment_name}", method="DELETE"
         )
 
+    def list_environments(self, namespace: str) -> requests.Response:
+        """List the environments in the given namespace.
+
+        Parameters
+        ----------
+        namespace : str
+            Name of the namespace for which environments are to be retrieved
+
+        Returns
+        -------
+        requests.Response
+            Response from the server containing the list of environments
+        """
+        return self._make_request(
+            f"api/v1/environment/?namespace={namespace}", method="GET"
+        )
+
     def delete_namespace(self, namespace: str) -> requests.Response:
         """Delete a namespace."""
         return self._make_request(f"api/v1/namespace/{namespace}", method="DELETE")
