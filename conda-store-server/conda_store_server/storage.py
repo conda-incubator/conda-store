@@ -228,5 +228,12 @@ class LocalStorage(Storage):
 
     def delete(self, db, build_id, key):
         filename = os.path.join(self.storage_path, key)
-        os.remove(filename)
+        try:
+            os.remove(filename)
+        except FileNotFoundError:
+            # The DB can contain multiple entries pointing to the same key, like
+            # a log file. This skips files that were previously processed and
+            # deleted. See LocalStorage.fset and Storage.fset, which are used
+            # for saving build artifacts
+            pass
         super().delete(db, build_id, key)
