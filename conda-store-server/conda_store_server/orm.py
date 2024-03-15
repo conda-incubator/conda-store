@@ -294,7 +294,7 @@ class Build(Base):
         from conda_store_server import BuildKey
 
         # This is not used with v3 because the whole point of v3 is to avoid any
-        # dependence on user-provided variable-sized data on the filesystem and
+        # dependence on user-provided variable-size data on the filesystem and
         # by default the environment path contains the namespace and the
         # environment name, which can be arbitrary large. By setting this to
         # None, we're making it clear that this shouldn't be used by other

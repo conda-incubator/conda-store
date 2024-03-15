@@ -143,8 +143,8 @@ format.
 No matter what format you choose, environments that were previously created
 using other version formats will be accessible in the conda-store web UI.
 
-There is no real reason to use version 1 format anymore, but any version can be
-explicitly set via the config, for example:
+There is no real reason to use the version 1 format anymore, but any version can
+be explicitly set via the config, for example:
 
 ```python
 c.CondaStore.build_key_version = 1
