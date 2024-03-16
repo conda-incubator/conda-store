@@ -954,5 +954,9 @@ def test_put_global_settings_auth_in_namespace_environment(
 
 def test_default_conda_store_dir():
     # Checks the default value of CONDA_STORE_DIR on different platforms
+    dir = str(CONDA_STORE_DIR)
     user = os.environ["USER"]
-    assert str(CONDA_STORE_DIR) == f"/home/{user}/.local/share/conda-store"
+    if sys.platform == "darwin":
+        assert dir == f"/Users/{user}/Library/Application Support/conda-store"
+    else:
+        assert dir == f"/home/{user}/.local/share/conda-store"
