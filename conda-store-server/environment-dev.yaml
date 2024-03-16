@@ -33,6 +33,7 @@ dependencies:
   - jinja2
   - python-multipart
   - alembic
+  - platformdirs
   # artifact storage
   - minio
   # installer
