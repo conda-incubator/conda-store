@@ -11,7 +11,7 @@ The personas used for informing user research studies and future improvements to
 At a high-level, there are two key user groups:
 
 - **General user:** Create, edit, use environments for their day-to-day work
-- **Admin-type user:** In addition to the general use-case mentioned above, admin-type users also **setup** conda-store for their team, create various namespaces, add/update users and their permissions, set default packages/versions for their team, etc.
+- **Admin user:** In addition to the general use-case mentioned above, admin users also **setup** conda-store for their team, create various namespaces, add/update users and their permissions, set default packages/versions for their team, etc.
 
 ## User personas 🙋🏽‍♀️
 
@@ -27,10 +27,10 @@ I want to quickly create a stable and reproducible environment for analyzing dat
 
 #### Tools they need to do their job
 
-- Libraries - data reader/writer (arrow), data processing (pandas), numerical computing (numpy), ML (xgboost / pytorch), dataviz and dashboarding (mpl / streamlit), job schedulers (Airflow)
+- Libraries - data reader/writer (arrow), data processing (pandas), numerical computing (NumPy), ML (XGboost / PyTorch), Data Visualization and dashboarding (Matplotlib / Streamlit), job schedulers (Airflow)
 - IDE - JupyterLab/Notebook (hence, extensions)
-- Platform - Local computer, org JupyterHub on Cloud (potentially Nebari)
-- Misc - Git, GitHub, conda
+- Platform - Local computer, organization's JupyterHub on Cloud platform (potentially Nebari)
+- Miscellaneous - Git, GitHub, conda
 
 #### Journey with conda-store
 
@@ -39,34 +39,34 @@ I want to quickly create a stable and reproducible environment for analyzing dat
     - Team leader sets it up for everyone
 - Onboarding:
     - A team member gives them a walkthrough
-    - Documented Tutorials
+    - Documented tutorials
     - Intuitiveness of the UI
 - General Use:
-    - Env creation from GUI, YAML, Lockfile
+    - Environment creation from GUI, YAML, Lockfile
     - Version control
-    - Using the env in Jupyter Notebook (local / cloud)
+    - Using the environment in Jupyter Notebook (local / cloud)
     - Ability to use any package/version out there
     - Access to special conda channels
-    - Envs for GPU-powered data analysis and modelling
+    - Environments for GPU-powered data analysis and modelling
 - Collaboration:
-    - Share env with colleagues with a URL (Part of 1-2 shared namespaces)
-    - Fork/Copy envs between namespaces
+    - Share environment with colleagues with a URL (Part of 1-2 shared namespaces)
+    - Fork/Copy environments between namespaces
     - Download artifacts like docker images for use in other (prod?) machines
 - Troubleshooting:
     - Understand errors through the error message displayed
     - Look at conda-store’s documentation & GH issues/discussions, search for the error
     - Contact team-members or internal support
-    - Open an issue/discussion on GH
+    - Open an issue/discussion on GitHub
 
 #### Pain points or biggest challenges
 
-- Environments need to be compliant with company standards, for example: approved conda channels and approved package versions
-- Build envs with libraries from internal mirrors
+- Environments need to be compliant with company standards, for example, approved conda channels and approved package versions
+- Build environments with libraries from internal mirrors
 - Ensure stable environments that are quickly reproducible by colleagues and can be used by Ops teams for deployment (often on similar machines and operating-systems)
 
 #### Core needs
 
-- Intuitive and fast env creation & sharing
+- Intuitive and fast environment creation & sharing
 - Promise of stability, security, and compliance
 
 ### User: Dani
@@ -81,38 +81,38 @@ As a research coordinator, I manage the logistics and admin-tasks of multiple re
 
 #### Tools they need to do their job
 
-In addition to Alia’s tools, cloud/hpc tooling
+In addition to Alia’s tools, cloud or High Performance Computing (HPC) tools (for example, Google Cloud Platform's web interface and CLI tools.)
 
 #### Journey with conda-store
 
 - Discovery:
-    - OSS Community, conferences, peers
+    - OSS Community, conferences, peer suggestions
     - Tries out conda-store locally and finds it useful
 - Onboarding:
     - Documentation, self-exploration
 - General Use:
-    - Setup, deployment using the conda-store docs, within current Lab infra
-    - Add team members, create default namespaces and environments, referring to the docs
+    - Setup and deployment using the conda-store docs, within current Lab infra
+    - Add team members, create default namespaces and environments, referring to the documentation
     - Onboard team members to the tool with demonstrations
     - Track and limit resource utilization
 - Collaboration:
     - Uses environments created by colleagues to verify their work
 - Troubleshooting:
-    - Docs, issue tracker (reach out to the conda-store dev team)
+    - Documentation, issue tracker (reach out to the conda-store dev team)
 
 #### Pain points or biggest challenges
 
-- Facilitating reproducible env sharing within teams by setting up relevant infra
-- Managing and supporting team-members like Cleo
+- Facilitating reproducible environment sharing within teams by setting up relevant infrastructure
+- Managing and supporting team-members (like Alia)
 - May not have DevOps expertise to setup and manage conda-store for the team
 - Reliable environments with guardrails for people new to software development principles (example, not comfortable with YAML spec)
 - Sharing environments widely, considering different operating systems and infrastructures.
 
 #### Core needs
 
-- Setting up & managing packaging infra for the lab, potentially on an HPC system as as non-devops professional
+- Setting up & managing packaging infrastructure for the lab, potentially on an HPC system as as non-devops professional
 - Visibility into groups’ package requirements and resources used
-- Sharing environments widely, considering different operating systems and infrastructures.
+- Sharing environments widely, considering different operating systems and infrastructures
 
 ### User: Emma
 
@@ -122,37 +122,37 @@ Freelance data scientist | - | General |
 
 #### User story
 
-I want to manage my local conda environments, so that I can be more efficient in my day-to-day work
+I want to manage my local conda environments, so that I can be more efficient in my day-to-day work.
 
 #### Tools they need to do their job
 
-Same as Alia, but primarily for individual work
+Same as Alia, but primarily for individual work.
 
 #### Journey with conda-store
 
 - Discovery
     - Internet, community spaces, conferences
 - Onboarding
-    - Docs
+    - Documentation
 - General Use
     - Install and setup conda-store locally
-    - Create envs in my personal namespace
-    - Use the envs in Jupyter Notebooks
+    - Create environments in my personal namespace
+    - Use the environments in Jupyter Notebooks
 - Collaboration
-    - Share relevant artifacts (e.g. lockfiles) with clients
+    - Share relevant artifacts (e.g., Lockfiles) with clients
 - Troubleshooting
-    - Docs, issue tracker
+    - Documentation, issue tracker
 
 #### Pain points or biggest challenges
 
 - Sometimes conda environments break while working, adding overhead
 - Environments are not always reproducible when I share them
-- Using shared artifacts with the application should be as easy as possible (think installers/executables)
+- Using the environment-creation artifacts  shared with the application should be as easy as possible (think installers/executables)
 
 #### Core needs
 
 - Reliable and quick environment creation that follow conda best practices
-- Creating reproducible envs that I can share with clients later
+- Creating reproducible environments that I can share with clients later
 
 ### User: Ginny
 
@@ -166,7 +166,7 @@ I need to oversee the implementation, management, and adoption of tools like con
 
 #### Tools they need to do their job
 
-The IDEs, Platform, Misc tools used by Alia, primarily for reviews and tracking work.
+The IDEs, platform, miscellaneous tools used by Alia, primarily for reviews and tracking work.
 
 #### Journey with conda-store
 
@@ -188,4 +188,4 @@ The IDEs, Platform, Misc tools used by Alia, primarily for reviews and tracking 
 #### Core needs
 
 - Oversight on tool efficiency and team productivity
-- Enable team members
+- Enablement of various teams
