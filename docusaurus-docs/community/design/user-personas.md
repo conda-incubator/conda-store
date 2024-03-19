@@ -29,7 +29,7 @@ I want to quickly create a stable and reproducible environment for analyzing dat
 
 - Libraries - data reader/writer (arrow), data processing (pandas), numerical computing (numpy), ML (xgboost / pytorch), dataviz and dashboarding (mpl / streamlit), job schedulers (Airflow)
 - IDE - JupyterLab/Notebook (hence, extensions)
-- Platform - Local computer, org JupyterHub on Cloud (Nebari?)
+- Platform - Local computer, org JupyterHub on Cloud (potentially Nebari)
 - Misc - Git, GitHub, conda
 
 #### Journey with conda-store
@@ -60,7 +60,7 @@ I want to quickly create a stable and reproducible environment for analyzing dat
 
 #### Pain points or biggest challenges
 
-- Envs need to be compliant with company standards
+- Environments need to be compliant with company standards, for example: approved conda channels and approved package versions
 - Build envs with libraries from internal mirrors
 - Ensure stable environments that are quickly reproducible by colleagues and can be used by Ops teams for deployment (often on similar machines and operating-systems)
 
