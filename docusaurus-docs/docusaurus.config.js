@@ -183,6 +183,11 @@ const config = {
           '⚠️ We are in the process of revamping our docs, some pages may be incomplete or inaccurate. ⚠️',
         isCloseable: false,
       },
+      docs: {
+        sidebar: {
+          hideable: true,
+        },
+      },
     }),
 };
 
