@@ -23,7 +23,7 @@ Staff Data Scientist | Head of Data Science | General |
 
 #### User story
 
-I want to quickly create a stable and reproducible environment for analyzing data and creating dashboards, that I can share with my team to verify and build on my work.
+I want to quickly create a stable and reproducible environment for analyzing data and creating dashboards that I can share with my team to verify and build on my work.
 
 #### Tools they need to do their job
 
@@ -77,7 +77,7 @@ Research Scientist and Coordinator | PI | Admin |
 
 #### User story
 
-As a research coordinator, I manage the logistics and admin-tasks of multiple research projects, ensuring that the tools/dependencies used are accessible, reproducible and standardised across projects.
+As a research coordinator, I manage the logistics and admin-tasks of multiple research projects, ensuring that the tools/dependencies used are accessible, reproducible and standardized across projects.
 
 #### Tools they need to do their job
 
@@ -94,7 +94,7 @@ In addition to Alia’s tools, cloud/hpc tooling
     - Setup, deployment using the conda-store docs, within current Lab infra
     - Add team members, create default namespaces and environments, referring to the docs
     - Onboard team members to the tool with demonstrations
-    - Track and limit resource utilisation
+    - Track and limit resource utilization
 - Collaboration:
     - Uses environments created by colleagues to verify their work
 - Troubleshooting:
@@ -139,7 +139,7 @@ Same as Alia, but primarily for individual work
     - Create envs in my personal namespace
     - Use the envs in Jupyter Notebooks
 - Collaboration
-    - Share relevant artifacts (lockfiles?) with clients
+    - Share relevant artifacts (e.g. lockfiles) with clients
 - Troubleshooting
     - Docs, issue tracker
 
@@ -147,7 +147,7 @@ Same as Alia, but primarily for individual work
 
 - Sometimes conda environments break while working, adding overhead
 - Environments are not always reproducible when I share them
-- Using shared artifacts w/ the application should be as easy as possible (think installers/executables)
+- Using shared artifacts with the application should be as easy as possible (think installers/executables)
 
 #### Core needs
 
