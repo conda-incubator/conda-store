@@ -105,9 +105,7 @@ def test_user_login_and_create_shared_environment(
 @pytest.mark.user_journey
 def test_admin_delete_environment(base_url: str):
     """Test that an admin can delete environments."""
-    specs = [
-        "tests/user_journeys/test_data/simple_environment.yaml"
-    ]
+    specs = ["tests/user_journeys/test_data/simple_environment.yaml"]
     api = utils.API(base_url=base_url)
 
     # Create a shared namespace; default permissions for namepace/environment
@@ -117,9 +115,9 @@ def test_admin_delete_environment(base_url: str):
     envs = []
     for spec in specs:
         envs.append(
-            api.create_environment(
-                namespace, spec
-            ).json()["data"]["specification"]["name"]
+            api.create_environment(namespace, spec).json()["data"]["specification"][
+                "name"
+            ]
         )
 
     assert len(api.list_environments(namespace).json()["data"]) == len(specs)
