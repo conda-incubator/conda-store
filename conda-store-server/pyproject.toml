@@ -74,12 +74,10 @@ Issues = "https://github.com/conda-incubator/conda-store/issues"
 [tool.hatch.version]
 path = "conda_store_server/__init__.py"
 
-[project.optional-dependencies]
-dev = ["build", "twine"]
-
 [tool.hatch.envs.dev]
 dependencies = [
   "aiohttp>=3.8.1",
+  "build",
   "docker-compose",
   "docker-py<7",
   "flower",
@@ -89,6 +87,7 @@ dependencies = [
   "pytest-celery",
   "pytest-mock",
   "pytest-playwright",
+  "twine"
 ]
 
 [tool.hatch.envs.dev.scripts]

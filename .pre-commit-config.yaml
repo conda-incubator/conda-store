@@ -10,21 +10,21 @@
 
 repos:
   - repo: https://github.com/psf/black
-    rev: 23.9.1
+    rev: 24.3.0
     hooks:
       - id: black
         exclude: "examples|tests/assets"
 
   - repo: https://github.com/charliermarsh/ruff-pre-commit
     # Ruff version.
-    rev: "v0.0.289"
+    rev: "v0.3.3"
     hooks:
       - id: ruff
         exclude: "examples|tests/assets"
         args: ["--fix"]
 
   - repo: https://github.com/pycqa/isort
-    rev: 5.12.0
+    rev: 5.13.2
     hooks:
       - id: isort
         name: isort
@@ -34,7 +34,7 @@ repos:
         exclude: "conda-store-server/conda_store_server/action/__init__.py"
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v4.5.0
     hooks:
       - id: trailing-whitespace
         files: ".*\\.py"
@@ -44,7 +44,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v3.0.3
+    rev: v4.0.0-alpha.8
     hooks:
       - id: prettier
         exclude: ^(examples/|templates/|)
