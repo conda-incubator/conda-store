@@ -57,6 +57,7 @@ docker-compose up --build
 
    - [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html)
 
+<!-- TODO: this will be redundant @trallard to update -->
 2. Install the development dependencies and activate the environment:
 
 ```shell
