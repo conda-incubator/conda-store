@@ -1,4 +1,5 @@
 """Helper functions for user journeys."""
+
 import time
 import uuid
 from enum import Enum
