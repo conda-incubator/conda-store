@@ -7,6 +7,7 @@ dependencies:
   - python ==3.10
   # conda builds
   - conda ==23.5.2
+  - python-docker
   # web server
   - flower
   # dev dependencies
