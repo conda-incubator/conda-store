@@ -95,6 +95,7 @@ dependencies = [
 
 [tool.hatch.envs.lint]
 dependencies = ["pre-commit"]
+
 [tool.hatch.envs.lint.scripts]
 lint = ["pre-commit run --all"]
 unit-test = "pytest tests -v"
