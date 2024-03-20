@@ -12,16 +12,16 @@ dependencies:
   - flower
   # dev dependencies
   - aiohttp>=3.8.1
-  - hatch
   - pytest
   - pytest-celery
   - pytest-mock
-  - black
-  - flake8
-  - ruff
   - playwright
   - docker-py<7  # for docker-compose
   - docker-compose
+  # build dependencies
+  - hatch
+  - twine
+  - build
   - pip
   - pip:
       - pytest-playwright
