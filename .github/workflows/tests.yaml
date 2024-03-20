@@ -20,14 +20,6 @@ jobs:
     strategy:
       matrix:
         os: ["ubuntu", "macos", "windows"]
-        # TODO: come back and clean here
-        include:
-          - os: ubuntu
-            environment-file: conda-store-server/environment-dev.yaml
-          - os: macos
-            environment-file: conda-store-server/environment-dev.yaml
-          - os: windows
-            environment-file: conda-store-server/environment-dev.yaml
     runs-on: ${{ matrix.os }}-latest
     defaults:
       run:
@@ -40,7 +32,7 @@ jobs:
       - name: "Set up env ${{ matrix.os }} 🐍"
         uses: conda-incubator/setup-miniconda@v3
         with:
-            environment-file: ${{ matrix.environment-file }}
+            environment-file: conda-store-server/environment-dev.yaml
             miniforge-version: latest
 
       # This fixes a "DLL not found" issue importing ctypes from the hatch env
