@@ -13,8 +13,10 @@ keywords = ["conda"]
 authors = [
   { name = "Christopher Ostrouchov", email = "chris.ostrouchov@gmail.com" },
 ]
-maintainers = [{ name = "Tania Allard", email = "trallard@bitsandchips.me" }]
-# TODO: update maintainers
+maintainers = [{ name = "Tania Allard", email = "trallard@bitsandchips.me" },
+    {name= "Pavithra Eswaramoorthy", email = " pavithraes@outlook.com"},
+  ]
+
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
@@ -31,29 +33,28 @@ classifiers = [
   "Intended Audience :: Science/Research",
   "Intended Audience :: System Administrators",
 ]
-dependencies = ["rich", "click", "yarl", "aiohttp", "ruamel.yaml"]
 dynamic = ["version"]
+dependencies = ["rich",
+  "click",
+  "yarl",
+  "aiohttp>=3.8.1",
+  "ruamel.yaml"]
 
 [project.urls]
 Homepage = "https://conda.store/"
 Source = "https://github.com/conda-incubator/conda-store"
+Issues = "https://github.com/conda-incubator/conda-store/issues"
 
 [tool.hatch.version]
 path = "conda_store/__init__.py"
 
-[project.optional-dependencies]
-dev = ["build", "twine"]
-
 [tool.hatch.envs.dev]
 dependencies = [
+  "build",
   "pre-commit",
-  "sphinx",
-  "myst-parser",
-  "sphinx-panels",
-  "sphinx-copybutton",
-  "pydata-sphinx-theme",
   "pytest",
   "pytest-mock",
+  "twine",
 ]
 
 [tool.hatch.envs.dev.scripts]
@@ -65,10 +66,9 @@ conda-store = "conda_store.__main__:main"
 
 [tool.black]
 line-length = 88
-target-version = ['py38', 'py39', 'py310']
+target-version = ['py38', 'py39', 'py310', 'py311']
 
 [tool.ruff]
 ignore = [
   "E501", # line-length
-
 ]

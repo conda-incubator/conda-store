@@ -13,6 +13,9 @@ keywords = ["conda"]
 authors = [
   { name = "Christopher Ostrouchov", email = "crhsi.ostrouchov@gmail.com" },
 ]
+maintainers = [{ name = "Tania Allard", email = "trallard@bitsandchips.me" },
+    {name= "Pavithra Eswaramoorthy", email = " pavithraes@outlook.com"},
+  ]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
@@ -25,32 +28,48 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3 :: Only",
 ]
+
+dynamic = ["version"]
+
 dependencies = [
+  # env builds
+  # conda (which cannot be installed via pip see https://github.com/conda/conda/issues/11715)
+  "python-docker",
+  # we need platform dependent dependencies here
   "conda-docker; sys_platform == 'linux'",
+  "conda-lock >=1.0.5",
   "conda-pack",
+  "conda-package-handling",
+  "conda-package-streaming",
+  # web server
+  "alembic",
   "celery",
-  "sqlalchemy",
-  "requests",
   "fastapi",
-  "pyyaml",
-  "redis",
-  "pydantic<2",
-  "minio",
-  "traitlets",
-  "pyjwt",
-  "yarl",
   "filelock",
   "itsdangerous",
   "jinja2",
+  "pyjwt",
+  "psycopg2-binary",
+  "pymysql",
+  "pyyaml",
+  "redis",
+  "requests",
+  "pydantic<2",
   "python-multipart",
-  "python-docker"
-  # conda (which should not be included here)
+  "sqlalchemy<=1.4.47",
+  "traitlets",
+  "uvicorn",
+  "yarl",
+  # installer
+  "constructor",
+  # artifact storage
+  "minio",
 ]
-dynamic = ["version"]
 
 [project.urls]
 Homepage = "https://conda.store/"
 Source = "https://github.com/conda-incubator/conda-store"
+Issues = "https://github.com/conda-incubator/conda-store/issues"
 
 [tool.hatch.version]
 path = "conda_store_server/__init__.py"
@@ -60,13 +79,14 @@ dev = ["build", "twine"]
 
 [tool.hatch.envs.dev]
 dependencies = [
+  "aiohttp>=3.8.1",
+  "docker-compose",
+  "docker-py<7",
+  "flower",
+  "playwright",
   "pre-commit",
-  "sphinx",
-  "myst-parser",
-  "sphinx-panels",
-  "sphinx-copybutton",
-  "pydata-sphinx-theme",
   "pytest",
+  "pytest-celery",
   "pytest-mock",
   "pytest-playwright",
 ]
