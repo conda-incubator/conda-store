@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: "Retrieve secret from Vault 🗝"
-        uses: hashicorp/vault-action@v2
+        uses: hashicorp/vault-action@v3
         with:
           method: jwt
           url: "https://quansight-vault-public-vault-b2379fa7.d415e30e.z1.hashicorp.cloud:8200"
