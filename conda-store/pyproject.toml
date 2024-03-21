@@ -14,7 +14,7 @@ authors = [
   { name = "Christopher Ostrouchov", email = "chris.ostrouchov@gmail.com" },
 ]
 maintainers = [{ name = "Tania Allard", email = "trallard@bitsandchips.me" },
-    {name= "Pavithra Eswaramoorthy", email = " pavithraes@outlook.com"},
+    {name= "Pavithra Eswaramoorthy", email = "pavithraes@outlook.com"},
   ]
 
 classifiers = [
