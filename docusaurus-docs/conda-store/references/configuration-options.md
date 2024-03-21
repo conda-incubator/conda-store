@@ -44,7 +44,7 @@ should correspond to the following environment variables:
 - macOS: no dedicated environment variable.
 
 Note that whether these environment variables are actually used by
-[platformdirs] is up to the library authors and can be changed at any time.
+[`platformdirs`][platformdirs] is up to the library authors and can be changed at any time.
 Please use the conda-store configuration options mentioned below instead.
 
 [platformdirs]: https://github.com/platformdirs/platformdirs
