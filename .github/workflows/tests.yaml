@@ -2,6 +2,7 @@ name: Tests
 
 env:
   DEFAULT_PYTHON_VERSION: "3.10"
+  FORCE_COLOR: "1" # Make tools pretty.
 
 on:
   pull_request:
@@ -55,11 +56,11 @@ jobs:
 
       - name: "Installed built conda-store-server 📦"
         run: |
-          pip install dist/*.whl
+          python -Im pip install dist/*.whl
 
       - name: "Unit tests ✅"
         run: |
-          pytest -m "not extended_prefix and not user_journey" tests
+          python -Im pytest -m "not extended_prefix and not user_journey" tests
 
       # https://github.com/actions/runner-images/issues/1052
       - name: "Windows extended prefix unit tests ✅"
@@ -93,7 +94,6 @@ jobs:
 
       - name: "Install build dependencies 📦"
         run: |
-          pip install hatch
           sudo apt install wait-for-it -y
 
       - name: "Deploy docker-compose"
@@ -108,7 +108,7 @@ jobs:
       - name: "Run Playwright tests 🎭"
         run: |
           playwright install
-          pytest --video on ../tests/test_playwright.py
+          python -Im pytest --video on ../tests/test_playwright.py
 
       - name: "Upload test results 📤"
         uses: actions/upload-artifact@v4
@@ -120,11 +120,11 @@ jobs:
       - name: "Run integration tests ✅"
         run: |
           export PYTHONPATH=$PYTHONPATH:$PWD
-          pytest ../tests/test_api.py ../tests/test_metrics.py
+          python -Im pytest ../tests/test_api.py ../tests/test_metrics.py
 
       - name: "Run user journey tests ✅"
         run: |
-          pytest -m "user_journey"
+          python -Im pytest -m "user_journey"
 
       - name: "Get Docker logs 🔍"
         if: ${{ failure() }}
@@ -139,7 +139,7 @@ jobs:
         working-directory: conda-store
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
     steps:
       - name: "Checkout Repository 🛎"
         uses: actions/checkout@v4
@@ -151,12 +151,11 @@ jobs:
 
       - name: "Install Dependencies 📦"
         run: |
-          pip install hatch
           sudo apt install wait-for-it -y
 
       - name: "Linting Checks 🧹"
         run: |
-          hatch env run -e dev lint
+          hatch env run -e lint lint
 
       - name: "Build package 📦"
         run: |
@@ -173,7 +172,7 @@ jobs:
 
       - name: "Install built conda-store for tests 📦"
         run: |
-          pip install dist/*.whl
+          python -Im pip install dist/*.whl
 
       - name: "Run basic tests -  not authenticated"
         run: |
@@ -206,13 +205,13 @@ jobs:
           - conda-store
           - conda-store-server
     steps:
-      - name: "Checkout Repository"
+      - name: "Checkout Repository 🛎"
         uses: actions/checkout@v4
 
       - name: "Set up Docker Buildx"
         uses: docker/setup-buildx-action@v3
 
-      - name: "Lint Dockerfiles"
+      - name: "Lint Dockerfiles 🔍"
         uses: jbergstroem/hadolint-gh-action@v1
         with:
           dockerfile: ${{ matrix.docker-image }}/Dockerfile

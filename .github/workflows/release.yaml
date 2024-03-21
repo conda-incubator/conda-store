@@ -17,6 +17,11 @@ env:
 permissions:
   contents: read # This is required for actions/checkout
 
+# ensuring only one instance is running at a given time
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # Always build & verify package.
   build-package:
@@ -45,7 +50,7 @@ jobs:
 
       # Adding a separate upload for publishing
       - name: "Upload build artefacts 📤"
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.directory }}-package
           path: |
@@ -69,7 +74,7 @@ jobs:
 
     steps:
       - name: "Download build artefacts 📥"
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v3
         with:
           name: ${{ matrix.directory }}-package
           path: dist
@@ -101,7 +106,7 @@ jobs:
 
     steps:
       - name: "Download build artefacts 📥"
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v3
         with:
           name: ${{ matrix.directory }}-package
           path: dist
