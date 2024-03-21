@@ -36,7 +36,7 @@ location on each platform. On most systems, this will default to:
 - Windows: `C:\Users\<USER>\AppData\Local\conda-store\conda-store`
 - macOS: `/Users/<USER>/Library/Application Support/conda-store`.
 
-The platform user data directory prefix, which is before `conda-store` above,
+The platform user data directory prefix, which is the parent of the `conda-store` directory above,
 should correspond to the following environment variables:
 
 - Linux: `$XDG_DATA_HOME`
