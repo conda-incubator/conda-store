@@ -96,7 +96,7 @@ It consists of:
 
 However, version 2 build paths don't solve the problem completely because they
 include user-provided data, like the environment name, and that data can be
-arbitrary large.
+arbitrarily large.
 
 To solve this problem, version 3 was introduced, which will always have the same
 size. It looks like this:
