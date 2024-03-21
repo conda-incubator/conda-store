@@ -9,12 +9,13 @@ description = "Conda Environment Management, Builds, and Serve"
 readme = "README.md"
 license = "BSD-3-Clause"
 requires-python = ">=3.8"
-keywords = ["conda"]
+keywords = ["conda", "dependency management", "environment management", "reproducibility"]
 authors = [
   { name = "Christopher Ostrouchov", email = "crhsi.ostrouchov@gmail.com" },
 ]
 maintainers = [{ name = "Tania Allard", email = "trallard@bitsandchips.me" },
     {name= "Pavithra Eswaramoorthy", email = " pavithraes@outlook.com"},
+    {name="Nikita Karetnikov", email="nkaretnikov@quansight.com"},
   ]
 classifiers = [
   "Development Status :: 3 - Alpha",
@@ -98,7 +99,9 @@ dependencies = ["pre-commit"]
 
 [tool.hatch.envs.lint.scripts]
 lint = ["pre-commit run --all"]
-unit-test = "pytest tests -v"
+
+[tool.hatch.envs.dev.scripts]
+unit-test = "pytest -m 'not extended_prefix and not user_journey' tests"
 playwright-test = [
   "playwright install",
   "pytest --video on ../tests/test_playwright.py"
@@ -117,7 +120,11 @@ conda-store-worker = "conda_store_server.worker.__main__:main"
 
 [tool.black]
 line-length = 88
-target-version = ['py37', 'py38', 'py39']
+target-version = ['py38', 'py39', 'py310', 'py311', 'py312']
+
+[tool.ruff.lint.isort]
+lines-between-types = 1
+lines-after-imports = 2
 
 [tool.ruff]
 ignore = [

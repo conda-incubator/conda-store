@@ -9,12 +9,13 @@ description = "conda-store client"
 readme = "README.md"
 license = "BSD-3-Clause"
 requires-python = ">=3.8"
-keywords = ["conda"]
+keywords = ["conda", "dependency management", "environment management", "reproducibility"]
 authors = [
   { name = "Christopher Ostrouchov", email = "chris.ostrouchov@gmail.com" },
 ]
 maintainers = [{ name = "Tania Allard", email = "trallard@bitsandchips.me" },
     {name= "Pavithra Eswaramoorthy", email = "pavithraes@outlook.com"},
+    {name="Nikita Karetnikov", email="nkaretnikov@quansight.com"},
   ]
 
 classifiers = [
@@ -51,14 +52,18 @@ path = "conda_store/__init__.py"
 [tool.hatch.envs.dev]
 dependencies = [
   "build",
-  "pre-commit",
   "pytest",
-  "pytest-mock",
   "twine",
+  "pytest-mock",
 ]
 
-[tool.hatch.envs.dev.scripts]
+[tool.hatch.envs.lint]
+dependencies = ["pre-commit"]
+
+[tool.hatch.envs.lint.scripts]
 lint = ["pre-commit run --all"]
+
+[tool.hatch.envs.dev.scripts]
 test = "pytest tests"
 
 [project.scripts]
@@ -66,7 +71,10 @@ conda-store = "conda_store.__main__:main"
 
 [tool.black]
 line-length = 88
-target-version = ['py38', 'py39', 'py310', 'py311']
+
+[tool.ruff.lint.isort]
+lines-between-types = 1
+lines-after-imports = 2
 
 [tool.ruff]
 ignore = [

@@ -24,7 +24,7 @@ The [`conda-store` repository on GitHub][conda-store-repo] consists of two separ
 
 ## Quick start
 
-1. Create and activate new `conda` environment:
+1. Create and activate a new `conda` environment:
 
 ```bash
 conda create -n conda-store-env python=<Python version of choice>
