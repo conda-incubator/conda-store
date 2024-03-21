@@ -29,7 +29,7 @@ conda-store-worker --config <path-to-conda-store-config.py>
 The `CONDA_STORE_DIR` Python variable specifies the conda-store data directory,
 which is used by some of the configuration options mentioned below, like
 `CondaStore.store_directory` and `LocalStorage.storage_path`. This variable
-relies on the [platformdirs] library to select the recommended user data
+relies on the [`platformdirs`][platformdirs] library to select the recommended user data
 location on each platform:
 
 - Linux: `/home/<USER>/.local/share/conda-store`
