@@ -14,7 +14,7 @@ authors = [
   { name = "Christopher Ostrouchov", email = "crhsi.ostrouchov@gmail.com" },
 ]
 maintainers = [{ name = "Tania Allard", email = "trallard@bitsandchips.me" },
-    {name= "Pavithra Eswaramoorthy", email = " pavithraes@outlook.com"},
+    {name= "Pavithra Eswaramoorthy", email = "pavithraes@outlook.com"},
     {name="Nikita Karetnikov", email="nkaretnikov@quansight.com"},
   ]
 classifiers = [
@@ -75,9 +75,6 @@ Issues = "https://github.com/conda-incubator/conda-store/issues"
 [tool.hatch.version]
 path = "conda_store_server/__init__.py"
 
-[project.optional-dependencies]
-dev=["build", "twine"]
-
 [tool.hatch.envs.dev]
 dependencies = [
   "aiohttp>=3.8.1",
@@ -91,7 +88,8 @@ dependencies = [
   "pytest-celery",
   "pytest-mock",
   "pytest-playwright",
-  "twine"
+  "twine>5.0",
+  "pkginfo > 1.10",
 ]
 
 [tool.hatch.envs.lint]

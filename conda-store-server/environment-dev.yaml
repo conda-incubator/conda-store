@@ -20,7 +20,8 @@ dependencies:
   - docker-compose
   # build dependencies
   - hatch
-  - twine
+  - twine>5.0
+  - pkginfo > 1.10
   - build
   - pip
   - pip:
