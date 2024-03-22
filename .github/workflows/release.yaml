@@ -17,11 +17,6 @@ env:
 permissions:
   contents: read # This is required for actions/checkout
 
-# ensuring only one instance is running at a given time
-concurrency:
-  group: ${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   # Always build & verify package.
   build-package:

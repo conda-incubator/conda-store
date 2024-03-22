@@ -9,6 +9,9 @@ permissions:
   id-token: write # This is required for requesting the JWT
   contents: read # This is required for actions/checkout
 
+env:
+  FORCE_COLOR: "1" # Make tools pretty.
+
 jobs:
   build_and_push_docker_image:
     name: "Build Docker Images 🛠"

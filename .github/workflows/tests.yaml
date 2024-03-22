@@ -50,12 +50,9 @@ jobs:
         run: |
           hatch env run -e lint lint
 
-      - name: "Build package 📦"
+      - name: "Build and install conda-store-server 📦"
         run: |
           hatch build
-
-      - name: "Installed built conda-store-server 📦"
-        run: |
           python -Im pip install dist/*.whl
 
       - name: "Unit tests ✅"
@@ -73,7 +70,6 @@ jobs:
           (Get-ItemProperty "HKLM:System\CurrentControlSet\Control\FileSystem").LongPathsEnabled
           pytest -m "extended_prefix" tests
         if: matrix.os == 'windows'
-
 
   integration-test-conda-store-server:
     name: "integration-test conda-store-server"
@@ -94,7 +90,8 @@ jobs:
 
       - name: "Install build dependencies 📦"
         run: |
-          sudo apt install wait-for-it -y
+          sudo apt update
+          sudo apt install -y wait-for-it
 
       - name: "Deploy docker-compose"
         run: |
@@ -107,8 +104,8 @@ jobs:
 
       - name: "Run Playwright tests 🎭"
         run: |
-          playwright install
-          python -Im pytest --video on ../tests/test_playwright.py
+          playwright install --with-deps chromium
+          python -m pytest --video on ../tests/test_playwright.py
 
       - name: "Upload test results 📤"
         uses: actions/upload-artifact@v4
@@ -119,12 +116,11 @@ jobs:
 
       - name: "Run integration tests ✅"
         run: |
-          export PYTHONPATH=$PYTHONPATH:$PWD
-          python -Im pytest ../tests/test_api.py ../tests/test_metrics.py
+          python -m pytest ../tests/test_api.py ../tests/test_metrics.py
 
       - name: "Run user journey tests ✅"
         run: |
-          python -Im pytest -m "user_journey"
+          python -m pytest -m "user_journey"
 
       - name: "Get Docker logs 🔍"
         if: ${{ failure() }}
@@ -149,18 +145,16 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+
       - name: "Install Dependencies 📦"
         run: |
           python -Im pip install hatch
-          sudo apt install wait-for-it -y
+          sudo apt update
+          sudo apt install -y wait-for-it
 
       - name: "Linting Checks 🧹"
         run: |
           hatch env run -e lint lint
-
-      - name: "Build package 📦"
-        run: |
-          hatch build
 
       - name: "Deploy docker-compose"
         run: |
@@ -171,16 +165,17 @@ jobs:
           wait-for-it localhost:9000 # minio
           wait-for-it localhost:8080 # conda-store-server
 
-      - name: "Install built conda-store for tests 📦"
+      - name: "Build and install conda-store 📦"
         run: |
+          hatch build
           python -Im pip install dist/*.whl
 
-      - name: "Run basic tests -  not authenticated"
+      - name: "Run basic tests -  not authenticated 🔓"
         run: |
           sleep 20
           ./tests/unauthenticated-tests.sh
 
-      - name: "Run basic tests - authenticated"
+      - name: "Run basic tests - authenticated 🔐"
         run: |
           ./tests/authenticated-tests.sh
 
@@ -198,7 +193,7 @@ jobs:
           docker-compose logs
 
   build-docker-image:
-    name: "Build docker images"
+    name: "Build Docker images 🐋"
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -228,7 +223,7 @@ jobs:
           tags: |
             type=sha
 
-      - name: "Build docker"
+      - name: "Build Docker image 🐋"
         uses: docker/build-push-action@v5
         with:
           context: "${{ matrix.docker-image }}"
