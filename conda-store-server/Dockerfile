@@ -61,6 +61,6 @@ WORKDIR /var/lib/conda-store
 FROM base as dev
 
 RUN cd /opt/conda-store-server && \
-    /opt/conda/envs/conda-store-server/bin/pip install -e .
+    --mount=source=.git,target=.git,type=bind pip install -e .
 
 WORKDIR /var/lib/conda-store
