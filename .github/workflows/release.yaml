@@ -42,6 +42,18 @@ jobs:
         uses: hynek/build-and-inspect-python-package@v1
         with:
           path: ${{ matrix.directory }}
+        continue-on-error: true
+
+      # Quick hack - @trallard to come back and fix
+      - name: "Force reinstall"
+        run: |
+          /tmp/baipp/bin/python -Im pip install "pkginfo>=1.10" "twine>=5.0"
+
+
+      - name: "Check package build - ${{ matrix.directory }} 📦"
+        uses: hynek/build-and-inspect-python-package@v1
+        with:
+          path: ${{ matrix.directory }}
 
       # Adding a separate upload for publishing
       - name: "Upload build artefacts 📤"
