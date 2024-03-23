@@ -7,7 +7,7 @@ package:
 
 source:
   # This is only needed here in-repo; in conda-forge, sources from PyPI
-  - path: ../  
+  - path: ../
 
 build:
   number: 0
