@@ -34,3 +34,5 @@ jobs:
           fetch-depth: 0
       - name: "Check conda builds 📦"
         uses: jaimergp/conda-build-action@main
+        with:
+          artifact-name: 'conda-packages-${{ matrix.os }}'
