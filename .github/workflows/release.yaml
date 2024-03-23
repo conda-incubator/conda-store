@@ -38,10 +38,15 @@ jobs:
 
       - run: echo "Running on ${{ matrix.directory }}"
 
-      - name: "Check package build - ${{ matrix.directory }} 📦"
+      - name: "Check wheel & sdist builds - ${{ matrix.directory }} 📦"
         uses: hynek/build-and-inspect-python-package@v1
         with:
           path: ${{ matrix.directory }}
+
+      - name: "Check conda builds - ${{ matrix.directory }} 📦"
+        uses: jaimergp/conda-build-action@main
+        with:
+          upload-artifact: 'false'
 
       # Adding a separate upload for publishing
       - name: "Upload build artefacts 📤"
@@ -51,6 +56,8 @@ jobs:
           path: |
             /tmp/baipp/dist/*.whl
             /tmp/baipp/dist/*.tar.gz
+            ./pkgs/**/*.tar.bz2
+            ./pkgs/**/*.conda
 
   # Upload to Test PyPI on every commit on main
   release-test-pypi:
