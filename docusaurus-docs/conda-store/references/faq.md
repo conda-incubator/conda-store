@@ -124,6 +124,20 @@ no symlinks connecting an environment name to its corresponding build will be
 created, because the environment directory format also includes variable-size
 data (the namespace and environment names).
 
+For context, these symlinks are created because that's how conda is usually
+used: each environment name points to a particular directory on the filesystem,
+and symlinks connect this directory to the current build.
+
+In the following example, which uses the version 2 format, there are two
+environments in the `default` namespace: `test` and `test2`. The former points
+to build 3 and the latter points to build 2:
+
+```
+$ ls -l ~/.conda-store/state/default/envs
+test -> /home/user/.conda-store/state/default/b3109fbf-1710602415-3-test
+test2 -> /home/user/.conda-store/state/default/2aad045f-1710602357-2-test2
+```
+
 The lack of symlinks doesn't prevent server artifacts from being generated,
 which are available for download via the UI (lockfiles, archives, etc.), because
 those rely on storage or use the database.
