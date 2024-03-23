@@ -6,7 +6,8 @@ package:
   version: {{ version }}
 
 source:
-  - path: ../
+  # This is only needed here in-repo; in conda-forge, sources from PyPI
+  - path: ../  
 
 build:
   number: 0
@@ -16,13 +17,15 @@ outputs:
     version: {{ version }}
     build:
       noarch: python
-      script: python -m pip install ./conda-store -vv --no-deps
+      script: python -m pip install ./conda-store -vv --no-deps --no-build-isolation --no-index
       entry_points:
         - conda-store = conda_store.__main__:main
     requirements:
       host:
         - python >=3.8
         - pip
+        - hatchling >=1.14.0
+        - hatch-vcs
       run:
         - __linux  # [linux]
         - __osx    # [osx]
@@ -46,7 +49,7 @@ outputs:
     version: {{ version }}
     build:
       noarch: python
-      script: python -m pip install ./conda-store-server -vv --no-deps
+      script: python -m pip install ./conda-store-server -vv --no-deps --no-build-isolation --no-index
       entry_points:
         - conda-store-server = conda_store_server.server.__main__:main
         - conda-store-worker = conda_store_server.worker.__main__:main
@@ -54,6 +57,8 @@ outputs:
       host:
         - python >=3.8
         - pip
+        - hatchling >=1.14.0
+        - hatch-vcs
       run:
         - alembic
         - celery
@@ -63,6 +68,7 @@ outputs:
         - __osx    # [osx]
         - __win    # [win]
         - conda-pack
+        - conda-lock
         - fastapi
         - filelock
         - itsdangerous
