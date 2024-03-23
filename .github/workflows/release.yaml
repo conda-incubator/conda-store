@@ -43,13 +43,6 @@ jobs:
         with:
           path: ${{ matrix.directory }}
 
-      - name: "Check conda builds - ${{ matrix.directory }} 📦"
-        uses: jaimergp/conda-build-action@main
-        # the recipe covers both for now, so no need to duplicate work
-        if: matrix.directory == 'conda-store'
-        with:
-          upload-artifact: 'false'
-
       # Adding a separate upload for publishing
       - name: "Upload build artefacts 📤"
         uses: actions/upload-artifact@v3

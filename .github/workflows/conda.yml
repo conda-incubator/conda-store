@@ -1,0 +1,35 @@
+name: "Build conda packages"
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  FORCE_COLOR: "1" # Make tools pretty.
+
+permissions:
+  contents: read # This is required for actions/checkout
+
+jobs:
+  # Always build & verify package.
+  build-package:
+    name: Build & verify package
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - macos-14
+          - windows-latest
+    steps:
+      - name: "Checkout Repository 🛎"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: "Check conda builds 📦"
+        uses: jaimergp/conda-build-action@main
