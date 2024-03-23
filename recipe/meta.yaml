@@ -6,12 +6,7 @@ package:
   version: {{ version }}
 
 source:
-  - url: https://pypi.io/packages/source/c/conda-store/conda_store-{{ version }}.tar.gz
-    sha256: e3553df881c7e6ebbdd6389be311548d7cf6043cfb35c1d5bfc622df18406cf6
-    folder: conda-store
-  - url: https://pypi.io/packages/source/c/conda-store-server/conda_store_server-{{ version }}.tar.gz
-    sha256: 6808f8c657088de46b423be0dac9c032e754c3bf9eef6f0114c4e199e45cf0cf
-    folder: conda-store-server
+  - path: ../
 
 build:
   number: 0
