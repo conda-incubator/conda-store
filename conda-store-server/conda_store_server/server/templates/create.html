@@ -20,13 +20,17 @@
     <div>
         <label for="inputType">Input type</label>
         <select class="form-select" name="inputType" id="inputType" aria-label="input type">
-            <option value="specification">specification</option>
-            <option value="lockfile">lockfile</option>
+            <option {% if not is_lockfile %}selected{% endif %} value="specification">specification</option>
+            <option {% if is_lockfile %}selected{% endif %} value="lockfile">lockfile</option>
         </select>
     </div>
 
     <div class="form-group">
-        <div class="collapse" id="collapseDiv">
+        {% if is_lockfile %}
+        <div class="collapse show" id="collapseDiv">
+        {% else %}
+        <div class="collapse hide" id="collapseDiv">
+        {% endif %}
             <div class="row">
                 <div class="col">
                     <label for="environmentName">Name:</label>
@@ -34,7 +38,7 @@
             </div>
             <div class="row">
                 <div class="col-md-6">
-                    <input class="form-control" type="text" id="environmentName" name="environmentName" placeholder="Environment name">
+                    <input class="form-control" type="text" id="environmentName" name="environmentName" placeholder="Environment name" value="{{ name }}">
                 </div>
             </div>
             <div class="row">
@@ -44,7 +48,7 @@
             </div>
             <div class="row">
                 <div class="col-md-12">
-                    <input class="form-control" type="text" id="environmentDescription" name="environmentDescription" placeholder="Description of your environment"></textarea>
+                    <input class="form-control" type="text" id="environmentDescription" name="environmentDescription" placeholder="Description of your environment" value="{{ description }}"></textarea>
                 </div>
             </div>
         </div>
@@ -52,11 +56,23 @@
 
     <div class="custom-file">
         <input type="file" class="custom-file-input" id="customFile">
-        <label class="custom-file-label" for="customFile" id="customFileLabel">Upload specification</label>
+        <label class="custom-file-label" for="customFile" id="customFileLabel">
+        {% if is_lockfile %}
+            Upload lockfile
+        {% else %}
+            Upload specification
+        {% endif %}
+        </label>
     </div>
 
     <div class="form-group">
-        <label for="specification" id="specificationLabel">Specification:</label>
+        <label for="specification" id="specificationLabel">
+        {% if is_lockfile %}
+            Lockfile:
+        {% else %}
+            Specification:
+        {% endif %}
+        </label>
         <div id="editor" style="height: 400px;">{{ specification or "" }}</div>
         <textarea name="specification" id="specification" style="display: none;"></textarea>
     </div>
