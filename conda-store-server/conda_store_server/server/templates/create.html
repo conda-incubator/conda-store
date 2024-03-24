@@ -31,25 +31,17 @@
         {% else %}
         <div class="collapse hide" id="collapseDiv">
         {% endif %}
-            <div class="row">
-                <div class="col">
-                    <label for="environmentName">Name:</label>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Name</span>
                 </div>
+                <input class="form-control" type="text" id="environmentName" name="environmentName" placeholder="Environment name" value="{{ name }}" aria-label="Environment name">
             </div>
-            <div class="row">
-                <div class="col-md-6">
-                    <input class="form-control" type="text" id="environmentName" name="environmentName" placeholder="Environment name" value="{{ name }}">
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Description</span>
                 </div>
-            </div>
-            <div class="row">
-                <div class="col">
-                    <label for="environmentDescription">Description:</label>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-12">
-                    <input class="form-control" type="text" id="environmentDescription" name="environmentDescription" placeholder="Description of your environment" value="{{ description }}"></textarea>
-                </div>
+                <textarea class="form-control" id="environmentDescription" name="environmentDescription" placeholder="Description of your environment" aria-label="Environment description">{{ description }}</textarea>
             </div>
         </div>
     </div>
