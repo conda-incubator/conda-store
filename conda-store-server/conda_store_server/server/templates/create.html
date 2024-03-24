@@ -17,21 +17,70 @@
         </select>
     </div>
 
-    <div class="custom-file">
-        <input type="file" class="custom-file-input" id="customFile">
-        <label class="custom-file-label" for="customFile">Choose file</label>
+    <div>
+        <label for="inputType">Input type</label>
+        <select class="form-select" name="inputType" id="inputType" aria-label="input type">
+            <option value="specification">specification</option>
+            <option value="lockfile">lockfile</option>
+        </select>
     </div>
 
     <div class="form-group">
-        <label for="specification">Specification:</label>
+        <div class="collapse" id="collapseDiv">
+            <div class="row">
+                <div class="col">
+                    <label for="environmentName">Name:</label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <input class="form-control" type="text" id="environmentName" name="environmentName" placeholder="Environment name">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label for="environmentDescription">Description:</label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <input class="form-control" type="text" id="environmentDescription" name="environmentDescription" placeholder="Description of your environment"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="custom-file">
+        <input type="file" class="custom-file-input" id="customFile">
+        <label class="custom-file-label" for="customFile" id="customFileLabel">Upload specification</label>
+    </div>
+
+    <div class="form-group">
+        <label for="specification" id="specificationLabel">Specification:</label>
         <div id="editor" style="height: 400px;">{{ specification or "" }}</div>
         <textarea name="specification" id="specification" style="display: none;"></textarea>
-        <input type="checkbox" name="is-lockfile" id="is-lockfile" />
-        <label for="is-lockfile">This specification contains a <a href="https://github.com/conda-incubator/conda-lock">Conda-Lock</a> lockfile</label>
     </div>
 
     <button type="submit" class="btn btn-primary mb-2">Submit</button>
 </form>
+
+<script>
+$(document).ready(function() {
+    $("#inputType").change(function() {
+        var selectedValue = $(this).val();
+
+        if(selectedValue === "lockfile") {
+            $("#collapseDiv").collapse("show");
+            $("#specificationLabel").text("Lockfile:");
+            $("#customFileLabel").text("Upload lockfile");
+        } else {
+            $("#collapseDiv").collapse("hide");
+            $("#specificationLabel").text("Specification:");
+            $("#customFileLabel").text("Upload specification");
+        }
+    });
+});
+</script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js" integrity="sha512-GZ1RIgZaSc8rnco/8CXfRdCpDxRCphenIiZ2ztLy3XQfCbQUSCuk8IudvNHxkRA3oUg6q0qejgN/qqyG1duv5Q==" crossorigin="anonymous"></script>
 <script>
@@ -66,7 +115,10 @@
      let url = "{{ url_for('api_post_specification') }}";
      let namespaceInput = document.querySelector('#namespace');
      let specificationInput = document.querySelector('#specification');
-     let isLockfileInput = document.querySelector('#is-lockfile');
+     let inputType = document.querySelector('#inputType');
+     let isLockfile = inputType.value === "lockfile";
+     let environmentName = document.querySelector('#environmentName');
+     let environmentDescription = document.querySelector('#environmentDescription');
 
      let response = await fetch(url, {
          method: 'POST',
@@ -76,7 +128,9 @@
          body: JSON.stringify({
              'namespace': namespaceInput.value,
              'specification': specificationInput.value,
-             'is_lockfile': isLockfileInput.checked,
+             'is_lockfile': isLockfile,
+             'name': environmentName.value,
+             'description': environmentDescription.value,
          })
      });
 
