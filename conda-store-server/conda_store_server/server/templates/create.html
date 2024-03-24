@@ -35,13 +35,13 @@
                 <div class="input-group-prepend">
                     <span class="input-group-text">Name</span>
                 </div>
-                <input class="form-control" type="text" id="environmentName" name="environmentName" placeholder="Environment name" value="{{ name }}" aria-label="Environment name">
+                <input class="form-control" type="text" id="environmentName" name="environmentName" placeholder="Environment name" value="{{ environment_name }}" aria-label="Environment name">
             </div>
             <div class="input-group">
                 <div class="input-group-prepend">
                     <span class="input-group-text">Description</span>
                 </div>
-                <textarea class="form-control" id="environmentDescription" name="environmentDescription" placeholder="Description of your environment" aria-label="Environment description">{{ description }}</textarea>
+                <textarea class="form-control" id="environmentDescription" name="environmentDescription" placeholder="Description of your environment" aria-label="Environment description">{{ environment_description }}</textarea>
             </div>
         </div>
     </div>
@@ -137,8 +137,8 @@ $(document).ready(function() {
              'namespace': namespaceInput.value,
              'specification': specificationInput.value,
              'is_lockfile': isLockfile,
-             'name': environmentName.value,
-             'description': environmentDescription.value,
+             'environment_name': environmentName.value,
+             'environment_description': environmentDescription.value,
          })
      });
 
