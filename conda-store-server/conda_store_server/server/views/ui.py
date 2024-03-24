@@ -139,7 +139,7 @@ async def ui_get_environment(
             "request": request,
             "environment": environment,
             "entity": entity,
-            "description": description,
+            "environment_description": description,
             "spec": yaml.dump(spec),
         }
 
@@ -189,8 +189,8 @@ async def ui_edit_environment(
             "request": request,
             "environment": environment,
             "entity": entity,
-            "name": name,
-            "description": description,
+            "environment_name": name,
+            "environment_description": description,
             "specification": yaml.dump(spec),
             "is_lockfile": is_lockfile,
             "namespaces": [environment.namespace],
