@@ -797,6 +797,8 @@ async def api_post_specification(
     specification: str = Body(""),
     namespace: Optional[str] = Body(None),
     is_lockfile: Optional[bool] = Body(False, embed=True),
+    name: Optional[str] = Body("", embed=True),
+    description: Optional[str] = Body("", embed=True),
 ):
     with conda_store.get_db() as db:
         permissions = {Permissions.ENVIRONMENT_CREATE}
@@ -813,7 +815,11 @@ async def api_post_specification(
         try:
             specification = yaml.safe_load(specification)
             if is_lockfile:
-                specification = schema.LockfileSpecification.parse_obj(specification)
+                lockfile_spec = {}
+                lockfile_spec["name"] = name
+                lockfile_spec["description"] = description
+                lockfile_spec["lockfile"] = specification
+                specification = schema.LockfileSpecification.parse_obj(lockfile_spec)
             else:
                 specification = schema.CondaSpecification.parse_obj(specification)
         except yaml.error.YAMLError:

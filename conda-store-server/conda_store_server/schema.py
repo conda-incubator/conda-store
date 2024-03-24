@@ -474,6 +474,8 @@ class LockfileSpecification(BaseModel):
 
     @classmethod
     def parse_obj(cls, specification):
+        # To show a human-readable error if no data is provided
+        specification = {} if specification is None else specification
         # This uses pop because the version field must not be part of Lockfile
         # input. Otherwise, the input will be rejected. The version field is
         # hardcoded in the Lockfile schema and is only used when the output is
