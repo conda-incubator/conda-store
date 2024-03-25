@@ -54,6 +54,8 @@ dependencies = [
   "traitlets",
   "uvicorn",
   "yarl",
+  # installer
+  "constructor",
   # artifact storage
   "minio",
   # installer
@@ -85,10 +87,10 @@ dependencies = [
   "pytest-mock",
   "pytest-playwright",
   "twine>=5.0.0",
-  "pkginfo >= 1.10",
+  "pkginfo>=1.10",
 ]
 
-[tool.hatch.envs.dev.scripts]
+[tool.hatch.envs.lint]
 lint = ["pre-commit run --all"]
 unit-test = "pytest -m 'not extended_prefix and not user_journey' tests"
 playwright-test = [
