@@ -31,7 +31,11 @@ classifiers = [
   "Intended Audience :: Science/Research",
   "Intended Audience :: System Administrators",
 ]
-dependencies = ["rich", "click", "yarl", "aiohttp", "ruamel.yaml"]
+dependencies = ["rich",
+  "click",
+  "yarl",
+  "aiohttp>=3.8.1",
+  "ruamel.yaml"]
 dynamic = ["version"]
 
 [project.urls]
