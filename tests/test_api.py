@@ -1254,13 +1254,17 @@ def test_create_lockfile_specification_auth(testclient):
     namespace = "default"
     environment_name = f"pytest-{uuid.uuid4()}"
 
-    def post_specification(specification, is_lockfile):
+    def post_specification(
+        specification, is_lockfile, environment_name="", environment_description=""
+    ):
         response = testclient.post(
             "api/v1/specification",
             json={
                 "namespace": namespace,
                 "specification": specification,
                 "is_lockfile": is_lockfile,
+                "environment_name": environment_name,
+                "environment_description": environment_description,
             },
         )
         response.raise_for_status()
@@ -1304,14 +1308,10 @@ def test_create_lockfile_specification_auth(testclient):
 
     # Submits a new lockfile-based specification
     build_id2 = post_specification(
-        specification=json.dumps(
-            {
-                "name": environment_name,
-                "description": "this is a test",
-                "lockfile": json.loads(lockfile1),
-            }
-        ),
+        specification=lockfile1,
         is_lockfile=True,
+        environment_name=environment_name,
+        environment_description="this is a test",
     )
 
     # Makes sure these are different builds
