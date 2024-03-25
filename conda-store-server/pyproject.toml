@@ -70,9 +70,6 @@ Source = "https://github.com/conda-incubator/conda-store"
 [tool.hatch.version]
 path = "conda_store_server/__init__.py"
 
-[project.optional-dependencies]
-dev = ["build", "twine"]
-
 [tool.hatch.envs.dev]
 dependencies = [
   "aiohttp>=3.8.1",
@@ -91,7 +88,11 @@ dependencies = [
 ]
 
 [tool.hatch.envs.lint]
+dependencies = ["pre-commit"]
+
+[tool.hatch.envs.lint.scripts]
 lint = ["pre-commit run --all"]
+
 unit-test = "pytest -m 'not extended_prefix and not user_journey' tests"
 playwright-test = [
   "playwright install",
