@@ -39,9 +39,10 @@ jobs:
       - run: echo "Running on ${{ matrix.directory }}"
 
       - name: "Check package build - ${{ matrix.directory }} 📦"
-        uses: hynek/build-and-inspect-python-package@v1
+        uses: hynek/build-and-inspect-python-package@v2
         with:
           path: ${{ matrix.directory }}
+          upload-name-suffix: "-${{ matrix.directory }}"
 
       # Adding a separate upload for publishing
       - name: "Upload build artefacts 📤"
