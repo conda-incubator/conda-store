@@ -53,11 +53,11 @@ jobs:
       - name: "Build and install conda-store-server 📦"
         run: |
           hatch build
-          python -Im pip install dist/*.whl
+          python -m pip install dist/*.whl
 
       - name: "Unit tests ✅"
         run: |
-          python -Im pytest -m "not extended_prefix and not user_journey" tests
+          python -m pytest -m "not extended_prefix and not user_journey" tests
 
       # https://github.com/actions/runner-images/issues/1052
       - name: "Windows extended prefix unit tests ✅"
@@ -148,7 +148,7 @@ jobs:
 
       - name: "Install Dependencies 📦"
         run: |
-          python -Im pip install hatch
+          python -m pip install hatch
           sudo apt update
           sudo apt install -y wait-for-it
 
@@ -168,7 +168,7 @@ jobs:
       - name: "Build and install conda-store 📦"
         run: |
           hatch build
-          python -Im pip install dist/*.whl
+          python -m pip install dist/*.whl
 
       - name: "Run basic tests -  not authenticated 🔓"
         run: |

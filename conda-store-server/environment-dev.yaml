@@ -1,21 +1,16 @@
 name: conda-store-server-dev
 channels:
   - conda-forge
-  - microsoft
   - nodefaults
 dependencies:
   - python ==3.10
   # conda builds
   - conda ==23.5.2
-  - python-docker
-  # web server
-  - flower
   # dev dependencies
   - aiohttp>=3.8.1
   - pytest
   - pytest-celery
   - pytest-mock
-  - playwright
   - docker-py<7  # for docker-compose
   - docker-compose
   # build dependencies
