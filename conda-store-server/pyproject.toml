@@ -77,7 +77,6 @@ dependencies = ["pre-commit"]
 lint = ["pre-commit run --all"]
 
 [tool.hatch.envs.dev.scripts]
-lint = ["pre-commit run --all"]
 unit-test = "pytest tests -v"
 playwright-test = [
   "playwright install",
