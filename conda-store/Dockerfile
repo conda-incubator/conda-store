@@ -31,7 +31,7 @@ USER conda-store
 WORKDIR /opt/jupyterhub
 
 FROM base as dev
-RUN --mount=type=cache,target=/root/.cache/pip cd /opt/conda-store && \
-    --mount=source=.git,target=.git,type=bind pip install -e . --no-cache
+RUN --mount=type=cache,target=/root/.cache/pip cd /opt/conda-store \
+    --mount=source=.git,target=.git,type=bind pip install -e .
 USER conda-store
 WORKDIR /opt/jupyterhub
