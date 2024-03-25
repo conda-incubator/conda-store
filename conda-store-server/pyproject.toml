@@ -88,8 +88,8 @@ dependencies = [
   "pytest-celery",
   "pytest-mock",
   "pytest-playwright",
-  "twine>5.0",
-  "pkginfo > 1.10",
+  "twine>=5.0.0",
+  "pkginfo >= 1.10",
 ]
 
 [tool.hatch.envs.lint]

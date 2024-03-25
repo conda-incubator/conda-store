@@ -53,8 +53,8 @@ path = "conda_store/__init__.py"
 dependencies = [
   "build",
   "pytest",
-  "twine>5.0",
-  "pkginfo > 1.10",
+  "twine>=5.0.0",
+  "pkginfo >= 1.10",
   "pytest-mock",
 ]
 
