@@ -123,6 +123,7 @@ dependencies = [
   "pytest",
   "pytest-mock",
   "pytest-playwright",
+  "setuptools-scm>=6.4.0",
 ]
 
 [tool.hatch.envs.dev.scripts]
