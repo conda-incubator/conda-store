@@ -159,9 +159,11 @@ def list_tags(
     try:
         auth.authorize_request(
             request,
-            image
-            if parts[0] != "conda-store-dynamic"
-            else "conda-store-dynamic/python",
+            (
+                image
+                if parts[0] != "conda-store-dynamic"
+                else "conda-store-dynamic/python"
+            ),
             {Permissions.ENVIRONMENT_READ},
             require=True,
         )
