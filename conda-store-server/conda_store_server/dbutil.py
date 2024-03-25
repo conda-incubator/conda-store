@@ -2,6 +2,7 @@ import json
 import os
 
 from contextlib import contextmanager
+from functools import partial
 from tempfile import TemporaryDirectory
 
 from alembic import command
@@ -78,7 +79,7 @@ def upgrade(db_url, revision="head"):
     engine = create_engine(
         db_url,
         # See the comment on the CustomJSONEncoder class on why this is needed
-        json_serializer=lambda x: json.dumps(x, cls=utils.CustomJSONEncoder),
+        json_serializer=partial(json.dumps, cls=utils.CustomJSONEncoder),
     )
 
     # retrieves the names of tables in the DB

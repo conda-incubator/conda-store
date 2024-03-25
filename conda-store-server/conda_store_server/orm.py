@@ -6,6 +6,7 @@ import pathlib
 import re
 import shutil
 import sys
+from functools import partial
 
 from sqlalchemy import (
     JSON,
@@ -809,7 +810,7 @@ def new_session_factory(url="sqlite:///:memory:", reset=False, **kwargs):
     engine = create_engine(
         url,
         # See the comment on the CustomJSONEncoder class on why this is needed
-        json_serializer=lambda x: json.dumps(x, cls=utils.CustomJSONEncoder),
+        json_serializer=partial(json.dumps, cls=utils.CustomJSONEncoder),
         **kwargs,
     )
 
