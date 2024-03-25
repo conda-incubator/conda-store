@@ -6,6 +6,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 The project changed to `CalVer` in September 2023.
 
+## [2024.3.1] - 2024-03-12
+
+([full changelog](https://github.com/conda-incubator/conda-store/compare/2024.1.1...2024.3.1))
+
+## Added
+
+* Add upstream contribution policy by @pavithraes in https://github.com/conda-incubator/conda-store/pull/722
+* Pass `CONDA_OVERRIDE_CUDA` to `with_cuda` of conda-lock by @nkaretnikov in https://github.com/conda-incubator/conda-store/pull/721
+* Add backwards compatibility policy by @dcmcand in https://github.com/conda-incubator/conda-store/pull/687
+* add how to test section to PR template by @dcmcand in https://github.com/conda-incubator/conda-store/pull/743
+* Add extended-length prefix support by @nkaretnikov in https://github.com/conda-incubator/conda-store/pull/713
+* Generate `constructor` artifacts by @nkaretnikov in https://github.com/conda-incubator/conda-store/pull/714
+* Add support for the `editor` role by @nkaretnikov in https://github.com/conda-incubator/conda-store/pull/738
+* Add a test for parallel builds, fix race conditions due to the shared conda cache by @nkaretnikov in https://github.com/conda-incubator/conda-store/pull/745
+* Add user journey test by @dcmcand in https://github.com/conda-incubator/conda-store/pull/760
+* Add status `CANCELED` by @nkaretnikov in https://github.com/conda-incubator/conda-store/pull/747
+* [DOC] Document setting environment variable by @pavithraes in https://github.com/conda-incubator/conda-store/pull/765
+
+## Fixed
+
+* Log address and port, show exception trace from `uvicorn.run` by @nkaretnikov in https://github.com/conda-incubator/conda-store/pull/708
+* Check if worker is initialized by @nkaretnikov in https://github.com/conda-incubator/conda-store/pull/705
+
+## Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/conda-incubator/conda-store/graphs/contributors?from=2024-01-30&to=2024-03-12&type=c))
+
+[@nkaretnikov](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Ankaretnikov+updated%3A2024-01-30..2024-03-12&type=Issues) | [@dcmcand](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Adcmcand+updated%3A2024-01-30..2024-03-12&type=Issues) | [@pavithraes](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Apavithraes+updated%3A2024-01-30..2024-03-12&type=Issues) | [@dependabot](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Adependabot+updated%3A2024-01-30..2024-03-12&type=Issues)| [@trallard](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Atrallard+updated%3A2024-01-30..2024-03-12&type=Issues)
+
 ## [2024.1.1] - 2024-01-30
 
 ([full changelog](https://github.com/conda-incubator/conda-store/compare/2023.10.1...ec606641f6d0bb7bde39b2e9f11cf515077feee8))
