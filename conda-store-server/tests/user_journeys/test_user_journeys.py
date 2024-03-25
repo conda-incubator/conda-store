@@ -1,4 +1,5 @@
 """User journey tests for the API."""
+
 import os
 
 import pytest
