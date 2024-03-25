@@ -128,3 +128,20 @@ def test_admin_delete_environment(base_url: str):
 
     assert len(api.list_environments(namespace).json()["data"]) == 0
     api.delete_namespace(namespace)
+
+
+@pytest.mark.user_journey
+def test_failed_build_logs(base_url: str):
+    """Test that a user can access logs for a failed build."""
+    api = utils.API(base_url=base_url)
+    namespace = "default"
+    build_request = api.create_environment(
+        namespace,
+        "tests/user_journeys/test_data/broken_environment.yaml",
+    ).json()
+
+    assert build_request["data"]["status"] == "FAILED"
+    assert (
+        "invalidpackagenamefaasdfagksdjfhgaskdf"
+        in api.get_logs(build_request["data"]["id"]).text
+    )
