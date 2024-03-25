@@ -50,13 +50,11 @@ dev = ["build", "twine"]
 
 [tool.hatch.envs.dev]
 dependencies = [
+  "build",
   "pre-commit",
-  "sphinx",
-  "myst-parser",
-  "sphinx-panels",
-  "sphinx-copybutton",
-  "pydata-sphinx-theme",
   "pytest",
+  "twine>=5.0.0",
+  "pkginfo >= 1.10",
   "pytest-mock",
 ]
 
