@@ -14,7 +14,7 @@ Linting and formatting checks can be performed via hatch.
 
 ```shell
 $ cd conda-store
-$ hatch env run -e dev lint
+$ hatch env run -e lint lint
 ```
 
 Running integration tests. These tests are stateful! So you will need
@@ -43,7 +43,7 @@ Linting and formatting checks can be performed via hatch.
 
 ```shell
 $ cd conda-store-server
-$ hatch env run -e dev lint
+$ hatch env run -e lint lint
 ```
 
 Checking that the package builds
