@@ -60,7 +60,6 @@ dev = ["build", "twine"]
 
 [tool.hatch.envs.dev]
 dependencies = [
-  "pre-commit",
   "sphinx",
   "myst-parser",
   "sphinx-panels",
@@ -70,6 +69,12 @@ dependencies = [
   "pytest-mock",
   "pytest-playwright",
 ]
+
+[tool.hatch.envs.lint]
+dependencies = ["pre-commit"]
+
+[tool.hatch.envs.lint.scripts]
+lint = ["pre-commit run --all"]
 
 [tool.hatch.envs.dev.scripts]
 lint = ["pre-commit run --all"]
@@ -97,7 +102,6 @@ target-version = ['py37', 'py38', 'py39']
 [tool.ruff]
 ignore = [
   "E501", # line-length
-
 ]
 
 [tool.check-wheel-contents]
@@ -110,3 +114,7 @@ markers = [
   "integration: mark a test as an integration test",
   "user_journey: mark a test as a user journey test",
 ]
+
+[tool.ruff.lint.isort]
+lines-between-types = 1
+lines-after-imports = 2
