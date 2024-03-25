@@ -51,8 +51,6 @@ jobs:
           path: |
             /tmp/baipp/dist/*.whl
             /tmp/baipp/dist/*.tar.gz
-            ./pkgs/**/*.tar.bz2
-            ./pkgs/**/*.conda
 
   # Upload to Test PyPI on every commit on main
   release-test-pypi:
