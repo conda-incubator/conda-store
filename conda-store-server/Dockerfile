@@ -59,8 +59,10 @@ RUN cd /opt/conda-store-server && \
 WORKDIR /var/lib/conda-store
 
 FROM base as dev
-
-RUN cd /opt/conda-store-server && \
-    --mount=source=.git,target=.git,type=bind pip install -e .
+ARG PSEUDO_VERSION=1.0.0
+# we need to set the environment variable for setuptools_scm to work
+ENV SETUPTOOLS_SCM_PRETEND_VERSION=${PSEUDO_VERSION}
+WORKDIR /opt/conda-store-server
+RUN pip install -e . --no-cache-dir
 
 WORKDIR /var/lib/conda-store

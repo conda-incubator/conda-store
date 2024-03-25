@@ -65,6 +65,11 @@ jobs:
             type=ref,event=tag
             type=sha
 
+      - name: "Get dev version 🏷"
+        id: get-dev-version
+        run: |
+          echo "cs-version=$(git describe --tags)" >> $GITHUB_OUTPUT
+
       - name: "Publish Docker image 🚀"
         uses: docker/build-push-action@v5
         with:
@@ -77,3 +82,4 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          build-args: "PSEUDO_VERSION=${{ steps.get-dev-version.outputs.cs-version }}"

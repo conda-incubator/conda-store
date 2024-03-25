@@ -25,13 +25,17 @@ COPY ./ /opt/conda-store/
 
 FROM base as prod
 ARG RELEASE_VERSION
-RUN cd /opt/conda-store && \
-    pip install conda-store==${RELEASE_VERSION}
+WORKDIR /opt/conda-store
+RUN pip install conda-store==${RELEASE_VERSION}
 USER conda-store
 WORKDIR /opt/jupyterhub
 
 FROM base as dev
+ARG PSEUDO_VERSION=1.0.0
+# we need to set the environment variable for setuptools_scm to work
+ENV SETUPTOOLS_SCM_PRETEND_VERSION=${PSEUDO_VERSION}
 RUN --mount=type=cache,target=/root/.cache/pip cd /opt/conda-store \
-    --mount=source=.git,target=.git,type=bind pip install -e .
+    pip install -e . --no-cache-dir
+
 USER conda-store
 WORKDIR /opt/jupyterhub
