@@ -100,3 +100,18 @@ def test_user_login_and_create_shared_environment(
 
     api.delete_environment(namespace, environment)
     api.delete_namespace(namespace)
+
+
+@pytest.mark.user_journey
+def test_failed_build_logs(base_url: str):
+    """Test that a user can access logs for a failed build."""
+    api = utils.API(base_url=base_url)
+    namespace = "default"
+    build_request = api.create_environment(
+        namespace,
+        "tests/user_journeys/test_data/broken_environment.yaml",
+    ).json()
+
+    assert build_request["data"]["status"] == "FAILED"
+    logs = api.get_logs(build_request["data"]["id"]).text
+    assert "could not be installed" in logs
