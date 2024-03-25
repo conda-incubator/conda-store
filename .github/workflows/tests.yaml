@@ -159,7 +159,7 @@ jobs:
 
       - name: "Linting Checks 🧹"
         run: |
-          hatch env run -e lint lint
+          hatch env run -e dev lint
 
       - name: "Build package 📦"
         run: |
