@@ -58,8 +58,6 @@ dependencies = [
   "constructor",
   # artifact storage
   "minio",
-  # installer
-  "constructor",
 ]
 dynamic = ["version"]
 
