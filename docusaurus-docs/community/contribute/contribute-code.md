@@ -48,7 +48,7 @@ Otherwise, this workflow has been shown to run and build on OSX.
 **Notice** the `architecture: amd64` within the `docker-compose.yaml` files.
 :::
 
-After running the docker-compose command, the following resources will be available:
+After running the `docker-compose` command, the following resources will be available:
 
 | Resource | Localhost port | username | password |
 |----------|----------------|----------|----------|
