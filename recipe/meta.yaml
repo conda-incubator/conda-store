@@ -30,7 +30,7 @@ outputs:
         - __linux  # [linux]
         - __osx    # [osx]
         - __win    # [win]
-        - aiohttp
+        - aiohttp>=3.8.1
         - click
         - python >=3.8
         - rich
@@ -86,6 +86,9 @@ outputs:
         - traitlets
         - uvicorn
         - yarl
+        - constructor
+        - psycopg2
+        - pymysql
       run_constrained:
         - {{ pin_subpackage('conda-store', min_pin='x.x.x', max_pin='x.x.x') }}
 
