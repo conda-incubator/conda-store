@@ -16,12 +16,15 @@ import json
 import statistics
 import time
 import uuid
+
 from functools import partial
 
 import aiohttp
-import conda_store_server
 import pytest
 import requests
+
+import conda_store_server
+
 from conda_store_server import schema
 
 from .conftest import CONDA_STORE_BASE_URL

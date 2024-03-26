@@ -9,9 +9,11 @@ import traceback
 import typing
 
 import yaml
+
+from sqlalchemy.orm import Session
+
 from conda_store_server import action, api, conda_utils, orm, schema, utils
 from conda_store_server.utils import BuildPathError
-from sqlalchemy.orm import Session
 
 
 def append_to_logs(db: Session, conda_store, build, logs: typing.Union[str, bytes]):

@@ -1,14 +1,17 @@
 from typing import Optional
 
 import yaml
+
+from fastapi import APIRouter, Depends, Request
+from fastapi.responses import RedirectResponse
+
 from conda_store_server import api
 from conda_store_server.action.generate_constructor_installer import (
     get_installer_platform,
 )
 from conda_store_server.schema import Permissions
 from conda_store_server.server import dependencies
-from fastapi import APIRouter, Depends, Request
-from fastapi.responses import RedirectResponse
+
 
 router_ui = APIRouter(tags=["ui"])
 
