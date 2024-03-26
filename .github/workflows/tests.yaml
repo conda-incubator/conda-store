@@ -22,13 +22,6 @@ jobs:
     strategy:
       matrix:
         os: ["ubuntu", "macos", "windows"]
-        include:
-          - os: ubuntu
-            environment-file: conda-store-server/environment-dev.yaml
-          - os: macos
-            environment-file: conda-store-server/environment-macos-dev.yaml
-          - os: windows
-            environment-file: conda-store-server/environment-windows-dev.yaml
     runs-on: ${{ matrix.os }}-latest
     defaults:
       run:
@@ -41,7 +34,7 @@ jobs:
       - name: "Set up env ${{ matrix.os }} 🐍"
         uses: conda-incubator/setup-miniconda@v2
         with:
-            environment-file: ${{ matrix.environment-file }}
+            environment-file: conda-store-server/environment-dev.yaml
             miniforge-version: latest
 
       # This fixes a "DLL not found" issue importing ctypes from the hatch env
@@ -58,13 +51,14 @@ jobs:
         run: |
           hatch env run -e lint lint
 
-      - name: "Build package 📦"
+      - name: "Build and install conda-store-server 📦"
         run: |
           hatch build
+          python -m pip install dist/*.whl
 
       - name: "Unit tests ✅"
         run: |
-          pytest -m "not extended_prefix and not user_journey" tests
+          python -m pytest -m "not extended_prefix and not user_journey" tests
 
       # https://github.com/actions/runner-images/issues/1052
       - name: "Windows extended prefix unit tests ✅"
@@ -98,10 +92,10 @@ jobs:
 
       - name: "Install build dependencies 📦"
         run: |
-          pip install hatch
+          sudo apt update
           sudo apt install wait-for-it -y
 
-      - name: "Deploy docker-compose"
+      - name: "Deploy docker-compose 🏗"
         run: |
           docker-compose up -d
           docker ps
@@ -110,26 +104,29 @@ jobs:
           wait-for-it localhost:9000 # minio
           wait-for-it localhost:8080 # conda-store-server
 
+      - name: "Install conda-store-server for tests 📦"
+        run: |
+          python -m pip install .
+
       - name: "Run Playwright tests 🎭"
         run: |
-          playwright install
-          pytest --video on ../tests/test_playwright.py
+          playwright install --with-deps chromium
+          python - m pytest --video on ../tests/test_playwright.py
 
       - name: "Upload test results 📤"
         uses: actions/upload-artifact@v4
         if: ${{ always() }}
         with:
           name: playwright-tests
-          path: conda-store-server/test-results
+          path: conda-store-server/test-results/
 
       - name: "Run integration tests ✅"
         run: |
-          export PYTHONPATH=$PYTHONPATH:$PWD
-          pytest ../tests/test_api.py ../tests/test_metrics.py
+          python -m  pytest ../tests/test_api.py ../tests/test_metrics.py
 
       - name: "Run user journey tests ✅"
         run: |
-          pytest -m "user_journey"
+          python -m pytest -m "user_journey"
 
       - name: "Get Docker logs 🔍"
         if: ${{ failure() }}
@@ -157,15 +154,13 @@ jobs:
       - name: "Install Dependencies 📦"
         run: |
           pip install hatch
+          sudo apt update
           sudo apt install wait-for-it -y
 
+      # TODO: update after the pre-commit PR is merged
       - name: "Linting Checks 🧹"
         run: |
           hatch env run -e dev lint
-
-      - name: "Build package 📦"
-        run: |
-          hatch build
 
       - name: "Deploy docker-compose"
         run: |
@@ -176,9 +171,10 @@ jobs:
           wait-for-it localhost:9000 # minio
           wait-for-it localhost:8080 # conda-store-server
 
-      - name: "Install conda-store for tests 📦"
+      - name: "Build and install conda-store for tests 📦"
         run: |
-          pip install .
+          hatch build
+          python -m pip install dist/*.whl
 
       - name: "Run basic tests -  not authenticated"
         run: |
@@ -203,7 +199,7 @@ jobs:
           docker-compose logs
 
   build-docker-image:
-    name: "Build docker images"
+    name: "Build docker images 🐳"
     runs-on: ubuntu-latest
     strategy:
       matrix:
