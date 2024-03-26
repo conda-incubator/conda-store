@@ -10,7 +10,11 @@
             <span class="badge badge-light">{{ (environment.current_build.size or 0) | filesizeformat(true) }}</span>
         </h5>
     </div>
+
     <ul class="list-group list-group-flush">
+        {% if environment_description %}
+        <li class="list-group-item">{{ environment_description }}</li>
+        {% endif %}
         <li class="list-group-item">
             <div class="card-body">
                 <div id="editor" style="height: 300px;">{{ spec }}</div>
