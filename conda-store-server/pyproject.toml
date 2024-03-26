@@ -26,25 +26,38 @@ classifiers = [
   "Programming Language :: Python :: 3 :: Only",
 ]
 dependencies = [
+  # env builds
+  # conda (which cannot be installed via pip see https://github.com/conda/conda/issues/11715)
+  "python-docker",
+  # we need platform dependent dependencies here
   "conda-docker; sys_platform == 'linux'",
+  "conda-lock >=1.0.5",
   "conda-pack",
+  "conda-package-handling",
+  "conda-package-streaming",
+  # web server
+  "alembic",
   "celery",
-  "sqlalchemy",
-  "requests",
   "fastapi",
-  "pyyaml",
-  "redis",
-  "pydantic<2",
-  "minio",
-  "traitlets",
-  "pyjwt",
-  "yarl",
   "filelock",
   "itsdangerous",
   "jinja2",
+  "pyjwt",
+  "psycopg2-binary",
+  "pymysql",
+  "pyyaml",
+  "redis",
+  "requests",
+  "pydantic<2",
   "python-multipart",
-  "python-docker"
-  # conda (which should not be included here)
+  "sqlalchemy<=1.4.47",
+  "traitlets",
+  "uvicorn",
+  "yarl",
+  # installer
+  "constructor",
+  # artifact storage
+  "minio",
 ]
 dynamic = ["version"]
 
@@ -55,25 +68,30 @@ Source = "https://github.com/conda-incubator/conda-store"
 [tool.hatch.version]
 path = "conda_store_server/__init__.py"
 
-[project.optional-dependencies]
-dev = ["build", "twine"]
-
 [tool.hatch.envs.dev]
 dependencies = [
+  "aiohttp>=3.8.1",
+  "build",
+  "docker-compose",
+  "docker-py<7",
+  "flower",
+  "playwright",
   "pre-commit",
-  "sphinx",
-  "myst-parser",
-  "sphinx-panels",
-  "sphinx-copybutton",
-  "pydata-sphinx-theme",
   "pytest",
+  "pytest-celery",
   "pytest-mock",
   "pytest-playwright",
+  "twine>=5.0.0",
+  "pkginfo>=1.10",
 ]
 
-[tool.hatch.envs.dev.scripts]
+[tool.hatch.envs.lint]
+dependencies = ["pre-commit"]
+
+[tool.hatch.envs.lint.scripts]
 lint = ["pre-commit run --all"]
-unit-test = "pytest tests -v"
+
+unit-test = "pytest -m 'not extended_prefix and not user_journey' tests"
 playwright-test = [
   "playwright install",
   "pytest --video on ../tests/test_playwright.py"
