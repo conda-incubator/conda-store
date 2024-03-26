@@ -1,17 +1,15 @@
 [build-system]
-# https://github.com/ofek/hatch-vcs
-requires = ["hatchling>=1.14.0", "hatch-vcs"]
+requires = ["hatchling>=1.14.0", "hatch-vcs", "hatch-fancy-pypi-readme"]
 build-backend = "hatchling.build"
 
 [project]
 name = "conda-store-server"
 description = "Conda Environment Management, Builds, and Serve"
-readme = "README.md"
 license = "BSD-3-Clause"
 requires-python = ">=3.8"
 keywords = ["conda"]
 authors = [
-  { name = "Christopher Ostrouchov", email = "crhsi.ostrouchov@gmail.com" },
+  { name = "Christopher Ostrouchov", email = "chris.ostrouchov@gmail.com" },
 ]
 classifiers = [
   "Development Status :: 3 - Alpha",
@@ -59,14 +57,78 @@ dependencies = [
   # artifact storage
   "minio",
 ]
-dynamic = ["version"]
+dynamic = ["version", "readme"]
 
 [project.urls]
 Homepage = "https://conda.store/"
-Source = "https://github.com/conda-incubator/conda-store"
+Source = "https://github.com/conda-incubator/conda-store/conda-store-server"
 
 [tool.hatch.version]
-path = "conda_store_server/__init__.py"
+source = "vcs"
+# need to specify root as .git is one level up
+raw-options = {root="../", relative_to="pyproject.toml", local_scheme="node-and-date"}
+
+[tool.hatch.build.hooks.vcs]
+version-file = "conda_store_server/_version.py"
+
+[tool.hatch.metadata.hooks.fancy-pypi-readme]
+content-type = "text/markdown"
+
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.fragments]]
+text = """<p align="center">
+  <a href="https://conda.store/">
+    <img src="https://github.com/conda-incubator/conda-store/blob/main/docusaurus-docs/static/img/logo.svg" width="35%" alt="conda-store logo - conda.store homepage" />
+  </a>
+</p>
+
+"""
+
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.fragments]]
+path = "README.md"
+
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.fragments]]
+text = "## About the conda-store ecosystem"
+
+# hack to add long readme
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.fragments]]
+text="""
+conda-store provides the familiarity and flexibility of conda environments, without compromising reliability for collaborative settings.
+
+conda-store is built to work for all team members from individual data scientists to administrators, while making sure your team follows best practices throughout the environment life cycle: from initial environment creation to using environments in a production machine.
+
+## Key features ✨
+
+- **Flexibility**:
+  - Users can create and update environments with the Graphical UI or a YAML editor.
+  - The environments are automatically version-controlled and all versions are readily available.
+- **Reproducibility**:
+  - Users can share environments quickly through the auto-generated artifacts including a lockfile, docker image, YAML file, and tarball.
+  - conda-store pins exact versions of all packages and their dependencies in all the auto-generated artifacts.
+- **Governance**:
+  - Users have access to admin-approved packages and channels for their work and can request new ones when needed.
+  - Admins can insert or require certain packages and versions for organization-level compatibility.
+  - Admins can manage users' access levels using "Namespaces", and allow users to share environments across (and only with) their team.
+
+## Get started 💻
+
+Learn more, including how to install, use, and contribute to conda-store in our documentation at [**conda.store**](https://conda.store/).
+
+## Related projects 📦
+
+- React-based conda-store UI [`conda-incubator/conda-store-ui`](https://github.com/conda-incubator/conda-store-ui)
+- JupyterLab extension [`conda-incubator/jupyterlab-conda-store`](https://github.com/conda-incubator/jupyterlab-conda-store).
+
+## Code of Conduct 🤝
+
+To guarantee a welcoming and friendly community, we require all community members to follow our [Code of Conduct](https://github.com/conda-incubator/governance/blob/main/CODE_OF_CONDUCT.md).
+
+## License 📄
+
+conda-store is developed under the [BSD-3 LICENSE](./LICENSE).
+"""
+
+[project.optional-dependencies]
+dev = ["build", "twine"]
 
 [tool.hatch.envs.dev]
 dependencies = [
@@ -83,6 +145,7 @@ dependencies = [
   "pytest-playwright",
   "twine>=5.0.0",
   "pkginfo>=1.10",
+  "setuptools-scm>=6.4.0",
 ]
 
 [tool.hatch.envs.lint]
@@ -110,8 +173,10 @@ conda-store-worker = "conda_store_server.worker.__main__:main"
 
 [tool.black]
 line-length = 88
-target-version = ['py37', 'py38', 'py39']
+target-version = ['py38', 'py39', 'py310', 'py311']
 
+
+# TODO: add more ruff rules
 [tool.ruff]
 ignore = [
   "E501", # line-length

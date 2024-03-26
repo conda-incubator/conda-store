@@ -1,9 +1,5 @@
 # conda-store
 
-Check the full documentation at [conda.store](https://conda.store/).
+A client library providing a CLI for interacting with [`conda-store-server`](https://pypi.org/project/conda-store-server/).
 
-A client library which provides a CLI for interacting with conda-store-server.
-
-```shell
-$ conda-store --help
-```
+📖 Check the full documentation at [conda.store](https://conda.store/).
