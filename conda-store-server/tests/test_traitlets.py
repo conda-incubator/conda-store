@@ -2,9 +2,11 @@ import pathlib
 import tempfile
 
 import pytest
-from conda_store_server import schema
+
 from fastapi.templating import Jinja2Templates
 from fastapi.testclient import TestClient
+
+from conda_store_server import schema
 
 
 def test_conda_store_server_enable_ui(conda_store_server):

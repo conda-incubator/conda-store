@@ -1,11 +1,14 @@
 """Helper functions for user journeys."""
+
 import time
 import uuid
+
 from enum import Enum
 from typing import Union
 
 import requests
 import utils.time_utils as time_utils
+
 
 TIMEOUT = 10
 

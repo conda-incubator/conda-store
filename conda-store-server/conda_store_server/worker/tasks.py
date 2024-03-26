@@ -5,9 +5,13 @@ import sys
 import typing
 
 import yaml
+
 from celery import Task, platforms, shared_task
 from celery.execute import send_task
 from celery.signals import worker_ready
+from filelock import FileLock
+from sqlalchemy.orm import Session
+
 from conda_store_server import api, environment, schema, utils
 from conda_store_server.build import (
     build_cleanup,
@@ -19,8 +23,6 @@ from conda_store_server.build import (
     solve_conda_environment,
 )
 from conda_store_server.worker.app import CondaStoreWorker
-from filelock import FileLock
-from sqlalchemy.orm import Session
 
 
 @worker_ready.connect
