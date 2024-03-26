@@ -2,6 +2,7 @@ name: Tests
 
 env:
   FORCE_COLOR: "1" # Make tools pretty.
+  PYTHONUNBUFFERED: "1" # Make stdout and stderr behave well
 
 on:
   pull_request:
@@ -19,8 +20,8 @@ jobs:
     name: "unit-test conda-store-server"
     strategy:
       matrix:
-        os: ["ubuntu", "macos", "windows"]
-    runs-on: ${{ matrix.os }}-latest
+        os: ["ubuntu-latest", "macos-latest", "macos-14", "windows-latest"]
+    runs-on: ${{ matrix.os }}
     defaults:
       run:
         shell: bash -el {0}
