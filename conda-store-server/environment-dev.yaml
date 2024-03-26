@@ -20,11 +20,11 @@ dependencies:
   # build dependencies
   - hatch
   - build
-  - pre-commit
   # installer
   - constructor # runtime dep but must be conda installed
   - pip
   - pip:
       - pytest-playwright
+      - pre-commit
       - twine>=5.0.0
       - pkginfo>=1.10 # needed to support metadata 2.3
