@@ -145,9 +145,11 @@ async def api_get_permissions(
         "status": "ok",
         "data": {
             "authenticated": authenticated,
-            "primary_namespace": entity.primary_namespace
-            if authenticated
-            else conda_store.default_namespace,
+            "primary_namespace": (
+                entity.primary_namespace
+                if authenticated
+                else conda_store.default_namespace
+            ),
             "entity_permissions": entity_binding_permissions,
             "entity_roles": entity_binding_roles,
             "expiration": entity.exp if authenticated else None,
