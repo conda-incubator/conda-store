@@ -9,7 +9,6 @@ on:
     branches:
       - main
 
-
 # ensuring only one instance is running at a given time
 concurrency:
   group: ${{ github.ref }}
@@ -50,7 +49,7 @@ jobs:
         run: |
           python -m pre-commit run --all
 
-      - name: "Install conda-store-server 📦"
+      - name: "Install conda-store-server for tests 📦"
         run: |
           python -m pip install .
 
