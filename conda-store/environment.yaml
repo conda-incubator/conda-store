@@ -1,3 +1,4 @@
+# environment used in Docker images and docker-compose
 name: conda-store
 channels:
   - conda-forge
@@ -11,5 +12,5 @@ dependencies:
   - constructor # runtime dep but must be conda installed
   - pip
   - pip:
-      - https://github.com/yuvipanda/jupyter-launcher-shortcuts/archive/refs/heads/master.zip
+      - jupyter-launcher-shortcuts
       - jupyterlab-conda-store

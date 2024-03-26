@@ -10,7 +10,7 @@ channels:
 dependencies:
   - python ==3.10
   # conda builds
-  - conda ==23.5.2
+  - conda
   # dev dependencies
   - aiohttp>=3.8.1
   - pytest
@@ -21,11 +21,12 @@ dependencies:
   # build dependencies
   - hatch
   - build
+  - twine>=5.0.0
+  - pkginfo>=1.10 # needed to support metadata 2.3
   # installer
   - constructor # runtime dep but must be conda installed
+  # linting
+  - pre_commit
   - pip
   - pip:
       - pytest-playwright
-      - pre-commit
-      - twine>=5.0.0
-      - pkginfo>=1.10 # needed to support metadata 2.3

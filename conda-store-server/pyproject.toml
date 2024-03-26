@@ -52,7 +52,7 @@ dependencies = [
   "requests",
   "pydantic<2",
   "python-multipart",
-  "sqlalchemy<=1.4.47",
+  "sqlalchemy<2.0",
   "traitlets",
   "uvicorn",
   "yarl",
