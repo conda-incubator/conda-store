@@ -1,130 +1,129 @@
 ---
-description: Contribute to conda-store's codebase
+sidebar_position: 1
+description: Guidelines for contributing to various conda-store projects
 ---
 
-# Contribute code
+# Code contribution workflow
+
+We welcome all code contributions to conda-store projects.
+This document describes the steps for making successful contributions.
+
+## Select (or open) an issue
+
+The issues marked with the "good first issue" label are a great place to start. These bug reports and feature requests have a low entry-barrier, need little historical context, and are self-contained. Select a project and "good first issue" that matches your interest and skill set.
+
+conda-store development happens across three repositories, and the relevant programming language and technologies are listed below:
+
+* `conda-store` and `conda-store-server`: Python, FastAPI, and conda ecosystem
+* `conda-store-ui`: Typescript, React, and frontend web development
+* `jupyterlab-conda-store`: JupyterLab extension development (Typescript and Javascript)
+
+:::note
+If the issue you are interested in is "assigned" to someone, it means they plan to work on it. In this case, select a different issue or comment on the issue asking the assignee if they are OK with you taking over.
+:::
+
+If you feel comfortable contributing the fix/feature directly, write a comment on the issue to let the community know that you are working on it. If you need more context or help with the issue (at any point in your contribution), feel free to ask questions on the same issue.
+
+If your contributing involves significant API changes, write a comment on the issue describing your proposal for implementation. This allows us to discuss the details and confirm the changes beforehand, and respect the time and energy you spend contributing.
+
+The project maintainers are always happy to support you! Please be patient while maintainers get back to your questions, but you can drop a reminder after about 4 working days if no one has replied to you. :)
 
 :::warning
-This page is in active development, content may be inaccurate and incomplete.
+If you want to work on a specific bug or feature that does not have issue, start by [opening a new issue][open-issue] and discussing it before working on it.
 :::
 
-## Set up development environment - conda-store-core
+## Setup for local development
 
-### Docker (recommended)
-
-Install the following dependencies before developing on conda-store.
-
-- [Docker](https://docs.docker.com/engine/install/)
-- [docker-compose](https://docs.docker.com/compose/install/)
-
-To deploy `conda-store` run the following command
-
-```shell
-docker-compose up --build -d
-```
-
-:::important
-Many of the conda-store docker images are built/tested for amd64(x86-64)
-there will be a performance impact when building and running on
-arm architectures. Otherwise, this workflow has been shown to run and build on OSX.
-Notice the `architecture: amd64` within the `docker-compose.yaml` files.
+:::tip
+Optionally, you can use tools like conda, pipenv, or venv to create an isolated environment for development.
 :::
 
-The following resources will be available:
+### Fork and clone the repository
 
-| Resource | Localhost port | username | password |
-|----------|----------------|----------|----------|
-| conda-store web server | [localhost:8080](http://localhost:8080)| `admin` | `password`|
-| [JupyterHub](https://jupyter.org/hub) | [localhost:8000](http://localhost:8000) | any | `test` |
-| [MinIO](https://min.io/) S3 |  [localhost:9000](http://localhost:9000) | `admin` | `password` |
-| [PostgreSQL](https://www.postgresql.org/) (database: `conda-store`)| [localhost:5432](http://localhost:5432) | `admin` | `password` |
-| [Redis](https://www.redis.com/) |  [localhost:6379](http://localhost:6379) | - | password |
+1. Create a personal copy of the corresponding conda-store GitHub repository by clicking the fork button in the top-right corner.
 
-On a fast machine this deployment should only take 10 or so seconds
-assuming the docker images have been partially built before.
+2. Clone the forked project to your local computer:
 
-If you are making any changes to `conda-store-server` and would like to see
-those changes in the deployment, run:
-
-```shell
-docker-compose down -v # not always necessary
-docker-compose up --build
+```bash
+git clone https://github.com/<your-username>/<conda-store-repo-name>.git
 ```
 
-### Linux
+1. Navigate to the project directory.
 
-1. Install the following dependencies before developing on conda-store:
-
-   - [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html)
-
-2. Install the development dependencies and activate the environment:
-
-```shell
-# replace this with environment-macos-dev.yaml or environment-windows-dev.yaml
-# if you are on Mac or Windows
-conda env create -f conda-store-server/environment-dev.yaml
-conda activate conda-store-server-dev
+```bash
+cd <conda-store-repo-name>
 ```
 
-3. Running `conda-store` in `--standalone` mode launches celery as a
-subprocess of the web server.
+4. Add the upstream repository:
 
-    ```bash
-    python -m conda_store_server.server --standalone
-   ```
+```bash
+git remote add upstream https://github.com/conda-incubator/<conda-store-repo-name>.git
+```
 
-1. Visit [localhost:8080](http://localhost:8080/)
+5. Now the command `git remote -v` shows two remote repositories:
 
-## Set up development environment -- conda-store-ui
+* **upstream:** which refers to the conda-store repository on GitHub.
+* **origin:** which refers to your personal fork.
 
-To get started with conda-store-ui development, there are a couple of options. This guide will help you to set up your local development environment.
+### Install library for development
 
-### Prerequisites
+Follow the steps for the corresponding project to create a development installation:
 
-Before setting up conda-store-ui, you must prepare your environment.
+* [Local setup for conda-store (core)][local-install-conda-store]
+* [conda-store-ui][local-install-conda-store-ui]
+* [jupyterlab-conda-store][local-install-jlab-conda-store]
 
-We use [Docker Compose](https://docs.docker.com/compose/) to set up the infrastructure before starting ensure that you have docker-compose installed. If you need to install docker-compose, please see their [installation documentation](https://docs.docker.com/compose/install/)
+## Develop your contribution
 
-1. Clone the [conda-store-ui](https://github.com/conda-incubator/conda-store-ui.git) repository.
-2. Copy `.env.example` to `.env`. All default settings should work, but if you want to test against a different version of conda-store-server, you can specify it in the `.env` file by setting the `CONDA_STORE_SERVER_VERSION` variable to the desired version
+1. Before you start, make sure to pull the latest changes from upstream.
 
-### Local Development with conda-store-ui running in Docker
+```bash
+git checkout develop
+git pull upstream develop
+```
 
-Running conda-store-ui in Docker is the simplest way to set up your local development environment.
+2. Create a branch for the bug or feature you want to work on. The branch name will appear in the merge message, so use a sensible, self-explanatory name:
 
-1. Run `yarn run start:docker` to start the entire development stack.
-Open your local browser and go to [http://localhost:8000](http://localhost:8000) so see conda-store-ui.
-3. You can then log in using the default username of `username` and default password of `password`.
+```bash
+git branch feature/<feature name>
+git switch feature/<feature name>
+# this is an alternative to the git checkout -b feature/<feature name> command
+```
 
-**Note:** Hot reloading is enabled, so when you make changes to source files, your browser will reload and reflect the changes.
+3. Commit locally as you progress (`git add` and `git commit`), and make sure to use an adequately formatted commit message.
 
-### Local Development without running conda-store-ui in Docker
+## Test your contribution
 
-This setup still uses Docker for supporting services but runs conda-store-ui locally.
+The local setup instructions for the projects also include instructions for testing.
+Make sure to test your contributions locally for more efficient code reviews.
 
-#### Set up your environment
+## Open a pull requests (PRs)
 
-This project uses [Conda](https://conda.io) for package management. To set up Conda, please see their [installation documentation](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html).
-1. Change to the project root ` cd conda-store-ui`
-2. From the project root create the conda environment `conda env create -f environment_dev.yml`
-3. Activate the development environment `conda activate cs-ui-dev-env`
-4. Install yarn dependencies `yarn install`
+When you feel comfortable with your contribution, you can open a pull request (PR) to submit it for review
 
-#### Run the application
+You can also submit partial work to get early feedback on your contribution or discuss some implementation details. If you do so, add WIP (work in progress) in the PR title or add the "status: in progress 🏗" label, and mark it as a draft.
 
-1. Run `yarn run start` and wait for the application to finish starting up
-Open your local browser and go to [http://localhost:8000](http://localhost:8000) so see conda-store-ui.
-3. You can then log in using the default username of `username` and default password of `password`.
+Push your changes back to your fork on GitHub:
 
-**Note:** Hot reloading is enabled, so when you make changes to source files, your browser will reload and reflect the changes.
+```bash
+git push origin <feature/feature name>
+```
 
-<!-- TODO
+Enter your GitHub username and password (repeat contributors or advanced users can remove this step by connecting to GitHub with SSH).
 
-## jupyterlab-conda-store
+Go to the corresponding conda-store repository on GitHub. You will see a green pull request button. Make sure the title and message are clear, concise, and self-explanatory. Complete the checklist and read the notes in the PR template, then click the button to submit it.
 
--->
+:::note
+If the PR relates to any issues, you can add the text xref gh-xxxx where xxxx is the issue number to GitHub comments. Likewise, if the PR solves an issue, replace the xref with closes, fixes or any other flavors GitHub accepts. GitHub will automatically close the corresponding issue(s) when your PR gets merged.
+:::
 
-## Workflows
+## Code review
+
+Reviewers (the other developers and interested community members) will write inline and general comments on your pull request (PR) to help you improve its implementation, documentation, and style. Every developer working on the project has their code reviewed, and we've come to see it as a friendly conversation from which we all learn and the overall code quality benefits. Therefore, please don't let the review discourage you from contributing: its only aim is to improve the quality of the project, not to criticize (we are, after all, very grateful for the time you're donating!).
+
+To update your PR to incorporate the suggestions, make your changes on your local repository, commit them, run tests, and only if they succeed, push to your fork. The PR will update automatically as soon as those changes are pushed up (to the same branch as before).
+
+## Guidelines for specific workflows
 
 ### Changes to API
 
@@ -134,15 +133,10 @@ the API make sure the update the OpenAPI/Swagger specification in
 endpoint when running conda-store. Ensure that the
 `c.CondaStoreServer.url_prefix` is set to `/` when generating the
 endpoints.
-<!-- TODO -->
 
-## Workflows
+<!-- Internal links -->
 
-### Changes to API
-
-The REST API is considered somewhat stable. If any changes are made to
-the API make sure the update the OpenAPI/Swagger specification in
-`docs/_static/openapi.json`. This may be downloaded from the `/docs`
-endpoint when running conda-store. Ensure that the
-`c.CondaStoreServer.url_prefix` is set to `/` when generating the
-endpoints.
+[open-issues]: /community/contribute/issues
+[local-install-conda-store]: /community/contribute/local-setup-core
+[local-install-conda-store-ui]: /community/contribute/local-setup-ui
+[local-install-jlab-conda-store]: /community/contribute/local-setup-labextension
