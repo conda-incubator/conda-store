@@ -28,6 +28,8 @@ classifiers = [
 dependencies = [
   # env builds
   # conda (which cannot be installed via pip see https://github.com/conda/conda/issues/11715)
+  # installer
+  # "constructor", https://github.com/conda/constructor which needs installing separately
   "python-docker",
   # we need platform dependent dependencies here
   "conda-docker; sys_platform == 'linux'",
@@ -54,8 +56,6 @@ dependencies = [
   "traitlets",
   "uvicorn",
   "yarl",
-  # installer
-  # "constructor", https://github.com/conda/constructor which needs installing separately
   # artifact storage
   "minio",
 ]

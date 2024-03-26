@@ -69,6 +69,15 @@ docker-compose down -v # not always necessary
 docker-compose up --build
 ```
 
+To stop the deployment, run:
+
+```bash
+docker-compose stop
+
+# optional to remove the containers
+docker-compose rm -f
+```
+
 ### Local development without Docker - conda-store-core
 
 You will need to install the following dependencies before developing on `conda-store`:
@@ -87,7 +96,7 @@ You will need to install the following dependencies before developing on `conda-
 
    ```bash
    # from the root of the repository
-   pip install -e ./conda-store-server
+   python -m pip install -e ./conda-store-server
    ```
 
 3. Running `conda-store` in `--standalone` mode launches celery as a
@@ -209,14 +218,15 @@ Hot reloading is enabled, so when you make changes to source files, your browser
 ### Changes to the API
 
 The REST API is considered somewhat stable. If any changes are made to the API make sure the update the OpenAPI/Swagger
-specification in `docs/_static/openapi.json`. This may be downloaded from the `/docs` endpoint when running conda-store.
+specification in `docs/_static/openapi.json`.
+This may be downloaded from the `/docs` endpoint when running conda-store.
 Ensure that the `c.CondaStoreServer.url_prefix` is set to `/` when generating the endpoints.
 
 ### Adding new dependencies to the libraries
 
 ### `conda-store-core`
 
-Runtime-required dependencies should **only** be added to the corresponding `pyproject.toml` file:
+Runtime-required dependencies should **only** be added to the corresponding `pyproject.toml` files:
 
 - `conda-store-server/pyproject.toml`
 - `conda-store/pyproject.toml`
@@ -225,6 +235,13 @@ Development dependencies should be added to both the `environment-dev.yaml` and 
 Within the `pyproject.toml` file these should be added under the `[tool.hatch.envs.dev]` section.
 
 This will ensure that conda-store distributions are properly built and tested with the correct dependencies.
+
+:::important
+
+The only exceptions to this runtime dependencies rules are `conda` and `constructor` which should be added to the
+`environment-dev.yaml` file as they are only conda installable.
+
+:::
 
 ### `conda-store-ui`
 

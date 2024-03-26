@@ -47,7 +47,7 @@ jobs:
 
       - name: "Linting Checks 🧹"
         run: |
-          python -m pre-commit run --all
+          hatch env run -e lint lint
 
       - name: "Install conda-store-server for tests 📦"
         run: |

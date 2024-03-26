@@ -2,6 +2,7 @@
 # you must ensure to add it to the [tool.hatch.envs.dev] section of the pyproject.toml file too
 # required conda-store-server or conda-store (core) dependencies MUST ONLY be added/updated in the [dependencies]
 # section of the corresponding pyproject.toml file
+# the only exceptions to this rule are conda and constructor which are only conda installable
 name: conda-store-server-dev
 channels:
   - conda-forge

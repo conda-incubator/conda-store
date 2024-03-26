@@ -15,10 +15,11 @@ The [`conda-store` repository on GitHub][conda-store-repo] consists of two separ
 
 - Python `3.8` or later
 - `conda`, if installing from scratch we recommend you install [`miniforge`](https://github.com/conda-forge/miniforge) or [`miniconda`](https://docs.anaconda.com/free/miniconda/miniconda-install/).
+- `constructor`: https://github.com/conda/constructor
 
 :::warning
 
-`conda` is a hard requirement for `conda-store` and since it is not `pip` installable you need to have `conda` installed separately.
+`conda` is a hard requirement for `conda-store` and since it is not `pip` installable you need to have `conda` installed before using `conda-store`.
 
 :::
 
@@ -41,7 +42,7 @@ import TabItem from '@theme/TabItem';
 <TabItem value="conda" label="conda" default>
 
 ```bash
-conda install -c conda-forge conda-store conda-store-server
+conda install -c conda-forge conda-store conda-store-server constructor
 ```
 
 </TabItem>
@@ -50,7 +51,12 @@ conda install -c conda-forge conda-store conda-store-server
 
 ```bash
 # note that we still recommend you use conda to create an environment
+# conda create -n conda-store-env python=<Python version of choice>
+# conda activate conda-store-env
 python -m pip install conda-store conda-store-server
+
+# install constructor
+conda install -c conda-forge constructor
 ```
 
 </TabItem>
