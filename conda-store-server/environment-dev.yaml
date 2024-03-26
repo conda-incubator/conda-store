@@ -20,6 +20,7 @@ dependencies:
   # build dependencies
   - hatch
   - build
+  - pre-commit
   # installer
   - constructor # runtime dep but must be conda installed
   - pip

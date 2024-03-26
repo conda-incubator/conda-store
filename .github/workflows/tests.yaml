@@ -156,7 +156,7 @@ jobs:
 
       - name: "Linting Checks 🧹"
         run: |
-          python -m pre-commit run --all
+          hatch env run -e lint lint
 
       - name: "Deploy docker-compose"
         run: |
