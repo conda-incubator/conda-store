@@ -50,6 +50,10 @@ class BuildKey:
         return f"{hash}-{timestamp}-{id}-{name}"
 
     def _version3_fmt(build: "Build") -> str:  # noqa: F821
+        # Caches the hash value for faster lookup later
+        if build.hash is not None:
+            return build.hash
+
         # Adds namespace here to separate builds performed by different users
         # since all builds are stored in the same directory in v3, see
         # Build.build_path in orm.py. Additionally, this also hashes the
@@ -64,6 +68,7 @@ class BuildKey:
         )
         hash = hashlib.sha256(hash_input.encode("utf-8")).hexdigest()
         hash = hash[: BuildKey._version3_hash_size]
+        build.hash = hash
         return hash
 
     # version -> fmt function
@@ -123,12 +128,9 @@ class BuildKey:
             return int(parts[2])  # build_id
         elif "-" not in build_key:  # v3
             with conda_store.get_db() as db:
-                builds = db.query(orm.Build).all()
-                # Note: this uses a separate for-loop instead of using filter
-                # because the latter doesn't allow for passing lambdas
-                for build in builds:
-                    if cls._version3_fmt(build) == build_key:
-                        return build.id
+                build = db.query(orm.Build).filter(orm.Build.hash == build_key).first()
+                if build is not None:
+                    return build.id
                 return None
         else:  # v1
             return int(parts[4])  # build_id

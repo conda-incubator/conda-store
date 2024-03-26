@@ -231,6 +231,9 @@ class Build(Base):
     ended_on = Column(DateTime, default=None)
     deleted_on = Column(DateTime, default=None)
 
+    # Only used by build_key_version 3, not necessary for earlier versions
+    hash = Column(Unicode(32), default=None)
+
     @staticmethod
     def _get_build_key_version():
         # Uses local import to make sure BuildKey is initialized
