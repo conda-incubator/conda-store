@@ -2,19 +2,12 @@ name: conda-store
 channels:
   - conda-forge
 dependencies:
-  - pip
   - jupyterhub<2.0.0
-  - jupyterlab>=4.0.0
+  - jupyterlab>4.0
   - nb_conda_kernels
-  # - nb_conda_store_kernels >=0.1.4
-  - nodejs=16
+  - nodejs=18
   - yarn
-  # conda-store client dependencies
-  - yarl
-  - aiohttp>=3.8.1
-  - rich
-  - click
-  - ruamel.yaml
+  - pip
   - pip:
       - https://github.com/yuvipanda/jupyter-launcher-shortcuts/archive/refs/heads/master.zip
       - jupyterlab-conda-store
