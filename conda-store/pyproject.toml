@@ -29,7 +29,11 @@ classifiers = [
   "Intended Audience :: Science/Research",
   "Intended Audience :: System Administrators",
 ]
-dependencies = ["rich", "click", "yarl", "aiohttp", "ruamel.yaml"]
+dependencies = ["rich",
+  "click",
+  "yarl",
+  "aiohttp>=3.8.1",
+  "ruamel.yaml"]
 dynamic = ["version", "readme"]
 
 [project.urls]
@@ -105,8 +109,11 @@ dev = ["build", "twine"]
 
 [tool.hatch.envs.dev]
 dependencies = [
+  "build",
   "pre-commit",
   "pytest",
+  "twine>=5.0.0",
+  "pkginfo >= 1.10",
   "pytest-mock",
 ]
 
