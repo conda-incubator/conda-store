@@ -1,0 +1,5 @@
+name: simple-broken-environment
+channels:
+  - conda-forge
+dependencies:
+  - invalidpackagenamefaasdfagksdjfhgaskdf==3.1
