@@ -82,7 +82,7 @@ outputs:
         - pyyaml
         - redis-py
         - requests
-        - sqlalchemy
+        - sqlalchemy <2.0a0
         - traitlets
         - uvicorn
         - yarl
