@@ -10,6 +10,7 @@ on:
 
 env:
   FORCE_COLOR: "1" # Make tools pretty.
+  PYTHONUNBUFFERED: "1"  # Keep stdout and stderr nice and tidy
 
 permissions:
   contents: read # This is required for actions/checkout
