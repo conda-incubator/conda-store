@@ -43,17 +43,16 @@ jobs:
           timeout_minutes: 9999
           max_attempts: 6
           command:
-            conda install --channel=conda-forge --quiet --yes python=${{ matrix.python }}
+            conda install --channel=conda-forge --quiet --yes python="3.10"
         if: matrix.os == 'windows'
 
       - name: "Linting Checks 🧹"
         run: |
           python -m pre-commit run --all
 
-      - name: "Build and install conda-store-server 📦"
+      - name: "Install conda-store-server 📦"
         run: |
-          echo "$(which python)"
-          python -m pip install . # do not need to build at this stage
+          python -m pip install .
 
       - name: "Unit tests ✅"
         run: |
@@ -156,10 +155,9 @@ jobs:
           sudo apt update
           sudo apt install wait-for-it -y
 
-      # TODO: update after the pre-commit PR is merged
       - name: "Linting Checks 🧹"
         run: |
-          hatch env run -e dev lint
+          python -m pre-commit run --all
 
       - name: "Deploy docker-compose"
         run: |
@@ -170,10 +168,9 @@ jobs:
           wait-for-it localhost:9000 # minio
           wait-for-it localhost:8080 # conda-store-server
 
-      - name: "Build and install conda-store for tests 📦"
+      - name: "Install conda-store for tests 📦"
         run: |
-          hatch build
-          python -m pip install dist/*.whl
+          python -m pip install .
 
       - name: "Run basic tests -  not authenticated"
         run: |
