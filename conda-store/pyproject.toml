@@ -48,14 +48,16 @@ path = "conda_store/__init__.py"
 [project.optional-dependencies]
 dev = ["build", "twine"]
 
+# when adding dev dependencies (not required conda-store dependencies)
+# you must make sute to add them to the environment-dev.yaml file too
 [tool.hatch.envs.dev]
 dependencies = [
   "build",
   "pre-commit",
   "pytest",
-  "twine>=5.0.0",
-  "pkginfo >= 1.10",
   "pytest-mock",
+  "twine>=5.0.0",
+  "pkginfo>=1.10", # needed to support metadata 2.3
 ]
 
 [tool.hatch.envs.dev.scripts]

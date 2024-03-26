@@ -68,21 +68,20 @@ Source = "https://github.com/conda-incubator/conda-store"
 [tool.hatch.version]
 path = "conda_store_server/__init__.py"
 
+# when adding dev dependencies (not required conda-store-server) add them to the environment-dev.yaml file too
 [tool.hatch.envs.dev]
 dependencies = [
   "aiohttp>=3.8.1",
   "build",
   "docker-compose",
   "docker-py<7",
-  "flower",
-  "playwright",
   "pre-commit",
   "pytest",
   "pytest-celery",
   "pytest-mock",
   "pytest-playwright",
   "twine>=5.0.0",
-  "pkginfo>=1.10",
+  "pkginfo>=1.10", # needed to support metadata 2.3
 ]
 
 [tool.hatch.envs.lint]
