@@ -112,6 +112,10 @@ conda-store-worker = "conda_store_server.worker.__main__:main"
 line-length = 88
 target-version = ['py37', 'py38', 'py39']
 
+[tool.isort]
+lines_between_types = 1
+lines_after_imports = 2
+
 [tool.ruff]
 ignore = [
   "E501", # line-length
@@ -127,7 +131,3 @@ markers = [
   "integration: mark a test as an integration test",
   "user_journey: mark a test as a user journey test",
 ]
-
-[tool.ruff.lint.isort]
-lines-between-types = 1
-lines-after-imports = 2
