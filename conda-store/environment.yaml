@@ -7,6 +7,8 @@ dependencies:
   - nb_conda_kernels
   - nodejs=18
   - yarn
+  # installer
+  - constructor # runtime dep but must be conda installed
   - pip
   - pip:
       - https://github.com/yuvipanda/jupyter-launcher-shortcuts/archive/refs/heads/master.zip

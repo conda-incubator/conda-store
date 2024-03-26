@@ -20,6 +20,8 @@ dependencies:
   # build dependencies
   - hatch
   - build
+  # installer
+  - constructor # runtime dep but must be conda installed
   - pip
   - pip:
       - pytest-playwright

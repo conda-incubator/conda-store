@@ -1,7 +1,6 @@
 name: Tests
 
 env:
-  DEFAULT_PYTHON_VERSION: "3.10"
   FORCE_COLOR: "1" # Make tools pretty.
 
 on:
@@ -49,12 +48,12 @@ jobs:
 
       - name: "Linting Checks 🧹"
         run: |
-          hatch env run -e lint lint
+          python -m pre-commit run --all
 
       - name: "Build and install conda-store-server 📦"
         run: |
-          hatch build
-          python -m pip install dist/*.whl
+          echo "$(which python)"
+          python -m pip install . # do not need to build at this stage
 
       - name: "Unit tests ✅"
         run: |
@@ -111,7 +110,7 @@ jobs:
       - name: "Run Playwright tests 🎭"
         run: |
           playwright install --with-deps chromium
-          python - m pytest --video on ../tests/test_playwright.py
+          python -m pytest --video on ../tests/test_playwright.py
 
       - name: "Upload test results 📤"
         uses: actions/upload-artifact@v4
@@ -199,7 +198,7 @@ jobs:
           docker-compose logs
 
   build-docker-image:
-    name: "Build docker images 🐳"
+    name: "Build Docker images 🐳"
     runs-on: ubuntu-latest
     strategy:
       matrix:

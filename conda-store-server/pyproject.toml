@@ -55,7 +55,7 @@ dependencies = [
   "uvicorn",
   "yarl",
   # installer
-  "constructor",
+  # "constructor", https://github.com/conda/constructor which needs installing separately
   # artifact storage
   "minio",
 ]
