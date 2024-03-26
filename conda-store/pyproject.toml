@@ -9,12 +9,14 @@ description = "conda-store client"
 readme = "README.md"
 license = "BSD-3-Clause"
 requires-python = ">=3.8"
-keywords = ["conda"]
+keywords = ["conda", "dependency management", "environment management", "reproducibility"]
 authors = [
   { name = "Christopher Ostrouchov", email = "chris.ostrouchov@gmail.com" },
 ]
-maintainers = [{ name = "Tania Allard", email = "trallard@bitsandchips.me" }]
-# TODO: update maintainers
+maintainers = [{ name = "Tania Allard", email = "trallard@bitsandchips.me" },
+    {name= "Pavithra Eswaramoorthy", email = "pavithraes@outlook.com"},
+    {name="Nikita Karetnikov", email="nkaretnikov@quansight.com"},
+  ]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
@@ -25,6 +27,7 @@ classifiers = [
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3 :: Only",
   "Intended Audience :: Developers",
   "Intended Audience :: Information Technology",
@@ -41,6 +44,7 @@ dynamic = ["version"]
 [project.urls]
 Homepage = "https://conda.store/"
 Source = "https://github.com/conda-incubator/conda-store"
+Issues = "https://github.com/conda-incubator/conda-store/issues"
 
 [tool.hatch.version]
 path = "conda_store/__init__.py"
