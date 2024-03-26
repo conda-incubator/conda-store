@@ -38,10 +38,11 @@ jobs:
 
       - run: echo "Running on ${{ matrix.directory }}"
 
-      - name: "Check wheel & sdist builds - ${{ matrix.directory }} 📦"
-        uses: hynek/build-and-inspect-python-package@v1
+      - name: "Check package build - ${{ matrix.directory }} 📦"
+        uses: hynek/build-and-inspect-python-package@main
         with:
           path: ${{ matrix.directory }}
+          upload-name-suffix: "-${{ matrix.directory }}"
 
       # Adding a separate upload for publishing
       - name: "Upload build artefacts 📤"
