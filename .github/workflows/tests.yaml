@@ -1,8 +1,8 @@
 name: Tests
 
 env:
-  DEFAULT_PYTHON_VERSION: "3.10"
   FORCE_COLOR: "1" # Make tools pretty.
+  PYTHONUNBUFFERED: "1" # Make stdout and stderr behave well
 
 on:
   pull_request:
@@ -10,26 +10,19 @@ on:
     branches:
       - main
 
-
 # ensuring only one instance is running at a given time
 concurrency:
-  group: ${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: true
 
 jobs:
   test-conda-store-server:
     name: "unit-test conda-store-server"
     strategy:
+      fail-fast: false
       matrix:
-        os: ["ubuntu", "macos", "windows"]
-        include:
-          - os: ubuntu
-            environment-file: conda-store-server/environment-dev.yaml
-          - os: macos
-            environment-file: conda-store-server/environment-macos-dev.yaml
-          - os: windows
-            environment-file: conda-store-server/environment-windows-dev.yaml
-    runs-on: ${{ matrix.os }}-latest
+        os: ["ubuntu-latest", "macos-latest", "macos-14", "windows-latest"]
+    runs-on: ${{ matrix.os }}
     defaults:
       run:
         shell: bash -el {0}
@@ -39,9 +32,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: "Set up env ${{ matrix.os }} 🐍"
-        uses: conda-incubator/setup-miniconda@v2
+        uses: conda-incubator/setup-miniconda@v3
         with:
-            environment-file: ${{ matrix.environment-file }}
+            environment-file: conda-store-server/environment-dev.yaml
             miniforge-version: latest
 
       # This fixes a "DLL not found" issue importing ctypes from the hatch env
@@ -51,20 +44,20 @@ jobs:
           timeout_minutes: 9999
           max_attempts: 6
           command:
-            conda install --channel=conda-forge --quiet --yes python=${{ matrix.python }}
+            conda install --channel=conda-forge --quiet --yes python="3.10"
         if: matrix.os == 'windows'
 
       - name: "Linting Checks 🧹"
         run: |
           hatch env run -e lint lint
 
-      - name: "Build package 📦"
+      - name: "Install conda-store-server for tests 📦"
         run: |
-          hatch build
+          python -m pip install .
 
       - name: "Unit tests ✅"
         run: |
-          pytest -m "not extended_prefix and not user_journey" tests
+          python -m pytest -m "not extended_prefix and not user_journey" tests
 
       # https://github.com/actions/runner-images/issues/1052
       - name: "Windows extended prefix unit tests ✅"
@@ -98,10 +91,10 @@ jobs:
 
       - name: "Install build dependencies 📦"
         run: |
-          pip install hatch
+          sudo apt update
           sudo apt install wait-for-it -y
 
-      - name: "Deploy docker-compose"
+      - name: "Deploy docker-compose 🏗"
         run: |
           docker-compose up -d
           docker ps
@@ -110,26 +103,29 @@ jobs:
           wait-for-it localhost:9000 # minio
           wait-for-it localhost:8080 # conda-store-server
 
+      - name: "Install conda-store-server for tests 📦"
+        run: |
+          python -m pip install .
+
       - name: "Run Playwright tests 🎭"
         run: |
-          playwright install
-          pytest --video on ../tests/test_playwright.py
+          playwright install --with-deps chromium
+          python -m pytest --video on ../tests/test_playwright.py
 
       - name: "Upload test results 📤"
         uses: actions/upload-artifact@v4
         if: ${{ always() }}
         with:
           name: playwright-tests
-          path: conda-store-server/test-results
+          path: conda-store-server/test-results/
 
       - name: "Run integration tests ✅"
         run: |
-          export PYTHONPATH=$PYTHONPATH:$PWD
-          pytest ../tests/test_api.py ../tests/test_metrics.py
+          python -m  pytest ../tests/test_api.py ../tests/test_metrics.py
 
       - name: "Run user journey tests ✅"
         run: |
-          pytest -m "user_journey"
+          python -m pytest -m "user_journey"
 
       - name: "Get Docker logs 🔍"
         if: ${{ failure() }}
@@ -157,15 +153,12 @@ jobs:
       - name: "Install Dependencies 📦"
         run: |
           pip install hatch
+          sudo apt update
           sudo apt install wait-for-it -y
 
       - name: "Linting Checks 🧹"
         run: |
           hatch env run -e lint lint
-
-      - name: "Build package 📦"
-        run: |
-          hatch build
 
       - name: "Deploy docker-compose"
         run: |
@@ -178,7 +171,7 @@ jobs:
 
       - name: "Install conda-store for tests 📦"
         run: |
-          pip install .
+          python -m pip install .
 
       - name: "Run basic tests -  not authenticated"
         run: |
@@ -203,7 +196,7 @@ jobs:
           docker-compose logs
 
   build-docker-image:
-    name: "Build docker images"
+    name: "Build Docker images 🐳"
     runs-on: ubuntu-latest
     strategy:
       matrix:
