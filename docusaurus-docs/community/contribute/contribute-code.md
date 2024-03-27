@@ -59,7 +59,7 @@ After running the `docker-compose` command, the following resources will be avai
 | [Redis](https://www.redis.com/) |  [localhost:6379](http://localhost:6379) | - | password |
 
 On a fast machine, this deployment should only take 10 or so seconds
-assuming the docker images have been partially built before.
+assuming the Docker images have been partially built before.
 
 If you are making any changes to `conda-store-server` and would like to see
 those changes in the deployment, run:

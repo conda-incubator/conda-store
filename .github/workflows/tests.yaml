@@ -12,13 +12,14 @@ on:
 
 # ensuring only one instance is running at a given time
 concurrency:
-  group: ${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: true
 
 jobs:
   test-conda-store-server:
     name: "unit-test conda-store-server"
     strategy:
+      fail-fast: false
       matrix:
         os: ["ubuntu-latest", "macos-latest", "macos-14", "windows-latest"]
     runs-on: ${{ matrix.os }}
@@ -31,7 +32,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: "Set up env ${{ matrix.os }} 🐍"
-        uses: conda-incubator/setup-miniconda@v2
+        uses: conda-incubator/setup-miniconda@v3
         with:
             environment-file: conda-store-server/environment-dev.yaml
             miniforge-version: latest
