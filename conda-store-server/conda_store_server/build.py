@@ -178,6 +178,7 @@ def build_conda_environment(db: Session, conda_store, build):
                     build.specification.spec
                 ),
                 platforms=settings.conda_solve_platforms,
+                conda_flags=conda_store.conda_flags,
             )
 
             conda_store.storage.set(
@@ -275,6 +276,7 @@ def solve_conda_environment(db: Session, conda_store, solve: orm.Solve):
         conda_command=settings.conda_command,
         specification=schema.CondaSpecification.parse_obj(solve.specification.spec),
         platforms=[conda_utils.conda_platform()],
+        conda_flags=conda_store.conda_flags,
     )
     conda_lock_spec = context.result
 

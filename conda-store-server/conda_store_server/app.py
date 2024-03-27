@@ -147,6 +147,12 @@ class CondaStore(LoggingConfigurable):
         config=True,
     )
 
+    conda_flags = Unicode(
+        "--strict-channel-priority",
+        help="The flags to be passed through the CONDA_FLAGS environment variable during the environment build",
+        config=True,
+    )
+
     conda_platforms = List(
         [conda_utils.conda_platform(), "noarch"],
         help="Conda platforms to download package repodata.json from. By default includes current architecture and noarch",
