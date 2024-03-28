@@ -4,7 +4,7 @@ import time
 import uuid
 
 from enum import Enum
-from typing import Union
+from typing import Any, Optional, Union
 
 import requests
 import utils.time_utils as time_utils
@@ -205,22 +205,25 @@ class API:
             f"api/v1/environment/{namespace}/{environment_name}", method="DELETE"
         )
 
-    def list_environments(self, namespace: str) -> requests.Response:
+    def list_environments(self, namespace: Optional[str] = None):
         """List the environments in the given namespace.
 
         Parameters
         ----------
-        namespace : str
-            Name of the namespace for which environments are to be retrieved
+        namespace : Optional[str]
+            Name of the namespace for which environments are to be retrieved.
+            If None, all environments are retrieved.
 
         Returns
         -------
         requests.Response
             Response from the server containing the list of environments
         """
-        return self._make_request(
-            f"api/v1/environment/?namespace={namespace}", method="GET"
-        )
+        if namespace:
+            return self._make_request(
+                f"api/v1/environment/?namespace={namespace}", method="GET"
+            )
+        return self._make_request("api/v1/environment/", method="GET")
 
     def delete_namespace(self, namespace: str) -> requests.Response:
         """Delete a namespace."""
@@ -230,3 +233,79 @@ class API:
     def gen_random_namespace() -> str:
         """Generate a random namespace."""
         return uuid.uuid4().hex
+
+    def set_active_build(
+        self, namespace: str, environment: str, build_id: int
+    ) -> requests.Response:
+        """Set the active build for a given environment.
+
+        Parameters
+        ----------
+        namespace : str
+            Name of the namespace in which the environment lives
+        environment : str
+            Environment to set the build for
+        build_id : int
+            ID of the build to be activated for the given environment
+
+        Returns
+        -------
+        requests.Response
+            Response from the conda-store server.
+        """
+        return self._make_request(
+            f"api/v1/environment/{namespace}/{environment}",
+            method="PUT",
+            json_data={"build_id": build_id},
+        )
+
+    def get_builds(
+        self,
+        environment: Optional[str] = None,
+        namespace: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """Get information about an environment.
+
+        Parameters
+        ----------
+        namespace : Optional[str]
+            Name of a namespace
+        environment : Optional[str]
+            Name of an environment
+
+        Returns
+        -------
+        dict[str, Any]
+            Dict of build properties; see API docs for
+            api/v1/build/ for more information.
+        """
+        query_params = []
+        if environment:
+            query_params.append(f"name={environment}")
+
+        if namespace:
+            query_params.append(f"namespace={namespace}")
+
+        return self._make_request(f'api/v1/build/?{"&".join(query_params)}').json()[
+            "data"
+        ]
+
+    def get_environment(self, namespace: str, environment: str) -> dict[str, Any]:
+        """Get information about an environment.
+
+        Parameters
+        ----------
+        namespace : str
+            Name of the namespace in which the environment lives
+        environment : str
+            Name of the environment
+
+        Returns
+        -------
+        dict[str, Any]
+            Dict of environment properties; see API docs for
+            api/v1/environment/{namespace}/{environment}/ for more information.
+        """
+        return self._make_request(
+            f"api/v1/environment/{namespace}/{environment}/"
+        ).json()["data"]

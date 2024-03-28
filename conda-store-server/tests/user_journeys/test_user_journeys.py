@@ -104,29 +104,54 @@ def test_user_login_and_create_shared_environment(
 
 
 @pytest.mark.user_journey
-def test_admin_delete_environment(base_url: str):
+def test_admin_set_active_build(base_url: str):
     """Test that an admin can delete environments."""
-    specs = ["tests/user_journeys/test_data/simple_environment.yaml"]
+    specs = [
+        "tests/user_journeys/test_data/simple_environment.yaml",
+        "tests/user_journeys/test_data/simple_environment2.yaml",
+    ]
     api = utils.API(base_url=base_url)
-
-    # Create a shared namespace; default permissions for namepace/environment
-    # */* is admin
     namespace = api.create_namespace().json()["data"]["name"]
-
-    envs = []
+    envs = set()
     for spec in specs:
-        envs.append(
+        envs.add(
             api.create_environment(namespace, spec).json()["data"]["specification"][
                 "name"
             ]
         )
 
-    assert len(api.list_environments(namespace).json()["data"]) == len(specs)
+    environment = list(envs)[0]
+    builds = api.get_builds(
+        namespace=namespace,
+        environment=environment,
+    )
+
+    # The environment in the two specs has the same name, so there should be
+    # two builds for this environment in this namespace
+    assert len(builds) == 2
+
+    build_ids = [build["id"] for build in builds]
+
+    assert api.get_environment(
+        namespace=namespace,
+        environment=environment,
+    )[
+        "current_build_id"
+    ] == max(build_ids)
+
+    api.set_active_build(
+        namespace=namespace, environment=environment, build_id=min(build_ids)
+    )
+
+    assert api.get_environment(
+        namespace=namespace,
+        environment=environment,
+    )[
+        "current_build_id"
+    ] == min(build_ids)
 
     for env in envs:
         api.delete_environment(namespace, env)
-
-    assert len(api.list_environments(namespace).json()["data"]) == 0
     api.delete_namespace(namespace)
 
 
@@ -144,4 +169,9 @@ def test_failed_build_logs(base_url: str):
     assert (
         "invalidpackagenamefaasdfagksdjfhgaskdf"
         in api.get_logs(build_request["data"]["id"]).text
+    )
+
+    api.delete_environment(
+        namespace,
+        build_request["data"]["specification"]["name"],
     )
