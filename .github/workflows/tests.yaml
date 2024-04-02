@@ -83,7 +83,7 @@ jobs:
       - name: "Checkout Repository 🛎"
         uses: actions/checkout@v4
 
-      - name: "Set up env 🐍"
+      - name: "Set up env ubuntu-latest 🐍"
         uses: conda-incubator/setup-miniconda@v3
         with:
           environment-file: conda-store-server/environment-dev.yaml
@@ -173,7 +173,7 @@ jobs:
         run: |
           python -m pip install .
 
-      - name: "Run basic tests -  not authenticated"
+      - name: "Run basic tests - not authenticated"
         run: |
           sleep 20
           ./tests/unauthenticated-tests.sh
