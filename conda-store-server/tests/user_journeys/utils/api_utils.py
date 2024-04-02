@@ -1,11 +1,14 @@
 """Helper functions for user journeys."""
+
 import time
 import uuid
+
 from enum import Enum
 from typing import Union
 
 import requests
 import utils.time_utils as time_utils
+
 
 TIMEOUT = 10
 
@@ -61,6 +64,22 @@ class API:
         )
         response.raise_for_status()
         return response
+
+    def get_logs(self, build_id: int) -> requests.Response:
+        """Get the logs for the given build id.
+
+        Parameters
+        ----------
+        build_id : int
+            ID of the build to get the logs for
+
+        Returns
+        -------
+        requests.Response
+            Response from the conda-store-server. Logs are stored in the
+            `.text` property, i.e. response.json()['text']
+        """
+        return self._make_request(f"api/v1/build/{build_id}/logs/")
 
     def _login(self, username: str, password: str) -> None:
         """Log in to the API and set an access token."""
@@ -148,7 +167,8 @@ class API:
         Returns
         -------
         requests.Response
-            Response from the conda-store server
+            Response from the conda-store server's api/v1/build/{build_id}/
+            endpoint
         """
         with open(specification_path, "r", encoding="utf-8") as file:
             specification_content = file.read()
@@ -183,6 +203,23 @@ class API:
         """Delete an environment."""
         return self._make_request(
             f"api/v1/environment/{namespace}/{environment_name}", method="DELETE"
+        )
+
+    def list_environments(self, namespace: str) -> requests.Response:
+        """List the environments in the given namespace.
+
+        Parameters
+        ----------
+        namespace : str
+            Name of the namespace for which environments are to be retrieved
+
+        Returns
+        -------
+        requests.Response
+            Response from the server containing the list of environments
+        """
+        return self._make_request(
+            f"api/v1/environment/?namespace={namespace}", method="GET"
         )
 
     def delete_namespace(self, namespace: str) -> requests.Response:

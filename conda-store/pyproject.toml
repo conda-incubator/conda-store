@@ -60,8 +60,13 @@ dependencies = [
   "pkginfo>=1.10", # needed to support metadata 2.3
 ]
 
-[tool.hatch.envs.dev.scripts]
+[tool.hatch.envs.lint]
+dependencies = ["pre-commit"]
+
+[tool.hatch.envs.lint.scripts]
 lint = ["pre-commit run --all"]
+
+[tool.hatch.envs.dev.scripts]
 test = "pytest tests"
 
 [project.scripts]
@@ -74,5 +79,8 @@ target-version = ['py38', 'py39', 'py310']
 [tool.ruff]
 ignore = [
   "E501", # line-length
-
 ]
+
+[tool.isort]
+lines_between_types = 1
+lines_after_imports = 2

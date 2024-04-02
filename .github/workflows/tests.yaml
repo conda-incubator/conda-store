@@ -158,7 +158,7 @@ jobs:
 
       - name: "Linting Checks 🧹"
         run: |
-          hatch env run -e dev lint
+          hatch env run -e lint lint
 
       - name: "Deploy docker-compose"
         run: |

@@ -4,6 +4,7 @@ import os
 from jupyterhub.auth import DummyAuthenticator
 from jupyterhub.spawner import SimpleLocalProcessSpawner
 
+
 c.JupyterHub.ip = "0.0.0.0"
 
 c.JupyterHub.authenticator_class = DummyAuthenticator

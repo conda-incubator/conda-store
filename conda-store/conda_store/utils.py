@@ -2,11 +2,13 @@ import asyncio
 import functools
 import json
 import sys
+
 from typing import Dict, List
 
 from conda_store import exception
 from rich.console import Console
 from rich.table import Table
+
 
 console = Console()
 error_console = Console(stderr=True, style="bold red")
