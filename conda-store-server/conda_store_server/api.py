@@ -1,9 +1,11 @@
 import re
+
 from typing import Any, Dict, List
 
-from conda_store_server import conda_utils, orm, schema, utils
 from sqlalchemy import distinct, func, null, or_
 from sqlalchemy.orm import aliased
+
+from conda_store_server import conda_utils, orm, schema, utils
 
 
 def list_namespaces(db, show_soft_deleted: bool = False):

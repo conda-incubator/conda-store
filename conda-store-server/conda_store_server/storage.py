@@ -4,10 +4,12 @@ import posixpath
 import shutil
 
 import minio
-from conda_store_server import CONDA_STORE_DIR, api, orm, schema
+
 from minio.credentials.providers import Provider
 from traitlets import Bool, Dict, List, Type, Unicode
 from traitlets.config import LoggingConfigurable
+
+from conda_store_server import CONDA_STORE_DIR, api, orm, schema
 
 
 class Storage(LoggingConfigurable):

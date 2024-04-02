@@ -1,4 +1,5 @@
 import pytest
+
 from conda_store_server import api
 from conda_store_server.orm import NamespaceRoleMapping
 from conda_store_server.utils import BuildPathError
