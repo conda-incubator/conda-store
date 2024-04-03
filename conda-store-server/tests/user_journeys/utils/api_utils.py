@@ -1,10 +1,11 @@
 """Helper functions for user journeys."""
 
+import json
 import time
 import uuid
 
 from enum import Enum
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable, Dict, Optional, Union
 
 import requests
 import utils.time_utils as time_utils
@@ -324,6 +325,17 @@ class API:
         """
         response = self._make_request(f"api/v1/build/{build_id}/")
         return BuildStatus(response.json()["data"]["status"])
+
+    def get_lockfile(self, build_id: int) -> Dict[str, Any]:
+        """Get a lockfile for the given build ID.
+            Build for which the lockfile is to be retrieved
+
+        Returns
+        -------
+        Dict[str, Any]
+            Dictionary containing the lockfile version, metadata, and packages
+        """
+        return json.loads(self._make_request(f"api/v1/build/{build_id}/lockfile").text)
 
 
 def wait_for_condition(
