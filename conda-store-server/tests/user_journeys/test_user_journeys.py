@@ -175,3 +175,34 @@ def test_failed_build_logs(base_url: str):
         namespace,
         build_request["data"]["specification"]["name"],
     )
+
+@pytest.mark.user_journey
+def test_cancel_build(base_url: str):
+    """Test that a user cancel a build in progress."""
+    api = utils.API(base_url=base_url)
+    namespace = "default"
+    build_id = api.create_environment(
+        namespace,
+        "tests/user_journeys/test_data/complicated_environment.yaml",
+        wait=False,
+    ).json()["data"]["build_id"]
+
+    assert api.get_build_status(build_id) in [
+        utils.BuildStatus.QUEUED,
+        utils.BuildStatus.BUILDING,
+    ]
+    api.cancel_build(build_id)
+
+    def check_status():
+        status = api.get_build_status(build_id)
+        if status in [utils.BuildStatus.QUEUED, utils.BuildStatus.BUILDING]:
+            return False
+
+        if status in [utils.BuildStatus.COMPLETED, utils.BuildStatus.FAILED]:
+            raise ValueError(
+                f"Build {build_id} {status.value.lower()}, but should have been canceled."
+            )
+
+        return status == utils.BuildStatus.CANCELED
+
+    utils.wait_for_condition(check_status, timeout=60, interval=1)
