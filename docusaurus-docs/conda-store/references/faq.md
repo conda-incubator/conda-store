@@ -105,6 +105,10 @@ size. It looks like this:
 64a943764b70e8fe181643404894f7ae
 ```
 
+:::warning
+Version 3 is experimental and can be changed at any time.
+:::
+
 It's a truncated SHA-256 hex digest, which is calculated based on:
 
 - namespace name
@@ -112,7 +116,7 @@ It's a truncated SHA-256 hex digest, which is calculated based on:
 - build timestamp
 - build id.
 
-See `BuildKey._version3_fmt` for details.
+See `BuildKey._version3_experimental_fmt` for details.
 
 :::note
 When version 3 is used, `Build.build_path` will not include the namespace name,

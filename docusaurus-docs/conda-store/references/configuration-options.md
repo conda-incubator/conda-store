@@ -48,7 +48,7 @@ store_directory, namespace, name. The default will put all
 environments in the same namespace within the same directory.
 
 `CondaStore.build_key_version` is the [build key version](#build-key-versions)
-to use: 1 (long, legacy), 2 (shorter hash, default), 3 (hash-only).
+to use: 1 (long, legacy), 2 (shorter hash, default), 3 (hash-only, experimental).
 
 `CondaStore.validate_specification` callable function taking
 `conda_store` and `specification` as input arguments to apply for

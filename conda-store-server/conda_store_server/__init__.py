@@ -31,7 +31,7 @@ class BuildKey:
 
     _version2_hash_size = 8
 
-    _version3_hash_size = 32
+    _version3_experimental_hash_size = 32
 
     def _version1_fmt(build: "Build") -> str:  # noqa: F821
         datetime_format = "%Y%m%d-%H%M%S-%f"
@@ -49,7 +49,8 @@ class BuildKey:
         name = build.specification.name
         return f"{hash}-{timestamp}-{id}-{name}"
 
-    def _version3_fmt(build: "Build") -> str:  # noqa: F821
+    # Warning: this is an experimental version and can be changed at any time
+    def _version3_experimental_fmt(build: "Build") -> str:  # noqa: F821
         # Caches the hash value for faster lookup later
         if build.hash is not None:
             return build.hash
@@ -67,7 +68,7 @@ class BuildKey:
             namespace_name + specification_hash + str(timestamp) + str(build_id)
         )
         hash = hashlib.sha256(hash_input.encode("utf-8")).hexdigest()
-        hash = hash[: BuildKey._version3_hash_size]
+        hash = hash[: BuildKey._version3_experimental_hash_size]
         build.hash = hash
         return hash
 
@@ -75,7 +76,7 @@ class BuildKey:
     _fmt = {
         1: _version1_fmt,
         2: _version2_fmt,
-        3: _version3_fmt,
+        3: _version3_experimental_fmt,
     }
 
     @classmethod
