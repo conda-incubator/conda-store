@@ -58,6 +58,7 @@ dependencies = [
   "constructor",
   # artifact storage
   "minio",
+  "platformdirs >=4.0,<5.0a0"
 ]
 dynamic = ["version"]
 
