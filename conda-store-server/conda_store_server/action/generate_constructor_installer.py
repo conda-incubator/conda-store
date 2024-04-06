@@ -72,7 +72,10 @@ def action_generate_constructor_installer(
             if p.manager == "pip":
                 pip_dependencies.append(f"{p.name}=={p.version}")
             else:
-                dependencies.append(f"{p.name}=={p.version}")
+                ext = ".tar.bz2" if p.url.endswith(".tar.bz2") else ".conda"
+                build_string = p.url[: -len(ext)].rsplit("-", maxsplit=1)[-1]
+                dependencies.append(f"{p.name}=={p.version}={build_string}")
+
     else:
         # Adds channels
         channels = specification.channels
