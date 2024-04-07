@@ -483,9 +483,24 @@ def build_constructor_installer(db: Session, conda_store, build: orm.Build):
                     build.specification.spec
                 )
             else:
-                specification = schema.CondaSpecification.parse_obj(
-                    build.specification.spec
-                )
+                try:
+                    # Tries to use the lockfile if it's available since it has
+                    # pinned dependencies. This code is wrapped into try/except
+                    # because the lockfile lookup might fail if the file is not
+                    # in external storage or on disk, or if parsing fails
+                    specification = schema.LockfileSpecification.parse_obj(
+                        {
+                            "name": build.specification.name,
+                            "lockfile": json.loads(
+                                conda_store.storage.get(build.conda_lock_key)
+                            ),
+                        }
+                    )
+                    is_lockfile = True
+                except Exception:
+                    specification = schema.CondaSpecification.parse_obj(
+                        build.specification.spec
+                    )
 
             context = action.action_generate_constructor_installer(
                 conda_command=settings.conda_command,
