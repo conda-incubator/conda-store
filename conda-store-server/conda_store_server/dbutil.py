@@ -7,8 +7,9 @@ from tempfile import TemporaryDirectory
 
 from alembic import command
 from alembic.config import Config
-from conda_store_server import utils
 from sqlalchemy import create_engine, inspect
+
+from conda_store_server import utils
 
 
 _here = os.path.abspath(os.path.dirname(__file__))
