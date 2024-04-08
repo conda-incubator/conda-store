@@ -125,6 +125,8 @@ def test_solve_lockfile_multiple_platforms(conda_store, specification, request):
     [
         "simple_specification",
         "simple_specification_with_pip",
+        "simple_lockfile_specification",
+        "simple_lockfile_specification_with_pip",
     ],
 )
 def test_generate_constructor_installer(
@@ -132,6 +134,10 @@ def test_generate_constructor_installer(
 ):
     specification = request.getfixturevalue(specification_name)
     installer_dir = tmp_path / "installer_dir"
+    is_lockfile = specification_name in [
+        "simple_lockfile_specification",
+        "simple_lockfile_specification_with_pip",
+    ]
 
     # Creates the installer
     context = action.action_generate_constructor_installer(
@@ -139,6 +145,7 @@ def test_generate_constructor_installer(
         specification=specification,
         installer_dir=installer_dir,
         version="1",
+        is_lockfile=is_lockfile,
     )
 
     # Checks that the installer was created
@@ -157,7 +164,7 @@ def test_generate_constructor_installer(
     # Checks the output directory
     assert out_dir.exists()
     lib_dir = out_dir / "lib"
-    if specification_name == "simple_specification":
+    if specification_name in ["simple_specification", "simple_lockfile_specification"]:
         if sys.platform == "win32":
             assert any(str(x).endswith("zlib.dll") for x in out_dir.iterdir())
         elif sys.platform == "darwin":
