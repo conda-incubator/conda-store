@@ -7,6 +7,7 @@ from jupyterhub.auth import DummyAuthenticator
 from jupyterhub.spawner import SimpleLocalProcessSpawner
 from jupyterhub.utils import maybe_future
 
+
 c.JupyterHub.ip = "0.0.0.0"
 
 c.JupyterHub.authenticator_class = DummyAuthenticator

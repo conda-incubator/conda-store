@@ -6,9 +6,6 @@ import re
 import shutil
 import sys
 
-from conda_store_server import conda_utils, schema, utils
-from conda_store_server.environment import validate_environment
-from conda_store_server.utils import BuildPathError
 from sqlalchemy import (
     JSON,
     BigInteger,
@@ -35,6 +32,11 @@ from sqlalchemy.orm import (
     sessionmaker,
     validates,
 )
+
+from conda_store_server import conda_utils, schema, utils
+from conda_store_server.environment import validate_environment
+from conda_store_server.utils import BuildPathError
+
 
 logger = logging.getLogger("orm")
 
