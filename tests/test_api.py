@@ -8,6 +8,7 @@ environments/builds may have been created which would change the
 ordering for tests.
 
 """
+
 import asyncio
 import collections
 import datetime
@@ -15,12 +16,15 @@ import json
 import statistics
 import time
 import uuid
+
 from functools import partial
 
 import aiohttp
-import conda_store_server
 import pytest
 import requests
+
+import conda_store_server
+
 from conda_store_server import schema
 
 from .conftest import CONDA_STORE_BASE_URL

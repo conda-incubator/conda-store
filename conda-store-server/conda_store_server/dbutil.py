@@ -1,10 +1,12 @@
 import os
+
 from contextlib import contextmanager
 from tempfile import TemporaryDirectory
 
 from alembic import command
 from alembic.config import Config
 from sqlalchemy import create_engine, inspect
+
 
 _here = os.path.abspath(os.path.dirname(__file__))
 

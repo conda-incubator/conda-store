@@ -1,23 +1,13 @@
 import datetime
 import os
 import sys
+
 from contextlib import contextmanager
 from typing import Any, Dict
 
 import pydantic
+
 from celery import Celery, group
-from conda_store_server import (
-    CONDA_STORE_DIR,
-    BuildKey,
-    api,
-    conda_utils,
-    environment,
-    orm,
-    registry,
-    schema,
-    storage,
-    utils,
-)
 from sqlalchemy.orm import Session
 from sqlalchemy.pool import QueuePool
 from traitlets import (
@@ -33,6 +23,19 @@ from traitlets import (
     validate,
 )
 from traitlets.config import LoggingConfigurable
+
+from conda_store_server import (
+    CONDA_STORE_DIR,
+    BuildKey,
+    api,
+    conda_utils,
+    environment,
+    orm,
+    registry,
+    schema,
+    storage,
+    utils,
+)
 
 
 def conda_store_validate_specification(
