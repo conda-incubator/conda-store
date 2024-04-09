@@ -16,6 +16,27 @@ from conda_store_server import action, api, conda_utils, orm, schema, utils
 from conda_store_server.utils import BuildPathError
 
 
+class LoggedStream:
+    """Allows writing to storage via logging.StreamHandler"""
+    def __init__(self, db, conda_store, build, prefix=None):
+        self.db = db
+        self.conda_store = conda_store
+        self.build = build
+        self.prefix = prefix
+
+    def write(self, b, /):
+        for line in b.split("\n"):
+            # Skips empty lines
+            if not line:
+                continue
+            if self.prefix is not None:
+                line = self.prefix + line
+            append_to_logs(self.db, self.conda_store, self.build, line + "\n")
+
+    def flush(self):
+        pass
+
+
 def append_to_logs(db: Session, conda_store, build, logs: typing.Union[str, bytes]):
     try:
         current_logs = conda_store.storage.get(build.log_key)
@@ -179,6 +200,7 @@ def build_conda_environment(db: Session, conda_store, build):
                 ),
                 platforms=settings.conda_solve_platforms,
                 conda_flags=conda_store.conda_flags,
+                stdout=LoggedStream(db=db, conda_store=conda_store, build=build, prefix="action_solve_lockfile: "),
             )
 
             conda_store.storage.set(
@@ -190,40 +212,18 @@ def build_conda_environment(db: Session, conda_store, build):
                 artifact_type=schema.BuildArtifactType.LOCKFILE,
             )
 
-            append_to_logs(
-                db,
-                conda_store,
-                build,
-                "::group::action_solve_lockfile\n"
-                + context.stdout.getvalue()
-                + "\n::endgroup::\n",
-            )
             conda_lock_spec = context.result
 
             context = action.action_fetch_and_extract_conda_packages(
                 conda_lock_spec=conda_lock_spec,
                 pkgs_dir=conda_utils.conda_root_package_dir(),
-            )
-            append_to_logs(
-                db,
-                conda_store,
-                build,
-                "::group::action_fetch_and_extract_conda_packages\n"
-                + context.stdout.getvalue()
-                + "\n::endgroup::\n",
+                stdout=LoggedStream(db=db, conda_store=conda_store, build=build, prefix="action_fetch_and_extract_conda_packages: "),
             )
 
             context = action.action_install_lockfile(
                 conda_lock_spec=conda_lock_spec,
                 conda_prefix=conda_prefix,
-            )
-            append_to_logs(
-                db,
-                conda_store,
-                build,
-                "::group::action_install_lockfile\n"
-                + context.stdout.getvalue()
-                + "\n::endgroup::\n",
+                stdout=LoggedStream(db=db, conda_store=conda_store, build=build, prefix="action_install_lockfile: "),
             )
 
         utils.symlink(conda_prefix, environment_prefix)
@@ -233,15 +233,20 @@ def build_conda_environment(db: Session, conda_store, build):
             permissions=settings.default_permissions,
             uid=settings.default_uid,
             gid=settings.default_gid,
+            stdout=LoggedStream(db=db, conda_store=conda_store, build=build, prefix="action_set_conda_prefix_permissions: "),
         )
 
         action.action_add_conda_prefix_packages(
             db=db,
             conda_prefix=conda_prefix,
             build_id=build.id,
+            stdout=LoggedStream(db=db, conda_store=conda_store, build=build, prefix="action_add_conda_prefix_packages: "),
         )
 
-        context = action.action_get_conda_prefix_stats(conda_prefix)
+        context = action.action_get_conda_prefix_stats(
+            conda_prefix,
+            stdout=LoggedStream(db=db, conda_store=conda_store, build=build, prefix="action_get_conda_prefix_stats: "),
+        )
         build.size = context.result["disk_usage"]
 
         set_build_completed(db, conda_store, build)
@@ -299,15 +304,9 @@ def build_conda_env_export(db: Session, conda_store, build: orm.Build):
     )
 
     context = action.action_generate_conda_export(
-        conda_command=settings.conda_command, conda_prefix=conda_prefix
-    )
-    append_to_logs(
-        db,
-        conda_store,
-        build,
-        "::group::action_generate_conda_export\n"
-        + context.stdout.getvalue()
-        + "\n::endgroup::\n",
+        conda_command=settings.conda_command,
+        conda_prefix=conda_prefix,
+        stdout=LoggedStream(db=db, conda_store=conda_store, build=build, prefix="action_generate_conda_export: "),
     )
 
     conda_prefix_export = yaml.dump(context.result).encode("utf-8")
@@ -331,15 +330,8 @@ def build_conda_pack(db: Session, conda_store, build: orm.Build):
         with tempfile.TemporaryDirectory() as tmpdir:
             output_filename = pathlib.Path(tmpdir) / "environment.tar.gz"
             context = action.action_generate_conda_pack(
-                conda_prefix=conda_prefix, output_filename=output_filename
-            )
-            append_to_logs(
-                db,
-                conda_store,
-                build,
-                "::group::action_generate_conda_pack\n"
-                + context.stdout.getvalue()
-                + "\n::endgroup::\n",
+                conda_prefix=conda_prefix, output_filename=output_filename,
+                stdout=LoggedStream(db=db, conda_store=conda_store, build=build, prefix="action_generate_conda_pack: "),
             )
             conda_store.storage.fset(
                 db,
@@ -425,16 +417,9 @@ def build_constructor_installer(db: Session, conda_store, build: orm.Build):
                 ),
                 installer_dir=pathlib.Path(tmpdir),
                 version=build.build_key,
+                stdout=LoggedStream(db=db, conda_store=conda_store, build=build, prefix="action_generate_constructor_installer: "),
             )
             output_filename = context.result
-            append_to_logs(
-                db,
-                conda_store,
-                build,
-                "::group::action_generate_constructor_installer\n"
-                + context.stdout.getvalue()
-                + "\n::endgroup::\n",
-            )
             if output_filename is None:
                 return
             conda_store.storage.fset(

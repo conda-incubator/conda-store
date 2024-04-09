@@ -40,7 +40,7 @@ def action_generate_constructor_installer(
             "constructor",
             "--help",
         ]
-        logged_command(context, command, timeout=10)
+        logged_command(context, command)
     except FileNotFoundError:
         warnings.warn(
             "Installer generation requires constructor: https://github.com/conda/constructor"
