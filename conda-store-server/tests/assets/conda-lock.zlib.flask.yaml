@@ -3,7 +3,8 @@
     "metadata": {
         "content_hash": {
             "linux-64": "de7cf1a070eb94958977d572b129f74f1216dc525ae645ebd6548b593c1a3826",
-            "osx-64": "0cfac6c4d51c2bcd4a73c548adec42b16032e617ab54e3a81146c694ec132ab2"
+            "osx-64": "0cfac6c4d51c2bcd4a73c548adec42b16032e617ab54e3a81146c694ec132ab2",
+            "win-64": "d12553f071b779ad11018dfce1c8e7f2ade87659a955ac06382cda25f68bd75a"
         },
         "channels": [
             {
@@ -13,7 +14,8 @@
         ],
         "platforms": [
             "linux-64",
-            "osx-64"
+            "osx-64",
+            "win-64"
         ],
         "sources": [
             "environment.yaml"
@@ -1547,6 +1549,464 @@
             "url": "https://files.pythonhosted.org/packages/e3/23/c9843d7550092ae7ad380611c238f44afef66f58f76c1dab7dcf313e4339/werkzeug-3.0.2-py3-none-any.whl",
             "hash": {
                 "sha256": "3aac3f5da756f93030740bc235d3e09449efcf65f2f55e3602e1d851b8f48795"
+            },
+            "category": "main",
+            "optional": false
+        },
+        {
+            "name": "ca-certificates",
+            "version": "2024.3.11",
+            "manager": "conda",
+            "platform": "win-64",
+            "dependencies": {},
+            "url": "https://conda.anaconda.org/main/win-64/ca-certificates-2024.3.11-haa95532_0.tar.bz2",
+            "hash": {
+                "md5": "501ded4f9b5ed895077802defee912cf",
+                "sha256": "73391a74a5300ad3fb063ea0f0c3491d220128a0611a84036da2e23c1e93dc0e"
+            },
+            "category": "main",
+            "optional": false
+        },
+        {
+            "name": "tzdata",
+            "version": "2024a",
+            "manager": "conda",
+            "platform": "win-64",
+            "dependencies": {},
+            "url": "https://conda.anaconda.org/main/noarch/tzdata-2024a-h04d1e81_0.tar.bz2",
+            "hash": {
+                "md5": "ece0f5837a4de2d4d5f1abf8347cd10a",
+                "sha256": "dc9f709bacbaf08a0941d2622d82f91f18b355e82c55348ec29f1391215ca7e0"
+            },
+            "category": "main",
+            "optional": false
+        },
+        {
+            "name": "vs2015_runtime",
+            "version": "14.27.29016",
+            "manager": "conda",
+            "platform": "win-64",
+            "dependencies": {},
+            "url": "https://conda.anaconda.org/main/win-64/vs2015_runtime-14.27.29016-h5e58377_2.tar.bz2",
+            "hash": {
+                "md5": "4daaceb6cfc1af6274509081d8018ef1",
+                "sha256": "cf1dbd738c479b1fd6668629a3fe4485b4935a1cd01951f92a4e741e8b6a9501"
+            },
+            "category": "main",
+            "optional": false
+        },
+        {
+            "name": "vc",
+            "version": "14.2",
+            "manager": "conda",
+            "platform": "win-64",
+            "dependencies": {
+                "vs2015_runtime": ">=14.27.29016"
+            },
+            "url": "https://conda.anaconda.org/main/win-64/vc-14.2-h21ff451_1.tar.bz2",
+            "hash": {
+                "md5": "45ef24c486a484f079faf1dc90e4c7e9",
+                "sha256": "dd86ecdc7a11af2624841b0670b7de722078e050f2a91bcd4bdc3df1871f45b1"
+            },
+            "category": "main",
+            "optional": false
+        },
+        {
+            "name": "bzip2",
+            "version": "1.0.8",
+            "manager": "conda",
+            "platform": "win-64",
+            "dependencies": {
+                "vc": ">=14.1,<15.0a0",
+                "vs2015_runtime": ">=14.16.27012,<15.0a0"
+            },
+            "url": "https://conda.anaconda.org/main/win-64/bzip2-1.0.8-h2bbff1b_5.tar.bz2",
+            "hash": {
+                "md5": "08085c8a9c0fa1a1a404a973695b2af3",
+                "sha256": "8845552a84555d4adb13a5f16e2b5d55040a732b7df9319e00f9fc713e0f896f"
+            },
+            "category": "main",
+            "optional": false
+        },
+        {
+            "name": "expat",
+            "version": "2.5.0",
+            "manager": "conda",
+            "platform": "win-64",
+            "dependencies": {
+                "vc": ">=14.1,<15.0a0",
+                "vs2015_runtime": ">=14.16.27012,<15.0a0"
+            },
+            "url": "https://conda.anaconda.org/main/win-64/expat-2.5.0-hd77b12b_0.tar.bz2",
+            "hash": {
+                "md5": "5e7da8f3ad8b0c31c45a16b93c83cfd7",
+                "sha256": "700d0aedee50fdcfe4d4c4557e79cd1a7c0f4ed0e4c9300c2b24933b511f4896"
+            },
+            "category": "main",
+            "optional": false
+        },
+        {
+            "name": "libffi",
+            "version": "3.4.4",
+            "manager": "conda",
+            "platform": "win-64",
+            "dependencies": {
+                "vc": ">=14.1,<15.0a0",
+                "vs2015_runtime": ">=14.16.27012,<15.0a0"
+            },
+            "url": "https://conda.anaconda.org/main/win-64/libffi-3.4.4-hd77b12b_0.tar.bz2",
+            "hash": {
+                "md5": "5cdcd99f18d9dedb772d272088e72b4c",
+                "sha256": "1b3b9be41dba504e468a336196de9fd09568ba42585e493888aaa3708f687d0a"
+            },
+            "category": "main",
+            "optional": false
+        },
+        {
+            "name": "openssl",
+            "version": "3.0.13",
+            "manager": "conda",
+            "platform": "win-64",
+            "dependencies": {
+                "ca-certificates": "",
+                "vc": ">=14.1,<15.0a0",
+                "vs2015_runtime": ">=14.16.27012,<15.0a0"
+            },
+            "url": "https://conda.anaconda.org/main/win-64/openssl-3.0.13-h2bbff1b_0.tar.bz2",
+            "hash": {
+                "md5": "39fdacf2d8eaeca0aac16629c415b5b7",
+                "sha256": "d7065fb018761770402c537b7010faac29e72078f0a956dfb719cd03ed8e8eca"
+            },
+            "category": "main",
+            "optional": false
+        },
+        {
+            "name": "sqlite",
+            "version": "3.41.2",
+            "manager": "conda",
+            "platform": "win-64",
+            "dependencies": {
+                "vc": ">=14.1,<15.0a0",
+                "vs2015_runtime": ">=14.16.27012,<15.0a0"
+            },
+            "url": "https://conda.anaconda.org/main/win-64/sqlite-3.41.2-h2bbff1b_0.tar.bz2",
+            "hash": {
+                "md5": "32f95c4ef7dfbf22fd35292ff8bd51a5",
+                "sha256": "2050ce6672c53b888dd58dda0a3f76b0cf8573577540fd86427a904ea0158352"
+            },
+            "category": "main",
+            "optional": false
+        },
+        {
+            "name": "tk",
+            "version": "8.6.12",
+            "manager": "conda",
+            "platform": "win-64",
+            "dependencies": {
+                "vc": ">=14.1,<15.0a0",
+                "vs2015_runtime": ">=14.16.27012,<15.0a0"
+            },
+            "url": "https://conda.anaconda.org/main/win-64/tk-8.6.12-h2bbff1b_0.tar.bz2",
+            "hash": {
+                "md5": "52cdcdb96383c010ca833a7c24b3935b",
+                "sha256": "95e7b0ac7780147defd47242ef2e28b31719a8e40c077db2b302dd951335feca"
+            },
+            "category": "main",
+            "optional": false
+        },
+        {
+            "name": "xz",
+            "version": "5.4.6",
+            "manager": "conda",
+            "platform": "win-64",
+            "dependencies": {
+                "vc": ">=14.1,<15.0a0",
+                "vs2015_runtime": ">=14.16.27012,<15.0a0"
+            },
+            "url": "https://conda.anaconda.org/main/win-64/xz-5.4.6-h8cc25b3_0.tar.bz2",
+            "hash": {
+                "md5": "76e728c35d284bfce7867c48d7046cc9",
+                "sha256": "74c3575a7b72b952797c7c775522d8cf329fe06ec6b6949f45253e40c3f188cf"
+            },
+            "category": "main",
+            "optional": false
+        },
+        {
+            "name": "zlib",
+            "version": "1.2.13",
+            "manager": "conda",
+            "platform": "win-64",
+            "dependencies": {
+                "vc": ">=14.1,<15.0a0",
+                "vs2015_runtime": ">=14.16.27012,<15.0a0"
+            },
+            "url": "https://conda.anaconda.org/main/win-64/zlib-1.2.13-h8cc25b3_0.tar.bz2",
+            "hash": {
+                "md5": "05f29aa81cd3a3b38ebaccfa5a0d0e17",
+                "sha256": "174b1b82719c185e17104b504ca50d322a28e996b20fd547de0d2f2ce39f1fd9"
+            },
+            "category": "main",
+            "optional": false
+        },
+        {
+            "name": "python",
+            "version": "3.12.2",
+            "manager": "conda",
+            "platform": "win-64",
+            "dependencies": {
+                "bzip2": ">=1.0.8,<2.0a0",
+                "expat": ">=2.5.0,<3.0a0",
+                "libffi": ">=3.4,<4.0a0",
+                "openssl": ">=3.0.13,<4.0a0",
+                "sqlite": ">=3.41.2,<4.0a0",
+                "tk": ">=8.6.12,<8.7.0a0",
+                "tzdata": "",
+                "vc": ">=14.1,<15.0a0",
+                "vs2015_runtime": ">=14.16.27012,<15.0a0",
+                "xz": ">=5.4.6,<6.0a0",
+                "zlib": ">=1.2.13,<1.3.0a0"
+            },
+            "url": "https://conda.anaconda.org/main/win-64/python-3.12.2-h1d929f7_0.tar.bz2",
+            "hash": {
+                "md5": "b887174a19e4548a33f52a6c7c18ab1d",
+                "sha256": "953821c940adcda23f3f229ea4176a427c8dfcfeda0572454ec75eb2764659e9"
+            },
+            "category": "main",
+            "optional": false
+        },
+        {
+            "name": "colorama",
+            "version": "0.4.6",
+            "manager": "conda",
+            "platform": "win-64",
+            "dependencies": {
+                "python": ">=3.12,<3.13.0a0"
+            },
+            "url": "https://conda.anaconda.org/main/win-64/colorama-0.4.6-py312haa95532_0.tar.bz2",
+            "hash": {
+                "md5": "e85831995d312cf915d0543939a7422c",
+                "sha256": "14153bf6ee516e020267371e39991dc65351f97399ab6c26cd662c290ec49e64"
+            },
+            "category": "main",
+            "optional": false
+        },
+        {
+            "name": "iniconfig",
+            "version": "1.1.1",
+            "manager": "conda",
+            "platform": "win-64",
+            "dependencies": {
+                "python": ""
+            },
+            "url": "https://conda.anaconda.org/main/noarch/iniconfig-1.1.1-pyhd3eb1b0_0.tar.bz2",
+            "hash": {
+                "md5": "e40edff2c5708f342cef43c7f280c507",
+                "sha256": "d288f67c03b20a885464056a215baef626d29f95df56e1974379a17f8e55a24e"
+            },
+            "category": "main",
+            "optional": false
+        },
+        {
+            "name": "packaging",
+            "version": "23.2",
+            "manager": "conda",
+            "platform": "win-64",
+            "dependencies": {
+                "python": ">=3.12,<3.13.0a0"
+            },
+            "url": "https://conda.anaconda.org/main/win-64/packaging-23.2-py312haa95532_0.tar.bz2",
+            "hash": {
+                "md5": "a72598ce71bb6865e6ff33a47406cdab",
+                "sha256": "f8645fa06854ec1ffdc32004b5fff9a63ee5061a01adb8b1871e444daedaae16"
+            },
+            "category": "main",
+            "optional": false
+        },
+        {
+            "name": "pluggy",
+            "version": "1.0.0",
+            "manager": "conda",
+            "platform": "win-64",
+            "dependencies": {
+                "python": ">=3.12,<3.13.0a0"
+            },
+            "url": "https://conda.anaconda.org/main/win-64/pluggy-1.0.0-py312haa95532_1.tar.bz2",
+            "hash": {
+                "md5": "869dd7d96885e8f1a56215b90b2529a0",
+                "sha256": "7311aeac45fe543d645d1ea9ca7f2890c6b1d351a0fec5c935e079999ff6e47e"
+            },
+            "category": "main",
+            "optional": false
+        },
+        {
+            "name": "setuptools",
+            "version": "68.2.2",
+            "manager": "conda",
+            "platform": "win-64",
+            "dependencies": {
+                "python": ">=3.12,<3.13.0a0"
+            },
+            "url": "https://conda.anaconda.org/main/win-64/setuptools-68.2.2-py312haa95532_0.tar.bz2",
+            "hash": {
+                "md5": "5f626a2c8096c6e4e3b39157f70f1769",
+                "sha256": "9c3f8c670c9d21c5bf07fe9a61aa76b56f934e497cdbd737fe65c96552fa59fe"
+            },
+            "category": "main",
+            "optional": false
+        },
+        {
+            "name": "wheel",
+            "version": "0.41.2",
+            "manager": "conda",
+            "platform": "win-64",
+            "dependencies": {
+                "python": ">=3.12,<3.13.0a0"
+            },
+            "url": "https://conda.anaconda.org/main/win-64/wheel-0.41.2-py312haa95532_0.tar.bz2",
+            "hash": {
+                "md5": "76c6ed843f06659d3d39a940f11060ac",
+                "sha256": "6ab853ce5a6bab469ad318a7ecbdae6d598f8009fe9c16567e754688ff0def71"
+            },
+            "category": "main",
+            "optional": false
+        },
+        {
+            "name": "pip",
+            "version": "23.3.1",
+            "manager": "conda",
+            "platform": "win-64",
+            "dependencies": {
+                "python": ">=3.12,<3.13.0a0",
+                "setuptools": "",
+                "wheel": ""
+            },
+            "url": "https://conda.anaconda.org/main/win-64/pip-23.3.1-py312haa95532_0.tar.bz2",
+            "hash": {
+                "md5": "1f1ee004cbd475c473b18c93ee9108a0",
+                "sha256": "74ac90b2008d2a42f9b28270bea53cdc651735e098cfabe06ca1cc10bf605126"
+            },
+            "category": "main",
+            "optional": false
+        },
+        {
+            "name": "pytest",
+            "version": "7.4.0",
+            "manager": "conda",
+            "platform": "win-64",
+            "dependencies": {
+                "colorama": "",
+                "iniconfig": "",
+                "packaging": "",
+                "pluggy": ">=0.12,<2.0",
+                "python": ">=3.12,<3.13.0a0"
+            },
+            "url": "https://conda.anaconda.org/main/win-64/pytest-7.4.0-py312haa95532_0.tar.bz2",
+            "hash": {
+                "md5": "f593a3647abbc80392d624a8c21ba14f",
+                "sha256": "50f79d07f60187e3086c035dac01d9e1d6aa4a54a80278a95dcd690a5400dc08"
+            },
+            "category": "main",
+            "optional": false
+        },
+        {
+            "name": "blinker",
+            "version": "1.7.0",
+            "manager": "pip",
+            "platform": "win-64",
+            "dependencies": {},
+            "url": "https://files.pythonhosted.org/packages/fa/2a/7f3714cbc6356a0efec525ce7a0613d581072ed6eb53eb7b9754f33db807/blinker-1.7.0-py3-none-any.whl",
+            "hash": {
+                "sha256": "c3f865d4d54db7abc53758a01601cf343fe55b84c1de4e3fa910e420b438d5b9"
+            },
+            "category": "main",
+            "optional": false
+        },
+        {
+            "name": "itsdangerous",
+            "version": "2.1.2",
+            "manager": "pip",
+            "platform": "win-64",
+            "dependencies": {},
+            "url": "https://files.pythonhosted.org/packages/68/5f/447e04e828f47465eeab35b5d408b7ebaaaee207f48b7136c5a7267a30ae/itsdangerous-2.1.2-py3-none-any.whl",
+            "hash": {
+                "sha256": "2c2349112351b88699d8d4b6b075022c0808887cb7ad10069318a8b0bc88db44"
+            },
+            "category": "main",
+            "optional": false
+        },
+        {
+            "name": "markupsafe",
+            "version": "2.1.5",
+            "manager": "pip",
+            "platform": "win-64",
+            "dependencies": {},
+            "url": "https://files.pythonhosted.org/packages/3f/14/c3554d512d5f9100a95e737502f4a2323a1959f6d0d01e0d0997b35f7b10/MarkupSafe-2.1.5-cp312-cp312-win_amd64.whl",
+            "hash": {
+                "sha256": "823b65d8706e32ad2df51ed89496147a42a2a6e01c13cfb6ffb8b1e92bc910bb"
+            },
+            "category": "main",
+            "optional": false
+        },
+        {
+            "name": "click",
+            "version": "8.1.7",
+            "manager": "pip",
+            "platform": "win-64",
+            "dependencies": {
+                "colorama": "*"
+            },
+            "url": "https://files.pythonhosted.org/packages/00/2e/d53fa4befbf2cfa713304affc7ca780ce4fc1fd8710527771b58311a3229/click-8.1.7-py3-none-any.whl",
+            "hash": {
+                "sha256": "ae74fb96c20a0277a1d615f1e4d73c8414f5a98db8b799a7931d1582f3390c28"
+            },
+            "category": "main",
+            "optional": false
+        },
+        {
+            "name": "jinja2",
+            "version": "3.1.3",
+            "manager": "pip",
+            "platform": "win-64",
+            "dependencies": {
+                "markupsafe": ">=2.0"
+            },
+            "url": "https://files.pythonhosted.org/packages/30/6d/6de6be2d02603ab56e72997708809e8a5b0fbfee080735109b40a3564843/Jinja2-3.1.3-py3-none-any.whl",
+            "hash": {
+                "sha256": "7d6d50dd97d52cbc355597bd845fabfbac3f551e1f99619e39a35ce8c370b5fa"
+            },
+            "category": "main",
+            "optional": false
+        },
+        {
+            "name": "werkzeug",
+            "version": "3.0.2",
+            "manager": "pip",
+            "platform": "win-64",
+            "dependencies": {
+                "markupsafe": ">=2.1.1"
+            },
+            "url": "https://files.pythonhosted.org/packages/e3/23/c9843d7550092ae7ad380611c238f44afef66f58f76c1dab7dcf313e4339/werkzeug-3.0.2-py3-none-any.whl",
+            "hash": {
+                "sha256": "3aac3f5da756f93030740bc235d3e09449efcf65f2f55e3602e1d851b8f48795"
+            },
+            "category": "main",
+            "optional": false
+        },
+        {
+            "name": "flask",
+            "version": "3.0.3",
+            "manager": "pip",
+            "platform": "win-64",
+            "dependencies": {
+                "werkzeug": ">=3.0.0",
+                "jinja2": ">=3.1.2",
+                "itsdangerous": ">=2.1.2",
+                "click": ">=8.1.3",
+                "blinker": ">=1.6.2"
+            },
+            "url": "https://files.pythonhosted.org/packages/61/80/ffe1da13ad9300f87c93af113edd0638c75138c42a0994becfacac078c06/flask-3.0.3-py3-none-any.whl",
+            "hash": {
+                "sha256": "34e815dfaa43340d1d15a5c3a02b8476004037eb4840b34910c6e21679d288f3"
             },
             "category": "main",
             "optional": false
