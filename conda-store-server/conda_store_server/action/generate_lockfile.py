@@ -1,10 +1,11 @@
-import itertools
 import json
 import os
 import pathlib
 import typing
 
 import yaml
+
+from conda_lock.conda_lock import run_lock
 
 from conda_store_server import action, conda_utils, schema
 from conda_store_server.action.utils import logged_command
@@ -48,24 +49,15 @@ def action_solve_lockfile(
     try:
         conda_flags_name = "CONDA_FLAGS"
         print(f"{conda_flags_name}={conda_flags}")
-        env = os.environ.copy()
-        env[conda_flags_name] = conda_flags
+        os.environ[conda_flags_name] = conda_flags
 
-        command = [
-            "conda-lock",
-            "lock",
-            "--file",
-            str(environment_filename),
-            "--lockfile",
-            str(lockfile_filename),
-            "--conda",
-            conda_command,
-        ]
-        if cuda_version is not None:
-            command.extend(["--with-cuda", cuda_version])
-        if platforms:
-            command.extend(itertools.chain(*[["--platform", x] for x in platforms]))
-        logged_command(context, command, env=env)
+        run_lock(
+            environment_files=[environment_filename],
+            platforms=platforms,
+            lockfile_path=lockfile_filename,
+            conda_exe=conda_command,
+            with_cuda=cuda_version,
+        )
     finally:
         os.environ.pop(conda_flags_name, None)
 
