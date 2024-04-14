@@ -10,6 +10,7 @@ import typing
 
 import yaml
 
+from filelock import FileLock
 from sqlalchemy.orm import Session
 
 from conda_store_server import action, api, conda_utils, orm, schema, utils
@@ -39,22 +40,26 @@ class LoggedStream:
 
 
 def append_to_logs(db: Session, conda_store, build, logs: typing.Union[str, bytes]):
-    try:
-        current_logs = conda_store.storage.get(build.log_key)
-    except Exception:
-        current_logs = b""
+    # For instance, with local storage, this involves reading from and writing
+    # to a file. Locking here prevents a race condition when multiple tasks
+    # attempt to write to a shared resource, which is the log
+    with FileLock(f"{build.build_path(conda_store)}.log.lock"):
+        try:
+            current_logs = conda_store.storage.get(build.log_key)
+        except Exception:
+            current_logs = b""
 
-    if isinstance(logs, str):
-        logs = logs.encode("utf-8")
+        if isinstance(logs, str):
+            logs = logs.encode("utf-8")
 
-    conda_store.storage.set(
-        db,
-        build.id,
-        build.log_key,
-        current_logs + logs,
-        content_type="text/plain",
-        artifact_type=schema.BuildArtifactType.LOGS,
-    )
+        conda_store.storage.set(
+            db,
+            build.id,
+            build.log_key,
+            current_logs + logs,
+            content_type="text/plain",
+            artifact_type=schema.BuildArtifactType.LOGS,
+        )
 
 
 def set_build_started(db: Session, build: orm.Build):
