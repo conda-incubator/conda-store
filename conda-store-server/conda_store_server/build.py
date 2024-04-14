@@ -365,7 +365,7 @@ def build_conda_pack(db: Session, conda_store, build: orm.Build):
     ):
         with tempfile.TemporaryDirectory() as tmpdir:
             output_filename = pathlib.Path(tmpdir) / "environment.tar.gz"
-            context = action.action_generate_conda_pack(
+            action.action_generate_conda_pack(
                 conda_prefix=conda_prefix,
                 output_filename=output_filename,
                 stdout=LoggedStream(
