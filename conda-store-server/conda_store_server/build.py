@@ -18,6 +18,7 @@ from conda_store_server.utils import BuildPathError
 
 class LoggedStream:
     """Allows writing to storage via logging.StreamHandler"""
+
     def __init__(self, db, conda_store, build, prefix=None):
         self.db = db
         self.conda_store = conda_store
@@ -200,7 +201,12 @@ def build_conda_environment(db: Session, conda_store, build):
                 ),
                 platforms=settings.conda_solve_platforms,
                 conda_flags=conda_store.conda_flags,
-                stdout=LoggedStream(db=db, conda_store=conda_store, build=build, prefix="action_solve_lockfile: "),
+                stdout=LoggedStream(
+                    db=db,
+                    conda_store=conda_store,
+                    build=build,
+                    prefix="action_solve_lockfile: ",
+                ),
             )
 
             conda_store.storage.set(
@@ -217,13 +223,23 @@ def build_conda_environment(db: Session, conda_store, build):
             context = action.action_fetch_and_extract_conda_packages(
                 conda_lock_spec=conda_lock_spec,
                 pkgs_dir=conda_utils.conda_root_package_dir(),
-                stdout=LoggedStream(db=db, conda_store=conda_store, build=build, prefix="action_fetch_and_extract_conda_packages: "),
+                stdout=LoggedStream(
+                    db=db,
+                    conda_store=conda_store,
+                    build=build,
+                    prefix="action_fetch_and_extract_conda_packages: ",
+                ),
             )
 
             context = action.action_install_lockfile(
                 conda_lock_spec=conda_lock_spec,
                 conda_prefix=conda_prefix,
-                stdout=LoggedStream(db=db, conda_store=conda_store, build=build, prefix="action_install_lockfile: "),
+                stdout=LoggedStream(
+                    db=db,
+                    conda_store=conda_store,
+                    build=build,
+                    prefix="action_install_lockfile: ",
+                ),
             )
 
         utils.symlink(conda_prefix, environment_prefix)
@@ -233,19 +249,34 @@ def build_conda_environment(db: Session, conda_store, build):
             permissions=settings.default_permissions,
             uid=settings.default_uid,
             gid=settings.default_gid,
-            stdout=LoggedStream(db=db, conda_store=conda_store, build=build, prefix="action_set_conda_prefix_permissions: "),
+            stdout=LoggedStream(
+                db=db,
+                conda_store=conda_store,
+                build=build,
+                prefix="action_set_conda_prefix_permissions: ",
+            ),
         )
 
         action.action_add_conda_prefix_packages(
             db=db,
             conda_prefix=conda_prefix,
             build_id=build.id,
-            stdout=LoggedStream(db=db, conda_store=conda_store, build=build, prefix="action_add_conda_prefix_packages: "),
+            stdout=LoggedStream(
+                db=db,
+                conda_store=conda_store,
+                build=build,
+                prefix="action_add_conda_prefix_packages: ",
+            ),
         )
 
         context = action.action_get_conda_prefix_stats(
             conda_prefix,
-            stdout=LoggedStream(db=db, conda_store=conda_store, build=build, prefix="action_get_conda_prefix_stats: "),
+            stdout=LoggedStream(
+                db=db,
+                conda_store=conda_store,
+                build=build,
+                prefix="action_get_conda_prefix_stats: ",
+            ),
         )
         build.size = context.result["disk_usage"]
 
@@ -306,7 +337,12 @@ def build_conda_env_export(db: Session, conda_store, build: orm.Build):
     context = action.action_generate_conda_export(
         conda_command=settings.conda_command,
         conda_prefix=conda_prefix,
-        stdout=LoggedStream(db=db, conda_store=conda_store, build=build, prefix="action_generate_conda_export: "),
+        stdout=LoggedStream(
+            db=db,
+            conda_store=conda_store,
+            build=build,
+            prefix="action_generate_conda_export: ",
+        ),
     )
 
     conda_prefix_export = yaml.dump(context.result).encode("utf-8")
@@ -330,8 +366,14 @@ def build_conda_pack(db: Session, conda_store, build: orm.Build):
         with tempfile.TemporaryDirectory() as tmpdir:
             output_filename = pathlib.Path(tmpdir) / "environment.tar.gz"
             context = action.action_generate_conda_pack(
-                conda_prefix=conda_prefix, output_filename=output_filename,
-                stdout=LoggedStream(db=db, conda_store=conda_store, build=build, prefix="action_generate_conda_pack: "),
+                conda_prefix=conda_prefix,
+                output_filename=output_filename,
+                stdout=LoggedStream(
+                    db=db,
+                    conda_store=conda_store,
+                    build=build,
+                    prefix="action_generate_conda_pack: ",
+                ),
             )
             conda_store.storage.fset(
                 db,
@@ -417,7 +459,12 @@ def build_constructor_installer(db: Session, conda_store, build: orm.Build):
                 ),
                 installer_dir=pathlib.Path(tmpdir),
                 version=build.build_key,
-                stdout=LoggedStream(db=db, conda_store=conda_store, build=build, prefix="action_generate_constructor_installer: "),
+                stdout=LoggedStream(
+                    db=db,
+                    conda_store=conda_store,
+                    build=build,
+                    prefix="action_generate_constructor_installer: ",
+                ),
             )
             output_filename = context.result
             if output_filename is None:

@@ -64,7 +64,7 @@ class ActionContext:
             stderr=subprocess.STDOUT if redirect_stderr else subprocess.PIPE,
             bufsize=1,
             universal_newlines=True,
-            **kwargs
+            **kwargs,
         ) as p:
             for line in p.stdout:
                 self.stdout.write(line)
