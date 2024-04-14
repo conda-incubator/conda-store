@@ -21,10 +21,17 @@ class Storage(LoggingConfigurable):
         filename: str,
         artifact_type: schema.BuildArtifactType,
     ):
-        db.add(
-            orm.BuildArtifact(build_id=build_id, key=key, artifact_type=artifact_type)
+        ba = orm.BuildArtifact
+        exists = (
+            db.query(ba)
+            .filter(ba.build_id == build_id)
+            .filter(ba.key == key)
+            .filter(ba.artifact_type == artifact_type)
+            .first()
         )
-        db.commit()
+        if not exists:
+            db.add(ba(build_id=build_id, key=key, artifact_type=artifact_type))
+            db.commit()
 
     def set(
         self,
@@ -34,10 +41,17 @@ class Storage(LoggingConfigurable):
         value: bytes,
         artifact_type: schema.BuildArtifactType,
     ):
-        db.add(
-            orm.BuildArtifact(build_id=build_id, key=key, artifact_type=artifact_type)
+        ba = orm.BuildArtifact
+        exists = (
+            db.query(ba)
+            .filter(ba.build_id == build_id)
+            .filter(ba.key == key)
+            .filter(ba.artifact_type == artifact_type)
+            .first()
         )
-        db.commit()
+        if not exists:
+            db.add(ba(build_id=build_id, key=key, artifact_type=artifact_type))
+            db.commit()
 
     def get(self, key: str):
         raise NotImplementedError()
