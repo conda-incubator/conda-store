@@ -82,6 +82,9 @@ jobs:
   integration-test-conda-store-server:
     name: "integration-test conda-store-server"
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        test-type: ["playwright", "integration", "user-journey"]
     defaults:
       run:
         shell: bash -el {0}
@@ -114,10 +117,11 @@ jobs:
         run: |
           playwright install
           pytest --video on ../tests/test_playwright.py
+        if: matrix.test-type == 'playwright'
 
       - name: "Upload test results 📤"
         uses: actions/upload-artifact@v4
-        if: ${{ always() }}
+        if: ${{ always() }} && matrix.test-type == 'playwright'
         with:
           name: playwright-tests
           path: conda-store-server/test-results
@@ -126,10 +130,12 @@ jobs:
         run: |
           export PYTHONPATH=$PYTHONPATH:$PWD
           pytest ../tests/test_api.py ../tests/test_metrics.py
+        if: matrix.test-type == 'integration'
 
       - name: "Run user journey tests ✅"
         run: |
           pytest -m "user_journey"
+        if: matrix.test-type == 'user-journey'
 
       - name: "Get Docker logs 🔍"
         if: ${{ failure() }}
