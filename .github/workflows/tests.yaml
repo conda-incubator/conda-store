@@ -84,7 +84,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        test-type: ["integration", "user-journey"]
+        test-type: ["playwright", "integration", "user-journey"]
     defaults:
       run:
         shell: bash -el {0}
@@ -117,11 +117,11 @@ jobs:
         run: |
           playwright install
           pytest --video on ../tests/test_playwright.py
-        if: matrix.test-type == 'integration'
+        if: matrix.test-type == 'playwright'
 
       - name: "Upload test results 📤"
         uses: actions/upload-artifact@v4
-        if: ${{ always() }} && matrix.test-type == 'integration'
+        if: ${{ always() }} && matrix.test-type == 'playwright'
         with:
           name: playwright-tests
           path: conda-store-server/test-results
