@@ -176,6 +176,7 @@ def test_failed_build_logs(base_url: str):
         build_request["data"]["specification"]["name"],
     )
 
+
 @pytest.mark.user_journey
 def test_cancel_build(base_url: str):
     """Test that a user cancel a build in progress."""

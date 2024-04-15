@@ -4,7 +4,7 @@ import time
 import uuid
 
 from enum import Enum
-from typing import Any, Optional, Union, Callable
+from typing import Any, Callable, Optional, Union
 
 import requests
 import utils.time_utils as time_utils
