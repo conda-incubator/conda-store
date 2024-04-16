@@ -27,7 +27,7 @@ Understand some useful terms and concepts to use conda-store effectively:
 
 ## Other installation options 💻
 
-conda-store can also se installed using:
+conda-store can also be installed using:
 
 * [Docker][install-docker]
 * [Kubernetes][install-kubernetes]
