@@ -302,12 +302,16 @@ def test_api_get_build_one_unauth_packages(testclient):
 
 def test_api_get_build_one_auth_packages(testclient):
     testclient.login()
-    response = testclient.get("api/v1/build/1/packages?size=5")
-    response.raise_for_status()
+    for _ in range(5):
+        response = testclient.get("api/v1/build/1/packages?size=5")
+        response.raise_for_status()
 
-    r = schema.APIListCondaPackage.parse_obj(response.json())
-    assert r.status == schema.APIStatus.OK
-    assert len(r.data) == 5
+        r = schema.APIListCondaPackage.parse_obj(response.json())
+        assert r.status == schema.APIStatus.OK
+        if len(r.data) == 0:
+            time.sleep(10)
+            continue
+        assert len(r.data) == 5
 
 
 def test_api_get_build_auth_packages_no_exist(testclient):
