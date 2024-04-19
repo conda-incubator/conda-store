@@ -275,6 +275,7 @@ def test_api_get_build_one_unauth(testclient):
 
 def test_api_get_build_one_auth(testclient):
     testclient.login()
+    success = False
     for _ in range(5):
         response = testclient.get("api/v1/build/1")
         response.raise_for_status()
@@ -290,6 +291,8 @@ def test_api_get_build_one_auth(testclient):
             time.sleep(10)
             continue
         assert r.data.status == schema.BuildStatus.COMPLETED.value
+        success = True
+    assert success
 
 
 def test_api_get_build_one_unauth_packages(testclient):
@@ -302,6 +305,7 @@ def test_api_get_build_one_unauth_packages(testclient):
 
 def test_api_get_build_one_auth_packages(testclient):
     testclient.login()
+    success = False
     for _ in range(5):
         response = testclient.get("api/v1/build/1/packages?size=5")
         response.raise_for_status()
@@ -312,6 +316,8 @@ def test_api_get_build_one_auth_packages(testclient):
             time.sleep(10)
             continue
         assert len(r.data) == 5
+        success = True
+    assert success
 
 
 def test_api_get_build_auth_packages_no_exist(testclient):
