@@ -13,7 +13,7 @@ on:
 
 # ensuring only one instance is running at a given time
 concurrency:
-  group: ${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
