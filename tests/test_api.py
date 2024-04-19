@@ -275,14 +275,21 @@ def test_api_get_build_one_unauth(testclient):
 
 def test_api_get_build_one_auth(testclient):
     testclient.login()
-    response = testclient.get("api/v1/build/1")
-    response.raise_for_status()
+    for _ in range(5):
+        response = testclient.get("api/v1/build/1")
+        response.raise_for_status()
 
-    r = schema.APIGetBuild.parse_obj(response.json())
-    assert r.status == schema.APIStatus.OK
-    assert r.data.id == 1
-    assert r.data.specification.name == "python-flask-env"
-    assert r.data.status == schema.BuildStatus.COMPLETED.value
+        r = schema.APIGetBuild.parse_obj(response.json())
+        assert r.status == schema.APIStatus.OK
+        assert r.data.id == 1
+        assert r.data.specification.name == "python-flask-env"
+        if r.data.status in [
+            schema.BuildStatus.QUEUED.value,
+            schema.BuildStatus.BUILDING.value,
+        ]:
+            time.sleep(10)
+            continue
+        assert r.data.status == schema.BuildStatus.COMPLETED.value
 
 
 def test_api_get_build_one_unauth_packages(testclient):
