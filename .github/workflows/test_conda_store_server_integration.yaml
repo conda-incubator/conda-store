@@ -1,0 +1,82 @@
+name: "Test conda-store-server (integration)"
+
+env:
+  DEFAULT_PYTHON_VERSION: "3.10"
+  FORCE_COLOR: "1" # Make tools pretty.
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+
+# ensuring only one instance is running at a given time
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  integration-test-conda-store-server:
+    name: "integration-test conda-store-server"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        test-type: ["playwright", "integration", "user-journey"]
+    defaults:
+      run:
+        shell: bash -el {0}
+        working-directory: conda-store-server
+    steps:
+      - name: "Checkout Repository 🛎"
+        uses: actions/checkout@v4
+
+      - name: "Set up env 🐍"
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          environment-file: conda-store-server/environment-dev.yaml
+          miniforge-version: latest
+
+      - name: "Install build dependencies 📦"
+        run: |
+          pip install hatch
+          sudo apt install wait-for-it -y
+
+      - name: "Deploy docker-compose"
+        run: |
+          docker-compose up -d
+          docker ps
+
+          wait-for-it localhost:5432 # postgresql
+          wait-for-it localhost:9000 # minio
+          wait-for-it localhost:8080 # conda-store-server
+          sleep 10 # give the server more time to initialize
+
+      - name: "Run Playwright tests 🎭"
+        run: |
+          playwright install
+          pytest --video on ../tests/test_playwright.py
+        if: matrix.test-type == 'playwright'
+
+      - name: "Upload test results 📤"
+        uses: actions/upload-artifact@v4
+        if: ${{ always() }} && matrix.test-type == 'playwright'
+        with:
+          name: playwright-tests
+          path: conda-store-server/test-results
+
+      - name: "Run integration tests ✅"
+        run: |
+          export PYTHONPATH=$PYTHONPATH:$PWD
+          pytest ../tests/test_api.py ../tests/test_metrics.py
+        if: matrix.test-type == 'integration'
+
+      - name: "Run user journey tests ✅"
+        run: |
+          pytest -m "user_journey"
+        if: matrix.test-type == 'user-journey'
+
+      - name: "Get Docker logs 🔍"
+        if: ${{ failure() }}
+        run: |
+          docker-compose logs
