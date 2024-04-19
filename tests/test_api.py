@@ -276,7 +276,7 @@ def test_api_get_build_one_unauth(testclient):
 def test_api_get_build_one_auth(testclient):
     testclient.login()
     success = False
-    for _ in range(5):
+    for _ in range(50):
         response = testclient.get("api/v1/build/1")
         response.raise_for_status()
 
@@ -306,7 +306,7 @@ def test_api_get_build_one_unauth_packages(testclient):
 def test_api_get_build_one_auth_packages(testclient):
     testclient.login()
     success = False
-    for _ in range(5):
+    for _ in range(50):
         response = testclient.get("api/v1/build/1/packages?size=5")
         response.raise_for_status()
 
