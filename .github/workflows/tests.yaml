@@ -112,7 +112,7 @@ jobs:
           wait-for-it localhost:5432 # postgresql
           wait-for-it localhost:9000 # minio
           wait-for-it localhost:8080 # conda-store-server
-          sleep 30 # give the server more time to initialize
+          sleep 10 # give the server more time to initialize
 
       - name: "Run Playwright tests 🎭"
         run: |
