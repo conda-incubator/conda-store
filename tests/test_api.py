@@ -292,6 +292,7 @@ def test_api_get_build_one_auth(testclient):
             continue
         assert r.data.status == schema.BuildStatus.COMPLETED.value
         success = True
+        break
     assert success
 
 
@@ -317,6 +318,7 @@ def test_api_get_build_one_auth_packages(testclient):
             continue
         assert len(r.data) == 5
         success = True
+        break
     assert success
 
 
