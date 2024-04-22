@@ -207,3 +207,22 @@ def test_cancel_build(base_url: str):
         return status == utils.BuildStatus.CANCELED
 
     utils.wait_for_condition(check_status, timeout=60, interval=1)
+
+
+@pytest.mark.user_journey
+def test_get_lockfile(base_url: str):
+    """Test that an admin can access a valid lockfile for a build."""
+    api = utils.API(base_url=base_url)
+    namespace = "default"
+    build_request = api.create_environment(
+        namespace,
+        "tests/user_journeys/test_data/simple_environment.yaml",
+    ).json()
+
+    lockfile = api.get_lockfile(build_request["data"]["id"])
+
+    packages = set(package["name"] for package in lockfile["package"])
+    assert "python" in packages
+    assert "fastapi" in packages
+
+    api.delete_environment(namespace, build_request["data"]["specification"]["name"])
