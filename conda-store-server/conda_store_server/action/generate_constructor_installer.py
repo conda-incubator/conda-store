@@ -56,7 +56,6 @@ def action_generate_constructor_installer(
     # conda and pip need to be in dependencies for the post_install script
     dependencies = ["conda", "pip"]
     pip_dependencies = []
-    channels = []
 
     if is_lockfile:
         # Adds channels
