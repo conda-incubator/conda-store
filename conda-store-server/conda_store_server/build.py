@@ -497,7 +497,11 @@ def build_constructor_installer(db: Session, conda_store, build: orm.Build):
                         }
                     )
                     is_lockfile = True
-                except Exception:
+                except Exception as e:
+                    conda_store.log.warning(
+                        "Exception while obtaining lockfile, using specification",
+                        exc_info=e,
+                    )
                     specification = schema.CondaSpecification.parse_obj(
                         build.specification.spec
                     )
