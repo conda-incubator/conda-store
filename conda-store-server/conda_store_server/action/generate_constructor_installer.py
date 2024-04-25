@@ -84,7 +84,7 @@ def action_generate_constructor_installer(
 
         # Adds dependencies
         for d in specification.dependencies:
-            if type(d) is schema.CondaSpecificationPip:
+            if isinstance(d, schema.CondaSpecificationPip):
                 pip_dependencies.extend(d.pip)
             else:
                 dependencies.append(d)
