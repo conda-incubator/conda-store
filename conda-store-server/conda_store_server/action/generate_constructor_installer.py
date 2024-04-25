@@ -69,7 +69,7 @@ def action_generate_constructor_installer(
             # platforms. constructor is cross-friendly, but we're currently
             # building only for the current architecture, see the comment in
             # get_installer_platform
-            if p.platform != get_installer_platform():
+            if p.platform not in ["noarch", get_installer_platform()]:
                 continue
             if p.manager == "pip":
                 pip_dependencies.append(f"{p.name}=={p.version}")
