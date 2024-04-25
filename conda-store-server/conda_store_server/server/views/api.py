@@ -815,10 +815,11 @@ async def api_post_specification(
         try:
             specification = yaml.safe_load(specification)
             if is_lockfile:
-                lockfile_spec = {}
-                lockfile_spec["name"] = environment_name
-                lockfile_spec["description"] = environment_description
-                lockfile_spec["lockfile"] = specification
+                lockfile_spec = {
+                    "name": environment_name,
+                    "description": environment_description,
+                    "lockfile": specification,
+                }
                 specification = schema.LockfileSpecification.parse_obj(lockfile_spec)
             else:
                 specification = schema.CondaSpecification.parse_obj(specification)
