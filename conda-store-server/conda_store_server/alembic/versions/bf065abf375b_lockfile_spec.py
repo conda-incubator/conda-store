@@ -1,7 +1,7 @@
 """lockfile spec
 
-Revision ID: cd5b48ff57b5
-Revises: 03c839888c82
+Revision ID: bf065abf375b
+Revises: e17b4cc6e086
 Create Date: 2024-03-02 09:21:02.519805
 
 """
@@ -12,8 +12,8 @@ from alembic import op
 
 
 # revision identifiers, used by Alembic.
-revision = "cd5b48ff57b5"
-down_revision = "03c839888c82"
+revision = "bf065abf375b"
+down_revision = "e17b4cc6e086"
 branch_labels = None
 depends_on = None
 
