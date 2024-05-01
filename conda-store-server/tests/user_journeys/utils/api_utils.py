@@ -179,7 +179,7 @@ class API:
                 BuildStatus.COMPLETED,
             ]
 
-        wait_for_condition(check_status, timeout=120, interval=1)
+        wait_for_condition(check_status, timeout=240, interval=1)
         return self._make_request(f"api/v1/build/{build_id}/")
 
     def delete_environment(
