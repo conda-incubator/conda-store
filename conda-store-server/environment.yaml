@@ -18,6 +18,7 @@ dependencies:
   - redis-py
   - sqlalchemy<=1.4.47
   - alembic
+  - platformdirs >=4.0,<5.0a0
   - psycopg2
   - pymysql
   - requests

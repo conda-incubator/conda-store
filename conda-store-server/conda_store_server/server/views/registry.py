@@ -1,11 +1,13 @@
 import json
 import time
 
+from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.responses import RedirectResponse, Response
+
 from conda_store_server import api, orm, schema
 from conda_store_server.schema import Permissions
 from conda_store_server.server import dependencies
-from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.responses import RedirectResponse, Response
+
 
 router_registry = APIRouter(tags=["registry"])
 
@@ -159,9 +161,11 @@ def list_tags(
     try:
         auth.authorize_request(
             request,
-            image
-            if parts[0] != "conda-store-dynamic"
-            else "conda-store-dynamic/python",
+            (
+                image
+                if parts[0] != "conda-store-dynamic"
+                else "conda-store-dynamic/python"
+            ),
             {Permissions.ENVIRONMENT_READ},
             require=True,
         )

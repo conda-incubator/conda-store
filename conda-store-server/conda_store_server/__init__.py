@@ -1,12 +1,14 @@
 import datetime
 import hashlib
 import typing
-from pathlib import Path
+
+import platformdirs
+
 
 __version__ = "2024.3.1"
 
 
-CONDA_STORE_DIR = Path.home() / ".conda-store"
+CONDA_STORE_DIR = platformdirs.user_data_path(appname="conda-store")
 
 
 class BuildKey:

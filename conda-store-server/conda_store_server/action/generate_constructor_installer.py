@@ -5,6 +5,7 @@ import tempfile
 import warnings
 
 import yaml
+
 from conda_store_server import action, schema
 from conda_store_server.action.utils import logged_command
 
@@ -39,7 +40,7 @@ def action_generate_constructor_installer(
             "constructor",
             "--help",
         ]
-        logged_command(context, command, timeout=10)
+        logged_command(context, command)
     except FileNotFoundError:
         warnings.warn(
             "Installer generation requires constructor: https://github.com/conda/constructor"

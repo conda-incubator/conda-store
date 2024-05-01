@@ -1,23 +1,13 @@
 import datetime
 import os
 import sys
+
 from contextlib import contextmanager
 from typing import Any, Dict
 
 import pydantic
+
 from celery import Celery, group
-from conda_store_server import (
-    CONDA_STORE_DIR,
-    BuildKey,
-    api,
-    conda_utils,
-    environment,
-    orm,
-    registry,
-    schema,
-    storage,
-    utils,
-)
 from sqlalchemy.orm import Session
 from sqlalchemy.pool import QueuePool
 from traitlets import (
@@ -33,6 +23,19 @@ from traitlets import (
     validate,
 )
 from traitlets.config import LoggingConfigurable
+
+from conda_store_server import (
+    CONDA_STORE_DIR,
+    BuildKey,
+    api,
+    conda_utils,
+    environment,
+    orm,
+    registry,
+    schema,
+    storage,
+    utils,
+)
 
 
 def conda_store_validate_specification(
@@ -141,6 +144,12 @@ class CondaStore(LoggingConfigurable):
     conda_channel_alias = Unicode(
         "https://conda.anaconda.org",
         help="The prepended url location to associate with channel names",
+        config=True,
+    )
+
+    conda_flags = Unicode(
+        "--strict-channel-priority",
+        help="The flags to be passed through the CONDA_FLAGS environment variable during the environment build",
         config=True,
     )
 

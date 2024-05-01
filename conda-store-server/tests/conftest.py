@@ -4,7 +4,9 @@ import sys
 
 import pytest
 import yaml
+
 from fastapi.testclient import TestClient
+
 
 from conda_store_server import (  # isort:skip
     action,
@@ -84,10 +86,10 @@ def conda_store_server(conda_store_config):
         _conda_store.celery_app
 
         # must import tasks after a celery app has been initialized
-        import conda_store_server.worker.tasks  # noqa
-
         # ensure that models are created
         from celery.backends.database.session import ResultModelBase
+
+        import conda_store_server.worker.tasks  # noqa
 
         ResultModelBase.metadata.create_all(db.get_bind())
 
@@ -167,10 +169,10 @@ def conda_store(conda_store_config):
         _conda_store.celery_app
 
         # must import tasks after a celery app has been initialized
-        import conda_store_server.worker.tasks  # noqa
-
         # ensure that models are created
         from celery.backends.database.session import ResultModelBase
+
+        import conda_store_server.worker.tasks  # noqa
 
         ResultModelBase.metadata.create_all(db.get_bind())
 

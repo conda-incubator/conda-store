@@ -7,6 +7,10 @@ import sys
 
 import pytest
 import yarl
+
+from fastapi.responses import RedirectResponse
+from traitlets import TraitError
+
 from conda_store_server import (
     BuildKey,
     action,
@@ -18,8 +22,6 @@ from conda_store_server import (
     utils,
 )
 from conda_store_server.server.auth import DummyAuthentication
-from fastapi.responses import RedirectResponse
-from traitlets import TraitError
 
 
 def test_action_decorator():
