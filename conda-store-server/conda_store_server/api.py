@@ -1,6 +1,6 @@
 import re
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
 
 from sqlalchemy import distinct, func, null, or_
 from sqlalchemy.orm import aliased
@@ -380,19 +380,29 @@ def get_environment(
     return db.query(orm.Environment).join(orm.Namespace).filter(*filters).first()
 
 
-def ensure_specification(db, specification: schema.CondaSpecification):
+def ensure_specification(
+    db,
+    specification: Union[schema.CondaSpecification, schema.LockfileSpecification],
+    is_lockfile: bool = False,
+):
     specification_sha256 = utils.datastructure_hash(specification.dict())
     specification_orm = get_specification(db, sha256=specification_sha256)
 
     if specification_orm is None:
-        specification_orm = create_speficication(db, specification)
+        specification_orm = create_speficication(
+            db, specification, is_lockfile=is_lockfile
+        )
         db.commit()
 
     return specification_orm
 
 
-def create_speficication(db, specification: schema.CondaSpecification):
-    specification_orm = orm.Specification(specification.dict())
+def create_speficication(
+    db,
+    specification: Union[schema.CondaSpecification, schema.LockfileSpecification],
+    is_lockfile: bool = False,
+):
+    specification_orm = orm.Specification(specification.dict(), is_lockfile=is_lockfile)
     db.add(specification_orm)
     return specification_orm
 

@@ -212,6 +212,36 @@ def simple_conda_lock():
         return yaml.safe_load(f)
 
 
+@pytest.fixture
+def simple_conda_lock_with_pip():
+    with (
+        pathlib.Path(__file__).parent / "assets/conda-lock.zlib.flask.yaml"
+    ).open() as f:
+        return yaml.safe_load(f)
+
+
+@pytest.fixture
+def simple_lockfile_specification(simple_conda_lock):
+    yield schema.LockfileSpecification.parse_obj(
+        {
+            "name": "test",
+            "description": "simple lockfile specification",
+            "lockfile": simple_conda_lock,
+        }
+    )
+
+
+@pytest.fixture
+def simple_lockfile_specification_with_pip(simple_conda_lock_with_pip):
+    yield schema.LockfileSpecification.parse_obj(
+        {
+            "name": "test",
+            "description": "simple lockfile specification with pip",
+            "lockfile": simple_conda_lock_with_pip,
+        }
+    )
+
+
 @pytest.fixture(
     params=[
         dict(

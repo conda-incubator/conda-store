@@ -796,6 +796,9 @@ async def api_post_specification(
     entity=Depends(dependencies.get_entity),
     specification: str = Body(""),
     namespace: Optional[str] = Body(None),
+    is_lockfile: Optional[bool] = Body(False, embed=True),
+    environment_name: Optional[str] = Body("", embed=True),
+    environment_description: Optional[str] = Body("", embed=True),
 ):
     with conda_store.get_db() as db:
         permissions = {Permissions.ENVIRONMENT_CREATE}
@@ -811,7 +814,15 @@ async def api_post_specification(
 
         try:
             specification = yaml.safe_load(specification)
-            specification = schema.CondaSpecification.parse_obj(specification)
+            if is_lockfile:
+                lockfile_spec = {
+                    "name": environment_name,
+                    "description": environment_description,
+                    "lockfile": specification,
+                }
+                specification = schema.LockfileSpecification.parse_obj(lockfile_spec)
+            else:
+                specification = schema.CondaSpecification.parse_obj(specification)
         except yaml.error.YAMLError:
             raise HTTPException(status_code=400, detail="Unable to parse. Invalid YAML")
         except utils.CondaStoreError as e:
@@ -828,7 +839,11 @@ async def api_post_specification(
 
         try:
             build_id = conda_store.register_environment(
-                db, specification, namespace_name, force=True
+                db,
+                specification,
+                namespace_name,
+                force=True,
+                is_lockfile=is_lockfile,
             )
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e.args[0]))
