@@ -262,7 +262,8 @@ def task_update_environment_build(self, environment_id):
         conda_prefix = environment.current_build.build_path(conda_store)
         environment_prefix = environment.current_build.environment_path(conda_store)
 
-        utils.symlink(conda_prefix, environment_prefix)
+        if environment_prefix is not None:
+            utils.symlink(conda_prefix, environment_prefix)
 
         if conda_store.post_update_environment_build_hook:
             conda_store.post_update_environment_build_hook(conda_store, environment)

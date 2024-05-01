@@ -233,6 +233,9 @@ class Build(Base):
     ended_on = Column(DateTime, default=None)
     deleted_on = Column(DateTime, default=None)
 
+    # Only used by build_key_version 3, not necessary for earlier versions
+    hash = Column(Unicode(32), default=None)
+
     @staticmethod
     def _get_build_key_version():
         # Uses local import to make sure BuildKey is initialized
@@ -258,8 +261,15 @@ class Build(Base):
         build the environment
 
         """
+        # Uses local import to make sure BuildKey is initialized
+        from conda_store_server import BuildKey
+
+        if BuildKey.current_version() < 3:
+            namespace = self.environment.namespace.name
+        else:
+            namespace = ""
+
         store_directory = os.path.abspath(conda_store.store_directory)
-        namespace = self.environment.namespace.name
         res = (
             pathlib.Path(
                 conda_store.build_directory.format(
@@ -285,6 +295,18 @@ class Build(Base):
         path
 
         """
+        # Uses local import to make sure BuildKey is initialized
+        from conda_store_server import BuildKey
+
+        # This is not used with v3 because the whole point of v3 is to avoid any
+        # dependence on user-provided variable-size data on the filesystem and
+        # by default the environment path contains the namespace and the
+        # environment name, which can be arbitrary large. By setting this to
+        # None, we're making it clear that this shouldn't be used by other
+        # functions, such as when creating symlinks
+        if BuildKey.current_version() >= 3:
+            return None
+
         store_directory = os.path.abspath(conda_store.store_directory)
         namespace = self.environment.namespace.name
         name = self.specification.name
@@ -317,11 +339,11 @@ class Build(Base):
         return BuildKey.get_build_key(self)
 
     @staticmethod
-    def parse_build_key(key):
+    def parse_build_key(conda_store: "CondaStore", key: str):  # noqa: F821
         # Uses local import to make sure BuildKey is initialized
         from conda_store_server import BuildKey
 
-        return BuildKey.parse_build_key(key)
+        return BuildKey.parse_build_key(conda_store, key)
 
     @property
     def log_key(self):
