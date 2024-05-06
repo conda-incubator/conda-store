@@ -25,7 +25,8 @@ class DownloadCondaStoreUIHook(BuildHookInterface):
     def clean(self, versions: List[str]) -> None:
         super().clean(versions)
         destination_directory = (
-            pathlib.Path(self.root) / "conda_store_server/server/static/conda-store-ui"
+            pathlib.Path(self.root)
+            / "conda_store_server/_internal/server/static/conda-store-ui"
         )
         shutil.rmtree(destination_directory, ignore_errors=True)
 
@@ -48,7 +49,7 @@ class DownloadCondaStoreUIHook(BuildHookInterface):
             source_directory = tmp_dir / "package/dist"
             destination_directory = (
                 pathlib.Path(self.root)
-                / "conda_store_server/server/static/conda-store-ui"
+                / "conda_store_server/_internal/server/static/conda-store-ui"
             )
             destination_directory.mkdir(parents=True, exist_ok=True)
 
@@ -61,7 +62,7 @@ class DownloadCondaStoreUIHook(BuildHookInterface):
 
             # dirty modifications (bound to break eventually!) to
             # main.js to enable easy configuration see
-            # conda_store_server/server/templates/conda-store-ui.html
+            # conda_store_server/_internal/server/templates/conda-store-ui.html
             # for global variable set
             with (source_directory / "main.js").open("r", encoding="utf-8") as source_f:
                 content = source_f.read()

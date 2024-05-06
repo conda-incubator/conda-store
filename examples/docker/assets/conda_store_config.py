@@ -1,7 +1,7 @@
 import logging
 
-from conda_store_server.server.auth import JupyterHubOAuthAuthentication
-from conda_store_server.storage import S3Storage
+from conda_store_server._internal.server.auth import JupyterHubOAuthAuthentication
+from conda_store_server._internal.storage import S3Storage
 
 
 # ==================================

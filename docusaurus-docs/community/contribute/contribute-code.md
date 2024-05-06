@@ -70,8 +70,8 @@ conda activate conda-store-server-dev
 subprocess of the web server.
 
     ```bash
-    python -m conda_store_server.server --standalone
-   ```
+    conda-store-server --standalone
+    ```
 
 1. Visit [localhost:8080](http://localhost:8080/)
 
