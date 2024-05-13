@@ -11,9 +11,9 @@
 * Ensure that conda-store continues to meet the evolving needs of the data science community.
 
 ## Methodology
-The study utilized a mixed methods approach to capture detailed user feedback: 
+The study utilized a mixed methods approach to capture detailed user feedback:
 * **Participants:** Six developers with varying levels of familiarity with conda-store, participated in this study. They were selected through an open call, aiming to cover a range [of user personals previously identified as typical users of conda-store](https://conda.store/community/design/user-personas#user-personas-%EF%B8%8F).
-* **Tasks:** Each participant was asked to complete predefined tasks that mirrored typical workflows within conda-store. These tasks explored key functionalities such as environment creation, configuration and collaboration capabilities. 
+* **Tasks:** Each participant was asked to complete predefined tasks that mirrored typical workflows within conda-store. These tasks explored key functionalities such as environment creation, configuration and collaboration capabilities.
 * **Data collection:** We collected data through direct observation, one-on-one interviews, and screen recordings. Participants were encouraged to verbalize their thoughts and feedback while navigating conda-store, providing insights into their real-time user experience.
 * **Analysis:** Data collected during the study was meticulously analyzed through thematic coding to identify recurring themes and insights. This involved reviewing transcriptions, observations, and screen recordings to categorize user feedback into distinct themes.
 
@@ -30,7 +30,7 @@ This study provides valuable insights into the usability of conda-store, yet it 
 * **Sample Size:** The study was conducted with a small sample of six participants. Which may not fully represent the broad range of experiences of all conda-store users.
 * **Selection Bias:** Participants were self-selected through an open call within Quansight, potentially leading to a bias towards interested users and possibly more favorable views of conda-store.
 * **Targeted Personas:** The study focused solely on conda-store user personas previously identified [and detailed in the conda-store design documentation](https://conda.store/community/design/user-personas).
-It is important to acknowledge these limitations to correctly interpret the results, guide future enhancements and plan subsequent research. 
+It is important to acknowledge these limitations to correctly interpret the results, guide future enhancements and plan subsequent research.
 
 ## Actionable Insights
 This section details the specific usability issues and participant feedback that necessitate changes to conda-store. Each insight is directly tied to observable challenges encountered by users during the study. Findings are organized by common patterns observed.
@@ -64,10 +64,10 @@ Overall, users found the process of creating environments to be intuitive and st
     * **YAML vs. GUI:** While most users preferred using the GUI for input, there were instances where YAML was deemed more practical, such as when copying environments. A suggestion was made to set YAML as the default option for those who frequently use it. Some missed the YAML/GUI toggle because its placement was far from other relevant UI elements.
 ![conda-store-yaml](https://github.com/conda-incubator/conda-store/assets/98317216/0d8d047b-ba01-4698-972d-2ff04e960041)
 
-* **Viewing an environment** 
+* **Viewing an environment**
 The environment view page mirrors the layout of the creation page but includes additional information such as environment status, packages installed as dependencies and logs. When reviewing newly created environments, users look at the Build Status to see whether the requested packages have been added. These are the key points discussed:
-    * **Status Clarity:** Users suggested improvements to the ‘Status’ indicators to make them clearer. 
-![conda-store-building](https://github.com/conda-incubator/conda-store/assets/98317216/5c320ec1-f7ad-4b36-a4ca-4c06885a7b37) ![conda-store-failedbuild](https://github.com/conda-incubator/conda-store/assets/98317216/ccc3ec21-1da7-4b99-8641-bc368ddd57c5) 
+    * **Status Clarity:** Users suggested improvements to the ‘Status’ indicators to make them clearer.
+![conda-store-building](https://github.com/conda-incubator/conda-store/assets/98317216/5c320ec1-f7ad-4b36-a4ca-4c06885a7b37) ![conda-store-failedbuild](https://github.com/conda-incubator/conda-store/assets/98317216/ccc3ec21-1da7-4b99-8641-bc368ddd57c5)
 
     * **Progress Indication:** While a progress indicator is present when an environment is being created, users said it was not very noticeable, indicating a need for better design and visibility.
     * **Dependency Management:** A dependency tree was proposed to understand package relationships and dependencies better.
@@ -91,17 +91,17 @@ Namespaces are organizational units within conda-store, intended to manage and f
 
 * **Understanding and Clarity:** Although some users were familiar with the concept of namespaces and understood their utility from previous experiences or tinkering with the REST API, for many, the purpose and function of namespaces were not clear from the UI alone. The lack of clarity impacts usability and could potentially deter effective usage of this important feature.
 
-* **Visibility and Access:** Users expressed uncertainty about who has access to each namespace and who an environment is shared with. They highlighted the need for more transparency about namespace details such as ownership, members, description, purpose, and permissions. Enhancing the visibility of information related to namespaces within the UI will help. This can be accomplished by implementing tooltips, detailed sidebars, or a dedicated management page. 
+* **Visibility and Access:** Users expressed uncertainty about who has access to each namespace and who an environment is shared with. They highlighted the need for more transparency about namespace details such as ownership, members, description, purpose, and permissions. Enhancing the visibility of information related to namespaces within the UI will help. This can be accomplished by implementing tooltips, detailed sidebars, or a dedicated management page.
 
 * **User-Friendly Management:** There was a strong desire for an easier way to manage namespaces, including the ability to add people directly from the UI. A suggestion was made to include a button next to the namespace title for this purpose, which indicates a need for more direct and interactive management tools.
 
-* **Security Perception:** Namespaces are appreciated for their ability to enhance security by segregating environments based on team or project needs. 
+* **Security Perception:** Namespaces are appreciated for their ability to enhance security by segregating environments based on team or project needs.
 
 ### Profile Information
 Participants expressed the need to view their profile information directly within conda-store. This section would ideally include details about their permissions, such as access to specific namespaces and admin rights, which are currently not visible or accessible to the user. A dedicated profile section should be implemented to display this user-specific information. These profile management features can be modeled after other developer platforms like GitHub to enhance user familiarity.
 
 ### Navigation
-Feedback from users highlighted challenges with conda-store’s navigation system, particularly regarding the tab layout: 
+Feedback from users highlighted challenges with conda-store’s navigation system, particularly regarding the tab layout:
 
 * **Tab Clarity:** Users reported that the current tab system does not display sufficient information. Navigating multiple environments open, especially if they have similar names but belong to different namespaces, can be difficult. This issue is exacerbated by the lack of URL usage, which could otherwise help users navigate directly to specific environments or retain their state. (**Note**: Tabs have since been removed to simplify the UI and to enable URL sharing [https://github.com/conda-incubator/conda-store-ui/pull/389](https://github.com/conda-incubator/conda-store-ui/pull/389))
 
@@ -119,7 +119,7 @@ Conda-store’s UI plays a pivotal role in user adoption and satisfaction. Feedb
 * **Unclear loading states:** On initial interaction with conda-store, users found it surprising to see the status of an environment as “building”, even though they didn’t initiate the build, which might indicate unclear status indicators or initial loading states.
 
 ### Logs and Artifacts
-Users found the environment logs and artifacts very useful. However, there were issues with their presentation: 
+Users found the environment logs and artifacts very useful. However, there were issues with their presentation:
 
 * **Artifacts Functionality:** The copy of the artifacts link (‘Show Artifacts’) led to mismatched expectations, as users expected it to display the artifacts rather than downloading them. The links’ functionality (displaying vs downloading the environment) also varied between browsers, adding to the confusion. Sometimes saving the artifacts page resulted in downloading HTML instead of the artifact, leading users to copy-pasting the artifact text.
 
@@ -132,7 +132,7 @@ Users found the environment logs and artifacts very useful. However, there were 
 
 * **Platform-Specific Artifacts:** There was interest in having artifacts that cater to specific platforms, such as offering both platform-dependent and independent versions. The types of artifacts can include platform-specific versions where applicable and ensure they are clearly labeled and described to help users choose the appropriate options for their needs.
 
-* **Sharing Artifacts:** Users shared concerns about the security of sharing artifact files directly, with a preference for sharing lockfiles or customized YAML specs without sensitive data. 
+* **Sharing Artifacts:** Users shared concerns about the security of sharing artifact files directly, with a preference for sharing lockfiles or customized YAML specs without sensitive data.
 
 ### Errors, Debugging and Documentation
 Errors are inevitable parts of managing software environments. The study highlighted several areas where conda-store could improve its handling and presentation of errors to support users better.
@@ -183,13 +183,13 @@ During the study, users frequently referenced other platforms, such as GitHub an
 Namespace names significantly influence their assumptions about the scope of access to these namespaces. For example, a namespace named ‘global’ might be presumed to have more comprehensive access than it does, whereas a name like ‘admin’ might imply administrative privileges. As such, it is essential to carefully name the namespaces to ensure that the name aligns with the intent of the namespace.
 
 ## Conclusion
-The findings in this report provide a comprehensive overview of conda-store’s current user experience and highlight strengths and areas for improvement that could significantly enhance functionality and user satisfaction. 
-We have documented key user behaviors, preferences, and challenges that impact user interaction with Conda Store. Moreover, the informative insights have provided us with a deeper understanding of our users' underlying needs and expectations, which is essential for guiding future enhancements. 
+The findings in this report provide a comprehensive overview of conda-store’s current user experience and highlight strengths and areas for improvement that could significantly enhance functionality and user satisfaction.
+We have documented key user behaviors, preferences, and challenges that impact user interaction with Conda Store. Moreover, the informative insights have provided us with a deeper understanding of our users' underlying needs and expectations, which is essential for guiding future enhancements.
 
-As we move forward, it is vital to consider these insights in our ongoing development efforts to ensure that conda-store remains an intuitive and integral part of our users’ data science and development workflows. We thank all the participants and team members for their invaluable contributions and look forward to implementing improvements to make conda-store more user-friendly. 
+As we move forward, it is vital to consider these insights in our ongoing development efforts to ensure that conda-store remains an intuitive and integral part of our users’ data science and development workflows. We thank all the participants and team members for their invaluable contributions and look forward to implementing improvements to make conda-store more user-friendly.
 
 ## Appendix: Research Board
-To foster a deeper understanding of our research process, we have made our research board publicly available. This interactive board provides a visual representation of the user feedback, our analysis and the thematic organization of data that informed the insights presented in this report. 
+To foster a deeper understanding of our research process, we have made our research board publicly available. This interactive board provides a visual representation of the user feedback, our analysis and the thematic organization of data that informed the insights presented in this report.
 
 ### Accessing the board
 The dashboard can be accessed via the following link: [User Research Data](https://www.figma.com/file/SJqCXfRuwHMscGFGp0G3IU/User-Research-Data?type=whiteboard&node-id=0%3A1&t=d3cQMJOqVTjwPegu-1). No special permissions or software is required beyond access to the internet.
@@ -205,4 +205,4 @@ Providing access to this visual collaboration board allows stakeholders and the 
 
 1. [UX Research & Design - pip documentation v24.1.dev1](https://pip.pypa.io/en/latest/ux-research-design/)
 2. [JupyterLab User Testing](https://github.com/Quansight-Labs/JupyterLab-user-testing/blob/main/results/user-testing-results.md)
-3. [UX Research at GitLab](https://handbook.gitlab.com/handbook/product/ux/ux-research/) 
+3. [UX Research at GitLab](https://handbook.gitlab.com/handbook/product/ux/ux-research/)
