@@ -27,6 +27,13 @@ def action_solve_lockfile(
     with environment_filename.open("w") as f:
         json.dump(specification.dict(), f)
 
+    context.log.info(
+        "Note that the output of `conda config --show` displayed below only reflects "
+        "settings in the conda configuration file, which might be overridden by "
+        "variables required to be set by conda-store via the environment. Overridden "
+        f"settings: CONDA_FLAGS={conda_flags}"
+    )
+
     # The info command can be used with either mamba or conda
     logged_command(context, [conda_command, "info"])
     # The config command is not supported by mamba

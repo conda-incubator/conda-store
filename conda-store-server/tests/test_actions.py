@@ -21,6 +21,8 @@ from conda_store_server.server.auth import DummyAuthentication
 
 
 def test_action_decorator():
+    """Test that the action decorator captures stdout/stderr and logs correctly."""
+
     @action.action
     def test_function(context):
         print("stdout")
@@ -48,10 +50,13 @@ def test_action_decorator():
         return pathlib.Path.cwd()
 
     context = test_function()
-    assert (
-        context.stdout.getvalue()
-        == "stdout\nstderr\nsubprocess\nsubprocess_stdout\nsubprocess_stderr\nlog\n"
+
+    stdout = context.stdout.getvalue()
+    assert stdout.startswith(
+        "stdout\nstderr\nsubprocess\nsubprocess_stdout\nsubprocess_stderr\nlog\n"
     )
+    assert re.search(r"Action test_function completed in \d+\.\d+ s.\n$", stdout)
+
     assert context.stderr.getvalue() == "subprocess_stderr_no_redirect\n"
     # test that action direction is not the same as outside function
     assert context.result != pathlib.Path.cwd()
