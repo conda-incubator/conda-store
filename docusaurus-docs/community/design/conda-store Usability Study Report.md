@@ -27,8 +27,7 @@ Smera Goel, Pavithra Eswaramoorthy, Tania Allard, Kim Pevey
 
 ## Limitations
 This study provides valuable insights into the usability of conda-store, yet it is important to acknowledge its limitations:
-* **Sample Size:** The study was conducted with a small sample of six participants. Which may not fully represent the broad range of experiences of all conda-store users.
-* **Selection Bias:** Participants were self-selected through an open call within Quansight, potentially leading to a bias towards interested users and possibly more favorable views of conda-store.
+* **Sample Size:** The study was conducted with a small sample of six participants, which may not fully represent the broad range of experiences of all conda-store users.
 * **Targeted Personas:** The study focused solely on conda-store user personas previously identified [and detailed in the conda-store design documentation](https://conda.store/community/design/user-personas).
 It is important to acknowledge these limitations to correctly interpret the results, guide future enhancements and plan subsequent research.
 
