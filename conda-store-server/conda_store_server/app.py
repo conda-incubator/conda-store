@@ -1,23 +1,13 @@
 import datetime
 import os
 import sys
+
 from contextlib import contextmanager
 from typing import Any, Dict
 
 import pydantic
+
 from celery import Celery, group
-from conda_store_server import (
-    CONDA_STORE_DIR,
-    BuildKey,
-    api,
-    conda_utils,
-    environment,
-    orm,
-    registry,
-    schema,
-    storage,
-    utils,
-)
 from sqlalchemy.orm import Session
 from sqlalchemy.pool import QueuePool
 from traitlets import (
@@ -33,6 +23,19 @@ from traitlets import (
     validate,
 )
 from traitlets.config import LoggingConfigurable
+
+from conda_store_server import (
+    CONDA_STORE_DIR,
+    BuildKey,
+    api,
+    conda_utils,
+    environment,
+    orm,
+    registry,
+    schema,
+    storage,
+    utils,
+)
 
 
 def conda_store_validate_specification(
@@ -109,7 +112,7 @@ class CondaStore(LoggingConfigurable):
 
     build_key_version = Integer(
         BuildKey.set_current_version(2),
-        help="Build key version to use: 1 (long, legacy), 2 (short, default)",
+        help="Build key version to use: 1 (long, legacy), 2 (shorter hash, default), 3 (hash-only, experimental)",
         config=True,
     )
 
@@ -119,6 +122,12 @@ class CondaStore(LoggingConfigurable):
             return BuildKey.set_current_version(proposal.value)
         except Exception as e:
             raise TraitError(f"c.CondaStore.build_key_version: {e}")
+
+    win_extended_length_prefix = Bool(
+        False,
+        help="Use the extended-length prefix '\\\\?\\' (Windows-only), default: False",
+        config=True,
+    )
 
     conda_command = Unicode(
         "mamba",
@@ -135,6 +144,12 @@ class CondaStore(LoggingConfigurable):
     conda_channel_alias = Unicode(
         "https://conda.anaconda.org",
         help="The prepended url location to associate with channel names",
+        config=True,
+    )
+
+    conda_flags = Unicode(
+        "--strict-channel-priority",
+        help="The flags to be passed through the CONDA_FLAGS environment variable during the environment build",
         config=True,
     )
 
@@ -257,6 +272,7 @@ class CondaStore(LoggingConfigurable):
             schema.BuildArtifactType.LOCKFILE,
             schema.BuildArtifactType.YAML,
             schema.BuildArtifactType.CONDA_PACK,
+            schema.BuildArtifactType.CONSTRUCTOR_INSTALLER,
             *(
                 [
                     schema.BuildArtifactType.DOCKER_MANIFEST,
@@ -611,8 +627,10 @@ class CondaStore(LoggingConfigurable):
         specification: dict,
         namespace: str = None,
         force: bool = True,
+        is_lockfile: bool = False,
     ):
         """Register a given specification to conda store with given namespace/name."""
+
         settings = self.get_settings(db)
 
         namespace = namespace or settings.default_namespace
@@ -625,12 +643,18 @@ class CondaStore(LoggingConfigurable):
             action=schema.Permissions.ENVIRONMENT_CREATE,
         )
 
-        specification_model = self.validate_specification(
-            db=db,
-            conda_store=self,
-            namespace=namespace.name,
-            specification=schema.CondaSpecification.parse_obj(specification),
-        )
+        if is_lockfile:
+            # It's a lockfile, do not do any validation in this case. If there
+            # are problems, these would be caught earlier during parsing or
+            # later when conda-lock attempts to install it.
+            specification_model = specification
+        else:
+            specification_model = self.validate_specification(
+                db=db,
+                conda_store=self,
+                namespace=namespace.name,
+                specification=schema.CondaSpecification.parse_obj(specification),
+            )
 
         spec_sha256 = utils.datastructure_hash(specification_model.dict())
         matching_specification = api.get_specification(db, sha256=spec_sha256)
@@ -644,7 +668,9 @@ class CondaStore(LoggingConfigurable):
         ):
             return None
 
-        specification = api.ensure_specification(db, specification_model)
+        specification = api.ensure_specification(
+            db, specification_model, is_lockfile=is_lockfile
+        )
         environment_was_empty = (
             api.get_environment(db, name=specification.name, namespace_id=namespace.id)
             is None
@@ -715,6 +741,15 @@ class CondaStore(LoggingConfigurable):
             artifact_tasks.append(
                 tasks.task_build_conda_docker.subtask(
                     args=(build.id,), task_id=f"build-{build.id}-docker", immutable=True
+                )
+            )
+
+        if schema.BuildArtifactType.CONSTRUCTOR_INSTALLER in settings.build_artifacts:
+            artifact_tasks.append(
+                tasks.task_build_constructor_installer.subtask(
+                    args=(build.id,),
+                    task_id=f"build-{build.id}-constructor-installer",
+                    immutable=True,
                 )
             )
 

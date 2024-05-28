@@ -24,3 +24,6 @@ This pull request:
 ## Additional information
 
 <!-- Do you have any other information about this pull request? This may include screenshots, references, and/or implementation notes. -->
+## How to test
+
+<!-- Steps to take to test the new feature, verify the bug is fixed, etc. Please do not just include steps for the happy path, but failure modes too. -->

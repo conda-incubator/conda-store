@@ -1,6 +1,8 @@
 from conda_store_server.utils import disk_usage, du
 
+
 # TODO: Add tests for the other functions in utils.py
+
 
 def test_disk_usage(tmp_path):
     test_dir = tmp_path / "test_dir"
@@ -11,9 +13,9 @@ def test_disk_usage(tmp_path):
     assert abs(dir_size - int(disk_usage(test_dir))) <= 1000
 
     test_file = test_dir / "test_file"
-    test_file.write_text("a"*1000)
+    test_file.write_text("a" * 1000)
     test_file2 = test_dir / "test_file2"
-    test_file2.write_text("b"*1000)
+    test_file2.write_text("b" * 1000)
     # Test hard links
     test_file_hardlink = test_dir / "test_file_hardlink"
     test_file_hardlink.hardlink_to(test_file)

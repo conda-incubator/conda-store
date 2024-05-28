@@ -11,12 +11,14 @@ dependencies:
   - conda-pack
   - conda-lock >=1.0.5
   - conda-package-handling
+  - conda-package-streaming
   # web server
   - celery
   - flower
   - redis-py
   - sqlalchemy<=1.4.47
   - alembic
+  - platformdirs >=4.0,<5.0a0
   - psycopg2
   - pymysql
   - requests
@@ -33,3 +35,5 @@ dependencies:
   - python-multipart
   # artifact storage
   - minio
+  # installer
+  - constructor

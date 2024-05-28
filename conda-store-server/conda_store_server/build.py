@@ -9,28 +9,57 @@ import traceback
 import typing
 
 import yaml
+
+from filelock import FileLock
+from sqlalchemy.orm import Session
+
 from conda_store_server import action, api, conda_utils, orm, schema, utils
 from conda_store_server.utils import BuildPathError
-from sqlalchemy.orm import Session
+
+
+class LoggedStream:
+    """Allows writing to storage via logging.StreamHandler"""
+
+    def __init__(self, db, conda_store, build, prefix=None):
+        self.db = db
+        self.conda_store = conda_store
+        self.build = build
+        self.prefix = prefix
+
+    def write(self, b, /):
+        for line in b.split("\n"):
+            # Skips empty lines
+            if not line:
+                continue
+            if self.prefix is not None:
+                line = self.prefix + line
+            append_to_logs(self.db, self.conda_store, self.build, line + "\n")
+
+    def flush(self):
+        pass
 
 
 def append_to_logs(db: Session, conda_store, build, logs: typing.Union[str, bytes]):
-    try:
-        current_logs = conda_store.storage.get(build.log_key)
-    except Exception:
-        current_logs = b""
+    # For instance, with local storage, this involves reading from and writing
+    # to a file. Locking here prevents a race condition when multiple tasks
+    # attempt to write to a shared resource, which is the log
+    with FileLock(f"{build.build_path(conda_store)}.log.lock"):
+        try:
+            current_logs = conda_store.storage.get(build.log_key)
+        except Exception:
+            current_logs = b""
 
-    if isinstance(logs, str):
-        logs = logs.encode("utf-8")
+        if isinstance(logs, str):
+            logs = logs.encode("utf-8")
 
-    conda_store.storage.set(
-        db,
-        build.id,
-        build.log_key,
-        current_logs + logs,
-        content_type="text/plain",
-        artifact_type=schema.BuildArtifactType.LOGS,
-    )
+        conda_store.storage.set(
+            db,
+            build.id,
+            build.log_key,
+            current_logs + logs,
+            content_type="text/plain",
+            artifact_type=schema.BuildArtifactType.LOGS,
+        )
 
 
 def set_build_started(db: Session, build: orm.Build):
@@ -43,6 +72,15 @@ def set_build_failed(
     db: Session, build: orm.Build, status_info: typing.Optional[str] = None
 ):
     build.status = schema.BuildStatus.FAILED
+    build.status_info = status_info
+    build.ended_on = datetime.datetime.utcnow()
+    db.commit()
+
+
+def set_build_canceled(
+    db: Session, build: orm.Build, status_info: typing.Optional[str] = None
+):
+    build.status = schema.BuildStatus.CANCELED
     build.status_info = status_info
     build.ended_on = datetime.datetime.utcnow()
     db.commit()
@@ -65,17 +103,22 @@ def set_build_completed(db: Session, conda_store, build: orm.Build):
 
 
 def build_cleanup(
-    db: Session, conda_store, build_ids: typing.List[str] = None, reason: str = None
+    db: Session,
+    conda_store,
+    build_ids: typing.List[str] = None,
+    reason: str = None,
+    is_canceled: bool = False,
 ):
     """Walk through all builds in BUILDING state and check that they are actively running
 
     Build can get stuck in the building state due to worker
     spontaineously dying due to memory errors, killing container, etc.
     """
+    status = "CANCELED" if is_canceled else "FAILED"
     reason = (
         reason
-        or """
-Build marked as FAILED on cleanup due to being stuck in BUILDING state
+        or f"""
+Build marked as {status} on cleanup due to being stuck in BUILDING state
 and not present on workers. This happens for several reasons: build is
 canceled, a worker crash from out of memory errors, worker was killed,
 or error in conda-store
@@ -113,7 +156,7 @@ or error in conda-store
             )
         ):
             conda_store.log.warning(
-                f"marking build {build.id} as FAILED since stuck in BUILDING state and not present on workers"
+                f"marking build {build.id} as {status} since stuck in BUILDING state and not present on workers"
             )
             append_to_logs(
                 db,
@@ -121,7 +164,10 @@ or error in conda-store
                 build,
                 reason,
             )
-            set_build_failed(db, build)
+            if is_canceled:
+                set_build_canceled(db, build)
+            else:
+                set_build_failed(db, build)
 
 
 def build_conda_environment(db: Session, conda_store, build):
@@ -150,78 +196,112 @@ def build_conda_environment(db: Session, conda_store, build):
         conda_prefix.parent.mkdir(parents=True, exist_ok=True)
 
         environment_prefix = build.environment_path(conda_store)
-        environment_prefix.parent.mkdir(parents=True, exist_ok=True)
+        if environment_prefix is not None:
+            environment_prefix.parent.mkdir(parents=True, exist_ok=True)
+
+        is_lockfile = build.specification.is_lockfile
 
         with utils.timer(conda_store.log, f"building conda_prefix={conda_prefix}"):
-            context = action.action_solve_lockfile(
-                settings.conda_command,
-                specification=schema.CondaSpecification.parse_obj(
-                    build.specification.spec
-                ),
-                platforms=settings.conda_solve_platforms,
-            )
+            if is_lockfile:
+                context = action.action_save_lockfile(
+                    specification=schema.LockfileSpecification.parse_obj(
+                        build.specification.spec
+                    ),
+                    stdout=LoggedStream(
+                        db=db,
+                        conda_store=conda_store,
+                        build=build,
+                        prefix="action_save_lockfile: ",
+                    ),
+                )
+            else:
+                context = action.action_solve_lockfile(
+                    settings.conda_command,
+                    specification=schema.CondaSpecification.parse_obj(
+                        build.specification.spec
+                    ),
+                    platforms=settings.conda_solve_platforms,
+                    conda_flags=conda_store.conda_flags,
+                    stdout=LoggedStream(
+                        db=db,
+                        conda_store=conda_store,
+                        build=build,
+                        prefix="action_solve_lockfile: ",
+                    ),
+                )
 
             conda_store.storage.set(
                 db,
                 build.id,
                 build.conda_lock_key,
-                json.dumps(context.result, indent=4).encode("utf-8"),
+                json.dumps(
+                    context.result, indent=4, cls=utils.CustomJSONEncoder
+                ).encode("utf-8"),
                 content_type="application/json",
                 artifact_type=schema.BuildArtifactType.LOCKFILE,
             )
 
-            append_to_logs(
-                db,
-                conda_store,
-                build,
-                "::group::action_solve_lockfile\n"
-                + context.stdout.getvalue()
-                + "\n::endgroup::\n",
-            )
             conda_lock_spec = context.result
 
             context = action.action_fetch_and_extract_conda_packages(
                 conda_lock_spec=conda_lock_spec,
                 pkgs_dir=conda_utils.conda_root_package_dir(),
-            )
-            append_to_logs(
-                db,
-                conda_store,
-                build,
-                "::group::action_fetch_and_extract_conda_packages\n"
-                + context.stdout.getvalue()
-                + "\n::endgroup::\n",
+                stdout=LoggedStream(
+                    db=db,
+                    conda_store=conda_store,
+                    build=build,
+                    prefix="action_fetch_and_extract_conda_packages: ",
+                ),
             )
 
             context = action.action_install_lockfile(
                 conda_lock_spec=conda_lock_spec,
                 conda_prefix=conda_prefix,
-            )
-            append_to_logs(
-                db,
-                conda_store,
-                build,
-                "::group::action_install_lockfile\n"
-                + context.stdout.getvalue()
-                + "\n::endgroup::\n",
+                stdout=LoggedStream(
+                    db=db,
+                    conda_store=conda_store,
+                    build=build,
+                    prefix="action_install_lockfile: ",
+                ),
             )
 
-        utils.symlink(conda_prefix, environment_prefix)
+        if environment_prefix is not None:
+            utils.symlink(conda_prefix, environment_prefix)
 
         action.action_set_conda_prefix_permissions(
             conda_prefix=conda_prefix,
             permissions=settings.default_permissions,
             uid=settings.default_uid,
             gid=settings.default_gid,
+            stdout=LoggedStream(
+                db=db,
+                conda_store=conda_store,
+                build=build,
+                prefix="action_set_conda_prefix_permissions: ",
+            ),
         )
 
         action.action_add_conda_prefix_packages(
             db=db,
             conda_prefix=conda_prefix,
             build_id=build.id,
+            stdout=LoggedStream(
+                db=db,
+                conda_store=conda_store,
+                build=build,
+                prefix="action_add_conda_prefix_packages: ",
+            ),
         )
 
-        context = action.action_get_conda_prefix_stats(conda_prefix)
+        context = action.action_get_conda_prefix_stats(
+            conda_prefix,
+            stdout=LoggedStream(
+                db=db,
+                conda_store=conda_store,
+                build=build,
+                prefix="action_get_conda_prefix_stats: ",
+            ),
+        )
         build.size = context.result["disk_usage"]
 
         set_build_completed(db, conda_store, build)
@@ -256,6 +336,7 @@ def solve_conda_environment(db: Session, conda_store, solve: orm.Solve):
         conda_command=settings.conda_command,
         specification=schema.CondaSpecification.parse_obj(solve.specification.spec),
         platforms=[conda_utils.conda_platform()],
+        conda_flags=conda_store.conda_flags,
     )
     conda_lock_spec = context.result
 
@@ -278,15 +359,14 @@ def build_conda_env_export(db: Session, conda_store, build: orm.Build):
     )
 
     context = action.action_generate_conda_export(
-        conda_command=settings.conda_command, conda_prefix=conda_prefix
-    )
-    append_to_logs(
-        db,
-        conda_store,
-        build,
-        "::group::action_generate_conda_export\n"
-        + context.stdout.getvalue()
-        + "\n::endgroup::\n",
+        conda_command=settings.conda_command,
+        conda_prefix=conda_prefix,
+        stdout=LoggedStream(
+            db=db,
+            conda_store=conda_store,
+            build=build,
+            prefix="action_generate_conda_export: ",
+        ),
     )
 
     conda_prefix_export = yaml.dump(context.result).encode("utf-8")
@@ -309,16 +389,15 @@ def build_conda_pack(db: Session, conda_store, build: orm.Build):
     ):
         with tempfile.TemporaryDirectory() as tmpdir:
             output_filename = pathlib.Path(tmpdir) / "environment.tar.gz"
-            context = action.action_generate_conda_pack(
-                conda_prefix=conda_prefix, output_filename=output_filename
-            )
-            append_to_logs(
-                db,
-                conda_store,
-                build,
-                "::group::action_generate_conda_pack\n"
-                + context.stdout.getvalue()
-                + "\n::endgroup::\n",
+            action.action_generate_conda_pack(
+                conda_prefix=conda_prefix,
+                output_filename=output_filename,
+                stdout=LoggedStream(
+                    db=db,
+                    conda_store=conda_store,
+                    build=build,
+                    prefix="action_generate_conda_pack: ",
+                ),
             )
             conda_store.storage.fset(
                 db,
@@ -382,3 +461,72 @@ def build_conda_docker(db: Session, conda_store, build: orm.Build):
         conda_store.log.exception(e)
         append_to_logs(db, conda_store, build, traceback.format_exc())
         raise e
+
+
+def build_constructor_installer(db: Session, conda_store, build: orm.Build):
+    conda_prefix = build.build_path(conda_store)
+
+    settings = conda_store.get_settings(
+        db=db,
+        namespace=build.environment.namespace.name,
+        environment_name=build.environment.name,
+    )
+
+    with utils.timer(
+        conda_store.log, f"creating installer for conda environment={conda_prefix}"
+    ):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            is_lockfile = build.specification.is_lockfile
+
+            if is_lockfile:
+                specification = schema.LockfileSpecification.parse_obj(
+                    build.specification.spec
+                )
+            else:
+                try:
+                    # Tries to use the lockfile if it's available since it has
+                    # pinned dependencies. This code is wrapped into try/except
+                    # because the lockfile lookup might fail if the file is not
+                    # in external storage or on disk, or if parsing fails
+                    specification = schema.LockfileSpecification.parse_obj(
+                        {
+                            "name": build.specification.name,
+                            "lockfile": json.loads(
+                                conda_store.storage.get(build.conda_lock_key)
+                            ),
+                        }
+                    )
+                    is_lockfile = True
+                except Exception as e:
+                    conda_store.log.warning(
+                        "Exception while obtaining lockfile, using specification",
+                        exc_info=e,
+                    )
+                    specification = schema.CondaSpecification.parse_obj(
+                        build.specification.spec
+                    )
+
+            context = action.action_generate_constructor_installer(
+                conda_command=settings.conda_command,
+                specification=specification,
+                installer_dir=pathlib.Path(tmpdir),
+                version=build.build_key,
+                stdout=LoggedStream(
+                    db=db,
+                    conda_store=conda_store,
+                    build=build,
+                    prefix="action_generate_constructor_installer: ",
+                ),
+                is_lockfile=is_lockfile,
+            )
+            output_filename = context.result
+            if output_filename is None:
+                return
+            conda_store.storage.fset(
+                db,
+                build.id,
+                build.constructor_installer_key,
+                output_filename,
+                content_type="application/octet-stream",
+                artifact_type=schema.BuildArtifactType.CONSTRUCTOR_INSTALLER,
+            )

@@ -7,34 +7,28 @@
 #
 # - Register git hooks: pre-commit install --install-hooks
 # - Run on all files:   pre-commit run --all-files
+ci:
+  autoupdate_schedule: monthly
+  autofix_commit_msg: |
+    [pre-commit.ci] Apply automatic pre-commit fixes
 
 repos:
   - repo: https://github.com/psf/black
-    rev: 23.9.1
+    rev: 24.3.0
     hooks:
       - id: black
-        exclude: "examples|tests|docs"
+        exclude: "examples|tests/assets"
 
-  - repo: https://github.com/charliermarsh/ruff-pre-commit
+  - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
-    rev: "v0.0.289"
+    rev: "v0.3.5"
     hooks:
       - id: ruff
-        exclude: "examples|tests|docs"
+        exclude: "examples|tests/assets"
         args: ["--fix"]
 
-  - repo: https://github.com/pycqa/isort
-    rev: 5.12.0
-    hooks:
-      - id: isort
-        name: isort
-        additional_dependencies: [toml]
-        files: \.py$
-        args: ["--profile", "black"]
-        exclude: "conda-store-server/conda_store_server/action/__init__.py"
-
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v4.5.0
     hooks:
       - id: trailing-whitespace
         files: ".*\\.py"
@@ -44,7 +38,15 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v3.0.3
+    rev: v4.0.0-alpha.8
     hooks:
       - id: prettier
         exclude: ^(examples/|templates/|)
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        name: isort
+        args: ["--profile", "black"]
+        exclude: "conda-store-server/conda_store_server/action/__init__.py"

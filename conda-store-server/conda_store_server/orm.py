@@ -1,16 +1,18 @@
 import datetime
+import json
 import logging
 import os
 import pathlib
 import re
 import shutil
+import sys
 
-from conda_store_server import conda_utils, schema, utils
-from conda_store_server.environment import validate_environment
-from conda_store_server.utils import BuildPathError
+from functools import partial
+
 from sqlalchemy import (
     JSON,
     BigInteger,
+    Boolean,
     Column,
     DateTime,
     Enum,
@@ -34,11 +36,27 @@ from sqlalchemy.orm import (
     validates,
 )
 
+from conda_store_server import conda_utils, schema, utils
+from conda_store_server.environment import validate_environment
+from conda_store_server.utils import BuildPathError
+
+
 logger = logging.getLogger("orm")
 
 Base = declarative_base()
 
 ARN_ALLOWED_REGEX = re.compile(schema.ARN_ALLOWED)
+
+
+class Worker(Base):
+    """For communicating with the worker process"""
+
+    __tablename__ = "worker"
+
+    id = Column(Integer, primary_key=True)
+
+    # For checking whether the worker is initialized
+    initialized = Column(Boolean, default=False)
 
 
 class Namespace(Base):
@@ -83,6 +101,8 @@ class NamespaceRoleMapping(Base):
 
     @validates("role")
     def validate_role(self, key, role):
+        if role == "editor":
+            role = "developer"  # alias
         if role not in ["admin", "viewer", "developer"]:
             raise ValueError(f"invalid entity={role}")
 
@@ -108,6 +128,8 @@ class NamespaceRoleMappingV2(Base):
 
     @validates("role")
     def validate_role(self, key, role):
+        if role == "editor":
+            role = "developer"  # alias
         if role not in ["admin", "viewer", "developer"]:
             raise ValueError(f"invalid role={role}")
         return role
@@ -125,20 +147,22 @@ class Specification(Base):
 
     __tablename__ = "specification"
 
-    def __init__(self, specification):
-        if not validate_environment(specification):
+    def __init__(self, specification, is_lockfile: bool = False):
+        if not is_lockfile and not validate_environment(specification):
             raise ValueError(
                 "specification={specification} is not valid conda environment.yaml"
             )
         self.name = specification["name"]
         self.spec = specification
         self.sha256 = utils.datastructure_hash(self.spec)
+        self.is_lockfile = is_lockfile
 
     id = Column(Integer, primary_key=True)
     name = Column(Unicode(255), nullable=False)
     spec = Column(JSON, nullable=False)
     sha256 = Column(Unicode(255), unique=True, nullable=False)
     created_on = Column(DateTime, default=datetime.datetime.utcnow)
+    is_lockfile = Column(Boolean, nullable=False)
 
     builds = relationship("Build", back_populates="specification")
     solves = relationship("Solve", back_populates="specification")
@@ -214,6 +238,9 @@ class Build(Base):
     ended_on = Column(DateTime, default=None)
     deleted_on = Column(DateTime, default=None)
 
+    # Only used by build_key_version 3, not necessary for earlier versions
+    hash = Column(Unicode(32), default=None)
+
     @staticmethod
     def _get_build_key_version():
         # Uses local import to make sure BuildKey is initialized
@@ -239,8 +266,15 @@ class Build(Base):
         build the environment
 
         """
+        # Uses local import to make sure BuildKey is initialized
+        from conda_store_server import BuildKey
+
+        if BuildKey.current_version() < 3:
+            namespace = self.environment.namespace.name
+        else:
+            namespace = ""
+
         store_directory = os.path.abspath(conda_store.store_directory)
-        namespace = self.environment.namespace.name
         res = (
             pathlib.Path(
                 conda_store.build_directory.format(
@@ -254,21 +288,44 @@ class Build(Base):
         # https://github.com/conda-incubator/conda-store/issues/649
         if len(str(res)) > 255:
             raise BuildPathError("build_path too long: must be <= 255 characters")
-        return res
+        # Note: cannot use the '/' operator to prepend the extended-length
+        # prefix
+        if sys.platform == "win32" and conda_store.win_extended_length_prefix:
+            return pathlib.Path(f"\\\\?\\{res}")
+        else:
+            return res
 
     def environment_path(self, conda_store):
         """Environment path is the path for the symlink to the build
         path
 
         """
+        # Uses local import to make sure BuildKey is initialized
+        from conda_store_server import BuildKey
+
+        # This is not used with v3 because the whole point of v3 is to avoid any
+        # dependence on user-provided variable-size data on the filesystem and
+        # by default the environment path contains the namespace and the
+        # environment name, which can be arbitrary large. By setting this to
+        # None, we're making it clear that this shouldn't be used by other
+        # functions, such as when creating symlinks
+        if BuildKey.current_version() >= 3:
+            return None
+
         store_directory = os.path.abspath(conda_store.store_directory)
         namespace = self.environment.namespace.name
         name = self.specification.name
-        return pathlib.Path(
+        res = pathlib.Path(
             conda_store.environment_directory.format(
                 store_directory=store_directory, namespace=namespace, name=name
             )
         )
+        # Note: cannot use the '/' operator to prepend the extended-length
+        # prefix
+        if sys.platform == "win32" and conda_store.win_extended_length_prefix:
+            return pathlib.Path(f"\\\\?\\{res}")
+        else:
+            return res
 
     @property
     def build_key(self):
@@ -287,11 +344,11 @@ class Build(Base):
         return BuildKey.get_build_key(self)
 
     @staticmethod
-    def parse_build_key(key):
+    def parse_build_key(conda_store: "CondaStore", key: str):  # noqa: F821
         # Uses local import to make sure BuildKey is initialized
         from conda_store_server import BuildKey
 
-        return BuildKey.parse_build_key(key)
+        return BuildKey.parse_build_key(conda_store, key)
 
     @property
     def log_key(self):
@@ -312,6 +369,11 @@ class Build(Base):
     @property
     def docker_manifest_key(self):
         return f"docker/manifest/{self.build_key}"
+
+    @property
+    def constructor_installer_key(self):
+        ext = "exe" if sys.platform == "win32" else "sh"
+        return f"installer/{self.build_key}.{ext}"
 
     def docker_blob_key(self, blob_hash):
         return f"docker/blobs/{blob_hash}"
@@ -341,6 +403,13 @@ class Build(Base):
     def has_docker_manifest(self):
         return any(
             artifact.artifact_type == schema.BuildArtifactType.DOCKER_MANIFEST
+            for artifact in self.build_artifacts
+        )
+
+    @hybrid_property
+    def has_constructor_installer(self):
+        return any(
+            artifact.artifact_type == schema.BuildArtifactType.CONSTRUCTOR_INSTALLER
             for artifact in self.build_artifacts
         )
 
@@ -739,7 +808,12 @@ class KeyValueStore(Base):
 
 
 def new_session_factory(url="sqlite:///:memory:", reset=False, **kwargs):
-    engine = create_engine(url, **kwargs)
+    engine = create_engine(
+        url,
+        # See the comment on the CustomJSONEncoder class on why this is needed
+        json_serializer=partial(json.dumps, cls=utils.CustomJSONEncoder),
+        **kwargs,
+    )
 
     session_factory = sessionmaker(bind=engine)
     return session_factory

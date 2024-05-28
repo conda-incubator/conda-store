@@ -1,13 +1,17 @@
 import datetime
+
 from typing import Any, Dict, List, Optional
 
 import pydantic
 import yaml
+
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request
+from fastapi.responses import PlainTextResponse, RedirectResponse
+
 from conda_store_server import __version__, api, orm, schema, utils
 from conda_store_server.schema import Permissions
 from conda_store_server.server import dependencies
-from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request
-from fastapi.responses import PlainTextResponse, RedirectResponse
+
 
 router_api = APIRouter(
     tags=["api"],
@@ -145,9 +149,11 @@ async def api_get_permissions(
         "status": "ok",
         "data": {
             "authenticated": authenticated,
-            "primary_namespace": entity.primary_namespace
-            if authenticated
-            else conda_store.default_namespace,
+            "primary_namespace": (
+                entity.primary_namespace
+                if authenticated
+                else conda_store.default_namespace
+            ),
             "entity_permissions": entity_binding_permissions,
             "entity_roles": entity_binding_roles,
             "expiration": entity.exp if authenticated else None,
@@ -790,6 +796,9 @@ async def api_post_specification(
     entity=Depends(dependencies.get_entity),
     specification: str = Body(""),
     namespace: Optional[str] = Body(None),
+    is_lockfile: Optional[bool] = Body(False, embed=True),
+    environment_name: Optional[str] = Body("", embed=True),
+    environment_description: Optional[str] = Body("", embed=True),
 ):
     with conda_store.get_db() as db:
         permissions = {Permissions.ENVIRONMENT_CREATE}
@@ -805,7 +814,15 @@ async def api_post_specification(
 
         try:
             specification = yaml.safe_load(specification)
-            specification = schema.CondaSpecification.parse_obj(specification)
+            if is_lockfile:
+                lockfile_spec = {
+                    "name": environment_name,
+                    "description": environment_description,
+                    "lockfile": specification,
+                }
+                specification = schema.LockfileSpecification.parse_obj(lockfile_spec)
+            else:
+                specification = schema.CondaSpecification.parse_obj(specification)
         except yaml.error.YAMLError:
             raise HTTPException(status_code=400, detail="Unable to parse. Invalid YAML")
         except utils.CondaStoreError as e:
@@ -822,7 +839,11 @@ async def api_post_specification(
 
         try:
             build_id = conda_store.register_environment(
-                db, specification, namespace_name, force=True
+                db,
+                specification,
+                namespace_name,
+                force=True,
+                is_lockfile=is_lockfile,
             )
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e.args[0]))
@@ -972,6 +993,7 @@ async def api_put_build_cancel(
                 f"build-{build_id}-conda-env-export",
                 f"build-{build_id}-conda-pack",
                 f"build-{build_id}-docker",
+                f"build-{build_id}-constructor-installer",
                 f"build-{build_id}-environment",
             ],
             terminate=True,
@@ -985,8 +1007,9 @@ async def api_put_build_cancel(
         tasks.task_cleanup_builds.si(
             build_ids=[build_id],
             reason=f"""
-    build {build_id} marked as FAILED due to being canceled from the REST API
+    build {build_id} marked as CANCELED due to being canceled from the REST API
     """,
+            is_canceled=True,
         ).apply_async(countdown=5)
 
         return {
@@ -1276,6 +1299,34 @@ async def api_get_build_docker_image_url(
             raise HTTPException(
                 status_code=400,
                 detail=f"Build {build_id} doesn't have a docker manifest",
+            )
+
+
+@router_api.get("/build/{build_id}/installer/")
+async def api_get_build_installer(
+    build_id: int,
+    request: Request,
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
+):
+    with conda_store.get_db() as db:
+        build = api.get_build(db, build_id)
+        auth.authorize_request(
+            request,
+            f"{build.environment.namespace.name}/{build.environment.name}",
+            {Permissions.ENVIRONMENT_READ},
+            require=True,
+        )
+
+        if build.has_constructor_installer:
+            return RedirectResponse(
+                conda_store.storage.get_url(build.constructor_installer_key)
+            )
+
+        else:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Build {build_id} doesn't have an installer",
             )
 
 

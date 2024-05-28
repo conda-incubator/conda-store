@@ -8,6 +8,8 @@ import subprocess
 import sys
 import time
 
+from filelock import FileLock
+
 
 class CondaStoreError(Exception):
     @property
@@ -20,9 +22,14 @@ class BuildPathError(CondaStoreError):
 
 
 def symlink(source, target):
-    if os.path.islink(target):
-        os.unlink(target)
-    os.symlink(source, target)
+    # Multiple builds call this, so this lock avoids race conditions on unlink
+    # and symlink operations
+    with FileLock(f"{target}.lock"):
+        try:
+            os.unlink(target)
+        except FileNotFoundError:
+            pass
+        os.symlink(source, target)
 
 
 def chmod(directory, permissions):
@@ -101,6 +108,16 @@ def timer(logger, prefix):
     logger.info(f"{prefix} took {time.time() - start_time:.3f} [s]")
 
 
+# conda-lock defines Channel.used_env_vars as frozenset. But frozenset is not
+# serializable to JSON, so this creates a custom JSON encoder to handle this
+# type
+class CustomJSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, frozenset):
+            return list(obj)
+        return super().default(obj)
+
+
 def recursive_sort(v):
     """Recursively sort a nested python objects of lists, dicts,
     strings, ints, and floats
@@ -122,7 +139,7 @@ def recursive_sort(v):
 
 
 def datastructure_hash(v):
-    json_blob = json.dumps(recursive_sort(v))
+    json_blob = json.dumps(recursive_sort(v), cls=CustomJSONEncoder)
     return hashlib.sha256(json_blob.encode("utf-8")).hexdigest()
 
 

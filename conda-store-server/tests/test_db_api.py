@@ -1,4 +1,5 @@
 import pytest
+
 from conda_store_server import api
 from conda_store_server.orm import NamespaceRoleMapping
 from conda_store_server.utils import BuildPathError
@@ -71,7 +72,14 @@ def test_namespace_role_mapping(db):
     NamespaceRoleMapping(namespace=namespace, namespace_id=namespace.id, entity="*/*")
 
 
-def test_namespace_role_mapping_v2(db):
+@pytest.mark.parametrize(
+    "editor_role",
+    [
+        "editor",
+        "developer",
+    ],
+)
+def test_namespace_role_mapping_v2(db, editor_role):
     namespace_name = "pytest-namespace"
     other_namespace_name1 = "pytest-other-namespace1"
     other_namespace_name2 = "pytest-other-namespace2"
@@ -91,29 +99,44 @@ def test_namespace_role_mapping_v2(db):
     assert len(api.list_namespaces(db).all()) == 4
 
     # Creates role mappings
-    api.create_namespace_role(db, name=namespace_name, other=other_namespace_name1, role="admin")
-    api.create_namespace_role(db, name=namespace_name, other=other_namespace_name2, role="admin")
-    api.create_namespace_role(db, name=namespace_name, other=other_namespace_name3, role="viewer")
+    api.create_namespace_role(
+        db, name=namespace_name, other=other_namespace_name1, role="admin"
+    )
+    api.create_namespace_role(
+        db, name=namespace_name, other=other_namespace_name2, role="admin"
+    )
+    api.create_namespace_role(
+        db, name=namespace_name, other=other_namespace_name3, role="viewer"
+    )
     db.commit()
 
     # Attempts to create a role mapping with an invalid role
     with pytest.raises(ValueError, match=r"invalid role=invalid-role"):
-        api.create_namespace_role(db, name=namespace_name, other=other_namespace_name3, role="invalid-role")
+        api.create_namespace_role(
+            db, name=namespace_name, other=other_namespace_name3, role="invalid-role"
+        )
         db.commit()
 
     # Attempts to create a role mapping violating the uniqueness constraint
     with pytest.raises(
-            Exception,
-            match=(r"UNIQUE constraint failed: "
-                   r"namespace_role_mapping_v2.namespace_id, "
-                   r"namespace_role_mapping_v2.other_namespace_id")):
+        Exception,
+        match=(
+            r"UNIQUE constraint failed: "
+            r"namespace_role_mapping_v2.namespace_id, "
+            r"namespace_role_mapping_v2.other_namespace_id"
+        ),
+    ):
         # Runs in a nested transaction since a constraint violation will cause a rollback
         with db.begin_nested():
-            api.create_namespace_role(db, name=namespace_name, other=other_namespace_name2, role="developer")
+            api.create_namespace_role(
+                db, name=namespace_name, other=other_namespace_name2, role=editor_role
+            )
             db.commit()
 
     # Updates a role mapping
-    api.update_namespace_role(db, name=namespace_name, other=other_namespace_name2, role="developer")
+    api.update_namespace_role(
+        db, name=namespace_name, other=other_namespace_name2, role=editor_role
+    )
     db.commit()
 
     # Gets all role mappings
@@ -124,17 +147,17 @@ def test_namespace_role_mapping_v2(db):
     assert roles[0].id == 1
     assert roles[0].namespace == namespace_name
     assert roles[0].other_namespace == other_namespace_name1
-    assert roles[0].role == 'admin'
+    assert roles[0].role == "admin"
 
     assert roles[1].id == 2
     assert roles[1].namespace == namespace_name
     assert roles[1].other_namespace == other_namespace_name2
-    assert roles[1].role == 'developer'
+    assert roles[1].role == "developer"  # always developer in the DB
 
     assert roles[2].id == 3
     assert roles[2].namespace == namespace_name
     assert roles[2].other_namespace == other_namespace_name3
-    assert roles[2].role == 'viewer'
+    assert roles[2].role == "viewer"
 
     # Gets other role mappings
     roles = api.get_other_namespace_roles(db, other_namespace_name1)
@@ -156,12 +179,12 @@ def test_namespace_role_mapping_v2(db):
     assert roles[0].id == 1
     assert roles[0].namespace == namespace_name
     assert roles[0].other_namespace == other_namespace_name1
-    assert roles[0].role == 'admin'
+    assert roles[0].role == "admin"
 
     assert roles[1].id == 3
     assert roles[1].namespace == namespace_name
     assert roles[1].other_namespace == other_namespace_name3
-    assert roles[1].role == 'viewer'
+    assert roles[1].role == "viewer"
 
     # Deletes all role mappings
     api.delete_namespace_roles(db, name=namespace_name)
@@ -240,10 +263,12 @@ def test_get_set_keyvaluestore(db):
 
 
 def test_build_path_too_long(db, conda_store, simple_specification):
-    conda_store.store_directory = 'A' * 800
+    conda_store.store_directory = "A" * 800
     build_id = conda_store.register_environment(
         db, specification=simple_specification, namespace="pytest"
     )
     build = api.get_build(db, build_id=build_id)
-    with pytest.raises(BuildPathError, match=r"build_path too long: must be <= 255 characters"):
+    with pytest.raises(
+        BuildPathError, match=r"build_path too long: must be <= 255 characters"
+    ):
         build.build_path(conda_store)

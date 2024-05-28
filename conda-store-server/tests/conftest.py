@@ -1,24 +1,39 @@
 import datetime
-import os
 import pathlib
 import sys
 
 import pytest
 import yaml
+
 from fastapi.testclient import TestClient
 
-from conda_store_server import action, api, app, dbutil, schema, storage, testing, utils  # isort:skip
+
+from conda_store_server import (  # isort:skip
+    action,
+    api,
+    app,
+    dbutil,
+    schema,
+    storage,
+    testing,
+    utils,
+)
+
 from conda_store_server.server import app as server_app  # isort:skip
 
 
 @pytest.fixture
 def celery_config(tmp_path, conda_store):
     config = conda_store.celery_config
-    config["traitlets"] = {"CondaStore": {
-        "database_url": conda_store.database_url,
-        "store_directory": conda_store.store_directory,
-    }}
-    config["beat_schedule_filename"] = str(tmp_path / ".conda-store" / "celerybeat-schedule")
+    config["traitlets"] = {
+        "CondaStore": {
+            "database_url": conda_store.database_url,
+            "store_directory": conda_store.store_directory,
+        }
+    }
+    config["beat_schedule_filename"] = str(
+        tmp_path / ".conda-store" / "celerybeat-schedule"
+    )
     return config
 
 
@@ -38,7 +53,7 @@ def conda_store_config(tmp_path, request):
             CondaStore=dict(
                 storage_class=storage.LocalStorage,
                 store_directory=str(store_directory),
-                database_url=f"sqlite:///{filename}?check_same_thread=False"
+                database_url=f"sqlite:///{filename}?check_same_thread=False",
             )
         )
 
@@ -71,10 +86,10 @@ def conda_store_server(conda_store_config):
         _conda_store.celery_app
 
         # must import tasks after a celery app has been initialized
-        import conda_store_server.worker.tasks  # noqa
-
         # ensure that models are created
         from celery.backends.database.session import ResultModelBase
+
+        import conda_store_server.worker.tasks  # noqa
 
         ResultModelBase.metadata.create_all(db.get_bind())
 
@@ -154,10 +169,10 @@ def conda_store(conda_store_config):
         _conda_store.celery_app
 
         # must import tasks after a celery app has been initialized
-        import conda_store_server.worker.tasks  # noqa
-
         # ensure that models are created
         from celery.backends.database.session import ResultModelBase
+
+        import conda_store_server.worker.tasks  # noqa
 
         ResultModelBase.metadata.create_all(db.get_bind())
 
@@ -195,6 +210,36 @@ def simple_specification_with_pip():
 def simple_conda_lock():
     with (pathlib.Path(__file__).parent / "assets/conda-lock.zlib.yaml").open() as f:
         return yaml.safe_load(f)
+
+
+@pytest.fixture
+def simple_conda_lock_with_pip():
+    with (
+        pathlib.Path(__file__).parent / "assets/conda-lock.zlib.flask.yaml"
+    ).open() as f:
+        return yaml.safe_load(f)
+
+
+@pytest.fixture
+def simple_lockfile_specification(simple_conda_lock):
+    yield schema.LockfileSpecification.parse_obj(
+        {
+            "name": "test",
+            "description": "simple lockfile specification",
+            "lockfile": simple_conda_lock,
+        }
+    )
+
+
+@pytest.fixture
+def simple_lockfile_specification_with_pip(simple_conda_lock_with_pip):
+    yield schema.LockfileSpecification.parse_obj(
+        {
+            "name": "test",
+            "description": "simple lockfile specification with pip",
+            "lockfile": simple_conda_lock_with_pip,
+        }
+    )
 
 
 @pytest.fixture(

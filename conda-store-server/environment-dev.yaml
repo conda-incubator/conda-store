@@ -12,6 +12,7 @@ dependencies:
   - conda-pack
   - conda-lock >=1.0.5
   - conda-package-handling
+  - conda-package-streaming
   # web server
   - celery
   - flower
@@ -32,8 +33,11 @@ dependencies:
   - jinja2
   - python-multipart
   - alembic
+  - platformdirs >=4.0,<5.0a0
   # artifact storage
   - minio
+  # installer
+  - constructor
   # CLI
   - typer
 

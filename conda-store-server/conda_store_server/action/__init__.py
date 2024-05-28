@@ -1,6 +1,7 @@
 from conda_store_server.action.base import action  # noqa
 
 from conda_store_server.action.generate_lockfile import action_solve_lockfile  # noqa
+from conda_store_server.action.generate_lockfile import action_save_lockfile  # noqa
 from conda_store_server.action.download_packages import (
     action_fetch_and_extract_conda_packages,  # noqa
 )
@@ -31,4 +32,7 @@ from conda_store_server.action.add_conda_prefix_packages import (
 )
 from conda_store_server.action.add_lockfile_packages import (
     action_add_lockfile_packages,  # noqa
+)
+from conda_store_server.action.generate_constructor_installer import (
+    action_generate_constructor_installer,  # noqa
 )

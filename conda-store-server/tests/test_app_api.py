@@ -1,6 +1,7 @@
 import sys
 
 from celery.result import AsyncResult
+
 from conda_store_server import api, schema
 
 
@@ -72,6 +73,9 @@ def test_conda_store_register_environment_workflow(db, conda_store, celery_worke
     if sys.platform == "linux":
         task = AsyncResult(f"build-{build.id}-docker")
         task.wait(timeout=2 * 60)
+
+    task = AsyncResult(f"build-{build.id}-constructor-installer")
+    task.wait(timeout=5 * 60)
 
     db.expire_all()
     assert build.status == schema.BuildStatus.COMPLETED

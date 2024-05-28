@@ -8,19 +8,24 @@ environments/builds may have been created which would change the
 ordering for tests.
 
 """
+
 import asyncio
+import collections
+import datetime
 import json
+import statistics
 import time
 import uuid
+
 from functools import partial
-from typing import List
 
 import aiohttp
-import conda_store_server
 import pytest
 import requests
+
+import conda_store_server
+
 from conda_store_server import schema
-from pydantic import parse_obj_as
 
 from .conftest import CONDA_STORE_BASE_URL
 
@@ -77,14 +82,16 @@ def test_api_permissions_unauth(testclient):
 
     r = schema.APIGetPermission.parse_obj(response.json())
     assert r.status == schema.APIStatus.OK
-    assert r.data.authenticated == False
+    assert r.data.authenticated is False
     assert r.data.primary_namespace == "default"
     assert r.data.entity_permissions == {
-        "default/*": sorted([
-            schema.Permissions.ENVIRONMENT_READ.value,
-            schema.Permissions.NAMESPACE_READ.value,
-            schema.Permissions.NAMESPACE_ROLE_MAPPING_READ.value,
-        ])
+        "default/*": sorted(
+            [
+                schema.Permissions.ENVIRONMENT_READ.value,
+                schema.Permissions.NAMESPACE_READ.value,
+                schema.Permissions.NAMESPACE_ROLE_MAPPING_READ.value,
+            ]
+        )
     }
 
 
@@ -95,7 +102,7 @@ def test_api_permissions_auth(testclient):
 
     r = schema.APIGetPermission.parse_obj(response.json())
     assert r.status == schema.APIStatus.OK
-    assert r.data.authenticated == True
+    assert r.data.authenticated is True
     assert r.data.primary_namespace == "username"
     assert r.data.entity_permissions == {
         "*/*": sorted(
@@ -268,14 +275,25 @@ def test_api_get_build_one_unauth(testclient):
 
 def test_api_get_build_one_auth(testclient):
     testclient.login()
-    response = testclient.get("api/v1/build/1")
-    response.raise_for_status()
+    success = False
+    for _ in range(50):
+        response = testclient.get("api/v1/build/1")
+        response.raise_for_status()
 
-    r = schema.APIGetBuild.parse_obj(response.json())
-    assert r.status == schema.APIStatus.OK
-    assert r.data.id == 1
-    assert r.data.specification.name == "python-flask-env"
-    assert r.data.status == schema.BuildStatus.COMPLETED.value
+        r = schema.APIGetBuild.parse_obj(response.json())
+        assert r.status == schema.APIStatus.OK
+        assert r.data.id == 1
+        assert r.data.specification.name == "python-flask-env"
+        if r.data.status in [
+            schema.BuildStatus.QUEUED.value,
+            schema.BuildStatus.BUILDING.value,
+        ]:
+            time.sleep(10)
+            continue
+        assert r.data.status == schema.BuildStatus.COMPLETED.value
+        success = True
+        break
+    assert success
 
 
 def test_api_get_build_one_unauth_packages(testclient):
@@ -288,12 +306,20 @@ def test_api_get_build_one_unauth_packages(testclient):
 
 def test_api_get_build_one_auth_packages(testclient):
     testclient.login()
-    response = testclient.get("api/v1/build/1/packages?size=5")
-    response.raise_for_status()
+    success = False
+    for _ in range(50):
+        response = testclient.get("api/v1/build/1/packages?size=5")
+        response.raise_for_status()
 
-    r = schema.APIListCondaPackage.parse_obj(response.json())
-    assert r.status == schema.APIStatus.OK
-    assert len(r.data) == 5
+        r = schema.APIListCondaPackage.parse_obj(response.json())
+        assert r.status == schema.APIStatus.OK
+        if len(r.data) == 0:
+            time.sleep(10)
+            continue
+        assert len(r.data) == 5
+        success = True
+        break
+    assert success
 
 
 def test_api_get_build_auth_packages_no_exist(testclient):
@@ -467,6 +493,177 @@ def test_create_specification_auth(testclient):
     assert r.data.namespace.name == namespace
 
 
+def test_create_specification_parallel_auth(testclient):
+    namespace = "default"
+    environment_name = f"pytest-{uuid.uuid4()}"
+
+    # Builds different versions to avoid caching
+    versions = [
+        "6.2.0",
+        "6.2.1",
+        "6.2.2",
+        "6.2.3",
+        "6.2.4",
+        "6.2.5",
+        "7.1.1",
+        "7.1.2",
+        "7.3.1",
+        "7.4.0",
+    ]
+    num_builds = len(versions)
+    limit_seconds = 60 * 15
+    build_ids = collections.deque([])
+
+    # Spins up 'num_builds' builds and adds them to 'build_ids'
+    for version in versions:
+        testclient.login()
+        response = testclient.post(
+            "api/v1/specification",
+            json={
+                "namespace": namespace,
+                "specification": json.dumps(
+                    {
+                        "name": environment_name,
+                        "channels": ["main"],
+                        "dependencies": [f"pytest={version}"],
+                    }
+                ),
+            },
+            timeout=10,
+        )
+        response.raise_for_status()
+        r = schema.APIPostSpecification.parse_obj(response.json())
+        assert r.status == schema.APIStatus.OK
+        build_ids.append(r.data.build_id)
+
+    # How long it takes to do a single build
+    build_deltas = []
+
+    # Checks whether the builds are done (in the order they were scheduled in)
+    start = datetime.datetime.now()
+    prev = None
+    prev_builds = num_builds
+    while True:
+        # Prints the current build ids in the queue. Visually, if the server is
+        # configured to run N jobs in parallel, the queue should have N jobs
+        # less almost instantly once the first batch is done processing. After
+        # that, the queue should keep shrinking at a steady pace after each of
+        # the workers is done
+        print("build_ids", build_ids)
+
+        # Checks whether the time limit is reached
+        now = datetime.datetime.now()
+        if (now - start).total_seconds() > limit_seconds:
+            break
+
+        # Measures how long it takes to do a single build
+        if len(build_ids) < prev_builds:
+            if prev is not None:
+                build_delta = (now - prev).total_seconds()
+                print("build_delta", build_delta)
+                build_deltas.append(build_delta)
+            prev_builds = len(build_ids)
+            prev = now
+
+        # Gets the oldest build in the queue as it's the one that's most likely
+        # to be done
+        try:
+            build_id = build_ids.popleft()
+        except IndexError:
+            break
+
+        # Checks the status
+        response = testclient.get(f"api/v1/build/{build_id}", timeout=10)
+        response.raise_for_status()
+        r = schema.APIGetBuild.parse_obj(response.json())
+        assert r.status == schema.APIStatus.OK
+        assert r.data.specification.name == environment_name
+
+        # Gets build logs
+        def get_logs():
+            response = testclient.get(f"api/v1/build/{build_id}/logs", timeout=10)
+            response.raise_for_status()
+            return response.text
+
+        # Exits immediately on failure
+        assert r.data.status != "FAILED", get_logs()
+
+        # If not done, adds the id back to the end of the queue
+        if r.data.status != "COMPLETED":
+            build_ids.append(build_id)
+
+        # Adds a small delay to avoid making too many requests too fast. The
+        # build takes significantly longer than 1 second, so this shouldn't
+        # impact the measurements
+        time.sleep(1)
+
+    # If there are jobs in the queue, the loop didn't complete in the allocated
+    # time. So something went wrong, like a build getting stuck or parallel
+    # builds not working
+    assert len(build_ids) == 0
+
+    # Because this is an integration test, we cannot change the server
+    # c.CondaStoreWorker.concurrency value, which is set to 4 by default. But
+    # it's possible to devise a statistical test based on locally collected
+    # data, using 'build_deltas' above:
+    #
+    # concurrency = 4 with 2 CPUs, so equivalent to concurrency = 2:
+    # c4_2cpu = [
+    #     1.027987,
+    #     67.234371,
+    #     1.272288,
+    #     43.966526,
+    #     7.171627,
+    #     68.563222,
+    #     4.143675,
+    #     46.872263,
+    #     1.018258,
+    # ]
+    #
+    # concurrency = 1, same machine:
+    # c1 = [
+    #     19.394085,
+    #     33.70623,
+    #     22.815429,
+    #     62.555845,
+    #     68.438333,
+    #     29.794979,
+    #     63.370743,
+    #     32.118421,
+    #     29.88376,
+    # ]
+    #
+    # Here's another set of measurements from a different machine, which should
+    # have 4 CPUs, with concurrency = 4:
+    # ci = [
+    #     1.02644,
+    #     33.591736,
+    #     1.016269,
+    #     19.299738,
+    #     7.115025,
+    #     20.342442,
+    #     12.222805,
+    #     6.103751,
+    #     1.016237,
+    # ]
+    #
+    # These values will vary depending on workload and the number of CPUs. But
+    # the main observation here is this: if parallel builds are working,
+    # there will be a number of values that are relatively small compared to the
+    # time it takes to run a single build when not running concurrently.
+    #
+    # So the test below looks at the value of the first quartile, which is the
+    # median of the lower half of the dataset, where all these small values will
+    # be located, and compares it to a certain threshold, which is unlikely to
+    # be reached based on how long it takes a single build to run
+    # non-concurrently on average:
+    threshold = 10
+    quartiles = statistics.quantiles(build_deltas, method="inclusive")
+    print("build_deltas", build_deltas)
+    print("stats", min(build_deltas), quartiles)
+    assert quartiles[0] < threshold
+
+
 # Only testing size values that will always cause errors. Smaller values could
 # cause errors as well, but would be flaky since the test conda-store state
 # directory might have different lengths on different systems, for instance,
@@ -485,7 +682,7 @@ def test_create_specification_auth(testclient):
 )
 def test_create_specification_auth_env_name_too_long(testclient, size):
     namespace = "default"
-    environment_name = 'A' * size
+    environment_name = "A" * size
 
     testclient.login()
     response = testclient.post(
@@ -506,8 +703,8 @@ def test_create_specification_auth_env_name_too_long(testclient, size):
 
     # Try checking that the status is 'FAILED'
     is_updated = False
-    for _ in range(5):
-        time.sleep(5)
+    for _ in range(60):
+        time.sleep(10)
 
         # check for the given build
         response = testclient.get(f"api/v1/build/{build_id}")
@@ -525,7 +722,7 @@ def test_create_specification_auth_env_name_too_long(testclient, size):
 
     # If we're here, the task didn't update the status on failure
     if not is_updated:
-        assert False, f"failed to update status"
+        assert False, "failed to update status"
 
 
 def test_create_specification_auth_no_namespace_specified(testclient):
@@ -612,7 +809,7 @@ def test_create_namespace_auth(testclient):
 
 
 def test_update_namespace_noauth(testclient):
-    namespace = f"filesystem"
+    namespace = "filesystem"
     # namespace = f"pytest-{uuid.uuid4()}"
 
     test_role_mappings = {
@@ -656,15 +853,22 @@ def test_update_namespace_noauth(testclient):
     assert r.status == schema.APIStatus.ERROR
 
 
-def test_update_namespace_auth(testclient):
-    namespace = f"filesystem"
+@pytest.mark.parametrize(
+    "editor_role",
+    [
+        "editor",
+        "developer",
+    ],
+)
+def test_update_namespace_auth(testclient, editor_role):
+    namespace = "filesystem"
 
     testclient.login()
 
     test_role_mappings = {
         f"{namespace}/*": ["viewer"],
         f"{namespace}/admin": ["admin"],
-        f"{namespace}/test": ["admin", "viewer", "developer"],
+        f"{namespace}/test": ["admin", "viewer", editor_role],
     }
 
     # Updates both the metadata and the role mappings
@@ -730,7 +934,9 @@ def test_create_get_delete_namespace_auth(testclient):
     assert r.status == schema.APIStatus.ERROR
 
 
-def _crud_common(testclient, auth, method, route, params=None, json=None, data_pred=None):
+def _crud_common(
+    testclient, auth, method, route, params=None, json=None, data_pred=None
+):
     if auth:
         testclient.login()
 
@@ -759,7 +965,7 @@ def _crud_common(testclient, auth, method, route, params=None, json=None, data_p
 
 @pytest.mark.parametrize("auth", [True, False])
 def test_update_namespace_metadata_v2(testclient, auth):
-    namespace = f"filesystem"
+    namespace = "filesystem"
     make_request = partial(_crud_common, testclient=testclient, auth=auth)
 
     make_request(
@@ -770,9 +976,16 @@ def test_update_namespace_metadata_v2(testclient, auth):
 
 
 @pytest.mark.parametrize("auth", [True, False])
-def test_crud_namespace_roles_v2(testclient, auth):
+@pytest.mark.parametrize(
+    "editor_role",
+    [
+        "editor",
+        "developer",
+    ],
+)
+def test_crud_namespace_roles_v2(testclient, auth, editor_role):
     other_namespace = f"pytest-{uuid.uuid4()}"
-    namespace = f"filesystem"
+    namespace = "filesystem"
     make_request = partial(_crud_common, testclient=testclient, auth=auth)
 
     # Deletes roles to start with a clean state
@@ -793,7 +1006,7 @@ def test_crud_namespace_roles_v2(testclient, auth):
         route=f"api/v1/namespace/{namespace}/role",
         json={
             "other_namespace": other_namespace,
-            "role": "developer"
+            "role": editor_role,
         },
     )
 
@@ -805,9 +1018,9 @@ def test_crud_namespace_roles_v2(testclient, auth):
             "other_namespace": other_namespace,
         },
         data_pred=lambda data: (
-            data['namespace'] == 'filesystem' and
-            data['other_namespace'] == other_namespace and
-            data['role'] == 'developer'
+            data["namespace"] == "filesystem"
+            and data["other_namespace"] == other_namespace
+            and data["role"] == "developer"  # always developer in the DB
         ),
     )
 
@@ -815,10 +1028,7 @@ def test_crud_namespace_roles_v2(testclient, auth):
     make_request(
         method=testclient.put,
         route=f"api/v1/namespace/{namespace}/role",
-        json={
-            "other_namespace": other_namespace,
-            "role": "admin"
-        },
+        json={"other_namespace": other_namespace, "role": "admin"},
     )
 
     # Reads updated roles
@@ -826,10 +1036,10 @@ def test_crud_namespace_roles_v2(testclient, auth):
         method=testclient.get,
         route=f"api/v1/namespace/{namespace}/roles",
         data_pred=lambda data: (
-            data[0]['namespace'] == 'filesystem' and
-            data[0]['other_namespace'] == other_namespace and
-            data[0]['role'] == 'admin' and
-            len(data) == 1
+            data[0]["namespace"] == "filesystem"
+            and data[0]["other_namespace"] == other_namespace
+            and data[0]["role"] == "admin"
+            and len(data) == 1
         ),
     )
 
@@ -983,7 +1193,7 @@ def test_api_cancel_build_auth(testclient):
     new_build_id = r.data.build_id
 
     # Delay to ensure the build kicks off
-    build_timeout = 180
+    build_timeout = 10 * 60
     building = False
     start = time.time()
     while time.time() - start < build_timeout:
@@ -1011,7 +1221,7 @@ def test_api_cancel_build_auth(testclient):
     assert r.status == schema.APIStatus.OK
     assert r.message == f"build {new_build_id} canceled"
 
-    failed = False
+    canceled = False
     for _ in range(10):
         # Delay to ensure the build is marked as failed
         time.sleep(5)
@@ -1027,8 +1237,93 @@ def test_api_cancel_build_auth(testclient):
         r = schema.APIGetBuild.parse_obj(response.json())
         assert r.status == schema.APIStatus.OK
         assert r.data.id == new_build_id
-        if r.data.status == schema.BuildStatus.FAILED.value:
-            failed = True
+        if r.data.status == schema.BuildStatus.CANCELED.value:
+            canceled = True
+            response = testclient.get(f"api/v1/build/{new_build_id}/logs", timeout=10)
+            response.raise_for_status()
+            assert (
+                f"build {new_build_id} marked as CANCELED "
+                f"due to being canceled from the REST API"
+            ) in response.text
             break
 
-    assert failed is True
+    assert canceled is True
+
+
+def test_create_lockfile_specification_auth(testclient):
+    namespace = "default"
+    environment_name = f"pytest-{uuid.uuid4()}"
+
+    def post_specification(
+        specification, is_lockfile, environment_name="", environment_description=""
+    ):
+        response = testclient.post(
+            "api/v1/specification",
+            json={
+                "namespace": namespace,
+                "specification": specification,
+                "is_lockfile": is_lockfile,
+                "environment_name": environment_name,
+                "environment_description": environment_description,
+            },
+        )
+        response.raise_for_status()
+        r = schema.APIPostSpecification.parse_obj(response.json())
+        assert r.status == schema.APIStatus.OK
+
+        return r.data.build_id
+
+    def get_lockfile(build_id):
+        lockfile = None
+        for _ in range(50):
+            time.sleep(10)
+            response = testclient.get(f"api/v1/build/{build_id}/conda-lock.yaml")
+            if response.status_code != 200:
+                continue
+
+            lockfile = response.content.decode("utf-8")
+            break
+
+        # If this fails, the loop timed out because something went wrong
+        assert lockfile is not None
+
+        return lockfile
+
+    # Logs in
+    testclient.login()
+
+    # Submits a standard conda YAML specification
+    build_id1 = post_specification(
+        specification=json.dumps(
+            {
+                "name": environment_name,
+                "dependencies": ["pytest", "pip", {"pip": ["flask"]}],
+            }
+        ),
+        is_lockfile=False,
+    )
+
+    # Gets the first lockfile
+    lockfile1 = get_lockfile(build_id1)
+
+    # Submits a new lockfile-based specification
+    build_id2 = post_specification(
+        specification=lockfile1,
+        is_lockfile=True,
+        environment_name=environment_name,
+        environment_description="this is a test",
+    )
+
+    # Makes sure these are different builds
+    assert build_id1 != build_id2
+
+    # Gets the second lockfile
+    lockfile2 = get_lockfile(build_id2)
+
+    # Ensures the second specification was accepted and the lockfile is the same
+    assert lockfile1 == lockfile2
+
+    # Checks that initial dependencies are part of the lockfile
+    packages = json.loads(lockfile2)["package"]
+    assert any(p["name"] == "pytest" and p["manager"] == "conda" for p in packages)
+    assert any(p["name"] == "flask" and p["manager"] == "pip" for p in packages)
