@@ -136,7 +136,8 @@ Conda-store’s UI plays a pivotal role in user adoption and satisfaction. Feedb
 * **Favicon:** Ensure the conda-store favicon is displayed for better brand consistency.
 * **Custom controls:** Some users also expected a custom conda-store-based menu to open on right-click instead of the standard browser/system menu, so this could be a potential avenue for providing extra support to users to complete tasks.
 * **New Button:** Some users pointed out that the ‘+ New’ button to create new namespaces cluttered the UI and was repetitive. The tooltip text for the button can also be simplified.
-  ![conda-store-newbutton](https://github.com/conda-incubator/conda-store/assets/98317216/d59ea9e1-12b7-4829-a44c-cb328f095636)
+![conda-store-newbutton](https://github.com/conda-incubator/conda-store/assets/98317216/d59ea9e1-12b7-4829-a44c-cb328f095636)
+
 * **Unclear loading states:** On initial interaction with conda-store, users found it surprising to see the status of an environment as “building”, even though they didn’t initiate the build, which might indicate unclear status indicators or initial loading states.
 
 ### Logs and Artifacts
