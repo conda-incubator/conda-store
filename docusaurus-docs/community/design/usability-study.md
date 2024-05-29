@@ -7,7 +7,7 @@ description: conda-store usability study results (2024)
 
 ## Introduction
 
-[conda-store](https://conda.store/) is a suite of tools for managing conda environments, including creating, storing, and accessing environments across teams. conda-store is aimed at all team members, from individual data scientists to software engineers and IT administrators. This report details the findings from a comprehensive usability study focused on [conda-store-ui (a web interface)](https://github.com/conda-incubator/conda-store-ui) as integrated within the [Nebari](nebari.dev) platform.
+[conda-store](https://conda.store/) is a suite of tools for managing conda environments, including creating, storing, and accessing environments across teams. conda-store is aimed at all team members, from individual data scientists to software engineers and IT administrators. This report details the findings from a comprehensive usability study focused on [conda-store-ui (a web interface)](https://github.com/conda-incubator/conda-store-ui) as integrated within the [Nebari](https://www.nebari.dev) platform.
 
 ## Objectives
 
