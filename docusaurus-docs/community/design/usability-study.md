@@ -72,7 +72,8 @@ The Environment Page serves as a central hub for managing conda environments. It
 Overall, users found the process of creating environments to be intuitive and straightforward. During testing, one user inquired about the purpose of the environment description field, suggesting its potential utility in aiding Search capabilities. This indicates a user interest in more integrated features that enhance usability. Additionally, there were several UI-related suggestions for improvement:
   * **Consistency and Clarity:** Users recommended enhancing the UI text and making the call-to-action buttons more consistent regarding placement.
   * **Interaction:** Some users were confused by the CTA (Call to Action) button’s functionality during interactions with package and channel selection widgets. They expected it to ‘submit’ their entries, whereas it added a new line of input. This suggests that the UI cues might be misleading.
-    ![conda-store-interaction](https://github.com/conda-incubator/conda-store/assets/98317216/7e0e2267-6883-4853-bad4-11264262d215)
+
+  ![conda-store-interaction](https://github.com/conda-incubator/conda-store/assets/98317216/7e0e2267-6883-4853-bad4-11264262d215)
 
   * **Default Channel Visibility:** If no specific channel is provided by the user, conda-store defaults to the ‘defaults’ channel. However, this default setting is not visible in the UI, which could lead to confusion. Users also want to be able to set custom default channels.
   * **Autocomplete Features:** Users appreciated the autocomplete suggestions for packages and expressed a desire for similar functionality for channel selections.
