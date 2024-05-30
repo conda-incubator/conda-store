@@ -6,6 +6,3 @@ dependencies:
   - python ==3.10
   # conda environment builds
   - conda ==23.5.2
-
-  # web server
-  - flower

@@ -2,13 +2,7 @@ name: conda-store
 channels:
   - conda-forge
 dependencies:
-  - pip
-  - jupyterhub<2.0.0
-  - jupyterlab>=4.0.0
   - nb_conda_kernels
   - nodejs=18
   - yarn
   - constructor # Runtime dependency, but must be conda-installed
-  - pip:
-      - jupyter-launcher-shortcuts
-      - jupyterlab-conda-store
