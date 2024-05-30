@@ -50,12 +50,10 @@ dependencies = [
   "requests",
   "pydantic<2",
   "python-multipart",
-  "sqlalchemy<=1.4.47",
+  "sqlalchemy<2",
   "traitlets",
   "uvicorn",
   "yarl",
-  # installer
-  "constructor",
   # artifact storage
   "minio",
   "platformdirs >=4.0,<5.0a0"
@@ -75,15 +73,12 @@ dependencies = [
   "build",
   "docker-compose",
   "docker-py<7",
-  "flower",
-  "playwright",
   "pre-commit",
   "pytest",
   "pytest-celery",
-  "pytest-mock",
   "pytest-playwright",
   "twine>=5.0.0",
-  "pkginfo>=1.10",
+  "pkginfo>=1.10", # Needed tos upport metadata 2.3
 ]
 
 [tool.hatch.envs.lint]
