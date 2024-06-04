@@ -5,9 +5,13 @@ import sys
 import typing
 
 import yaml
+
 from celery import Task, platforms, shared_task
 from celery.execute import send_task
 from celery.signals import worker_ready
+from filelock import FileLock
+from sqlalchemy.orm import Session
+
 from conda_store_server import api, environment, schema, utils
 from conda_store_server.build import (
     build_cleanup,
@@ -19,8 +23,6 @@ from conda_store_server.build import (
     solve_conda_environment,
 )
 from conda_store_server.worker.app import CondaStoreWorker
-from filelock import FileLock
-from sqlalchemy.orm import Session
 
 
 @worker_ready.connect
@@ -260,7 +262,8 @@ def task_update_environment_build(self, environment_id):
         conda_prefix = environment.current_build.build_path(conda_store)
         environment_prefix = environment.current_build.environment_path(conda_store)
 
-        utils.symlink(conda_prefix, environment_prefix)
+        if environment_prefix is not None:
+            utils.symlink(conda_prefix, environment_prefix)
 
         if conda_store.post_update_environment_build_hook:
             conda_store.post_update_environment_build_hook(conda_store, environment)

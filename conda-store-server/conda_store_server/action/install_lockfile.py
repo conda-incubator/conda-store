@@ -29,4 +29,4 @@ def action_install_lockfile(
         str(lockfile_filename),
     ]
 
-    context.run(command, check=True)
+    context.run_command(command, check=True)

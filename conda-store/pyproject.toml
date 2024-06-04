@@ -31,7 +31,17 @@ classifiers = [
   "Intended Audience :: Science/Research",
   "Intended Audience :: System Administrators",
 ]
-dependencies = ["rich", "click", "yarl", "aiohttp", "ruamel.yaml"]
+dependencies = [
+  "rich",
+  "click",
+  "yarl",
+  "aiohttp>=3.8.1",
+  "ruamel.yaml",
+  "jupyterhub<2.0.0",
+  "jupyterlab>=4.0.0",
+  "jupyter-launcher-shortcuts",
+  "jupyterlab-conda-store",
+]
 dynamic = ["version"]
 
 [project.urls]
@@ -46,18 +56,20 @@ dev = ["build", "twine"]
 
 [tool.hatch.envs.dev]
 dependencies = [
+  "build",
   "pre-commit",
-  "sphinx",
-  "myst-parser",
-  "sphinx-panels",
-  "sphinx-copybutton",
-  "pydata-sphinx-theme",
   "pytest",
-  "pytest-mock",
+  "twine>=5.0.0",
+  "pkginfo >= 1.10", # Needed to support metadata 2.3
 ]
 
-[tool.hatch.envs.dev.scripts]
+[tool.hatch.envs.lint]
+dependencies = ["pre-commit"]
+
+[tool.hatch.envs.lint.scripts]
 lint = ["pre-commit run --all"]
+
+[tool.hatch.envs.dev.scripts]
 test = "pytest tests"
 
 [project.scripts]
@@ -70,5 +82,8 @@ target-version = ['py38', 'py39', 'py310']
 [tool.ruff]
 ignore = [
   "E501", # line-length
-
 ]
+
+[tool.isort]
+lines_between_types = 1
+lines_after_imports = 2

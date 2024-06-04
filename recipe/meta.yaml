@@ -1,0 +1,121 @@
+{% set name = "conda-store" %}
+{% set version = "2024.1.1" %}
+
+package:
+  name: {{ name|lower }}-split
+  version: {{ version }}
+
+source:
+  # This is only needed here in-repo; in conda-forge, sources from PyPI
+  - path: ../
+
+build:
+  number: 0
+
+outputs:
+  - name: conda-store
+    version: {{ version }}
+    build:
+      noarch: python
+      script: python -m pip install ./conda-store -vv --no-deps --no-build-isolation --no-index
+      entry_points:
+        - conda-store = conda_store.__main__:main
+    requirements:
+      host:
+        - python >=3.8
+        - pip
+        - hatchling >=1.14.0
+        - hatch-vcs
+      run:
+        - __linux  # [linux]
+        - __osx    # [osx]
+        - __win    # [win]
+        - aiohttp>=3.8.1
+        - click
+        - python >=3.8
+        - rich
+        - ruamel.yaml
+        - yarl
+      run_constrained:
+        - {{ pin_subpackage('conda-store-server', min_pin='x.x.x', max_pin='x.x.x') }}
+
+    test:
+      imports:
+        - conda_store
+      commands:
+        - conda-store --help
+
+  - name: conda-store-server
+    version: {{ version }}
+    build:
+      noarch: python
+      script: python -m pip install ./conda-store-server -vv --no-deps --no-build-isolation --no-index
+      entry_points:
+        - conda-store-server = conda_store_server.server.__main__:main
+        - conda-store-worker = conda_store_server.worker.__main__:main
+    requirements:
+      host:
+        - python >=3.8
+        - pip
+        - hatchling >=1.14.0
+        - hatch-vcs
+      run:
+        - alembic
+        - celery
+        - conda
+        - conda-docker  # [linux]
+        - __linux  # [linux]
+        - __osx    # [osx]
+        - __win    # [win]
+        - conda-pack
+        - conda-lock
+        - fastapi
+        - filelock
+        - itsdangerous
+        - jinja2
+        - minio
+        - pydantic <2.0a0
+        - pyjwt
+        - python >=3.8
+        - python-docker
+        - python-multipart
+        - pyyaml
+        - redis-py
+        - requests
+        - sqlalchemy <2.0a0
+        - traitlets
+        - uvicorn
+        - yarl
+        - constructor
+        - psycopg2
+        - pymysql
+      run_constrained:
+        - {{ pin_subpackage('conda-store', min_pin='x.x.x', max_pin='x.x.x') }}
+
+    test:
+      imports:
+        - conda_store_server
+      commands:
+        - conda-store-server --help
+        - conda-store-worker --help
+
+about:
+  home: https://github.com/Quansight/conda-store
+  license: BSD-3-Clause
+  license_family: BSD
+  license_file: LICENSE
+  summary: Conda Environment Management, Builds, and Serve
+  description: |
+    End users think in terms of environments not packages. The core
+    philosophy of conda-store is to serve identical conda environments
+    in as many ways as possible. Conda Store controls the environment
+    lifecycle: management, builds, and serving of environments.
+  doc_url: https://conda-store.readthedocs.io/
+  dev_url: https://github.com/Quansight/conda-store
+
+extra:
+  feedstock-name: conda-store
+  recipe-maintainers:
+    - trallard
+    - costrouc
+    - jaimergp

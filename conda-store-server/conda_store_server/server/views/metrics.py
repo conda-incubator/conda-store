@@ -1,7 +1,9 @@
-from conda_store_server import api
-from conda_store_server.server import dependencies
 from fastapi import APIRouter, Depends
 from fastapi.responses import PlainTextResponse
+
+from conda_store_server import api
+from conda_store_server.server import dependencies
+
 
 router_metrics = APIRouter(tags=["metrics"])
 
