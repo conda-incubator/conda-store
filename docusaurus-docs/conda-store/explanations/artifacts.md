@@ -146,7 +146,7 @@ are plans to address this issue in the future.
 :::
 
 <!-- Internal links -->
-[cs-ui-yaml]: conda-store-ui/tutorials/create-envs#yaml-editor
+[cs-ui-yaml]: ../../conda-store-ui/tutorials/create-envs#yaml-editor
 
 <!-- External links -->
 [conda-docs]: https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/environments.html

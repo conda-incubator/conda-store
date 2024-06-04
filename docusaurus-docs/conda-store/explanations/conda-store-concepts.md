@@ -31,17 +31,59 @@ A user can be a part of several other "shared" namespaces, and based on the leve
 
 ## Role mappings
 
-<!-- TODO -->
+By default, the following roles are available in conda-store. All users are in one of these groups and have corresponding permissions.
 
-- Viewer
-- Developer (to be changed to Editor)
-- Admin
+- **Viewer:** Read-only permissions for environments in selected namespaces
+- **Editor (previously called Developer):** Permission to read, create, and update environments in specific namespaces
+- **Admin:** Permission to read, create, update, and delete environments in all existing namespaces
 
-## Environment versions
+<details>
+<summary> Specific role-mappings: </summary>
+
+```yaml
+    _viewer_permissions = {
+        schema.Permissions.ENVIRONMENT_READ,
+        schema.Permissions.NAMESPACE_READ,
+        schema.Permissions.NAMESPACE_ROLE_MAPPING_READ,
+    }
+    _editor_permissions = {
+        schema.Permissions.BUILD_CANCEL,
+        schema.Permissions.ENVIRONMENT_CREATE,
+        schema.Permissions.ENVIRONMENT_READ,
+        schema.Permissions.ENVIRONMENT_UPDATE,
+        schema.Permissions.ENVIRONMENT_SOLVE,
+        schema.Permissions.NAMESPACE_READ,
+        schema.Permissions.NAMESPACE_ROLE_MAPPING_READ,
+        schema.Permissions.SETTING_READ,
+    }
+    _admin_permissions = {
+        schema.Permissions.BUILD_DELETE,
+        schema.Permissions.BUILD_CANCEL,
+        schema.Permissions.ENVIRONMENT_CREATE,
+        schema.Permissions.ENVIRONMENT_DELETE,
+        schema.Permissions.ENVIRONMENT_READ,
+        schema.Permissions.ENVIRONMENT_UPDATE,
+        schema.Permissions.ENVIRONMENT_SOLVE,
+        schema.Permissions.NAMESPACE_CREATE,
+        schema.Permissions.NAMESPACE_DELETE,
+        schema.Permissions.NAMESPACE_READ,
+        schema.Permissions.NAMESPACE_UPDATE,
+        schema.Permissions.NAMESPACE_ROLE_MAPPING_CREATE,
+        schema.Permissions.NAMESPACE_ROLE_MAPPING_READ,
+        schema.Permissions.NAMESPACE_ROLE_MAPPING_UPDATE,
+        schema.Permissions.NAMESPACE_ROLE_MAPPING_DELETE,
+        schema.Permissions.SETTING_READ,
+        schema.Permissions.SETTING_UPDATE,
+    }
+```
+
+</details>
+
+## Environment versions/builds
 
 conda-store always re-builds an environment from scratch when edits are detected, which is required for ensuring truly reproducible environments.
 Version control is very useful in any collaborative setting, and environments are no exception.
-Hence, conda-store keeps older versions of the environment for reference, and allows you to select different versions when needed. conda-store-ui also provides a graphical way to [switch between versions][conda-store-ui-version-control].
+Hence, conda-store keeps older versions (also called "builds") of the environment for reference, and allows you to select and use different (previous or newer) versions when needed. conda-store-ui also provides a graphical way to [switch between versions][conda-store-ui-version-control].
 
 :::tip
 Internally, conda-store handles versions with ✨ symlinking magic ✨, where the environment name points to different environments corresponding to versions.
