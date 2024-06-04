@@ -20,17 +20,33 @@ pip ships with the Python programming language, and can install packages from th
 
 conda needs to be downloaded separately (through a distribution like Anaconda or Miniconda), and can install packages from conda [*channels*](#channels) and local builds.
 
+Some Python packages depend on non-Python code (for example, NumPy includes some C libraries). Installing such packages from PyPI using pip can be un-reliable and sometimes it can be your responsibility to separately install the non-Python libraries.
+However, conda provides a package management solution that includes both Python and other underlying non-Python code.
+
+## Dependencies
+
+Modern open source software (and software in general) is created using or builds on other libraries, which are called the *dependencies* of the project.
+For example, pandas uses NumPy's `ndarray`s and is written partially in Python, hence, NumPy and Python are dependencies of pandas.
+Specifically, they are the direct dependencies.
+The dependencies of NumPy and pandas, and the dependencies of those dependencies, and so on creates a complete dependency graph for pandas.
+
+Since conda-store focuses on [environments](#environments), the terms *dependencies* usually refers to the full set of compatible dependencies for all the packages specified in an environment.
+
 ## Channels (conda)
 
 The [conda documentation][conda-docs-channels] defines:
 
 > Conda channels are the locations where packages are stored. They serve as the base for hosting and managing packages. Conda packages are downloaded from remote channels, which are URLs to directories containing conda packages.
 
-In conda-store, packages are installed from the [conda-forge][conda-forge] channel by default. <!-- NOTE: Verify? -->
+Similar to PyPI, conda channels are URLs of remote servers that manage packages.
+
+In conda-store, packages are installed from the [conda-forge][conda-forge] channel by default.
 conda-forge is a community maintained channel for hosting open source libraries.
 
 :::note
-This behavior is different from conda that gets packages from the "default" channel by default.
+This behavior is different from conda downloaded from Anaconda/Miniconda distribution, that gets packages from the "default" channel by default.
+
+Other distributions like Miniforge also use conda-forge as the default channel.
 :::
 
 ## Environments
@@ -43,6 +59,10 @@ The [official conda documentation][conda-docs-environments] states:
 > A conda environment is a directory that contains a specific collection of conda packages that you have installed.
 >
 > If you change one environment, your other environments are not affected. You can easily activate or deactivate environments, which is how you switch between them.
+
+In data science and development workflows, you often use different environments for different projects and sub-projects. It gives you a clean space for development with only the packages and versions that you need for the specific project. You can also use different versions of the same package in different environments depending on your project needs.
+
+Using isolated environments is a good practice to follow. The alternative, where requirements for all projects are added to a single "base" environment can not only give you un-reliable results but also be very tedious to manage across projects.
 
 ## Environment specification (spec)
 
@@ -67,16 +87,11 @@ dependencies:  # list of packages required for your work
 
 conda uses this file to create a conda *environment*.
 
+:::tip
+In some cases, installing packages using pip through conda can cause issues dependency conflicts. We suggest you use the `pip:` section only if the package you need is not available on conda-forge.
+:::
+
 Learn more in the [conda documentation about created an environment file manually][conda-docs-env-file]
-
-## Dependencies
-
-Modern open source software (and software in general) is created using or builds on other libraries, which are called the *dependencies* of the project.
-For example, pandas uses NumPy's `ndarray`s and is written partially in Python, hence, NumPy and Python are dependencies of pandas.
-Specifically, they are the direct dependencies.
-The dependencies of NumPy and pandas, and the dependencies of those dependencies, and so on creates a complete dependency graph for pandas.
-
-Since conda-store focuses on [environments](#environments), the terms *dependencies* usually refers to the full set of compatible dependencies for all the packages specified in an environment.
 
 ## Environment creation
 
@@ -101,8 +116,6 @@ is because in general , non-URL channels are expected to be present at `https://
    sha256 of each package to download.
 
 4. The specific packages are downloaded.
-
-5. Conda does :sparkles: magic :sparkles: to fix the path prefixes of the installs, which is beyond the scope of this page.
 
 For a detailed walkthrough, check out the [conda install deep dive in the conda documentation][conda-docs-install].
 
