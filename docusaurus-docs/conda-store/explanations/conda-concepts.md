@@ -37,7 +37,7 @@ This behavior is different from conda that gets packages from the "default" chan
 
 conda-store helps create and manage "conda environments", sometimes also referred to as "data science environments" or simply "environments" in conda-store spaces.
 
-Environments are an isolated set of installed packages.
+An environment is an isolated set of installed packages.
 The [official conda documentation][conda-docs-environments] states:
 
 > A conda environment is a directory that contains a specific collection of conda packages that you have installed.
@@ -80,7 +80,7 @@ Since conda-store focuses on [environments](#environments), the terms *dependenc
 
 ## Environment creation
 
-Given an `environment.yaml` file, this is how conda perform a build (in brief):
+Given an `environment.yaml` file, this is how conda performs a build (in brief):
 
 1. Conda downloads `channeldata.json`, a metadata file from each of the channels which
    list the available architectures.

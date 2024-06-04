@@ -17,12 +17,11 @@ Environments in shared namespaces can be accessed by everyone with access to tha
 
 ## YAML file (pinned)
 
-YAML file that follows the conda specification is a common way to create environments.
+YAML files that follow the conda specification are a common way to create environments.
 conda-store creates a "pinned" YAML, where all the exact versions of requested packages (including `pip` packages) as well as all their dependencies are specified, to ensure new environments created match the original environment as closely as possible.
 
 :::info
-In rare cases, the pinned packages may not solve because packages are
-routinely marked as broken and removed.
+In rare cases, building environments from "pinned" YAML files may not solve because packages are routinely marked as broken and removed at the repository level.
 
 **conda-forge** (default channel in conda-store)
 has a [policy that packages are never removed but are marked as
@@ -64,7 +63,7 @@ conda-lock install <lockfile.yml>
 ## Tarballs or archives
 
 :::warning
-Environment builds from archives is only supported on Linux machines
+Building environments from archives is only supported on Linux machines
 because the tarballs are built on Linux machines.
 :::
 
