@@ -222,6 +222,13 @@ objects as public if there is an explicit need to do so. Keeping code private by
 default limits the public API that the conda-store project developers are
 committing to supporting.
 
+### Build keys
+
+conda-store ships with several build key versions. The build key determines the
+location of environment builds and build artifacts. Build key versions marked as
+experimental can be changed at any time, see `BuildKey` and the FAQ for more
+information.
+
 #### Deprecating Python APIs
 
 Under exceptional circumstances such as a serious security vulnerability which

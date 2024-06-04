@@ -169,7 +169,7 @@ function HomepageFeatures() {
 function HomepageVideo() {
   const { siteConfig } = useDocusaurusContext();
   return (
-    <header className={clsx("hero hero--secondary", styles.heroBanner)}>
+    <header className={clsx(styles.heroBanner)}>
       <div className="container">
         <img
           src={useBaseUrl("/img/conda-store-ui.webp")}

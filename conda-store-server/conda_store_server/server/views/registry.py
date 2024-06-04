@@ -1,11 +1,13 @@
 import json
 import time
 
+from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.responses import RedirectResponse, Response
+
 from conda_store_server import api, orm, schema
 from conda_store_server.schema import Permissions
 from conda_store_server.server import dependencies
-from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.responses import RedirectResponse, Response
+
 
 router_registry = APIRouter(tags=["registry"])
 
@@ -101,7 +103,7 @@ def get_docker_image_manifest(conda_store, image, tag, timeout=10 * 60):
     else:
         build_key = tag
 
-    build_id = orm.Build.parse_build_key(build_key)
+    build_id = orm.Build.parse_build_key(conda_store, build_key)
     if build_id is None:
         return docker_error_message(schema.DockerRegistryError.MANIFEST_UNKNOWN)
 
@@ -159,9 +161,11 @@ def list_tags(
     try:
         auth.authorize_request(
             request,
-            image
-            if parts[0] != "conda-store-dynamic"
-            else "conda-store-dynamic/python",
+            (
+                image
+                if parts[0] != "conda-store-dynamic"
+                else "conda-store-dynamic/python"
+            ),
             {Permissions.ENVIRONMENT_READ},
             require=True,
         )

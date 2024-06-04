@@ -10,6 +10,7 @@ import conda.gateways.logging  # noqa
 import conda_package_handling.api
 import conda_package_streaming.url
 import filelock
+
 from conda.base.constants import PACKAGE_CACHE_MAGIC_FILE
 from conda.common.path import expand, strip_pkg_extension
 from conda.core.package_cache_data import (
@@ -20,6 +21,7 @@ from conda.core.package_cache_data import (
     write_as_json_to_file,
 )
 from conda.gateways.disk.update import touch
+
 from conda_store_server import action, conda_utils
 
 

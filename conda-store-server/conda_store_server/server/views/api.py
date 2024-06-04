@@ -1,13 +1,17 @@
 import datetime
+
 from typing import Any, Dict, List, Optional
 
 import pydantic
 import yaml
+
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request
+from fastapi.responses import PlainTextResponse, RedirectResponse
+
 from conda_store_server import __version__, api, orm, schema, utils
 from conda_store_server.schema import Permissions
 from conda_store_server.server import dependencies
-from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request
-from fastapi.responses import PlainTextResponse, RedirectResponse
+
 
 router_api = APIRouter(
     tags=["api"],
@@ -145,9 +149,11 @@ async def api_get_permissions(
         "status": "ok",
         "data": {
             "authenticated": authenticated,
-            "primary_namespace": entity.primary_namespace
-            if authenticated
-            else conda_store.default_namespace,
+            "primary_namespace": (
+                entity.primary_namespace
+                if authenticated
+                else conda_store.default_namespace
+            ),
             "entity_permissions": entity_binding_permissions,
             "entity_roles": entity_binding_roles,
             "expiration": entity.exp if authenticated else None,
@@ -790,6 +796,9 @@ async def api_post_specification(
     entity=Depends(dependencies.get_entity),
     specification: str = Body(""),
     namespace: Optional[str] = Body(None),
+    is_lockfile: Optional[bool] = Body(False, embed=True),
+    environment_name: Optional[str] = Body("", embed=True),
+    environment_description: Optional[str] = Body("", embed=True),
 ):
     with conda_store.get_db() as db:
         permissions = {Permissions.ENVIRONMENT_CREATE}
@@ -805,7 +814,15 @@ async def api_post_specification(
 
         try:
             specification = yaml.safe_load(specification)
-            specification = schema.CondaSpecification.parse_obj(specification)
+            if is_lockfile:
+                lockfile_spec = {
+                    "name": environment_name,
+                    "description": environment_description,
+                    "lockfile": specification,
+                }
+                specification = schema.LockfileSpecification.parse_obj(lockfile_spec)
+            else:
+                specification = schema.CondaSpecification.parse_obj(specification)
         except yaml.error.YAMLError:
             raise HTTPException(status_code=400, detail="Unable to parse. Invalid YAML")
         except utils.CondaStoreError as e:
@@ -822,7 +839,11 @@ async def api_post_specification(
 
         try:
             build_id = conda_store.register_environment(
-                db, specification, namespace_name, force=True
+                db,
+                specification,
+                namespace_name,
+                force=True,
+                is_lockfile=is_lockfile,
             )
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e.args[0]))
