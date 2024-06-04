@@ -24,9 +24,5 @@ def gen_openapi_json():
         )
 
 
-def main():
-    gen_openapi_json()
-
-
 if __name__ == "__main__":
-    main()
+    gen_openapi_json()
