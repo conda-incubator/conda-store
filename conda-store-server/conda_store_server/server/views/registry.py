@@ -103,7 +103,7 @@ def get_docker_image_manifest(conda_store, image, tag, timeout=10 * 60):
     else:
         build_key = tag
 
-    build_id = orm.Build.parse_build_key(build_key)
+    build_id = orm.Build.parse_build_key(conda_store, build_key)
     if build_id is None:
         return docker_error_message(schema.DockerRegistryError.MANIFEST_UNKNOWN)
 

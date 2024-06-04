@@ -1,10 +1,4 @@
-import subprocess
-
-
 def logged_command(context, command, **kwargs):
-    context.log.info(f"Running command: {' '.join(command)}")
-    context.log.info(
-        subprocess.check_output(
-            command, stderr=subprocess.STDOUT, encoding="utf-8", **kwargs
-        )
-    )
+    # This is here only for backward compatibility, new code should use the
+    # run_command method instead of calling this function
+    context.run_command(command, **kwargs)

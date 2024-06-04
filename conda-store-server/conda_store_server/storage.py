@@ -21,10 +21,17 @@ class Storage(LoggingConfigurable):
         filename: str,
         artifact_type: schema.BuildArtifactType,
     ):
-        db.add(
-            orm.BuildArtifact(build_id=build_id, key=key, artifact_type=artifact_type)
+        ba = orm.BuildArtifact
+        exists = (
+            db.query(ba)
+            .filter(ba.build_id == build_id)
+            .filter(ba.key == key)
+            .filter(ba.artifact_type == artifact_type)
+            .first()
         )
-        db.commit()
+        if not exists:
+            db.add(ba(build_id=build_id, key=key, artifact_type=artifact_type))
+            db.commit()
 
     def set(
         self,
@@ -34,10 +41,17 @@ class Storage(LoggingConfigurable):
         value: bytes,
         artifact_type: schema.BuildArtifactType,
     ):
-        db.add(
-            orm.BuildArtifact(build_id=build_id, key=key, artifact_type=artifact_type)
+        ba = orm.BuildArtifact
+        exists = (
+            db.query(ba)
+            .filter(ba.build_id == build_id)
+            .filter(ba.key == key)
+            .filter(ba.artifact_type == artifact_type)
+            .first()
         )
-        db.commit()
+        if not exists:
+            db.add(ba(build_id=build_id, key=key, artifact_type=artifact_type))
+            db.commit()
 
     def get(self, key: str):
         raise NotImplementedError()
@@ -230,5 +244,12 @@ class LocalStorage(Storage):
 
     def delete(self, db, build_id, key):
         filename = os.path.join(self.storage_path, key)
-        os.remove(filename)
+        try:
+            os.remove(filename)
+        except FileNotFoundError:
+            # The DB can contain multiple entries pointing to the same key, like
+            # a log file. This skips files that were previously processed and
+            # deleted. See LocalStorage.fset and Storage.fset, which are used
+            # for saving build artifacts
+            pass
         super().delete(db, build_id, key)

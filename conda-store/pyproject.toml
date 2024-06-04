@@ -34,11 +34,17 @@ classifiers = [
   "Intended Audience :: Science/Research",
   "Intended Audience :: System Administrators",
 ]
-dependencies = ["rich",
+dependencies = [
+  "rich",
   "click",
   "yarl",
   "aiohttp>=3.8.1",
-  "ruamel.yaml"]
+  "ruamel.yaml",
+  "jupyterhub<2.0.0",
+  "jupyterlab>=4.0.0",
+  "jupyter-launcher-shortcuts",
+  "jupyterlab-conda-store",
+]
 dynamic = ["version"]
 
 [project.urls]
@@ -58,8 +64,7 @@ dependencies = [
   "pre-commit",
   "pytest",
   "twine>=5.0.0",
-  "pkginfo >= 1.10",
-  "pytest-mock",
+  "pkginfo >= 1.10", # Needed to support metadata 2.3
 ]
 
 [tool.hatch.envs.lint]
