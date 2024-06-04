@@ -13,8 +13,7 @@ This page describes how conda-store achieves these goals.
 In the [conda-based environment creation process][conda-concepts-env-creation], there are two areas where runtime reproducibility is improved through conda-store:
 
 * Auto-tracking when an `environment.yaml` (which is created and updated manually) file has changes. This can be easily tracked by taking a sha256 of the file, which is what conda-store does but sorts the dependencies to make sure it has a way of not triggering a rebuild if the order of two packages changes in the dependencies list.
-* In step (2) `repodata.json` is updated regularly. When conda solves for a user's environment it tries to use the latest version of each package. Since `repodata.json` could be updated the very next minute, the same solve for the same
-`environment.yaml` file can result in different solves. To enable reproducibility, conda-store auto-generates certain artifacts like lockfiles and tarballs that capture the actual versions of packages and can be used reliably re-create the same environment. Learn more about them in the [artifacts documentation][artifacts].
+* When a user creates an environment, conda tries to use the latest version of each package requested in the environment specification. Conda channels are constantly being updated with new package versions, so the same solve for the same `environment.yaml` file can result in different dependencies being downloaded. To enable reproducibility, conda-store auto-generates certain artifacts like lockfiles and tarballs that capture the actual versions of packages and can be used reliably re-create the same environment. Learn more about them in the [artifacts documentation][artifacts].
 
 ## Namespaces
 
