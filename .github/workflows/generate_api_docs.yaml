@@ -4,8 +4,9 @@ env:
   DEFAULT_PYTHON_VERSION: "3.12"
 
 on:
-  release:
-    types: [published]
+  push:
+    branches: ['main']
+    paths: ['conda-store-server/**']
   workflow_dispatch:
 
 jobs:
