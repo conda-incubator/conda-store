@@ -807,7 +807,9 @@ class KeyValueStore(Base):
     value = Column(JSON)
 
 
-def new_session_factory(url="sqlite:///:memory:", reset=False, **kwargs):
+def new_session_factory(
+    url="sqlite:///:memory:", reset=False, **kwargs
+) -> sessionmaker:
     engine = create_engine(
         url,
         # See the comment on the CustomJSONEncoder class on why this is needed

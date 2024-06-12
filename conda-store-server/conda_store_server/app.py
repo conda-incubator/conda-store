@@ -8,7 +8,7 @@ from typing import Any, Dict
 import pydantic
 
 from celery import Celery, group
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import QueuePool
 from traitlets import (
     Bool,
@@ -386,7 +386,7 @@ class CondaStore(LoggingConfigurable):
     )
 
     @property
-    def session_factory(self):
+    def session_factory(self) -> sessionmaker:
         if hasattr(self, "_session_factory"):
             return self._session_factory
 
