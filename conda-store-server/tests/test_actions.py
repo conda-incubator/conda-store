@@ -26,7 +26,7 @@ from conda_store_server import (
     server,
     utils,
 )
-from conda_store_server.action import generate_lockfile, generate_constructor_installer
+from conda_store_server.action import generate_constructor_installer, generate_lockfile
 from conda_store_server.server.auth import DummyAuthentication
 
 
