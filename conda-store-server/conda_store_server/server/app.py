@@ -3,15 +3,12 @@ import os
 import posixpath
 import sys
 import time
+
 from enum import Enum
 from threading import Thread
 
-import conda_store_server
-import conda_store_server.dbutil as dbutil
 import uvicorn
-from conda_store_server import __version__, orm, storage
-from conda_store_server.app import CondaStore
-from conda_store_server.server import auth, views
+
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
@@ -31,6 +28,13 @@ from traitlets import (
     validate,
 )
 from traitlets.config import Application, catch_config_error
+
+import conda_store_server
+import conda_store_server.dbutil as dbutil
+
+from conda_store_server import __version__, orm, storage
+from conda_store_server.app import CondaStore
+from conda_store_server.server import auth, views
 
 
 class _Color(str, Enum):

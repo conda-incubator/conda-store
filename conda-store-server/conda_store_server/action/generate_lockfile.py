@@ -4,8 +4,10 @@ import pathlib
 import typing
 
 import yaml
+
 from conda_lock.conda_lock import run_lock
-from conda_store_server import action, conda_utils, schema
+
+from conda_store_server import action, conda_utils, schema, utils
 from conda_store_server.action.utils import logged_command
 
 
@@ -61,3 +63,19 @@ def action_solve_lockfile(
 
     with lockfile_filename.open() as f:
         return yaml.safe_load(f)
+
+
+@action.action
+def action_save_lockfile(
+    context,
+    specification: schema.LockfileSpecification,
+):
+    # Note: this calls dict on specification so that the version field is
+    # part of the output
+    lockfile = specification.dict()["lockfile"]
+    lockfile_filename = pathlib.Path.cwd() / "conda-lock.yaml"
+
+    with lockfile_filename.open("w") as f:
+        json.dump(lockfile, f, cls=utils.CustomJSONEncoder)
+
+    return lockfile

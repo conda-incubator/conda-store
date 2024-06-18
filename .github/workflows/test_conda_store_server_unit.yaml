@@ -1,0 +1,82 @@
+name: "Test conda-store-server (unit)"
+
+env:
+  DEFAULT_PYTHON_VERSION: "3.10"
+  FORCE_COLOR: "1" # Make tools pretty.
+
+on:
+  pull_request:
+    # we do not care about building the docker image on docs changes
+    paths:
+      - "!docusaurus-docs/**"
+  push:
+    branches:
+      - main
+
+
+# ensuring only one instance is running at a given time
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-conda-store-server:
+    name: "unit-test conda-store-server"
+    strategy:
+      matrix:
+        os: ["ubuntu", "macos", "windows"]
+        include:
+          - os: ubuntu
+            environment-file: conda-store-server/environment-dev.yaml
+          - os: macos
+            environment-file: conda-store-server/environment-macos-dev.yaml
+          - os: windows
+            environment-file: conda-store-server/environment-windows-dev.yaml
+    runs-on: ${{ matrix.os }}-latest
+    defaults:
+      run:
+        shell: bash -el {0}
+        working-directory: conda-store-server
+    steps:
+      - name: "Checkout Repository 🛎"
+        uses: actions/checkout@v4
+
+      - name: "Set up env ${{ matrix.os }} 🐍"
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+            environment-file: ${{ matrix.environment-file }}
+            miniforge-version: latest
+
+      # This fixes a "DLL not found" issue importing ctypes from the hatch env
+      - name: "Reinstall Python 3.10 on Windows runner"
+        uses: nick-fields/retry@v2.8.3
+        with:
+          timeout_minutes: 9999
+          max_attempts: 6
+          command:
+            conda install --channel=conda-forge --quiet --yes python=${{ matrix.python }}
+        if: matrix.os == 'windows'
+
+      - name: "Linting Checks 🧹"
+        run: |
+          hatch env run -e lint lint
+
+      - name: "Build package 📦"
+        run: |
+          hatch build
+
+      - name: "Unit tests ✅"
+        run: |
+          pytest -m "not extended_prefix and not user_journey" tests
+
+      # https://github.com/actions/runner-images/issues/1052
+      - name: "Windows extended prefix unit tests ✅"
+        shell: pwsh
+        run: |
+          Set-ItemProperty "HKLM:\System\CurrentControlSet\Control\FileSystem" `
+            -Name "LongPathsEnabled" `
+            -Value 0 `
+            -Type DWord
+          (Get-ItemProperty "HKLM:System\CurrentControlSet\Control\FileSystem").LongPathsEnabled
+          pytest -m "extended_prefix" tests
+        if: matrix.os == 'windows'

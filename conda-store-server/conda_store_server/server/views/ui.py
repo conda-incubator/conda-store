@@ -1,14 +1,17 @@
 from typing import Optional
 
 import yaml
+
+from fastapi import APIRouter, Depends, Request
+from fastapi.responses import RedirectResponse
+
 from conda_store_server import api
 from conda_store_server.action.generate_constructor_installer import (
     get_installer_platform,
 )
 from conda_store_server.schema import Permissions
 from conda_store_server.server import dependencies
-from fastapi import APIRouter, Depends, Request
-from fastapi.responses import RedirectResponse
+
 
 router_ui = APIRouter(tags=["ui"])
 
@@ -125,11 +128,19 @@ async def ui_get_environment(
                 status_code=404,
             )
 
+        specification = environment.current_build.specification
+        is_lockfile = specification.is_lockfile
+        spec = specification.spec
+        description = spec["description"]
+        if is_lockfile:
+            spec = spec["lockfile"]
+
         context = {
             "request": request,
             "environment": environment,
             "entity": entity,
-            "spec": yaml.dump(environment.current_build.specification.spec),
+            "environment_description": description,
+            "spec": yaml.dump(spec),
         }
 
         return templates.TemplateResponse("environment.html", context)
@@ -166,11 +177,22 @@ async def ui_edit_environment(
                 status_code=404,
             )
 
+        specification = environment.current_build.specification
+        is_lockfile = specification.is_lockfile
+        spec = specification.spec
+        name = spec["name"]
+        description = spec["description"]
+        if is_lockfile:
+            spec = spec["lockfile"]
+
         context = {
             "request": request,
             "environment": environment,
             "entity": entity,
-            "specification": yaml.dump(environment.current_build.specification.spec),
+            "environment_name": name,
+            "environment_description": description,
+            "specification": yaml.dump(spec),
+            "is_lockfile": is_lockfile,
             "namespaces": [environment.namespace],
         }
 

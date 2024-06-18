@@ -2,6 +2,7 @@ import datetime
 import uuid
 
 import pytest
+
 from conda_store_server.schema import AuthenticationToken, Permissions
 from conda_store_server.server.auth import (
     AuthenticationBackend,

@@ -4,7 +4,10 @@ import sys
 import tempfile
 import warnings
 
+from typing import Union
+
 import yaml
+
 from conda_store_server import action, schema
 from conda_store_server.action.utils import logged_command
 
@@ -24,9 +27,10 @@ def get_installer_platform():
 def action_generate_constructor_installer(
     context,
     conda_command: str,
-    specification: schema.CondaSpecification,
+    specification: Union[schema.CondaSpecification, schema.LockfileSpecification],
     installer_dir: pathlib.Path,
     version: str,
+    is_lockfile: bool = False,
 ):
     def write_file(filename, s):
         with open(filename, "w") as f:
@@ -39,7 +43,7 @@ def action_generate_constructor_installer(
             "constructor",
             "--help",
         ]
-        logged_command(context, command, timeout=10)
+        logged_command(context, command)
     except FileNotFoundError:
         warnings.warn(
             "Installer generation requires constructor: https://github.com/conda/constructor"
@@ -52,11 +56,37 @@ def action_generate_constructor_installer(
     # conda and pip need to be in dependencies for the post_install script
     dependencies = ["conda", "pip"]
     pip_dependencies = []
-    for d in specification.dependencies:
-        if type(d) is schema.CondaSpecificationPip:
-            pip_dependencies.extend(d.pip)
-        else:
-            dependencies.append(d)
+
+    if is_lockfile:
+        # Adds channels
+        channels = [c.url for c in specification.lockfile.metadata.channels]
+
+        # Adds dependencies
+        for p in specification.lockfile.package:
+            # Ignores packages not matching the current platform. Versions can
+            # be different between platforms or a package might not support all
+            # platforms. constructor is cross-friendly, but we're currently
+            # building only for the current architecture, see the comment in
+            # get_installer_platform
+            if p.platform not in ["noarch", get_installer_platform()]:
+                continue
+            if p.manager == "pip":
+                pip_dependencies.append(f"{p.name}=={p.version}")
+            else:
+                ext = ".tar.bz2" if p.url.endswith(".tar.bz2") else ".conda"
+                build_string = p.url[: -len(ext)].rsplit("-", maxsplit=1)[-1]
+                dependencies.append(f"{p.name}=={p.version}={build_string}")
+
+    else:
+        # Adds channels
+        channels = specification.channels
+
+        # Adds dependencies
+        for d in specification.dependencies:
+            if isinstance(d, schema.CondaSpecificationPip):
+                pip_dependencies.extend(d.pip)
+            else:
+                dependencies.append(d)
 
     # Creates the construct.yaml file and post_install script
     ext = ".exe" if sys.platform == "win32" else ".sh"
@@ -78,7 +108,7 @@ def action_generate_constructor_installer(
             "installer_filename": str(installer_filename),
             "post_install": str(post_install_file),
             "name": specification.name,
-            "channels": specification.channels,
+            "channels": channels,
             "specs": dependencies,
             "version": version,
         }

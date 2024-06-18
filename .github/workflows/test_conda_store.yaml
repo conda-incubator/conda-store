@@ -1,0 +1,87 @@
+name: "Test conda-store"
+
+env:
+  DEFAULT_PYTHON_VERSION: "3.10"
+  FORCE_COLOR: "1" # Make tools pretty.
+
+on:
+  pull_request:
+    # we do not care about building the docker image on docs changes
+    paths:
+      - "!docusaurus-docs/**"
+  push:
+    branches:
+      - main
+
+
+# ensuring only one instance is running at a given time
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-conda-store:
+    name: "integration-test conda-store"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: conda-store
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+    steps:
+      - name: "Checkout Repository 🛎"
+        uses: actions/checkout@v4
+
+      - name: "Set up Python 🐍"
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: "Install Dependencies 📦"
+        run: |
+          pip install hatch
+          sudo apt install wait-for-it -y
+
+      - name: "Linting Checks 🧹"
+        run: |
+          hatch env run -e lint lint
+
+      - name: "Build package 📦"
+        run: |
+          hatch build
+
+      - name: "Deploy docker-compose"
+        run: |
+          docker-compose up -d
+          docker ps
+
+          wait-for-it localhost:5432 # postgresql
+          wait-for-it localhost:9000 # minio
+          wait-for-it localhost:8080 # conda-store-server
+
+      - name: "Install conda-store for tests 📦"
+        run: |
+          pip install .
+
+      - name: "Run basic tests -  not authenticated"
+        run: |
+          sleep 20
+          ./tests/unauthenticated-tests.sh
+
+      - name: "Run basic tests - authenticated"
+        run: |
+          ./tests/authenticated-tests.sh
+
+      - name: "Test shebang"
+        run: |
+          export CONDA_STORE_URL=http://localhost:8080/conda-store
+          export CONDA_STORE_AUTH=basic
+          export CONDA_STORE_USERNAME=username
+          export CONDA_STORE_PASSWORD=password
+          ./tests/shebang.sh
+
+      - name: "Get Docker logs 🔍"
+        if: ${{ failure() }}
+        run: |
+          docker-compose logs

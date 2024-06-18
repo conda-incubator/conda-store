@@ -1,11 +1,13 @@
 import json
+import os
 import sys
 import time
 
 import pytest
 import traitlets
 import yaml
-from conda_store_server import __version__, schema
+
+from conda_store_server import CONDA_STORE_DIR, __version__, schema
 
 
 def test_api_version_unauth(testclient):
@@ -948,3 +950,15 @@ def test_put_global_settings_auth_in_namespace_environment(
     r = schema.APIPutSetting.parse_obj(response.json())
     assert r.status == schema.APIStatus.ERROR
     assert "global setting" in r.message
+
+
+def test_default_conda_store_dir():
+    # Checks the default value of CONDA_STORE_DIR on different platforms
+    dir = str(CONDA_STORE_DIR)
+    user = os.environ.get("USER") or os.environ.get("USERNAME")
+    if sys.platform == "darwin":
+        assert dir == f"/Users/{user}/Library/Application Support/conda-store"
+    elif sys.platform == "win32":
+        assert dir == rf"C:\Users\{user}\AppData\Local\conda-store\conda-store"
+    else:
+        assert dir == f"/home/{user}/.local/share/conda-store"
