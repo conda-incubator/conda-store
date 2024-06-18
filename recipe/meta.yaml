@@ -1,5 +1,5 @@
 {% set name = "conda-store" %}
-{% set version = "2024.1.1" %}
+{% set version = "2024.6.1" %}
 
 package:
   name: {{ name|lower }}-split
@@ -100,7 +100,7 @@ outputs:
         - conda-store-worker --help
 
 about:
-  home: https://github.com/Quansight/conda-store
+  home: https://github.com/conda-incubator/conda-store
   license: BSD-3-Clause
   license_family: BSD
   license_file: LICENSE
@@ -110,12 +110,11 @@ about:
     philosophy of conda-store is to serve identical conda environments
     in as many ways as possible. Conda Store controls the environment
     lifecycle: management, builds, and serving of environments.
-  doc_url: https://conda-store.readthedocs.io/
-  dev_url: https://github.com/Quansight/conda-store
+  doc_url: https://conda.store
+  dev_url: https://github.com/conda-incubator/conda-store
 
 extra:
   feedstock-name: conda-store
   recipe-maintainers:
     - trallard
-    - costrouc
     - jaimergp
