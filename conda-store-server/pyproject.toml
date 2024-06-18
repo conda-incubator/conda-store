@@ -13,10 +13,10 @@ keywords = ["conda"]
 authors = [
   { name = "Christopher Ostrouchov", email = "crhsi.ostrouchov@gmail.com" },
 ]
-maintainers = [{ name = "Tania Allard", email = "trallard@bitsandchips.me" },
-    {name= "Pavithra Eswaramoorthy", email = "pavithraes@outlook.com"},
-    {name="Nikita Karetnikov", email="nkaretnikov@quansight.com"},
-  ]
+maintainers = [
+  { name = "Tania Allard", email = "trallard@bitsandchips.me" },
+  { name = "Pavithra Eswaramoorthy", email = "pavithraes@outlook.com" },
+]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
@@ -100,14 +100,12 @@ dependencies = ["pre-commit"]
 
 [tool.hatch.envs.lint.scripts]
 lint = ["pre-commit run --all"]
-
 unit-test = "pytest -m 'not extended_prefix and not user_journey' tests"
 playwright-test = [
   "playwright install",
   "pytest --video on ../tests/test_playwright.py"
 ]
 integration-test = ["pytest ../tests/test_api.py ../tests/test_metrics.py"]
-
 user-journey-test = ["pytest -m user_journey"]
 
 [tool.hatch.build.hooks.custom]

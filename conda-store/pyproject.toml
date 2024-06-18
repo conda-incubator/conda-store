@@ -9,14 +9,19 @@ description = "conda-store client"
 readme = "README.md"
 license = "BSD-3-Clause"
 requires-python = ">=3.8"
-keywords = ["conda", "dependency management", "environment management", "reproducibility"]
+keywords = [
+  "conda",
+  "dependency management",
+  "environment management",
+  "reproducibility"
+]
 authors = [
   { name = "Christopher Ostrouchov", email = "chris.ostrouchov@gmail.com" },
 ]
-maintainers = [{ name = "Tania Allard", email = "trallard@bitsandchips.me" },
-    {name= "Pavithra Eswaramoorthy", email = "pavithraes@outlook.com"},
-    {name="Nikita Karetnikov", email="nkaretnikov@quansight.com"},
-  ]
+maintainers = [
+  { name = "Tania Allard", email = "trallard@bitsandchips.me" },
+  { name = "Pavithra Eswaramoorthy", email = "pavithraes@outlook.com" },
+]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
@@ -34,11 +39,7 @@ classifiers = [
   "Intended Audience :: Science/Research",
   "Intended Audience :: System Administrators",
 ]
-dependencies = ["rich",
-  "click",
-  "yarl",
-  "aiohttp>=3.8.1",
-  "ruamel.yaml"]
+dependencies = ["rich", "click", "yarl", "aiohttp>=3.8.1", "ruamel.yaml"]
 dynamic = ["version"]
 
 [project.urls]
