@@ -69,12 +69,13 @@ outputs:
         - __win    # [win]
         - conda-pack
         - conda-lock
+        - constructor
         - fastapi
         - filelock
         - itsdangerous
         - jinja2
         - minio
-        - pydantic <2.0a0
+        - pydantic>=1.10.16,<2.0a0
         - pyjwt
         - python >=3.8
         - python-docker
@@ -86,7 +87,6 @@ outputs:
         - traitlets
         - uvicorn
         - yarl
-        - constructor
         - psycopg2
         - pymysql
       run_constrained:
