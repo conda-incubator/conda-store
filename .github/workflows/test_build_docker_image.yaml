@@ -6,6 +6,9 @@ env:
 
 on:
   pull_request:
+    # we do not care about building the docker image on docs changes
+    paths:
+      - "!docusaurus-docs/**"
   push:
     branches:
       - main
