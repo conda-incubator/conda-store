@@ -55,7 +55,8 @@ outputs:
         - conda-store-worker = conda_store_server.worker.__main__:main
     requirements:
       host:
-        - python >=3.8
+        # Fix while there is a new pydantic v1 release on conda
+        - python >=3.8,<=3.12.4
         - pip
         - hatchling >=1.14.0
         - hatch-vcs
@@ -75,7 +76,9 @@ outputs:
         - itsdangerous
         - jinja2
         - minio
-        - pydantic>=1.10.16,<2.0a0
+        # @trallard there is no updated version in conda-forge
+        # need to come back and pin =1.10.16,<2.0a0
+        - pydantic <2.0a0
         - pyjwt
         - python >=3.8
         - python-docker
