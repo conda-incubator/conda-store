@@ -69,6 +69,7 @@ outputs:
         - __win    # [win]
         - conda-pack
         - conda-lock
+        - constructor
         - fastapi
         - filelock
         - itsdangerous
@@ -86,7 +87,6 @@ outputs:
         - traitlets
         - uvicorn
         - yarl
-        - constructor
         - psycopg2
         - pymysql
       run_constrained:
