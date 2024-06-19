@@ -6,9 +6,13 @@ env:
 
 on:
   pull_request:
-    # we do not care about building the docker image on docs changes
     paths:
-      - "!docusaurus-docs/**"
+      - ".github/workflows/**"
+      - ".github/actions/**"
+      - "conda-store/**"
+      - "conda-store-server/**"
+      - "examples/**"
+      - "tests/**"
   push:
     branches:
       - main
