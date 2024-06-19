@@ -227,7 +227,7 @@ the default docker image `library/debian:sid-slim`.
 `CondaStore.post_update_environment_build_hook` is an optional configurable to
 allow for custom behavior that will run after an environment's current build changes.
 
-### `conda_store_server._internal.storage.S3Storage`
+### `conda_store_server.storage.S3Storage`
 
 conda-store uses [minio-py](https://github.com/minio/minio-py) as a
 client to connect to S3 "like" object stores.
@@ -273,7 +273,7 @@ credentials class.
 `S3Storage.credentials_kwargs` keyword arguments to pass for creation
 of credentials class.
 
-### `conda_store_server._internal.storage.LocalStorage`
+### `conda_store_server.storage.LocalStorage`
 
 `LocalStorage.storage_path` is the base directory to use for storing
 build artifacts.
@@ -282,7 +282,7 @@ build artifacts.
 artifacts. This url assumes that the base will be a static server
 serving `LocalStorage.storage_path`.
 
-### `conda_store_server._internal.server.auth.AuthenticationBackend`
+### `conda_store_server.server.auth.AuthenticationBackend`
 
 `AuthenticationBackend.secret` is the symmetric secret to use for
 encrypting tokens.
@@ -296,7 +296,7 @@ in a similar manner to how things are done with jupyterhub. Format for
 the values is a dictionary with keys being the tokens and values being
 the `schema.AuthenticaitonToken` all fields are optional.
 
-### `conda_store_server._internal.server.auth.AuthorizationBackend`
+### `conda_store_server.server.auth.AuthorizationBackend`
 
 `AuthorizationBackend.role_mappings` is a dictionary that maps `roles`
 to application `permissions`. There are three default roles at the
@@ -309,7 +309,7 @@ bindings that an unauthenticated user assumes.
 `AuthorizationBackend.authenticated_role_bindings` are the base role
 bindings that an authenticated user assumes.
 
-### `conda_store_server._internal.server.auth.Authentication`
+### `conda_store_server.server.auth.Authentication`
 
 `Authentication.cookie_name` is the name for the browser cookie used
 to authenticate users.
@@ -327,7 +327,7 @@ likely not need to change.
 `Authentication.login_html` is the HTML to display for a given user as
 the login form.
 
-### `conda_store_server._internal.server.auth.DummyAuthentication`
+### `conda_store_server.server.auth.DummyAuthentication`
 
 Has all the configuration settings of `Authetication`. This class is
 modeled after the [JupyterHub DummyAuthentication
@@ -337,7 +337,7 @@ class](https://github.com/jupyterhub/jupyterhub/blob/9f3663769e96d2e4f665fd6ef48
 login with. Effectively a static password. This rarely if ever should
 be used outside of testing.
 
-### `conda_store_server._internal.server.auth.GenericOAuthAuthentication`
+### `conda_store_server.server.auth.GenericOAuthAuthentication`
 
 A provider-agnostic OAuth authentication provider. Configure
 endpoints, secrets and other parameters to enable any OAuth-compatible
@@ -374,7 +374,7 @@ especially useful when web service is behind a proxy.
 `GenericOAuthAuthentication.tls_verify` to optionally turn of TLS
 verification useful for custom signed certificates.
 
-### `conda_store_server._internal.server.auth.GithubOAuthAuthentication`
+### `conda_store_server.server.auth.GithubOAuthAuthentication`
 
 Inherits from `Authentication` and `GenericOAuthAuthentication` so
 should be fully configurable from those options.
@@ -385,7 +385,7 @@ is `https://github.com`.
 `GithubOAuthAuthentication.github_api` is the REST API url for
 GitHub. Default is `https://api.github.com`.
 
-### `conda_store_server._internal.server.auth.JupyterHubOAuthAuthentication`
+### `conda_store_server.server.auth.JupyterHubOAuthAuthentication`
 
 Inherits from `Authentication` and `GenericOAuthAuthentication` so
 should be fully configurable from those options.
@@ -393,7 +393,7 @@ should be fully configurable from those options.
 `GithubOAuthAuthentication.jupyterhub_url` is the url for connecting
 to JupyterHub. The URL should not include the `/hub/`.
 
-### `conda_store_server._internal.server.auth.RBACAuthorizationBackend`
+### `conda_store_server.server.auth.RBACAuthorizationBackend`
 
 `RBACAuthorizationBackend.role_mappings_version` specifies the role mappings
 version to use: 1 (default, legacy), 2 (new, recommended).
@@ -509,7 +509,7 @@ single filename to watch.
 the number of threads on your given machine. If set will limit the
 number of concurrent celery tasks to the integer.
 
-### `conda_store_server._internal.registry.ContainerRegistry`
+### `conda_store_server.registry.ContainerRegistry`
 
 `ContainerRegistry.container_registries` dictionary of registries_url
 to upload built container images with callable function to configure
