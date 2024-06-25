@@ -6,7 +6,7 @@ import pytest
 from fastapi.templating import Jinja2Templates
 from fastapi.testclient import TestClient
 
-from conda_store_server import schema
+from conda_store_server._internal import schema
 
 
 def test_conda_store_server_enable_ui(conda_store_server):

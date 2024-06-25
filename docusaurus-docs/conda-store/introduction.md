@@ -9,11 +9,12 @@ description: Introduction to conda-store (core) documentation
 The [`conda-store` repository on GitHub][conda-store-repo] consists of two separate, yet related, packages:
 
 - **`conda-store-server`**: web server and workers that together provide the `conda-store` "service" through a REST API
-- **`conda-store` (client)**: a client which interacts with the service to offer user-facing command line interface (CLI)
+- **`conda-store` (client)**: a client that interacts with the service to offer a user-facing command line interface (CLI)
 
 ## Get started ✨
 
-The fastest way to get started with conda-store is with a [**local standalone installation**][standalone-install] and the [**conda-store UI**][conda-store-ui-tutorials].
+The fastest way to get started with conda-store is with a [**local standalone installation**][standalone-install]
+and the [**conda-store UI**][conda-store-ui-tutorials].
 
 Alternatively, you can use some features of conda-store through the [CLI commands][cli-ref] or as a [shebang][shebang].
 
@@ -39,7 +40,7 @@ Make the most of conda-store by learning about:
 
 * [Performance impact of conda-store components][performance]
 * [Configuration options for customization][configuration]
-*  Internal architecture: [overview][ref-arch], [auth][ref-auth], and [database][ref-database]
+* Internal architecture: [overview][ref-arch], [auth][ref-auth], and [database][ref-database]
 
 ## Community and contributing 🌱
 

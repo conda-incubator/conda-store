@@ -24,18 +24,8 @@ from traitlets import (
 )
 from traitlets.config import LoggingConfigurable
 
-from conda_store_server import (
-    CONDA_STORE_DIR,
-    BuildKey,
-    api,
-    conda_utils,
-    environment,
-    orm,
-    registry,
-    schema,
-    storage,
-    utils,
-)
+from conda_store_server import CONDA_STORE_DIR, BuildKey, api, registry, storage
+from conda_store_server._internal import conda_utils, environment, orm, schema, utils
 
 
 def conda_store_validate_specification(
@@ -447,7 +437,7 @@ class CondaStore(LoggingConfigurable):
             "broker_url": self.celery_broker_url,
             "result_backend": self.celery_results_backend,
             "imports": [
-                "conda_store_server.worker.tasks",
+                "conda_store_server._internal.worker.tasks",
                 "celery.contrib.testing.tasks",
             ],
             "task_track_started": True,
@@ -610,7 +600,7 @@ class CondaStore(LoggingConfigurable):
 
         self.celery_app
 
-        from conda_store_server.worker import tasks
+        from conda_store_server._internal.worker import tasks
 
         task_id = f"solve-{solve.id}"
         tasks.task_solve_conda_environment.apply_async(
@@ -712,7 +702,7 @@ class CondaStore(LoggingConfigurable):
         self.celery_app
 
         # must import tasks after a celery app has been initialized
-        from conda_store_server.worker import tasks
+        from conda_store_server._internal.worker import tasks
 
         # Note: task ids used here must also be in api_put_build_cancel
 
@@ -801,7 +791,7 @@ class CondaStore(LoggingConfigurable):
 
         self.celery_app
         # must import tasks after a celery app has been initialized
-        from conda_store_server.worker import tasks
+        from conda_store_server._internal.worker import tasks
 
         tasks.task_update_environment_build.si(environment.id).apply_async()
 
@@ -840,7 +830,7 @@ class CondaStore(LoggingConfigurable):
         self.celery_app
 
         # must import tasks after a celery app has been initialized
-        from conda_store_server.worker import tasks
+        from conda_store_server._internal.worker import tasks
 
         tasks.task_delete_namespace.si(namespace.id).apply_async()
 
@@ -867,7 +857,7 @@ class CondaStore(LoggingConfigurable):
         self.celery_app
 
         # must import tasks after a celery app has been initialized
-        from conda_store_server.worker import tasks
+        from conda_store_server._internal.worker import tasks
 
         tasks.task_delete_environment.si(environment.id).apply_async()
 
@@ -895,6 +885,6 @@ class CondaStore(LoggingConfigurable):
         self.celery_app
 
         # must import tasks after a celery app has been initialized
-        from conda_store_server.worker import tasks
+        from conda_store_server._internal.worker import tasks
 
         tasks.task_delete_build.si(build.id).apply_async()

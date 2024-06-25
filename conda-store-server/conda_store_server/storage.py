@@ -9,7 +9,8 @@ from minio.credentials.providers import Provider
 from traitlets import Bool, Dict, List, Type, Unicode
 from traitlets.config import LoggingConfigurable
 
-from conda_store_server import CONDA_STORE_DIR, api, orm, schema
+from conda_store_server import CONDA_STORE_DIR, api
+from conda_store_server._internal import orm, schema
 
 
 class Storage(LoggingConfigurable):

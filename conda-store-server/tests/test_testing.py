@@ -1,4 +1,5 @@
-from conda_store_server import api, schema, testing
+from conda_store_server import api
+from conda_store_server._internal import schema, testing
 
 
 def test_testing_initialize_database(db, conda_store):

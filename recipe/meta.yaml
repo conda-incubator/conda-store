@@ -51,8 +51,8 @@ outputs:
       noarch: python
       script: python -m pip install ./conda-store-server -vv --no-deps --no-build-isolation --no-index
       entry_points:
-        - conda-store-server = conda_store_server.server.__main__:main
-        - conda-store-worker = conda_store_server.worker.__main__:main
+        - conda-store-server = conda_store_server._internal.server.__main__:main
+        - conda-store-worker = conda_store_server._internal.worker.__main__:main
     requirements:
       host:
         - python >=3.8
