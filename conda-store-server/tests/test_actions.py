@@ -18,7 +18,10 @@ from traitlets import TraitError
 
 from conda_store_server import BuildKey, api
 from conda_store_server._internal import action, conda_utils, orm, schema, server, utils
-from conda_store_server._internal.action import generate_constructor_installer, generate_lockfile
+from conda_store_server._internal.action import (
+    generate_constructor_installer,
+    generate_lockfile,
+)
 from conda_store_server.server.auth import DummyAuthentication
 
 
