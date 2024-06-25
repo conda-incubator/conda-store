@@ -136,7 +136,7 @@ or error in conda-store
     build_active_tasks = collections.defaultdict(list)
     for worker_name, tasks in active_tasks.items():
         for task in tasks:
-            match = re.fullmatch("build-(\d+)-(.*)", str(task["id"]))
+            match = re.fullmatch(r"build-(\d+)-(.*)", str(task["id"]))
             if match:
                 build_id, name = match.groups()
                 build_active_tasks[build_id].append(task["name"])
