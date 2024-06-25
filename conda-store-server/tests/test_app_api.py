@@ -2,7 +2,8 @@ import sys
 
 from celery.result import AsyncResult
 
-from conda_store_server import api, schema
+from conda_store_server import api
+from conda_store_server._internal import schema
 
 
 def test_conda_store_app_register_solve(db, conda_store, celery_worker):

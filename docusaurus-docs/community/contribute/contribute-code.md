@@ -103,8 +103,8 @@ You will need to install the following dependencies before developing on `conda-
 subprocess of the web server.
 
     ```bash
-    python -m conda_store_server.server --standalone
-   ```
+    conda-store-server --standalone
+    ```
 
 4. You should now be able to access the `conda-store` server at [localhost:8080](http://localhost:8080/) from your web browser.
 

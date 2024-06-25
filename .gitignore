@@ -55,4 +55,4 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-docusaurus-docs/bun.lockb
+*.lockb

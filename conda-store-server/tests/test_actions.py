@@ -14,17 +14,9 @@ import yarl
 from fastapi.responses import RedirectResponse
 from traitlets import TraitError
 
-from conda_store_server import (
-    BuildKey,
-    action,
-    api,
-    conda_utils,
-    orm,
-    schema,
-    server,
-    utils,
-)
-from conda_store_server.action import generate_lockfile
+from conda_store_server import BuildKey, api
+from conda_store_server._internal import action, conda_utils, orm, schema, server, utils
+from conda_store_server._internal.action import generate_lockfile
 from conda_store_server.server.auth import DummyAuthentication
 
 
@@ -75,8 +67,8 @@ def test_action_decorator():
     ],
 )
 @mock.patch.object(generate_lockfile, "yaml", wraps=yaml)
-@mock.patch("conda_store_server.action.generate_lockfile.logged_command")
-@mock.patch("conda_store_server.action.generate_lockfile.run_lock")
+@mock.patch("conda_store_server._internal.action.generate_lockfile.logged_command")
+@mock.patch("conda_store_server._internal.action.generate_lockfile.run_lock")
 def test_solve_lockfile(
     mock_run_lock,
     mock_logged_command,

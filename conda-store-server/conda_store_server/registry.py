@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from traitlets import Callable, Dict, default
 from traitlets.config import LoggingConfigurable
 
-from conda_store_server import orm, schema, utils
+from conda_store_server._internal import orm, schema, utils
 
 
 class ContainerRegistry(LoggingConfigurable):
