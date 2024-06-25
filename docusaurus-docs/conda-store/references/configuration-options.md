@@ -49,7 +49,7 @@ Please use the conda-store configuration options mentioned below instead.
 
 [platformdirs]: https://github.com/platformdirs/platformdirs
 
-### `conda_store_server.app.CondaStore`
+### `conda_store_server._internal.app.CondaStore`
 
 `CondaStore.storage_class` configures the storage backend to use for
 storing build artifacts from
@@ -438,7 +438,7 @@ metadata and set the roles:
 PUT /api/v1/namespace/{namespace}/
 ```
 
-### `conda_store_server.server.app.CondaStoreServer`
+### `conda_store_server._internal.server.app.CondaStoreServer`
 
 `CondaStoreServer.log_level` is the level for all server
 logging. Default is `INFO`. Common options are `DEBUG`, `INFO`,
@@ -495,7 +495,7 @@ to serve in form `[(path, method, function), ...]`. `path` is a
 string, `method` is `get`, `post`, `put`, `delete` etc. and function
 is a regular python fastapi function.
 
-### `conda_store_server.worker.app.CondaStoreWorker`
+### `conda_store_server.._internal.worker.app.CondaStoreWorker`
 
 `CondaStoreWorker.log_level` is the level for all server
 logging. Default is `INFO`. Common options are `DEBUG`, `INFO`,

@@ -25,7 +25,7 @@ import requests
 
 import conda_store_server
 
-from conda_store_server import schema
+from conda_store_server._internal import schema
 
 from .conftest import CONDA_STORE_BASE_URL
 

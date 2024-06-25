@@ -1,4 +1,4 @@
 include conda_store LICENSE
-recursive-include conda_store_server/server/templates *
+recursive-include conda_store_server/_internal/server/templates *
 prune .github
 global-exclude *.py[cod] __pycache__ *.so *.nix .envrc
