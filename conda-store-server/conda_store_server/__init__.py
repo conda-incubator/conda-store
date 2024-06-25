@@ -120,7 +120,7 @@ class BuildKey:
     ) -> int:
         """Returns build id from build key"""
         # This import is here to avoid cyclic imports
-        from conda_store_server import orm
+        from conda_store_server._internal import orm
 
         parts = build_key.split("-")
         # Note: cannot rely on the number of dashes to differentiate between

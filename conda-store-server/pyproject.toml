@@ -111,8 +111,8 @@ user-journey-test = ["pytest -m user_journey"]
 [tool.hatch.build.targets.sdist.hooks.custom]
 
 [project.scripts]
-conda-store-server = "conda_store_server.server.__main__:main"
-conda-store-worker = "conda_store_server.worker.__main__:main"
+conda-store-server = "conda_store_server._internal.server.__main__:main"
+conda-store-worker = "conda_store_server._internal.worker.__main__:main"
 
 [tool.black]
 line-length = 88
