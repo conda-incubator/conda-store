@@ -67,9 +67,10 @@ jobs:
         run: |
           hatch env run -e lint lint
 
-      - name: "Build package 📦"
+      - name: "Install conda-store server 📦"
         run: |
-          hatch build
+          # and the dev dependencies
+          python -m pip install -e .[dev]
 
       - name: "Unit tests ✅"
         run: |

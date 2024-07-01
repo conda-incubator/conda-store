@@ -47,7 +47,6 @@ jobs:
 
       - name: "Install build dependencies 📦"
         run: |
-          pip install hatch
           sudo apt install wait-for-it -y
 
       - name: "Deploy docker-compose"
