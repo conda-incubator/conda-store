@@ -62,7 +62,7 @@ jobs:
 
       - name: "Run Playwright tests 🎭"
         run: |
-          playwright install
+          playwright install --with-deps chromium
           pytest --video on ../tests/test_playwright.py
         if: matrix.test-type == 'playwright'
 
