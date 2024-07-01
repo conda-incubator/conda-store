@@ -29,7 +29,8 @@ jobs:
     name: "unit-test conda-store-server"
     strategy:
       matrix:
-        os: ["ubuntu", "macos", "windows"]
+        # ubuntu 22.04, macos 14, windows 2022
+        os: ["ubuntu-latest", "macos-latest", "windows-latest"]
         include:
           - os: ubuntu
             environment-file: conda-store-server/environment-dev.yaml
