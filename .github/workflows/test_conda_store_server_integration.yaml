@@ -3,6 +3,7 @@ name: "Test conda-store-server (integration)"
 env:
   DEFAULT_PYTHON_VERSION: "3.10"
   FORCE_COLOR: "1" # Make tools pretty.
+  PYTHONUNBUFFERED: "1" # Make stdout and stderr behave well
 
 on:
   pull_request:
@@ -20,7 +21,7 @@ on:
 
 # ensuring only one instance is running at a given time
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: true
 
 jobs:
@@ -46,7 +47,6 @@ jobs:
 
       - name: "Install build dependencies 📦"
         run: |
-          pip install hatch
           sudo apt install wait-for-it -y
 
       - name: "Deploy docker-compose"
@@ -61,7 +61,7 @@ jobs:
 
       - name: "Run Playwright tests 🎭"
         run: |
-          playwright install
+          playwright install --with-deps chromium
           pytest --video on ../tests/test_playwright.py
         if: matrix.test-type == 'playwright'
 
