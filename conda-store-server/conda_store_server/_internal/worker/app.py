@@ -72,6 +72,7 @@ class CondaStoreWorker(Application):
         argv = [
             "worker",
             "--loglevel=INFO",
+            "--max-tasks-per-child=10",  # mitigate memory leaks
         ]
 
         # The default Celery pool requires this on Windows. See
