@@ -10,7 +10,7 @@ channels:
 dependencies:
   - python=3.10
   # conda builds
-  - conda
+  - conda ==23.5.2
   # dev dependencies
   - aiohttp>=3.8.1
   - pytest
