@@ -16,22 +16,37 @@ RUN apt-get update &&  \
 COPY environment.yaml /opt/conda-store/environment.yaml
 
 RUN mamba env create -f /opt/conda-store/environment.yaml && \
-mamba clean --all -y && \
-conda clean --force-pkgs-dirs
+    mamba clean --all -y && \
+    conda clean --force-pkgs-dirs
 
+# TODO: do we need this?
 ENV PATH=/opt/conda/condabin:/opt/conda/envs/conda-store/bin:/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${PATH}
 
 COPY ./ /opt/conda-store/
 
+# ---------------------------------------------------------------------------------
+# for production-ready images we install a specific version of conda-store
 FROM base as prod
-ARG RELEASE_VERSION
-RUN cd /opt/conda-store && \
-    pip install conda-store==${RELEASE_VERSION}
-USER conda-store
-WORKDIR /opt/jupyterhub
 
-FROM base as dev
-RUN --mount=type=cache,target=/root/.cache/pip cd /opt/conda-store && \
-    pip install -e . --no-cache
+ARG RELEASE_VERSION
+
+RUN cd /opt/conda-store && \
+    which python && \
+    pip install conda-store==${RELEASE_VERSION}
+
 USER conda-store
 WORKDIR /opt/jupyterhub
+# ---------------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------------
+# for development images we install conda-store-server in editable mode
+FROM base as dev
+
+RUN --mount=type=cache,target=/root/.cache/pip cd /opt/conda-store && \
+    which python && \
+    which pip && \
+    pip install -e . --no-cache
+
+USER conda-store
+WORKDIR /opt/jupyterhub
+# ---------------------------------------------------------------------------------
