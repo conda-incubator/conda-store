@@ -45,6 +45,9 @@ USER 1000:1000
 RUN mamba create --name ${conda_env_name} python=${python_version} --channel conda-forge -y && \
     conda clean --force-pkgs-dirs --all -y
 
+# ensure we are using the conda environment
+ENV PATH=/opt/conda/condabin:/opt/conda/envs/conda-store-server/bin:/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${PATH}
+
 COPY ./ /opt/conda-store-server/
 
 USER 0:0
@@ -58,7 +61,6 @@ FROM base as prod
 ARG RELEASE_VERSION
 
 RUN cd /opt/conda-store-server && \
-    mamba activate ${conda_env_name} && \
     python -m pip install conda-store-server==${RELEASE_VERSION} && \
     rm -rf /opt/conda-store-server/tests
 
@@ -70,7 +72,7 @@ WORKDIR /var/lib/conda-store
 FROM base as dev
 
 RUN cd /opt/conda-store-server && \
-    mamba activate ${conda_env_name} && \
+    which python && \
     python -m pip install -e . --no-cache
 
 WORKDIR /var/lib/conda-store

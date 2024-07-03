@@ -19,7 +19,7 @@ RUN mamba env create -f /opt/conda-store/environment.yaml && \
     mamba clean --all -y && \
     conda clean --force-pkgs-dirs
 
-# TODO: do we need this?
+# ensure we are using the conda environment
 ENV PATH=/opt/conda/condabin:/opt/conda/envs/conda-store/bin:/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${PATH}
 
 COPY ./ /opt/conda-store/
@@ -32,7 +32,7 @@ ARG RELEASE_VERSION
 
 RUN cd /opt/conda-store && \
     which python && \
-    pip install conda-store==${RELEASE_VERSION}
+    python -m pip install conda-store==${RELEASE_VERSION}
 
 USER conda-store
 WORKDIR /opt/jupyterhub
@@ -44,8 +44,7 @@ FROM base as dev
 
 RUN --mount=type=cache,target=/root/.cache/pip cd /opt/conda-store && \
     which python && \
-    which pip && \
-    pip install -e . --no-cache
+    python -m pip install -e . --no-cache
 
 USER conda-store
 WORKDIR /opt/jupyterhub
