@@ -207,7 +207,7 @@ def test_generate_constructor_installer(
         # Create the installer, but don't actually run `constructor` - it uses conda to solve the
         # environment, which we don't need to do for the purposes of this test.
         with mock.patch(
-            "conda_store_server.action.generate_constructor_installer.logged_command"
+            "conda_store_server._internal.action.generate_constructor_installer.logged_command"
         ) as mock_command:
             generate_constructor_installer.action_generate_constructor_installer(
                 conda_command=conda_store.conda_command,
