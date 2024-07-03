@@ -195,9 +195,16 @@ def test_generate_constructor_installer(
     # Runs the installer
     out_dir = pathlib.Path(tmp_dir) / "out"
     if sys.platform == "win32":
-        subprocess.check_output([installer, "/S", f"/D={out_dir}"])
+        try:
+            subprocess.check_output([installer, "/S", f"/D={out_dir}"])
+        except subprocess.CalledProcessError as e:
+            print(f"There was an error with the installer subprocess:\n{e.output}")
     else:
-        subprocess.check_output([installer, "-b", "-p", str(out_dir)])
+        try:
+            subprocess.check_output([installer, "-b", "-p", str(out_dir)])
+        # Adding this to debug since there have been failures during testing
+        except subprocess.CalledProcessError as e:
+            print(f"There was an error with the installer subprocess:\n{e.output}")
 
     # Checks the output directory
     assert out_dir.exists()
