@@ -1,8 +1,9 @@
+# docker-compose environment only
 name: conda-store-server
 channels:
   - conda-forge
   - nodefaults
 dependencies:
-  - python ==3.10
+  - python>=3.10
   # conda environment builds
-  - conda ==23.5.2
+  - conda
