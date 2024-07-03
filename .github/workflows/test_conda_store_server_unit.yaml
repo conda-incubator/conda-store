@@ -38,9 +38,10 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+
       - name: "Install Dependencies 📦"
         run: |
-          pip install hatch
+          python -m pip install hatch
 
       - name: "Linting Checks 🧹"
         run: |

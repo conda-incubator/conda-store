@@ -45,18 +45,16 @@ jobs:
 
       - name: "Install Dependencies 📦"
         run: |
-          pip install hatch
           sudo apt install wait-for-it -y
+          python -m pip install hatch
+          # install conda-store
+          pip install .
 
       - name: "Linting Checks 🧹"
         run: |
           hatch env run -e lint lint
 
-      - name: "Build package 📦"
-        run: |
-          hatch build
-
-      - name: "Deploy docker-compose"
+      - name: "Deploy docker-compose 🏗️"
         run: |
           docker-compose up -d
           docker ps
@@ -64,10 +62,6 @@ jobs:
           wait-for-it localhost:5432 # postgresql
           wait-for-it localhost:9000 # minio
           wait-for-it localhost:8080 # conda-store-server
-
-      - name: "Install conda-store for tests 📦"
-        run: |
-          pip install .
 
       - name: "Run basic tests -  not authenticated"
         run: |
