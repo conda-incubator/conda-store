@@ -40,6 +40,8 @@ def action_generate_constructor_installer(
     # Checks if constructor is available
     try:
         command = [
+            "python",
+            "-m",
             "constructor",
             "--help",
         ]
