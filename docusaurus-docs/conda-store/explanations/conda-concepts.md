@@ -91,4 +91,4 @@ the configuration settings displayed by that command will not reflect the values
 that are actually used by conda-store. In particular, `conda-store` internally
 sets `CONDA_FLAGS=--strict-channel-priority`, overriding the channel priority in
 the conda configuration file. Please keep this in mind when using `conda config`
-to inspect your conda configuration.
+to inspect your conda configuration and when viewing the build logs.
