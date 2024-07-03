@@ -1,4 +1,4 @@
-FROM condaforge/mambaforge:23.3.1-1 as base
+FROM condaforge/mambaforge:24.3.0-0 as base
 
 LABEL org.opencontainers.image.authors="conda-store development team"
 
@@ -60,8 +60,7 @@ FROM base as prod
 ARG RELEASE_VERSION
 
 WORKDIR /opt/conda-store-server
-
-RUN which pythohn && \
+RUN which python && \
     python -m pip install conda-store-server==${RELEASE_VERSION} --no-cache-dir && \
     rm -rf /opt/conda-store-server/tests
 
@@ -72,8 +71,8 @@ WORKDIR /var/lib/conda-store
 # for development images we install conda-store-server in editable mode
 FROM base as dev
 
-RUN cd /opt/conda-store-server && \
-    which python && \
+WORKDIR /opt/conda-store-server
+RUN which python && \
     python -m pip install -e . --no-cache-dir
 
 WORKDIR /var/lib/conda-store

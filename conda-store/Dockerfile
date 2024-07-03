@@ -1,4 +1,4 @@
-FROM condaforge/mambaforge:23.3.1-1 as base
+FROM condaforge/mambaforge:24.3.0-0 as base
 
 LABEL org.opencontainers.image.authors="conda-store development team"
 
