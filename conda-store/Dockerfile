@@ -2,6 +2,9 @@ FROM condaforge/mambaforge:24.3.0-0 as base
 
 LABEL org.opencontainers.image.authors="conda-store development team"
 
+# ensure we are using the conda environment
+ENV PATH=/opt/conda/condabin:/opt/conda/envs/conda-store/bin:/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${PATH}
+
 RUN apt-get update &&  \
     apt-get install -yq --no-install-recommends curl && \
     apt-get clean && \
@@ -18,9 +21,6 @@ COPY environment.yaml /opt/conda-store/environment.yaml
 RUN mamba env create -f /opt/conda-store/environment.yaml && \
     mamba clean --all -y && \
     conda clean --force-pkgs-dirs
-
-# ensure we are using the conda environment
-ENV PATH=/opt/conda/condabin:/opt/conda/envs/conda-store/bin:/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${PATH}
 
 COPY ./ /opt/conda-store/
 
@@ -42,7 +42,9 @@ WORKDIR /opt/jupyterhub
 # for development images we install conda-store-server in editable mode
 FROM base as dev
 
-RUN --mount=type=cache,target=/root/.cache/pip cd /opt/conda-store && \
+WORKDIR /opt/conda-store
+
+RUN --mount=type=cache,target=/root/.cache/pip && \
     which python && \
     python -m pip install -e . --no-cache-dir
 

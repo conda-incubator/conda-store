@@ -2,6 +2,8 @@ FROM condaforge/mambaforge:24.3.0-0 as base
 
 LABEL org.opencontainers.image.authors="conda-store development team"
 
+# ensure we are using the conda environment
+ENV PATH=/opt/conda/condabin:/opt/conda/envs/conda-store-server/bin:/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${PATH}
 ENV TZ=Etc/UTC
 
 ARG python_version=3.10
@@ -45,9 +47,6 @@ RUN mamba create --name ${conda_env_name} \
     python=${python_version} conda \
     --channel conda-forge -y && \
     conda clean --force-pkgs-dirs --all -y
-
-# ensure we are using the conda environment
-ENV PATH=/opt/conda/condabin:/opt/conda/envs/conda-store-server/bin:/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${PATH}
 
 COPY ./ /opt/conda-store-server/
 
