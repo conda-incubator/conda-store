@@ -5,6 +5,9 @@ LABEL org.opencontainers.image.authors="conda-store development team"
 ENV PATH=/opt/conda/condabin:/opt/conda/envs/conda-store-server/bin:/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${PATH}
 ENV TZ=Etc/UTC
 
+ARG python_version=3.10
+ARG conda_env_name="conda-store-server"
+
 RUN apt-get update && \
     # https://docs.anaconda.org/anaconda/install/linux/#installing-on-linux
     apt-get install -yq --no-install-recommends \
@@ -39,10 +42,8 @@ RUN printf 'channels: []\n' > /opt/conda/.condarc && \
 
 USER 1000:1000
 
-COPY environment.yaml /opt/conda-store-server/environment.yaml
-
-RUN mamba env create -f /opt/conda-store-server/environment.yaml && \
-	conda clean  --force-pkgs-dirs
+RUN mamba create -n ${conda_env_name} python=${python_version} && \
+    conda clean  --force-pkgs-dirs --all -y
 
 COPY ./ /opt/conda-store-server/
 
@@ -50,17 +51,27 @@ USER 0:0
 RUN chown -R 1000:1000 /opt/conda-store-server/
 USER 1000:1000
 
+# ---------------------------------------------------------------------------------
+# for production-ready images we install a specific version of conda-store-server
 FROM base as prod
+
 ARG RELEASE_VERSION
+
 RUN cd /opt/conda-store-server && \
-    /opt/conda/envs/conda-store-server/bin/pip install conda-store-server==${RELEASE_VERSION} && \
+    conda activate ${conda_env_name} && \
+    python -m pip install conda-store-server==${RELEASE_VERSION} && \
     rm -rf /opt/conda-store-server/tests
 
 WORKDIR /var/lib/conda-store
+# ---------------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------------
+# for development images we install conda-store-server in editable mode
 FROM base as dev
 
 RUN cd /opt/conda-store-server && \
-    /opt/conda/envs/conda-store-server/bin/pip install -e .
+    conda activate ${conda_env_name} && \
+    python -m pip install -e . --no-cache
 
 WORKDIR /var/lib/conda-store
+# ---------------------------------------------------------------------------------
