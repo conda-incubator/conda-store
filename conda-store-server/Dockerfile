@@ -58,7 +58,7 @@ FROM base as prod
 ARG RELEASE_VERSION
 
 RUN cd /opt/conda-store-server && \
-    conda activate ${conda_env_name} && \
+    mamba activate ${conda_env_name} && \
     python -m pip install conda-store-server==${RELEASE_VERSION} && \
     rm -rf /opt/conda-store-server/tests
 
@@ -70,7 +70,7 @@ WORKDIR /var/lib/conda-store
 FROM base as dev
 
 RUN cd /opt/conda-store-server && \
-    conda activate ${conda_env_name} && \
+    mamba activate ${conda_env_name} && \
     python -m pip install -e . --no-cache
 
 WORKDIR /var/lib/conda-store
