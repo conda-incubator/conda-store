@@ -1,4 +1,4 @@
-from conda_store.cli import cli
+from conda_store._internal.cli import cli
 
 
 def detect_shebang():

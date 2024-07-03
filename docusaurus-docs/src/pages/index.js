@@ -169,7 +169,7 @@ function HomepageFeatures() {
 function HomepageVideo() {
   const { siteConfig } = useDocusaurusContext();
   return (
-    <header className={clsx("hero hero--secondary", styles.heroBanner)}>
+    <header className={clsx(styles.heroBanner)}>
       <div className="container">
         <img
           src={useBaseUrl("/img/conda-store-ui.webp")}
@@ -184,7 +184,7 @@ function HomepageVideo() {
 export default function Home() {
   const { siteConfig } = useDocusaurusContext();
   return (
-    <Layout title={`${siteConfig.title}`} description="conda-store home page">
+    <Layout title="Homepage" description={`${siteConfig.tagline}`}>
       <HomepageHeader />
       <main>
         <HomepageProjects />

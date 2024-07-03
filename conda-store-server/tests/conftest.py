@@ -4,20 +4,21 @@ import sys
 
 import pytest
 import yaml
+
 from fastapi.testclient import TestClient
 
-from conda_store_server import (  # isort:skip
+from conda_store_server import api, app, storage
+
+
+from conda_store_server._internal import (  # isort:skip
     action,
-    api,
-    app,
     dbutil,
     schema,
-    storage,
     testing,
     utils,
 )
 
-from conda_store_server.server import app as server_app  # isort:skip
+from conda_store_server._internal.server import app as server_app  # isort:skip
 
 
 @pytest.fixture
@@ -84,10 +85,10 @@ def conda_store_server(conda_store_config):
         _conda_store.celery_app
 
         # must import tasks after a celery app has been initialized
-        import conda_store_server.worker.tasks  # noqa
-
         # ensure that models are created
         from celery.backends.database.session import ResultModelBase
+
+        import conda_store_server._internal.worker.tasks  # noqa
 
         ResultModelBase.metadata.create_all(db.get_bind())
 
@@ -167,10 +168,10 @@ def conda_store(conda_store_config):
         _conda_store.celery_app
 
         # must import tasks after a celery app has been initialized
-        import conda_store_server.worker.tasks  # noqa
-
         # ensure that models are created
         from celery.backends.database.session import ResultModelBase
+
+        import conda_store_server._internal.worker.tasks  # noqa
 
         ResultModelBase.metadata.create_all(db.get_bind())
 
@@ -208,6 +209,36 @@ def simple_specification_with_pip():
 def simple_conda_lock():
     with (pathlib.Path(__file__).parent / "assets/conda-lock.zlib.yaml").open() as f:
         return yaml.safe_load(f)
+
+
+@pytest.fixture
+def simple_conda_lock_with_pip():
+    with (
+        pathlib.Path(__file__).parent / "assets/conda-lock.zlib.flask.yaml"
+    ).open() as f:
+        return yaml.safe_load(f)
+
+
+@pytest.fixture
+def simple_lockfile_specification(simple_conda_lock):
+    yield schema.LockfileSpecification.parse_obj(
+        {
+            "name": "test",
+            "description": "simple lockfile specification",
+            "lockfile": simple_conda_lock,
+        }
+    )
+
+
+@pytest.fixture
+def simple_lockfile_specification_with_pip(simple_conda_lock_with_pip):
+    yield schema.LockfileSpecification.parse_obj(
+        {
+            "name": "test",
+            "description": "simple lockfile specification with pip",
+            "lockfile": simple_conda_lock_with_pip,
+        }
+    )
 
 
 @pytest.fixture(

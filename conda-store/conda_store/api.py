@@ -1,10 +1,13 @@
 import datetime
 import math
 import os
+
 from typing import Dict, List
 
 import yarl
-from conda_store import auth, exception, utils
+
+from conda_store import exception
+from conda_store._internal import auth, utils
 
 
 class CondaStoreAPIError(exception.CondaStoreError):

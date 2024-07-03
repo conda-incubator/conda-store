@@ -80,3 +80,15 @@ could be updated the next minute the same solve for the same
 
 <!-- External links -->
 [conda-docs-environments]: https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/environments.html
+
+## Understanding `conda config` and how it relates to conda-store
+
+Because conda-store needs to configure some parts of conda without modifying
+the user's conda configuration file, internally conda-store sets some conda
+configuration variables using environment variables. The impact of this is that
+if a user tries to print their conda configuration with `conda config`, some of
+the configuration settings displayed by that command will not reflect the values
+that are actually used by conda-store. In particular, `conda-store` internally
+sets `CONDA_FLAGS=--strict-channel-priority`, overriding the channel priority in
+the conda configuration file. Please keep this in mind when using `conda config`
+to inspect your conda configuration and when viewing the build logs.
