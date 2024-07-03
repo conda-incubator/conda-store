@@ -37,6 +37,7 @@ classifiers = [
 dependencies = [
   # env builds
   # conda (which cannot be installed via pip see https://github.com/conda/conda/issues/11715)
+  # constructor also not pip installable
   "python-docker",
   # we need platform dependent dependencies here
   "conda-docker; sys_platform == 'linux'",
