@@ -42,8 +42,8 @@ RUN printf 'channels: []\n' > /opt/conda/.condarc && \
 
 USER 1000:1000
 
-RUN mamba create -n ${conda_env_name} python=${python_version} && \
-    conda clean  --force-pkgs-dirs --all -y
+RUN mamba create --name ${conda_env_name} python=${python_version} --channel conda-forge -y && \
+    conda clean --force-pkgs-dirs --all -y
 
 COPY ./ /opt/conda-store-server/
 
