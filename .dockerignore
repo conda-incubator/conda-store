@@ -1,2 +1,6 @@
 data
 examples/docker/data
+
+# ignore test files
+conda-store-server/tests
+conda-store/tests
