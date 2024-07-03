@@ -1,5 +1,5 @@
 # This environment file should only be used to build conda-store Docker images
-# for development and purpose only - these images are built through GitHub actions
+# for development purposes only - these images are built through GitHub actions
 name: conda-store
 channels:
   - conda-forge

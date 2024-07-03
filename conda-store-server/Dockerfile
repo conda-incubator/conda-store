@@ -41,7 +41,9 @@ RUN printf 'channels: []\n' > /opt/conda/.condarc && \
 
 USER 1000:1000
 
-RUN mamba create --name ${conda_env_name} python=${python_version} --channel conda-forge -y && \
+RUN mamba create --name ${conda_env_name} \
+    python=${python_version} conda \
+    --channel conda-forge -y && \
     conda clean --force-pkgs-dirs --all -y
 
 # ensure we are using the conda environment
