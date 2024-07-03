@@ -1,7 +1,8 @@
 import pytest
+
 from conda_store_server import api
-from conda_store_server.orm import NamespaceRoleMapping
-from conda_store_server.utils import BuildPathError
+from conda_store_server._internal.orm import NamespaceRoleMapping
+from conda_store_server._internal.utils import BuildPathError
 
 
 def test_namespace_crud(db):

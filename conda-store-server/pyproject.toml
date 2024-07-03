@@ -13,6 +13,10 @@ keywords = ["conda"]
 authors = [
   { name = "Christopher Ostrouchov", email = "crhsi.ostrouchov@gmail.com" },
 ]
+maintainers = [
+  { name = "Tania Allard", email = "trallard@bitsandchips.me" },
+  { name = "Pavithra Eswaramoorthy", email = "pavithraes@outlook.com" },
+]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
@@ -23,63 +27,83 @@ classifiers = [
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3 :: Only",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Information Technology",
+  "Intended Audience :: Science/Research",
+  "Intended Audience :: System Administrators",
 ]
 dependencies = [
+  # env builds
+  # conda (which cannot be installed via pip see https://github.com/conda/conda/issues/11715)
+  "python-docker",
+  # we need platform dependent dependencies here
   "conda-docker; sys_platform == 'linux'",
+  "conda-lock >=1.0.5",
   "conda-pack",
+  "conda-package-handling",
+  "conda-package-streaming",
+  # web server
+  "alembic",
   "celery",
-  "sqlalchemy",
-  "requests",
   "fastapi",
-  "pyyaml",
-  "redis",
-  "pydantic<2",
-  "minio",
-  "traitlets",
-  "pyjwt",
-  "yarl",
   "filelock",
+  "flower",
   "itsdangerous",
   "jinja2",
+  "pyjwt",
+  "psycopg2-binary",
+  "pymysql",
+  "pyyaml",
+  "redis",
+  "requests",
+  "pydantic >=1.10.16,<2.0a0",
   "python-multipart",
-  "python-docker"
-  # conda (which should not be included here)
+  "sqlalchemy<2",
+  "traitlets",
+  "uvicorn",
+  "yarl",
+  # artifact storage
+  "minio",
+  "platformdirs >=4.0,<5.0a0"
 ]
 dynamic = ["version"]
 
 [project.urls]
 Homepage = "https://conda.store/"
 Source = "https://github.com/conda-incubator/conda-store"
+Issues = "https://github.com/conda-incubator/conda-store/issues"
 
 [tool.hatch.version]
 path = "conda_store_server/__init__.py"
 
-[project.optional-dependencies]
-dev = ["build", "twine"]
-
 [tool.hatch.envs.dev]
 dependencies = [
+  "aiohttp>=3.8.1",
+  "build",
+  "docker-compose",
+  "docker-py<7",
   "pre-commit",
-  "sphinx",
-  "myst-parser",
-  "sphinx-panels",
-  "sphinx-copybutton",
-  "pydata-sphinx-theme",
   "pytest",
-  "pytest-mock",
+  "pytest-celery",
   "pytest-playwright",
+  "twine>=5.0.0",
+  "pkginfo>=1.10", # Needed to support metadata 2.3
+
 ]
 
-[tool.hatch.envs.dev.scripts]
+[tool.hatch.envs.lint]
+dependencies = ["pre-commit"]
+
+[tool.hatch.envs.lint.scripts]
 lint = ["pre-commit run --all"]
-unit-test = "pytest tests -v"
+unit-test = "pytest -m 'not extended_prefix and not user_journey' tests"
 playwright-test = [
   "playwright install",
   "pytest --video on ../tests/test_playwright.py"
 ]
 integration-test = ["pytest ../tests/test_api.py ../tests/test_metrics.py"]
-
 user-journey-test = ["pytest -m user_journey"]
 
 [tool.hatch.build.hooks.custom]
@@ -87,12 +111,16 @@ user-journey-test = ["pytest -m user_journey"]
 [tool.hatch.build.targets.sdist.hooks.custom]
 
 [project.scripts]
-conda-store-server = "conda_store_server.server.__main__:main"
-conda-store-worker = "conda_store_server.worker.__main__:main"
+conda-store-server = "conda_store_server._internal.server.__main__:main"
+conda-store-worker = "conda_store_server._internal.worker.__main__:main"
 
 [tool.black]
 line-length = 88
 target-version = ['py37', 'py38', 'py39']
+
+[tool.isort]
+lines_between_types = 1
+lines_after_imports = 2
 
 [tool.ruff]
 ignore = [

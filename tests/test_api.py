@@ -8,6 +8,7 @@ environments/builds may have been created which would change the
 ordering for tests.
 
 """
+
 import asyncio
 import collections
 import datetime
@@ -15,13 +16,16 @@ import json
 import statistics
 import time
 import uuid
+
 from functools import partial
 
 import aiohttp
-import conda_store_server
 import pytest
 import requests
-from conda_store_server import schema
+
+import conda_store_server
+
+from conda_store_server._internal import schema
 
 from .conftest import CONDA_STORE_BASE_URL
 
@@ -271,14 +275,25 @@ def test_api_get_build_one_unauth(testclient):
 
 def test_api_get_build_one_auth(testclient):
     testclient.login()
-    response = testclient.get("api/v1/build/1")
-    response.raise_for_status()
+    success = False
+    for _ in range(50):
+        response = testclient.get("api/v1/build/1")
+        response.raise_for_status()
 
-    r = schema.APIGetBuild.parse_obj(response.json())
-    assert r.status == schema.APIStatus.OK
-    assert r.data.id == 1
-    assert r.data.specification.name == "python-flask-env"
-    assert r.data.status == schema.BuildStatus.COMPLETED.value
+        r = schema.APIGetBuild.parse_obj(response.json())
+        assert r.status == schema.APIStatus.OK
+        assert r.data.id == 1
+        assert r.data.specification.name == "python-flask-env"
+        if r.data.status in [
+            schema.BuildStatus.QUEUED.value,
+            schema.BuildStatus.BUILDING.value,
+        ]:
+            time.sleep(10)
+            continue
+        assert r.data.status == schema.BuildStatus.COMPLETED.value
+        success = True
+        break
+    assert success
 
 
 def test_api_get_build_one_unauth_packages(testclient):
@@ -291,12 +306,20 @@ def test_api_get_build_one_unauth_packages(testclient):
 
 def test_api_get_build_one_auth_packages(testclient):
     testclient.login()
-    response = testclient.get("api/v1/build/1/packages?size=5")
-    response.raise_for_status()
+    success = False
+    for _ in range(50):
+        response = testclient.get("api/v1/build/1/packages?size=5")
+        response.raise_for_status()
 
-    r = schema.APIListCondaPackage.parse_obj(response.json())
-    assert r.status == schema.APIStatus.OK
-    assert len(r.data) == 5
+        r = schema.APIListCondaPackage.parse_obj(response.json())
+        assert r.status == schema.APIStatus.OK
+        if len(r.data) == 0:
+            time.sleep(10)
+            continue
+        assert len(r.data) == 5
+        success = True
+        break
+    assert success
 
 
 def test_api_get_build_auth_packages_no_exist(testclient):
@@ -1225,3 +1248,82 @@ def test_api_cancel_build_auth(testclient):
             break
 
     assert canceled is True
+
+
+def test_create_lockfile_specification_auth(testclient):
+    namespace = "default"
+    environment_name = f"pytest-{uuid.uuid4()}"
+
+    def post_specification(
+        specification, is_lockfile, environment_name="", environment_description=""
+    ):
+        response = testclient.post(
+            "api/v1/specification",
+            json={
+                "namespace": namespace,
+                "specification": specification,
+                "is_lockfile": is_lockfile,
+                "environment_name": environment_name,
+                "environment_description": environment_description,
+            },
+        )
+        response.raise_for_status()
+        r = schema.APIPostSpecification.parse_obj(response.json())
+        assert r.status == schema.APIStatus.OK
+
+        return r.data.build_id
+
+    def get_lockfile(build_id):
+        lockfile = None
+        for _ in range(50):
+            time.sleep(10)
+            response = testclient.get(f"api/v1/build/{build_id}/conda-lock.yaml")
+            if response.status_code != 200:
+                continue
+
+            lockfile = response.content.decode("utf-8")
+            break
+
+        # If this fails, the loop timed out because something went wrong
+        assert lockfile is not None
+
+        return lockfile
+
+    # Logs in
+    testclient.login()
+
+    # Submits a standard conda YAML specification
+    build_id1 = post_specification(
+        specification=json.dumps(
+            {
+                "name": environment_name,
+                "dependencies": ["pytest", "pip", {"pip": ["flask"]}],
+            }
+        ),
+        is_lockfile=False,
+    )
+
+    # Gets the first lockfile
+    lockfile1 = get_lockfile(build_id1)
+
+    # Submits a new lockfile-based specification
+    build_id2 = post_specification(
+        specification=lockfile1,
+        is_lockfile=True,
+        environment_name=environment_name,
+        environment_description="this is a test",
+    )
+
+    # Makes sure these are different builds
+    assert build_id1 != build_id2
+
+    # Gets the second lockfile
+    lockfile2 = get_lockfile(build_id2)
+
+    # Ensures the second specification was accepted and the lockfile is the same
+    assert lockfile1 == lockfile2
+
+    # Checks that initial dependencies are part of the lockfile
+    packages = json.loads(lockfile2)["package"]
+    assert any(p["name"] == "pytest" and p["manager"] == "conda" for p in packages)
+    assert any(p["name"] == "flask" and p["manager"] == "pip" for p in packages)
