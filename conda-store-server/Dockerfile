@@ -2,7 +2,6 @@ FROM condaforge/mambaforge:23.3.1-1 as base
 
 LABEL org.opencontainers.image.authors="conda-store development team"
 
-ENV PATH=/opt/conda/condabin:/opt/conda/envs/conda-store-server/bin:/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${PATH}
 ENV TZ=Etc/UTC
 
 ARG python_version=3.10
@@ -60,8 +59,10 @@ FROM base as prod
 
 ARG RELEASE_VERSION
 
-RUN cd /opt/conda-store-server && \
-    python -m pip install conda-store-server==${RELEASE_VERSION} && \
+WORKDIR /opt/conda-store-server
+
+RUN which pythohn && \
+    python -m pip install conda-store-server==${RELEASE_VERSION} --no-cache-dir && \
     rm -rf /opt/conda-store-server/tests
 
 WORKDIR /var/lib/conda-store
@@ -73,7 +74,7 @@ FROM base as dev
 
 RUN cd /opt/conda-store-server && \
     which python && \
-    python -m pip install -e . --no-cache
+    python -m pip install -e . --no-cache-dir
 
 WORKDIR /var/lib/conda-store
 # ---------------------------------------------------------------------------------

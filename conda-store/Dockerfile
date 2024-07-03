@@ -30,9 +30,9 @@ FROM base as prod
 
 ARG RELEASE_VERSION
 
-RUN cd /opt/conda-store && \
-    which python && \
-    python -m pip install conda-store==${RELEASE_VERSION}
+WORKDIR /opt/conda-store
+RUN which python && \
+    python -m pip install conda-store==${RELEASE_VERSION} --no-cache-dir
 
 USER conda-store
 WORKDIR /opt/jupyterhub
@@ -44,7 +44,7 @@ FROM base as dev
 
 RUN --mount=type=cache,target=/root/.cache/pip cd /opt/conda-store && \
     which python && \
-    python -m pip install -e . --no-cache
+    python -m pip install -e . --no-cache-dir
 
 USER conda-store
 WORKDIR /opt/jupyterhub
