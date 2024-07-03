@@ -25,13 +25,33 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  linting:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: conda-store-server
+    steps:
+      - name: "Checkout Repository 🛎"
+        uses: actions/checkout@v4
+
+      - name: "Set up Python 🐍"
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+      - name: "Install Dependencies 📦"
+        run: |
+          pip install hatch
+
+      - name: "Linting Checks 🧹"
+        run: |
+          hatch env run -e lint lint
+
   test-conda-store-server:
-    name: "${{ matrix.os}} unit-test"
+    name: "unit-test - ${{ matrix.os}} "
     strategy:
       matrix:
         # ubuntu 22.04, macos 14, windows 2022
-        os: ["ubuntu-latest",]
-        # os: ["ubuntu-latest", "macos-latest", "windows-latest"]
+        os: ["ubuntu-latest", "macos-latest", "windows-latest"]
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -58,10 +78,6 @@ jobs:
           command:
             conda install --channel=conda-forge --quiet --yes python=${{ env.DEFAULT_PYTHON_VERSION }}
         if: matrix.os == 'windows-latest'
-
-      # - name: "Lint code 🧹"
-      #   run: |
-      #     pre-commit run --all-files
 
       - name: "Install conda-store server 📦"
         run: |
