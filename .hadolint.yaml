@@ -1,0 +1,5 @@
+---
+ignored:
+  - DL3008 # we do not pin apt deps
+  - DL3003 # already use workkdir
+  - DL3042 # already use --no-cache--dir
