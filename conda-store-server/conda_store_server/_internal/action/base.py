@@ -4,6 +4,7 @@ import io
 import logging
 import subprocess
 import tempfile
+import time
 import typing
 import uuid
 
@@ -27,8 +28,14 @@ def action(f: typing.Callable):
             # enter temporary directory
             stack.enter_context(utils.chdir(tmpdir))
 
+            start_time = time.monotonic()
+
             # run function and store result
             action_context.result = f(action_context, *args, **kwargs)
+            action_context.log.info(
+                f"Action {f.__name__} completed in {time.monotonic() - start_time:.3f} s."
+            )
+
         return action_context
 
     return wrapper
