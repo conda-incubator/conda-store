@@ -49,7 +49,7 @@ jobs:
             miniforge-version: latest
             auto-activate-base: false
             activate-environment: conda-store-server-dev
-            python_version: ${{ env.PYTHON_VERSION_DEFAULT }}
+            python-version: ${{ env.PYTHON_VERSION_DEFAULT }}
 
       - name: "Install dependencies 📦"
         run: |

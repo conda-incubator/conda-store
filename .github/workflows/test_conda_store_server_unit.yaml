@@ -73,7 +73,7 @@ jobs:
             miniforge-version: latest
             auto-activate-base: false
             activate-environment: conda-store-server-dev
-            python_version: ${{ env.PYTHON_VERSION_DEFAULT }}
+            python-version: ${{ env.PYTHON_VERSION_DEFAULT }}
 
       # This fixes a "DLL not found" issue importing ctypes from the hatch env
       - name: "Reinstall Python on Windows runner"
