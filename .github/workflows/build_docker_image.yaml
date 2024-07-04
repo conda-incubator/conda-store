@@ -68,7 +68,7 @@ jobs:
       # we need this as we are setting the context to subproject directory
       - name: "Copy .dockerignore"
         run: |
-          cp ../.dockerignore .dockerignore
+          cp "${{ env.GITHUB_WORKSPACE }}/.dockerignore" .dockerignore
           cat .dockerignore
 
       - name: "Publish Docker image 🚀"

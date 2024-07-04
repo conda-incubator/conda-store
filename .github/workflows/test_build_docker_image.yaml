@@ -47,10 +47,10 @@ jobs:
           output_format: tty
           error_level: 0
 
-      # we need this as we are setting the context to subproject directory
       - name: "Copy .dockerignore"
         run: |
-          cp ../.dockerignore .dockerignore
+          cp "${{ env.GITHUB_WORKSPACE }}/.dockerignore" .dockerignore
+          cat .dockerignore
 
       - name: "Add Docker metadata 📝"
         id: meta
