@@ -1,7 +1,6 @@
 name: "Test conda-store"
 
 env:
-  DEFAULT_PYTHON_VERSION: "3.10"
   FORCE_COLOR: "1" # Make tools pretty.
   PYTHONUNBUFFERED: "1" # Make stdout and stderr behave well
 
@@ -41,7 +40,8 @@ jobs:
       - name: "Set up Python 🐍"
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version-file: .python-version-default
+          cache: "pip"
 
       - name: "Install Dependencies 📦"
         run: |

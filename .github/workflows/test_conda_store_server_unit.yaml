@@ -1,8 +1,6 @@
 name: "Test conda-store-server (unit)"
 
 env:
-  # needs to keep the same as the conda-store-server/environment-dev.yaml
-  DEFAULT_PYTHON_VERSION: "3.10"
   FORCE_COLOR: "1" # Make tools pretty.
   PYTHONUNBUFFERED: "1" # Make stdout and stderr behave well
 
@@ -37,7 +35,8 @@ jobs:
       - name: "Set up Python 🐍"
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+          python-version-file: .python-version-default
+          cache: "pip"
 
       - name: "Install Dependencies 📦"
         run: |
@@ -63,6 +62,10 @@ jobs:
       - name: "Checkout Repository 🛎"
         uses: actions/checkout@v4
 
+      - name: "Get project's default Python version 🏷️"
+        run: |
+          echo "PYTHON_VERSION_DEFAULT=$(cat .python-version-default)" >> $GITHUB_ENV
+
       - name: "Set up env ${{ matrix.os }} 🐍"
         uses: conda-incubator/setup-miniconda@v3
         with:
@@ -70,6 +73,7 @@ jobs:
             miniforge-version: latest
             auto-activate-base: false
             activate-environment: conda-store-server-dev
+            python_version: ${{ env.PYTHON_VERSION_DEFAULT }}
 
       # This fixes a "DLL not found" issue importing ctypes from the hatch env
       - name: "Reinstall Python 3.10 on Windows runner"
@@ -78,7 +82,7 @@ jobs:
           timeout_minutes: 9999
           max_attempts: 6
           command:
-            conda install --channel=conda-forge --quiet --yes python=${{ env.DEFAULT_PYTHON_VERSION }}
+            conda install --channel=conda-forge --quiet --yes python=${{ env.PYTHON_VERSION_DEFAULT }}
         if: matrix.os == 'windows-latest'
 
       - name: "Install conda-store server 📦"

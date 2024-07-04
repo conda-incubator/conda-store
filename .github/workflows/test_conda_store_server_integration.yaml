@@ -1,7 +1,6 @@
 name: "Test conda-store-server (integration)"
 
 env:
-  DEFAULT_PYTHON_VERSION: "3.10"
   FORCE_COLOR: "1" # Make tools pretty.
   PYTHONUNBUFFERED: "1" # Make stdout and stderr behave well
 
@@ -39,13 +38,18 @@ jobs:
       - name: "Checkout Repository 🛎"
         uses: actions/checkout@v4
 
-      - name: "Set up env 🐍"
+      - name: "Get project's default Python version 🏷️"
+        run: |
+          echo "PYTHON_VERSION_DEFAULT=$(cat .python-version-default)" >> $GITHUB_ENV
+
+      - name: "Set up conda env 🐍"
         uses: conda-incubator/setup-miniconda@v3
         with:
             environment-file: conda-store-server/environment-dev.yaml
             miniforge-version: latest
             auto-activate-base: false
             activate-environment: conda-store-server-dev
+            python_version: ${{ env.PYTHON_VERSION_DEFAULT }}
 
       - name: "Install dependencies 📦"
         run: |
