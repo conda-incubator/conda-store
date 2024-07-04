@@ -2,7 +2,7 @@
 # the generated Docker image is used with docker-compose to run the conda-store
 # server and public conda-store Docker images
 
-FROM condaforge/mambaforge:24.3.0-0 as base
+FROM condaforge/mambaforge:24.3.0-0 AS base
 
 LABEL org.opencontainers.image.authors="conda-store development team"
 
@@ -10,7 +10,8 @@ LABEL org.opencontainers.image.authors="conda-store development team"
 ENV PATH=/opt/conda/condabin:/opt/conda/envs/conda-store-server/bin:/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${PATH}
 ENV TZ=Etc/UTC
 
-ARG python_version=3.10
+# must be passed at build environment (should use .python-version-default)
+ARG python_version
 ARG conda_env_name="conda-store-server"
 ARG user_no=1000
 

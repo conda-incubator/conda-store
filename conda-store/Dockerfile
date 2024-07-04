@@ -6,7 +6,8 @@ FROM condaforge/mambaforge:24.3.0-0 AS base
 
 LABEL org.opencontainers.image.authors="conda-store development team"
 
-ARG python_version=3.10
+# must be passed at build environment (should use .python-version-default)
+ARG python_version
 ARG conda_env_name="conda-store"
 ARG user_no=1000
 
