@@ -4,7 +4,6 @@ env:
   # needs to keep the same as the conda-store-server/environment-dev.yaml
   DEFAULT_PYTHON_VERSION: "3.10"
   FORCE_COLOR: "1" # Make tools pretty.
-  PYTHONUNBUFFERED: "1" # Make stdout and stderr behave well
 
 on:
   pull_request:
