@@ -6,6 +6,8 @@ FROM condaforge/mambaforge:24.3.0-0 AS base
 
 LABEL org.opencontainers.image.authors="conda-store development team"
 
+ARG python_version=3.10
+ARG conda_env_name="conda-store"
 ARG user_no=1000
 
 # ensure we are using the conda environment
@@ -22,9 +24,10 @@ RUN apt-get update &&  \
     mkdir -p /opt/jupyterhub && \
     chown -R conda-store:conda-store /opt/jupyterhub
 
-COPY environment.yaml /opt/conda-store/environment.yaml
-
-RUN mamba env create -f /opt/conda-store/environment.yaml && \
+# MUST keep node in sync with conda-store-ui
+RUN mamba create --name ${conda_env_name} \
+    python=${python_version} nb_conda_kernels nodejs=18 yarn constructor \
+    --channel conda-forge -y && \
     mamba clean --all -y && \
     conda clean --force-pkgs-dirs
 
