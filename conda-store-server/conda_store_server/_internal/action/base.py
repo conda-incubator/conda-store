@@ -16,10 +16,10 @@ def action(f: typing.Callable):
         action_context = ActionContext(stdout=stdout, stderr=stderr)
         with contextlib.ExitStack() as stack:
             # redirect stdout -> action_context.stdout
-            stack.enter_context(contextlib.redirect_stdout(action_context.stdout))
+            # stack.enter_context(contextlib.redirect_stdout(action_context.stdout))
 
             # redirect stderr -> action_context.stdout
-            stack.enter_context(contextlib.redirect_stderr(action_context.stdout))
+            # stack.enter_context(contextlib.redirect_stderr(action_context.stdout))
 
             # create a temporary directory
             tmpdir = stack.enter_context(tempfile.TemporaryDirectory())

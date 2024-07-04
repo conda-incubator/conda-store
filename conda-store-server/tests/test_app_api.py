@@ -30,6 +30,7 @@ def test_conda_store_app_register_solve(db, conda_store, celery_worker):
     db.expire_all()
     assert solve.ended_on is not None
     assert len(solve.package_builds) > 0
+    raise ValueError("end test")
 
 
 def test_conda_store_register_environment_workflow(db, conda_store, celery_worker):

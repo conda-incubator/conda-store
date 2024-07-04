@@ -24,8 +24,11 @@ def action_solve_lockfile(
     environment_filename = pathlib.Path.cwd() / "environment.yaml"
     lockfile_filename = pathlib.Path.cwd() / "conda-lock.yaml"
 
+    env_dump = json.dumps(specification.dict())
+
     with environment_filename.open("w") as f:
-        json.dump(specification.dict(), f)
+        f.write(env_dump)
+        # json.dump(specification.dict(), f)
 
     # The info command can be used with either mamba or conda
     logged_command(context, [conda_command, "info"])
@@ -50,6 +53,10 @@ def action_solve_lockfile(
         conda_flags_name = "CONDA_FLAGS"
         print(f"{conda_flags_name}={conda_flags}")
         os.environ[conda_flags_name] = conda_flags
+
+        context.log.warning(
+            f"\n\n ======== ENV DUMP ======== \n {env_dump} \n ======== \n\n"
+        )
 
         run_lock(
             environment_files=[environment_filename],
