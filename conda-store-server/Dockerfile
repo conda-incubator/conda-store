@@ -1,3 +1,7 @@
+# conda-store-server Dockerfile
+# the generated Docker image is used with docker-compose to run the conda-store
+# server and public conda-store Docker images
+
 FROM condaforge/mambaforge:24.3.0-0 as base
 
 LABEL org.opencontainers.image.authors="conda-store development team"
@@ -8,6 +12,7 @@ ENV TZ=Etc/UTC
 
 ARG python_version=3.10
 ARG conda_env_name="conda-store-server"
+ARG user_no=1000
 
 RUN apt-get update && \
     # https://docs.anaconda.org/anaconda/install/linux/#installing-on-linux
@@ -31,17 +36,17 @@ RUN apt-get update && \
 # ensure that conda channels is empty by default
 # we do not want to tamper with the solve≈
 RUN printf 'channels: []\n' > /opt/conda/.condarc && \
-    chown -R 1000:1000 /opt/conda && \
+    chown -R ${user_no}:${user_no} /opt/conda && \
     mkdir -p /opt/conda-store/conda-store && \
-    chown 1000:1000 /opt/conda-store/conda-store && \
+    chown ${user_no}:${user_no} /opt/conda-store/conda-store && \
     mkdir -p /var/lib/conda-store && \
-    chown 1000:1000 /var/lib/conda-store && \
+    chown ${user_no}:${user_no} /var/lib/conda-store && \
     mkdir -p /opt/conda-store/envs && \
-    chown 1000:1000 /opt/conda-store/envs && \
+    chown ${user_no}:${user_no} /opt/conda-store/envs && \
     mkdir /.cache && \
-    chown 1000:1000 /.cache
+    chown ${user_no}:${user_no} /.cache
 
-USER 1000:1000
+USER ${user_no}:${user_no}
 
 RUN mamba create --name ${conda_env_name} \
     python=${python_version} conda \
@@ -51,12 +56,12 @@ RUN mamba create --name ${conda_env_name} \
 COPY ./ /opt/conda-store-server/
 
 USER 0:0
-RUN chown -R 1000:1000 /opt/conda-store-server/
-USER 1000:1000
+RUN chown -R ${user_no}:${user_no} /opt/conda-store-server/
+USER ${user_no}:${user_no}
 
 # ---------------------------------------------------------------------------------
 # for production-ready images we install a specific version of conda-store-server
-FROM base as prod
+FROM base AS prod
 
 ARG RELEASE_VERSION
 
@@ -70,7 +75,7 @@ WORKDIR /var/lib/conda-store
 
 # ---------------------------------------------------------------------------------
 # for development images we install conda-store-server in editable mode
-FROM base as dev
+FROM base AS dev
 
 WORKDIR /opt/conda-store-server
 RUN which python && \
