@@ -1,6 +1,51 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Docker
+docker-compose.yml
+Dockerfile
+.docker
+.dockerignore
+
+# python
+__pycache__
+dist
+build
+*.egg-info
+.pytest_cache
+
+# VSCode
+.vscode/
+
+# MacOS
+**/.DS_Store
+
+# playwright
+screenshots
+test-results
+
+# ruff
+.ruff_cache
+
+# conda-store-ui
+conda-store-server/conda_store_server/server/static/conda-store-ui/
+
+# Docusaurus dependencies
+/node_modules
+
+# Docusaurus production
+/build
+
+# markdown
+*.md
+
+# ------------------------
+# conda-store specific
 data
 examples/docker/data
 
-# ignore test files
+# test files
 conda-store-server/tests
 conda-store/tests
