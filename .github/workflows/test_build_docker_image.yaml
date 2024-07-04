@@ -51,6 +51,7 @@ jobs:
         run: |
           cp "${{ env.GITHUB_WORKSPACE }}/.dockerignore" .dockerignore
           cat .dockerignore
+        shell: bash
 
       - name: "Add Docker metadata 📝"
         id: meta
