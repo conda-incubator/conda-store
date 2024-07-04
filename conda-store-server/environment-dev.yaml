@@ -9,6 +9,7 @@ channels:
   - conda-forge
   - nodefaults
 dependencies:
+  # must be kept in sync with .python-version-default
   - python=3.12
   # conda builds
   - conda
