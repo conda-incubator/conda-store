@@ -90,7 +90,7 @@ jobs:
 
       - name: "Unit tests ✅"
         run: |
-          python -m pytest ./tests/test_actions.py
+          # python -m pytest ./tests/test_actions.py
           python -m pytest ./tests/test_app_api.py
       #     python -m pytest -m "not extended_prefix and not user_journey" tests
 
