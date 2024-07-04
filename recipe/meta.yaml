@@ -1,4 +1,5 @@
 {% set name = "conda-store" %}
+# version MUST be updated when a new release is made
 {% set version = "2024.6.1" %}
 
 package:

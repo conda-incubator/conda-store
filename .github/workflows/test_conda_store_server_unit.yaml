@@ -76,7 +76,7 @@ jobs:
             python_version: ${{ env.PYTHON_VERSION_DEFAULT }}
 
       # This fixes a "DLL not found" issue importing ctypes from the hatch env
-      - name: "Reinstall Python 3.10 on Windows runner"
+      - name: "Reinstall Python on Windows runner"
         uses: nick-fields/retry@v2.8.3
         with:
           timeout_minutes: 9999
