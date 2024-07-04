@@ -10,7 +10,7 @@ Dockerfile
 .dockerignore
 
 # python
-__pycache__
+**/__pycache__
 dist
 build
 *.egg-info
@@ -40,6 +40,7 @@ conda-store-server/conda_store_server/server/static/conda-store-ui/
 
 # markdown
 *.md
+!README.md
 
 # ------------------------
 # conda-store specific
