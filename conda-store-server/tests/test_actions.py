@@ -2,8 +2,8 @@ import asyncio
 import datetime
 import pathlib
 import re
-import subprocess
 import sys
+import tempfile
 
 from unittest import mock
 
@@ -11,16 +11,23 @@ import pytest
 import yaml
 import yarl
 
+from conda.base.context import context as conda_base_context
+from constructor import construct
 from fastapi.responses import RedirectResponse
 from traitlets import TraitError
 
 from conda_store_server import BuildKey, api
 from conda_store_server._internal import action, conda_utils, orm, schema, server, utils
-from conda_store_server._internal.action import generate_lockfile
+from conda_store_server._internal.action import (
+    generate_constructor_installer,
+    generate_lockfile,
+)
 from conda_store_server.server.auth import DummyAuthentication
 
 
 def test_action_decorator():
+    """Test that the action decorator captures stdout/stderr and logs correctly."""
+
     @action.action
     def test_function(context):
         print("stdout")
@@ -48,10 +55,13 @@ def test_action_decorator():
         return pathlib.Path.cwd()
 
     context = test_function()
-    assert (
-        context.stdout.getvalue()
-        == "stdout\nstderr\nsubprocess\nsubprocess_stdout\nsubprocess_stderr\nlog\n"
+
+    stdout = context.stdout.getvalue()
+    assert stdout.startswith(
+        "stdout\nstderr\nsubprocess\nsubprocess_stdout\nsubprocess_stderr\nlog\n"
     )
+    assert re.search(r"Action test_function completed in \d+\.\d+ s.\n$", stdout)
+
     assert context.stderr.getvalue() == "subprocess_stderr_no_redirect\n"
     # test that action direction is not the same as outside function
     assert context.result != pathlib.Path.cwd()
@@ -170,6 +180,7 @@ def test_solve_lockfile_multiple_platforms(conda_store, specification, request):
 def test_generate_constructor_installer(
     conda_store, specification_name, request, tmp_path
 ):
+    """Test that generate_construction_installer correctly produces the files needed by `constructor`."""
     specification = request.getfixturevalue(specification_name)
     installer_dir = tmp_path / "installer_dir"
     is_lockfile = specification_name in [
@@ -177,50 +188,62 @@ def test_generate_constructor_installer(
         "simple_lockfile_specification_with_pip",
     ]
 
-    # Creates the installer
-    context = action.action_generate_constructor_installer(
-        conda_command=conda_store.conda_command,
-        specification=specification,
-        installer_dir=installer_dir,
-        version="1",
-        is_lockfile=is_lockfile,
-    )
+    # action_generate_constructor_installer uses a temporary directory context manager
+    # to create and store the installer, but it usually gets deleted when the function
+    # exits. Here, we manually create that temporary directory, run the action,
+    # persisting the directory (so that we can verify the contents). Only then do we
+    # manually clean up afterward.
+    class PersistentTemporaryDirectory(tempfile.TemporaryDirectory):
+        def __exit__(self, exc, value, tb):
+            pass
 
-    # Checks that the installer was created
-    installer = context.result
-    assert installer.exists()
+    temp_directory = None
 
-    tmp_dir = tmp_path / "tmp"
+    def tmp_dir_side_effect(*args, **kwargs):
+        nonlocal temp_directory
+        temp_directory = PersistentTemporaryDirectory(*args, **kwargs)
+        return temp_directory
 
-    # Runs the installer
-    out_dir = pathlib.Path(tmp_dir) / "out"
-    if sys.platform == "win32":
-        try:
-            subprocess.check_output([installer, "/S", f"/D={out_dir}"])
-        except subprocess.CalledProcessError as e:
-            print(f"There was an error with the installer subprocess:\n{e.output}")
-    else:
-        try:
-            subprocess.check_output([installer, "-b", "-p", str(out_dir)])
-        # Adding this to debug since there have been failures during testing
-        except subprocess.CalledProcessError as e:
-            print(f"There was an error with the installer subprocess:\n{e.output}")
+    with mock.patch.object(
+        generate_constructor_installer, "tempfile", wraps=tempfile
+    ) as mock_tempfile:
+        mock_tempfile.TemporaryDirectory.side_effect = tmp_dir_side_effect
 
-    # Checks the output directory
-    assert out_dir.exists()
-    lib_dir = out_dir / "lib"
-    if specification_name in ["simple_specification", "simple_lockfile_specification"]:
-        if sys.platform == "win32":
-            assert any(str(x).endswith("zlib.dll") for x in out_dir.iterdir())
-        elif sys.platform == "darwin":
-            assert any(str(x).endswith("libz.dylib") for x in lib_dir.iterdir())
-        else:
-            assert any(str(x).endswith("libz.so") for x in lib_dir.iterdir())
-    else:
-        # Uses rglob to not depend on the version of the python
-        # directory, which is where site-packages is located
-        flask = pathlib.Path("site-packages") / "flask"
-        assert any(str(x).endswith(str(flask)) for x in out_dir.rglob("*"))
+        # Create the installer, but don't actually run `constructor` - it uses conda to solve the
+        # environment, which we don't need to do for the purposes of this test.
+        with mock.patch(
+            "conda_store_server._internal.action.generate_constructor_installer.logged_command"
+        ) as mock_command:
+            generate_constructor_installer.action_generate_constructor_installer(
+                conda_command=conda_store.conda_command,
+                specification=specification,
+                installer_dir=installer_dir,
+                version="1",
+                is_lockfile=is_lockfile,
+            )
+
+    mock_command.assert_called()
+
+    # First call to `constructor` is used to check that it is installed
+    mock_command.call_args_list[0].args[1] == ["constructor", "--help"]
+
+    # Second call is used to build the installer
+    call_args = mock_command.call_args_list[1].args[1]
+    cache_dir = pathlib.Path(call_args[3])
+    platform = call_args[5]
+    tmp_dir = pathlib.Path(call_args[6])
+    assert call_args[0:3] == ["constructor", "-v", "--cache-dir"]
+    assert str(cache_dir).endswith("pkgs")
+    assert call_args[4:6] == ["--platform", conda_base_context.subdir]
+    assert str(tmp_dir).endswith("build")
+
+    # Use some of the constructor internals to verify the action's artifacts are valid
+    # constructor input
+    info = construct.parse(str(tmp_dir / "construct.yaml"), platform)
+    construct.verify(info)
+
+    assert temp_directory is not None
+    temp_directory.cleanup()
 
 
 def test_fetch_and_extract_conda_packages(tmp_path, simple_conda_lock):
