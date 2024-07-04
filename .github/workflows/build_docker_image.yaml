@@ -69,7 +69,6 @@ jobs:
       - name: "Copy .dockerignore"
         run: |
           cp .dockerignore ${{ matrix.docker-image }}/.dockerignore
-          cat .dockerignore
         shell: bash
 
       - name: "Publish Docker image 🚀"
