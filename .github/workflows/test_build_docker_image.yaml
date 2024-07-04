@@ -49,7 +49,7 @@ jobs:
 
       - name: "Copy .dockerignore"
         run: |
-          cp "${{ env.GITHUB_WORKSPACE }}/.dockerignore" .dockerignore
+          cp .dockerignore ${{ matrix.docker-image }}/.dockerignore
           cat .dockerignore
         shell: bash
 

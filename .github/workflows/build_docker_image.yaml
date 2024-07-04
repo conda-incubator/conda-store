@@ -68,7 +68,7 @@ jobs:
       # we need this as we are setting the context to subproject directory
       - name: "Copy .dockerignore"
         run: |
-          cp "${{ env.GITHUB_WORKSPACE }}/.dockerignore" .dockerignore
+          cp .dockerignore ${{ matrix.docker-image }}/.dockerignore
           cat .dockerignore
         shell: bash
 
