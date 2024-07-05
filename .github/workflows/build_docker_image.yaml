@@ -65,6 +65,12 @@ jobs:
             type=ref,event=tag
             type=sha
 
+      # we need this as we are setting the context to subproject directory
+      - name: "Copy .dockerignore"
+        run: |
+          cp .dockerignore ${{ matrix.docker-image }}/.dockerignore
+        shell: bash
+
       - name: "Publish Docker image 🚀"
         uses: docker/build-push-action@v5
         with:
