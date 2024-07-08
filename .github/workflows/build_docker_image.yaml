@@ -25,6 +25,10 @@ jobs:
       - name: "Checkout Repository 🛎"
         uses: actions/checkout@v4
 
+      - name: "Get project's default Python version 🏷️"
+        run: |
+          echo "PYTHON_VERSION_DEFAULT=$(cat .python-version-default)" >> $GITHUB_ENV
+
       - name: "Retrieve secret from Vault 🗝"
         uses: hashicorp/vault-action@v3
         with:
@@ -83,3 +87,5 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          build-args: |
+            python_version=${{ env.PYTHON_VERSION_DEFAULT }}

@@ -1,7 +1,6 @@
 name: "Test build Docker image"
 
 env:
-  DEFAULT_PYTHON_VERSION: "3.10"
   FORCE_COLOR: "1" # Make tools pretty.
   PYTHONUNBUFFERED: "1" # Make stdout and stderr behave well
 
@@ -36,6 +35,10 @@ jobs:
     steps:
       - name: "Checkout Repository 🛎"
         uses: actions/checkout@v4
+
+      - name: "Get project's default Python version 🏷️"
+        run: |
+          echo "PYTHON_VERSION_DEFAULT=$(cat .python-version-default)" >> $GITHUB_ENV
 
       - name: "Set up Docker Buildx 🏗"
         uses: docker/setup-buildx-action@v3
@@ -73,3 +76,5 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          build-args: |
+            python_version=${{ env.PYTHON_VERSION_DEFAULT }}
