@@ -184,7 +184,7 @@ function HomepageVideo() {
 export default function Home() {
   const { siteConfig } = useDocusaurusContext();
   return (
-    <Layout title={`${siteConfig.title}`} description="conda-store home page">
+    <Layout title="Homepage" description={`${siteConfig.tagline}`}>
       <HomepageHeader />
       <main>
         <HomepageProjects />

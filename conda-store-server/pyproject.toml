@@ -13,6 +13,10 @@ keywords = ["conda"]
 authors = [
   { name = "Christopher Ostrouchov", email = "crhsi.ostrouchov@gmail.com" },
 ]
+maintainers = [
+  { name = "Tania Allard", email = "trallard@bitsandchips.me" },
+  { name = "Pavithra Eswaramoorthy", email = "pavithraes@outlook.com" },
+]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
@@ -23,7 +27,12 @@ classifiers = [
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3 :: Only",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Information Technology",
+  "Intended Audience :: Science/Research",
+  "Intended Audience :: System Administrators",
 ]
 dependencies = [
   # env builds
@@ -40,6 +49,7 @@ dependencies = [
   "celery",
   "fastapi",
   "filelock",
+  "flower",
   "itsdangerous",
   "jinja2",
   "pyjwt",
@@ -48,14 +58,12 @@ dependencies = [
   "pyyaml",
   "redis",
   "requests",
-  "pydantic<2",
+  "pydantic >=1.10.16,<2.0a0",
   "python-multipart",
-  "sqlalchemy<=1.4.47",
+  "sqlalchemy<2",
   "traitlets",
   "uvicorn",
   "yarl",
-  # installer
-  "constructor",
   # artifact storage
   "minio",
   "platformdirs >=4.0,<5.0a0"
@@ -65,6 +73,7 @@ dynamic = ["version"]
 [project.urls]
 Homepage = "https://conda.store/"
 Source = "https://github.com/conda-incubator/conda-store"
+Issues = "https://github.com/conda-incubator/conda-store/issues"
 
 [tool.hatch.version]
 path = "conda_store_server/__init__.py"
@@ -75,15 +84,13 @@ dependencies = [
   "build",
   "docker-compose",
   "docker-py<7",
-  "flower",
-  "playwright",
   "pre-commit",
   "pytest",
   "pytest-celery",
-  "pytest-mock",
   "pytest-playwright",
   "twine>=5.0.0",
-  "pkginfo>=1.10",
+  "pkginfo>=1.10", # Needed to support metadata 2.3
+
 ]
 
 [tool.hatch.envs.lint]
@@ -91,14 +98,12 @@ dependencies = ["pre-commit"]
 
 [tool.hatch.envs.lint.scripts]
 lint = ["pre-commit run --all"]
-
 unit-test = "pytest -m 'not extended_prefix and not user_journey' tests"
 playwright-test = [
   "playwright install",
   "pytest --video on ../tests/test_playwright.py"
 ]
 integration-test = ["pytest ../tests/test_api.py ../tests/test_metrics.py"]
-
 user-journey-test = ["pytest -m user_journey"]
 
 [tool.hatch.build.hooks.custom]
@@ -106,8 +111,8 @@ user-journey-test = ["pytest -m user_journey"]
 [tool.hatch.build.targets.sdist.hooks.custom]
 
 [project.scripts]
-conda-store-server = "conda_store_server.server.__main__:main"
-conda-store-worker = "conda_store_server.worker.__main__:main"
+conda-store-server = "conda_store_server._internal.server.__main__:main"
+conda-store-worker = "conda_store_server._internal.worker.__main__:main"
 
 [tool.black]
 line-length = 88
@@ -120,6 +125,7 @@ lines_after_imports = 2
 [tool.ruff]
 ignore = [
   "E501", # line-length
+
 ]
 
 [tool.check-wheel-contents]

@@ -1,5 +1,5 @@
 {% set name = "conda-store" %}
-{% set version = "2024.1.1" %}
+{% set version = "2024.6.1" %}
 
 package:
   name: {{ name|lower }}-split
@@ -51,8 +51,8 @@ outputs:
       noarch: python
       script: python -m pip install ./conda-store-server -vv --no-deps --no-build-isolation --no-index
       entry_points:
-        - conda-store-server = conda_store_server.server.__main__:main
-        - conda-store-worker = conda_store_server.worker.__main__:main
+        - conda-store-server = conda_store_server._internal.server.__main__:main
+        - conda-store-worker = conda_store_server._internal.worker.__main__:main
     requirements:
       host:
         - python >=3.8
@@ -69,6 +69,7 @@ outputs:
         - __win    # [win]
         - conda-pack
         - conda-lock
+        - constructor
         - fastapi
         - filelock
         - itsdangerous
@@ -86,7 +87,6 @@ outputs:
         - traitlets
         - uvicorn
         - yarl
-        - constructor
         - psycopg2
         - pymysql
       run_constrained:
@@ -100,7 +100,7 @@ outputs:
         - conda-store-worker --help
 
 about:
-  home: https://github.com/Quansight/conda-store
+  home: https://github.com/conda-incubator/conda-store
   license: BSD-3-Clause
   license_family: BSD
   license_file: LICENSE
@@ -110,12 +110,11 @@ about:
     philosophy of conda-store is to serve identical conda environments
     in as many ways as possible. Conda Store controls the environment
     lifecycle: management, builds, and serving of environments.
-  doc_url: https://conda-store.readthedocs.io/
-  dev_url: https://github.com/Quansight/conda-store
+  doc_url: https://conda.store
+  dev_url: https://github.com/conda-incubator/conda-store
 
 extra:
   feedstock-name: conda-store
   recipe-maintainers:
     - trallard
-    - costrouc
     - jaimergp
