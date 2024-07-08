@@ -8,7 +8,7 @@ updates:
       interval: "monthly"
     labels:
       - "area: javascript"
-      - "type: dependency update"
+      - "area: dependencies 📦"
     # ensure we have a nicely formatter commit message
     prefix: "MAINT - "
 
@@ -18,7 +18,7 @@ updates:
       interval: "monthly"
     labels:
       - "area: javascript"
-      - "type: dependency update"
+      - "area: dependencies 📦"
     # ensure we have a nicely formatter commit message
     prefix: "MAINT - "
 
@@ -29,6 +29,6 @@ updates:
     schedule:
       interval: "monthly"
     labels:
-      - "type: dependency update"
+      - "area: dependencies 📦"
     # ensure we have a nicely formatter commit message
     prefix: "MAINT - "
