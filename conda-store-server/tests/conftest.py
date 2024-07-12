@@ -68,6 +68,7 @@ def conda_store_config(tmp_path):
 
     sys.argv = list(original_sys_argv)
 
+
 @pytest.fixture
 def conda_store_server(conda_store_config):
     _conda_store_server = server_app.CondaStoreServer(config=conda_store_config)
