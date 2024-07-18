@@ -121,6 +121,17 @@ For a detailed walkthrough, check out the [conda install deep dive in the conda 
 
 Understand how conda-store builds on conda for improved reproducibility in [conda-store concepts page][conda-store-concepts].
 
+## Conda configuration (`conda config`)
+
+You can configure various behaviors in conda through the [`.condarc` configuration file][conda-docs-config].
+
+conda-store needs to configure some parts of conda without modifying your conda configuration file, for this conda-store (internally) sets some conda
+configuration variables using environment variables.
+
+The impact of this is that if you try to print your conda configuration with [`conda config --show` CLI command][conda-docs-config-cli], some configuration settings displayed by that command will not reflect the values that are actually used by conda-store.
+
+In particular, `conda-store` internally sets `CONDA_FLAGS=--strict-channel-priority`, overriding the channel priority in the conda configuration file. Keep this in mind when using `conda config` to inspect your conda configuration and when viewing the build logs.
+
 <!-- External links -->
 [conda-docs]: https://docs.conda.io/
 [pip]: https://pip.pypa.io/en/stable/index.html
@@ -130,6 +141,8 @@ Understand how conda-store builds on conda for improved reproducibility in [cond
 [conda-docs-env-file]: https://docs.conda.io/projects/conda/en/stable/user-guide/tasks/manage-environments.html#creating-an-environment-file-manually
 [conda-docs-noarch]: https://docs.conda.io/projects/conda/en/stable/user-guide/concepts/packages.html#noarch-packages
 [conda-docs-install]: https://docs.conda.io/projects/conda/en/stable/dev-guide/deep-dives/install.html#fetching-the-index
+[conda-docs-config]: https://conda.io/projects/conda/en/latest/user-guide/configuration/use-condarc.html
+[conda-docs-config-cli]: https://conda.io/projects/conda/en/latest/commands/config.html
 
 <!-- Internal links -->
 [conda-store-concepts]: conda-store-concepts

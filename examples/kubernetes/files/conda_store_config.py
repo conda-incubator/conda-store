@@ -3,6 +3,7 @@ import logging
 from conda_store_server.server.auth import DummyAuthentication
 from conda_store_server.storage import S3Storage
 
+
 # ==================================
 #      conda-store settings
 # ==================================

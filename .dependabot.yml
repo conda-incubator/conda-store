@@ -1,0 +1,34 @@
+version: 2
+
+updates:
+  # auto update github actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    labels:
+      - "area: javascript"
+      - "area: dependencies 📦"
+    # ensure we have a nicely formatter commit message
+    prefix: "MAINT - "
+
+  - package-ecosystem: "npm"
+    directory: "/docusaurus-docs"
+    schedule:
+      interval: "monthly"
+    labels:
+      - "area: javascript"
+      - "area: dependencies 📦"
+    # ensure we have a nicely formatter commit message
+    prefix: "MAINT - "
+
+  - package-ecosystem: "docker"
+    directories:
+      - "/conda-store"
+      - "/conda-store-server"
+    schedule:
+      interval: "monthly"
+    labels:
+      - "area: dependencies 📦"
+    # ensure we have a nicely formatter commit message
+    prefix: "MAINT - "

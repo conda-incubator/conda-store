@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block title %}Build {{ build.id }}{% endblock %}
+
+{% block content %}
+<div class="card my-2">
+    <div class="card-body">
+        <h3 class="card-title">Build {{ build.id }}
+            <span class="badge badge-light">{{ (build.size or 0) | filesizeformat(true) }}</span>
+        </h3>
+    </div>
+    <p class="card-text">
+        <dl>
+            <dt class="col-sm-3">scheduled on</dt>
+            <dd class="col-sm-9">{{ build.scheduled_on }}</dd>
+
+            <dt class="col-sm-3">started on</dt>
+            <dd class="col-sm-9">{{ build.started_on }}</dd>
+
+            <dt class="col-sm-3">ended on</dt>
+            <dd class="col-sm-9">{{ build.ended_on }}</dd>
+
+            <dt class="col-sm-3">status</dt>
+            <dd class="col-sm-9" id="build-status">{{ build.status.value }}</dd>
+        </dl>
+
+        <div class="card-body">
+            <div id="editor" style="height: 300px;">{{ spec }}</div>
+        </div>
+    </p>
+</div>
+
+{% if build.status.value in ['COMPLETED'] %}
+<div class="card my-2">
+    <div class="card-body">
+        <h3 class="card-title">Conda Packages
+            <span class="badge badge-light">{{ build.package_builds | length }}</span>
+        </h3>
+        <p>The following build has these packages</p>
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Name</th>
+                <th scope="col">Version</th>
+                <th scope="col">Channel</th>
+            </tr>
+        </thead>
+        <tbody>
+{% for package_build in build.package_builds %}
+            <tr>
+                <th scope="row">{{ loop.index }}</th>
+                <td>{{ package_build.package.name }}</td>
+                <td>{{ package_build.package.version }}</td>
+                <td>{{ package_build.package.channel.name }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{% if build.status.value in ['BUILDING', 'COMPLETED', 'FAILED', 'CANCELED'] %}
+<div class="card my-2">
+    <div class="card-body">
+        <h3 class="card-title">Conda Environment Artifacts</h3>
+        <p>The following build has several methods of running the given environment</p>
+    </div>
+    <ul class="list-group list-group-flush">
+        <li class="list-group-item"><code>$ micromamba create -n {{ build.environment.name }} -f {{ url_for('api_get_build_conda_lock_file', build_id=build.id) }}</code></li>
+        <li class="list-group-item"><code>$ conda-store run {{ build.environment.namespace.name }}/{{ build.environment.name }}:{{ build.id }} -- python</code></li>
+        {% if build.has_yaml %}
+        <li class="list-group-item">Conda pinned <a href="{{ url_for('api_get_build_yaml', build_id=build.id) }}">environment.yaml</a></li>
+        {% endif %}
+        {% if build.has_lockfile %}
+        <li class="list-group-item"><a href="https://github.com/conda-incubator/conda-lock">Conda-Lock</a> lockfile: <a href="{{ url_for('api_get_build_lockfile', build_id=build.id) }}">conda-lock.yml</a></li>
+        {% endif %}
+        {% if build.has_conda_pack %}
+        <li class="list-group-item"><a href="https://github.com/conda/conda-pack">Conda-Pack</a> archive: <a href="{{ url_for('api_get_build_archive', build_id=build.id) }}">environment.tar.gz</a></li>
+        {% endif %}
+        {% if build.has_constructor_installer %}
+        <li class="list-group-item"><a href="https://github.com/conda/constructor">Constructor</a> installer: <a href="{{ url_for('api_get_build_installer', build_id=build.id) }}" download>installer ({{ platform }})</a></li>
+        {% endif %}
+        {% if build.has_docker_manifest %}
+        <li class="list-group-item">Docker image registry url: {{ registry_external_url }}/{{ build.environment.namespace.name }}/{{ build.environment.name }}:{{ build.build_key }}</a></li>
+        {% endif %}
+    </ul>
+</div>
+{% endif %}
+
+{% if build.status.value in ['BUILDING', 'COMPLETED', 'FAILED', 'CANCELED'] %}
+<div class="card my-2">
+    <div class="card-body">
+        <a href="{{ url_for('api_get_build_logs', build_id=build.id) }}" class="btn btn-primary btn-block">Full Logs</a>
+    </div>
+</div>
+{% endif %}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js" integrity="sha512-GZ1RIgZaSc8rnco/8CXfRdCpDxRCphenIiZ2ztLy3XQfCbQUSCuk8IudvNHxkRA3oUg6q0qejgN/qqyG1duv5Q==" crossorigin="anonymous"></script>
+<script>
+    var editor = ace.edit("editor");
+    editor.setTheme("ace/theme/github");
+    editor.getSession().setMode("ace/mode/yaml");
+    editor.setFontSize("20px");
+    editor.setReadOnly(true);
+</script>
+{% endblock %}

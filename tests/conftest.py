@@ -1,9 +1,12 @@
 import os
 import sys
+
 from urllib.parse import urljoin
 
 import pytest
+
 from requests import Session
+
 
 sys.path.append(os.path.join(os.getcwd(), "conda-store-server"))
 

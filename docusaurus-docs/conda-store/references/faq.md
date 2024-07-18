@@ -94,22 +94,78 @@ It consists of:
 3. the id of a build
 4. the environment name.
 
-The version 2 format is now the default. Environments created using the version
-1 format will continue to be accessible in the UI, but new builds will use the
-version 2 format. No changes are needed for existing deployments of conda-store.
+However, version 2 build paths don't solve the problem completely because they
+include user-provided data, like the environment name, and that data can be
+arbitrarily large.
 
-There is no real reason to use the version 1 format anymore, but it can be
-explicitly set via the config:
+To solve this problem, version 3 was introduced, which will always have the same
+size. It looks like this:
+
+```bash
+64a943764b70e8fe181643404894f7ae
+```
+
+:::warning
+Version 3 is experimental and can be changed at any time.
+:::
+
+It's a truncated SHA-256 hex digest, which is calculated based on:
+
+- namespace name
+- specification hash (also SHA-256)
+- build timestamp
+- build id.
+
+See `BuildKey._version3_experimental_fmt` for details.
+
+:::note
+When version 3 is used, `Build.build_path` will not include the namespace name,
+because it's not fixed size, so all builds will be placed right into
+`CondaStore.store_directory`.
+
+Additionally, `CondaStore.environment_directory` will be completely ignored, so
+no symlinks connecting an environment name to its corresponding build will be
+created, because the environment directory format also includes variable-size
+data (the namespace and environment names).
+
+For context, these symlinks are created because that's how conda is usually
+used: each environment name points to a particular directory on the filesystem,
+and symlinks connect this directory to the current build.
+
+In the following example, which uses the version 2 format, there are two
+environments in the `default` namespace: `test` and `test2`. The former points
+to build 3 and the latter points to build 2:
+
+```
+$ ls -l ~/.conda-store/state/default/envs
+test -> /home/user/.conda-store/state/default/b3109fbf-1710602415-3-test
+test2 -> /home/user/.conda-store/state/default/2aad045f-1710602357-2-test2
+```
+
+The lack of symlinks doesn't prevent server artifacts from being generated,
+which are available for download via the UI (lockfiles, archives, etc.), because
+those rely on storage or use the database.
+
+But it does impact conda integration or tools that rely on it, like when
+conda-store is used with JupyterLab as part of a Nebari deployment. Without
+environment symlinks, there'll be no way to tell conda where to look for
+environments, which is done by setting `envs_dirs` in `.condarc`, so `conda env
+list` will return nothing and no environments will show up in JupyterLab.
+:::
+
+The version 2 format is the default because it supports environment symlinks and
+doesn't usually run into path length limitations. If you do experience problems
+with the latter and don't need the former, then consider using the version 3
+format.
+
+No matter what format you choose, environments that were previously created
+using other version formats will be accessible in the conda-store web UI.
+
+There is no real reason to use the version 1 format anymore, but any version can
+be explicitly set via the config, for example:
 
 ```python
 c.CondaStore.build_key_version = 1
-```
-
-The version 2 format can also be explicitly set if needed (this is the same as
-the default):
-
-```python
-c.CondaStore.build_key_version = 2
 ```
 
 ## Long paths on Windows

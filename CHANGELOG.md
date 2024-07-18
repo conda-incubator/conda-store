@@ -6,6 +6,77 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 The project changed to `CalVer` in September 2023.
 
+## [2024.6.1] - 2024-06-10
+
+([full changelog](https://github.com/conda-incubator/conda-store/compare/2024.3.1...293d19fa7a7bce999b1069b147314a5966541a32))
+
+## Merged PRs
+
+- Update runtime dependencies [#827](https://github.com/conda-incubator/conda-store/pull/827) ([@peytondmurray](https://github.com/peytondmurray))
+- Add conda-store Usability Study Report.md [#824](https://github.com/conda-incubator/conda-store/pull/824) ([@smeragoel](https://github.com/smeragoel))
+- [pre-commit.ci] pre-commit autoupdate [#819](https://github.com/conda-incubator/conda-store/pull/819) ([@pre-commit-ci](https://github.com/pre-commit-ci))
+- Run tests as separate jobs [#813](https://github.com/conda-incubator/conda-store/pull/813) ([@nkaretnikov](https://github.com/nkaretnikov))
+- Add user journey test for canceling a build [#812](https://github.com/conda-incubator/conda-store/pull/812) ([@peytondmurray](https://github.com/peytondmurray))
+- Implement log flushing [#808](https://github.com/conda-incubator/conda-store/pull/808) ([@nkaretnikov](https://gith
+ub.com/nkaretnikov))
+- Add user journey test to retrieve a lockfile for a build [#807](https://github.com/conda-incubator/conda-store/pull/807) ([@peytondmurray](https://github.com/peytondmurray))
+- Add user journey test to mark build as active [#804](https://github.com/conda-incubator/conda-store/pull/804) ([@peytondmurray](https://github.com/peytondmurray))
+- MAINT - Add conda-store dependencies to pyproject.toml [#798](https://github.com/conda-incubator/conda-store/pull/798) ([@trallard](https://github.com/trallard))
+- Add user journey test to check that logs can be found for failed builds [#797](https://github.com/conda-incubator/conda-store/pull/797) ([@peytondmurray](https://github.com/peytondmurray))
+- 🔧 Update .pre-commit-config [#796](https://github.com/conda-incubator/conda-store/pull/796) ([@trallard](https://github.com/trallard))
+- MAINT -  Bump actions versions [#795](https://github.com/conda-incubator/conda-store/pull/795) ([@trallard](https://github.com/trallard))
+- Bump webpack-dev-middleware from 5.3.3 to 5.3.4 in /docusaurus-docs [#794](https://github.com/conda-incubator/conda-store/pull/794) ([@dependabot](https://github.com/dependabot))
+- Add conda recipe with verification workflow [#793](https://github.com/conda-incubator/conda-store/pull/793) ([@jaimergp](https://github.com/jaimergp))
+- Make conda_flags configurable [#790](https://github.com/conda-incubator/conda-store/pull/790) ([@patrix58](https://github.com/patrix58))
+- Added user journey test to delete old environment [#787](https://github.com/conda-incubator/conda-store/pull/787) ([@peytondmurray](https://github.com/peytondmurray))
+- Set `CONDA_STORE_DIR` to `platformdirs.user_data_path` [#786](https://github.com/conda-incubator/conda-store/pull/786) ([@nkaretnikov](https://github.com/nkaretnikov))
+- Update docs theme [#784](https://github.com/conda-incubator/conda-store/pull/784) ([@pavithraes](https://github.com/pavithraes))
+- [pre-commit.ci] pre-commit autoupdate [#781](https://github.com/conda-incubator/conda-store/pull/781) ([@pre-commit-ci](https://github.com/pre-commit-ci))
+- Add CHANGELOG entries for v2024.3.1 [#779](https://github.com/conda-incubator/conda-store/pull/779) ([@pavithraes](https://github.com/pavithraes))
+- REL - 2024.3.1 [#778](https://github.com/conda-incubator/conda-store/pull/778) ([@pavithraes](https://github.com/pavithraes))
+- Support hash-only build paths [#777](https://github.com/conda-incubator/conda-store/pull/777) ([@nkaretnikov](https://github.com/nkaretnikov))
+- Add user journey for logging in and deleting shared environment [#776](https://github.com/conda-incubator/conda-store/pull/776) ([@peytondmurray](https://github.com/peytondmurray))
+- Document user personas [#773](https://github.com/conda-incubator/conda-store/pull/773) ([@pavithraes](https://github.com/pavithraes))
+- Add ability to create environment from lockfile [#772](https://github.com/conda-incubator/conda-store/pull/772) ([@nkaretnikov](https://github.com/nkaretnikov))
+- Create temp REST API reference [#766](https://github.com/conda-incubator/conda-store/pull/766) ([@pavithraes](https://github.com/pavithraes))
+- [DOC] Add JupyterLab Extension docs page [#752](https://github.com/conda-incubator/conda-store/pull/752) ([@pavithraes](https://github.com/pavithraes))
+- Add standalone installation docs [#724](https://github.com/conda-incubator/conda-store/pull/724) ([@pavithraes](https://github.com/pavithraes))
+
+## Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/conda-incubator/conda-store/graphs/contributors?from=2024-03-12&to=2024-06-10&type=c))
+
+[@asmeurer](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Aasmeurer+updated%3A2024-03-12..2024-06-10&type=Issues) | [@costrouc](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Acostrouc+updated%3A2024-03-12..2024-06-10&type=Issues) | [@dependabot](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Adependabot+updated%3A2024-03-12..2024-06-10&type=Issues) | [@jaimergp](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Ajaimergp+updated%3A2024-03-12..2024-06-10&type=Issues) | [@kcpevey](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Akcpevey+updated%3A2024-03-12..2024-06-10&type=Issues) | [@netlify](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Anetlify+updated%3A2024-03-12..2024-06-10&type=Issues) | [@nkaretnikov](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Ankaretnikov+updated%3A2024-03-12..2024-06-10&type=Issues) | [@patrix58](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Apatrix58+updated%3A2024-03-12..2024-06-10&type=Issues) | [@pavithraes](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Apavithraes+updated%3A2024-03-12..2024-06-10&type=Issues) | [@peytondmurray](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Apeytondmurray+updated%3A2024-03-12..2024-06-10&type=Issues) | [@pre-commit-ci](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Apre-commit-ci+updated%3A2024-03-12..2024-06-10&type=Issues) | [@smeragoel](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Asmeragoel+updated%3A2024-03-12..2024-06-10&type=Issues) | [@trallard](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Atrallard+updated%3A2024-03-12..2024-06-10&type=Issues)
+
+## [2024.3.1] - 2024-03-12
+
+([full changelog](https://github.com/conda-incubator/conda-store/compare/2024.1.1...2024.3.1))
+
+## Added
+
+* Add upstream contribution policy by @pavithraes in https://github.com/conda-incubator/conda-store/pull/722
+* Pass `CONDA_OVERRIDE_CUDA` to `with_cuda` of conda-lock by @nkaretnikov in https://github.com/conda-incubator/conda-store/pull/721
+* Add backwards compatibility policy by @dcmcand in https://github.com/conda-incubator/conda-store/pull/687
+* add how to test section to PR template by @dcmcand in https://github.com/conda-incubator/conda-store/pull/743
+* Add extended-length prefix support by @nkaretnikov in https://github.com/conda-incubator/conda-store/pull/713
+* Generate `constructor` artifacts by @nkaretnikov in https://github.com/conda-incubator/conda-store/pull/714
+* Add support for the `editor` role by @nkaretnikov in https://github.com/conda-incubator/conda-store/pull/738
+* Add a test for parallel builds, fix race conditions due to the shared conda cache by @nkaretnikov in https://github.com/conda-incubator/conda-store/pull/745
+* Add user journey test by @dcmcand in https://github.com/conda-incubator/conda-store/pull/760
+* Add status `CANCELED` by @nkaretnikov in https://github.com/conda-incubator/conda-store/pull/747
+* [DOC] Document setting environment variable by @pavithraes in https://github.com/conda-incubator/conda-store/pull/765
+
+## Fixed
+
+* Log address and port, show exception trace from `uvicorn.run` by @nkaretnikov in https://github.com/conda-incubator/conda-store/pull/708
+* Check if worker is initialized by @nkaretnikov in https://github.com/conda-incubator/conda-store/pull/705
+
+## Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/conda-incubator/conda-store/graphs/contributors?from=2024-01-30&to=2024-03-12&type=c))
+
+[@nkaretnikov](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Ankaretnikov+updated%3A2024-01-30..2024-03-12&type=Issues) | [@dcmcand](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Adcmcand+updated%3A2024-01-30..2024-03-12&type=Issues) | [@pavithraes](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Apavithraes+updated%3A2024-01-30..2024-03-12&type=Issues) | [@dependabot](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Adependabot+updated%3A2024-01-30..2024-03-12&type=Issues)| [@trallard](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Atrallard+updated%3A2024-01-30..2024-03-12&type=Issues)
+
 ## [2024.1.1] - 2024-01-30
 
 ([full changelog](https://github.com/conda-incubator/conda-store/compare/2023.10.1...ec606641f6d0bb7bde39b2e9f11cf515077feee8))
