@@ -57,3 +57,5 @@ yarn-error.log*
 
 # conda-store
 conda-store.sqlite
+
+*.lockb

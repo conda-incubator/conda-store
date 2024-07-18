@@ -6,6 +6,13 @@ env:
 
 on:
   pull_request:
+    paths:
+      - ".github/workflows/**"
+      - ".github/actions/**"
+      - "conda-store/**"
+      - "conda-store-server/**"
+      - "examples/**"
+      - "tests/**"
   push:
     branches:
       - main

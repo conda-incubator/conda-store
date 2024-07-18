@@ -7,19 +7,18 @@ import yaml
 
 from fastapi.testclient import TestClient
 
+from conda_store_server import api, app, storage
 
-from conda_store_server import (  # isort:skip
+
+from conda_store_server._internal import (  # isort:skip
     action,
-    api,
-    app,
     dbutil,
     schema,
-    storage,
     testing,
     utils,
 )
 
-from conda_store_server.server import app as server_app  # isort:skip
+from conda_store_server._internal.server import app as server_app  # isort:skip
 
 
 @pytest.fixture
@@ -89,7 +88,7 @@ def conda_store_server(conda_store_config):
         # ensure that models are created
         from celery.backends.database.session import ResultModelBase
 
-        import conda_store_server.worker.tasks  # noqa
+        import conda_store_server._internal.worker.tasks  # noqa
 
         ResultModelBase.metadata.create_all(db.get_bind())
 
@@ -172,7 +171,7 @@ def conda_store(conda_store_config):
         # ensure that models are created
         from celery.backends.database.session import ResultModelBase
 
-        import conda_store_server.worker.tasks  # noqa
+        import conda_store_server._internal.worker.tasks  # noqa
 
         ResultModelBase.metadata.create_all(db.get_bind())
 
