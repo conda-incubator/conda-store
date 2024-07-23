@@ -21,6 +21,9 @@ jobs:
         docker-image:
           - conda-store
           - conda-store-server
+        platform:
+          - linux/amd64
+          - linux/arm64
     steps:
       - name: "Checkout Repository 🛎"
         uses: actions/checkout@v4
@@ -89,3 +92,4 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             python_version=${{ env.PYTHON_VERSION_DEFAULT }}
+          platforms: ${{ matrix.platform }}
