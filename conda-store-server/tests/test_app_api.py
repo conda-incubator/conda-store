@@ -9,6 +9,7 @@ from conda_store_server._internal import action, conda_utils, schema
 def test_conda_store_app_register_solve(
     db, conda_store, simple_specification, simple_conda_lock, celery_worker
 ):
+    """Test that CondaStore can register Solve objects and dispatch solve tasks."""
     task_id, solve_id = conda_store.register_solve(db, simple_specification)
     action.action_add_lockfile_packages(
         db=db,
@@ -22,7 +23,7 @@ def test_conda_store_app_register_solve(
     assert solve.started_on is None
     assert solve.ended_on is None
     assert len(solve.package_builds) == len(
-        filter(lambda item: item["platform"] == platform, simple_conda_lock["package"])
+        [item for item in simple_conda_lock["package"] if item["platform"] == platform]
     )
     assert solve.specification.spec["name"] == simple_specification.name
     assert solve.specification.spec["channels"] == simple_specification.channels
@@ -37,7 +38,7 @@ def test_conda_store_app_register_solve(
 
 
 def test_conda_store_register_environment_workflow(db, conda_store, celery_worker):
-    """Test entire environment build workflow"""
+    """Test entire environment build workflow."""
     conda_specification = schema.CondaSpecification(
         name="pytest-name",
         channels=["main"],
