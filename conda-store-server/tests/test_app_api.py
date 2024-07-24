@@ -37,27 +37,24 @@ def test_conda_store_app_register_solve(
     assert len(solve.package_builds) > 0
 
 
-def test_conda_store_register_environment_workflow(db, conda_store, celery_worker):
+def test_conda_store_register_environment_workflow(
+    db, simple_specification, conda_store, celery_worker
+):
     """Test entire environment build workflow."""
-    conda_specification = schema.CondaSpecification(
-        name="pytest-name",
-        channels=["main"],
-        dependencies=["python"],
-    )
     namespace_name = "pytest-namespace"
 
     build_id = conda_store.register_environment(
-        db, specification=conda_specification.dict(), namespace=namespace_name
+        db, specification=simple_specification.dict(), namespace=namespace_name
     )
 
     build = api.get_build(db, build_id=build_id)
     assert build is not None
     assert build.status == schema.BuildStatus.QUEUED
-    assert build.environment.name == conda_specification.name
+    assert build.environment.name == simple_specification.name
     assert build.environment.namespace.name == namespace_name
-    assert build.specification.spec["name"] == conda_specification.name
-    assert build.specification.spec["channels"] == conda_specification.channels
-    assert build.specification.spec["dependencies"] == conda_specification.dependencies
+    assert build.specification.spec["name"] == simple_specification.name
+    assert build.specification.spec["channels"] == simple_specification.channels
+    assert build.specification.spec["dependencies"] == simple_specification.dependencies
     # when new environment is created current_build should be the default build
     assert build.environment.current_build == build
 
