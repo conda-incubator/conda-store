@@ -116,9 +116,7 @@ def action_generate_constructor_installer(
         }
 
         if sys.platform == "win32":
-            post_install = """\
-call "%PREFIX%\Scripts\\activate.bat"
-"""
+            post_install = "\n" r'call "%PREFIX%\Scripts\activate.bat' "\n"
         else:
             post_install = """\
 #!/usr/bin/env bash
