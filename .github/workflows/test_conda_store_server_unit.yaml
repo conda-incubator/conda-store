@@ -91,6 +91,9 @@ jobs:
           conda list
           which python
 
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+
       - name: "Unit tests ✅"
         run: |
           python -m pytest -svv ./tests/test_actions.py
