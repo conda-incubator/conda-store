@@ -91,6 +91,9 @@ jobs:
           conda list
           which python
 
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+
       - name: "Unit tests ✅"
         run: |
           python -m pytest -svv ./tests/test_actions.py
@@ -108,6 +111,3 @@ jobs:
           (Get-ItemProperty "HKLM:System\CurrentControlSet\Control\FileSystem").LongPathsEnabled
           pytest -m "extended_prefix" tests
         if: matrix.os == 'windows-latest'
-
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
