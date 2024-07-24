@@ -11,6 +11,10 @@ from conda_store_server._internal import action, conda_utils, schema, utils
 from conda_store_server._internal.action.utils import logged_command
 
 
+class DebuggingException(Exception):
+    pass
+
+
 @action.action
 def action_solve_lockfile(
     context,
@@ -55,7 +59,7 @@ def action_solve_lockfile(
     # CONDA_FLAGS is used by conda-lock in conda_solver.solve_specs_for_arch
     try:
         conda_flags_name = "CONDA_FLAGS"
-        print(f"{conda_flags_name}={conda_flags}")
+        # print(f"{conda_flags_name}={conda_flags}")
         os.environ[conda_flags_name] = conda_flags
 
         run_lock(
@@ -65,6 +69,25 @@ def action_solve_lockfile(
             conda_exe=conda_command,
             with_cuda=cuda_version,
         )
+    except KeyError as exc:
+        with open(environment_filename, "r") as f:
+            env_file_content = f.read()
+
+        raise DebuggingException(
+            "\n".join(
+                [
+                    f"environment_files={[environment_filename]}",
+                    f"platforms={platforms}",
+                    f"lockfile_path={lockfile_filename}",
+                    f"conda_exe={conda_command}",
+                    f"with_cuda={cuda_version}",
+                    f"conda_flags_name={conda_flags_name}",
+                    f"conda_flags={conda_flags}",
+                    f"os.environ={os.environ}",
+                    f"environment_files content={env_file_content}",
+                ]
+            )
+        ) from exc
     finally:
         os.environ.pop(conda_flags_name, None)
 
