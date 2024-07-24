@@ -51,6 +51,11 @@ def action_solve_lockfile(
     else:
         cuda_version = None
 
+    # Check that the lockfile exists
+    if not lockfile_filename.exists():
+        context.log.critical(f"Lockfile {lockfile_filename} does not exist.")
+        raise ValueError(f"Lockfile {lockfile_filename} does not exist.")
+
     # CONDA_FLAGS is used by conda-lock in conda_solver.solve_specs_for_arch
     with utils.set_environment(**{"CONDA_FLAGS": conda_flags}):
         run_lock(
