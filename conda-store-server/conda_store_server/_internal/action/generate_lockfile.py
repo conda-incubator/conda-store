@@ -1,4 +1,5 @@
 import json
+import os
 import pathlib
 import typing
 
@@ -52,7 +53,11 @@ def action_solve_lockfile(
         cuda_version = None
 
     # CONDA_FLAGS is used by conda-lock in conda_solver.solve_specs_for_arch
-    with utils.set_environment(**{"CONDA_FLAGS": conda_flags}):
+    try:
+        conda_flags_name = "CONDA_FLAGS"
+        print(f"{conda_flags_name}={conda_flags}")
+        os.environ[conda_flags_name] = conda_flags
+
         run_lock(
             environment_files=[environment_filename],
             platforms=platforms,
@@ -60,6 +65,8 @@ def action_solve_lockfile(
             conda_exe=conda_command,
             with_cuda=cuda_version,
         )
+    finally:
+        os.environ.pop(conda_flags_name, None)
 
     with lockfile_filename.open() as f:
         return yaml.safe_load(f)
