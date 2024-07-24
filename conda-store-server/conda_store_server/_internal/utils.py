@@ -147,21 +147,3 @@ def callable_or_value(v, *args, **kwargs):
     if callable(v):
         return v(*args, **kwargs)
     return v
-
-
-@contextlib.contextmanager
-def set_environment(**update_env_vars: dict):
-    """Update the environment variables temporarily.
-
-    Parameters
-    ----------
-    **update_env_vars : dict
-        Environment variables to update
-    """
-    old_env = os.environ.copy()
-    try:
-        os.environ.update(**update_env_vars)
-        yield
-    finally:
-        os.environ.clear()
-        os.environ = old_env

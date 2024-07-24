@@ -91,14 +91,9 @@ jobs:
           conda list
           which python
 
-      # - name: Setup tmate session
-      #   uses: mxschmitt/action-tmate@v3
-
       - name: "Unit tests ✅"
         run: |
-          conda run -n conda-store-server-dev pytest ./tests/test_actions.py
-          conda run -n conda-store-server-dev pytest ./tests/test_app_api.py
-      #     python -m pytest -m "not extended_prefix and not user_journey" tests
+          python -m pytest -m "not extended_prefix and not user_journey" tests
 
       # https://github.com/actions/runner-images/issues/1052
       - name: "Windows extended prefix unit tests ✅"
