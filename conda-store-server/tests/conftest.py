@@ -37,7 +37,14 @@ def celery_config(tmp_path, conda_store):
 
 
 @pytest.fixture
-def conda_store_config(tmp_path, request):
+def conda_store_config(tmp_path):
+    """A conda store configuration fixture.
+
+    sys.path is manipulated so that only the name of the called program
+    (e.g. `pytest`) is present. This prevents traitlets from parsing any
+    additional pytest args as configuration settings to be applied to
+    the conda-store-server.
+    """
     from traitlets.config import Config
 
     filename = tmp_path / ".conda-store" / "database.sqlite"
@@ -46,6 +53,9 @@ def conda_store_config(tmp_path, request):
     store_directory.mkdir(parents=True)
 
     storage.LocalStorage.storage_path = str(tmp_path / ".conda-store" / "storage")
+
+    original_sys_argv = list(sys.argv)
+    sys.argv = [sys.argv[0]]
 
     with utils.chdir(tmp_path):
         yield Config(
@@ -56,13 +66,7 @@ def conda_store_config(tmp_path, request):
             )
         )
 
-    original_sys_argv = list(sys.argv)
-    sys.argv = [sys.argv[0]]
-
-    def teardown():
-        sys.argv = list(original_sys_argv)
-
-    request.addfinalizer(teardown)
+    sys.argv = list(original_sys_argv)
 
 
 @pytest.fixture

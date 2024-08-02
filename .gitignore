@@ -32,7 +32,7 @@ test-results
 .ruff_cache
 
 # conda-store-ui
-conda-store-server/conda_store_server/server/static/conda-store-ui/
+conda-store-server/conda_store_server/_internal/server/static/conda-store-ui/
 
 # Docusaurus dependencies
 /node_modules
