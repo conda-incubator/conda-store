@@ -10,6 +10,8 @@ on:
 jobs:
   update-openapi-json:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     defaults:
       run:
         shell: bash -el {0}
@@ -36,3 +38,4 @@ jobs:
           default_author: github_actions
           message: 'Update REST API documentation (openapi.json)'
           add: 'openapi.json'
+          push: true
