@@ -625,14 +625,52 @@ async def api_list_environments(
     packages: Optional[List[str]] = Query([]),
     artifact: Optional[schema.BuildArtifactType] = None,
     auth=Depends(dependencies.get_auth),
-    entity=Depends(dependencies.get_entity),
+    entity: schema.AuthenticationToken = Depends(dependencies.get_entity),
+    roles: Optional[List[str] | str] = None,
     paginated_args=Depends(get_paginated_args),
     conda_store=Depends(dependencies.get_conda_store),
 ):
+    """Retrieve a list of environments.
+
+    Parameters
+    ----------
+    auth :
+
+    paginated_args :
+
+    conda_store :
+
+    search : Optional[str]
+
+    namespace : Optional[str]
+
+    name : Optional[str]
+
+    status : Optional[schema.BuildStatus]
+
+    packages : Optional[List[str]]
+
+    artifact : Optional[schema.BuildArtifactType]
+
+    entity : schema.AuthenticationToken
+
+    roles : Optional[List[str] | str]
+        If specified, all environments which are part of namespaces for
+        the given roles will be returned. In this way, admins can query
+        which environments a user has access to based on their role.
+
+        If unspecified, only the environments the current entity has access
+        to will be returned.
+
+    Returns
+    -------
+    Dict
+        Paginated JSON response containing the requested environments
+
+    """
     with conda_store.get_db() as db:
-        orm_environments = auth.filter_environments(
-            entity,
-            api.list_environments(
+        if roles:
+            orm_environments = api.list_environments(
                 db,
                 search=search,
                 namespace=namespace,
@@ -640,9 +678,24 @@ async def api_list_environments(
                 status=status,
                 packages=packages,
                 artifact=artifact,
-                show_soft_deleted=False,
-            ),
-        )
+                roles=roles,
+            )
+
+        else:
+            orm_environments = auth.filter_environments(
+                entity,
+                api.list_environments(
+                    db,
+                    search=search,
+                    namespace=namespace,
+                    name=name,
+                    status=status,
+                    packages=packages,
+                    artifact=artifact,
+                    show_soft_deleted=False,
+                ),
+            )
+
         return paginated_api_response(
             orm_environments,
             paginated_args,

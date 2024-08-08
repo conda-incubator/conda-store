@@ -8,7 +8,7 @@ import re
 import secrets
 
 from collections import defaultdict
-from typing import Optional
+from typing import Iterable, Optional, Set
 
 import jwt
 import requests
@@ -18,7 +18,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from sqlalchemy import and_, or_, text
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, Query
 from traitlets import (
     Bool,
     Callable,
@@ -263,7 +263,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
         )
         return (arn_1_matches_arn_2 and arn_2_matches_arn_1) or arn_2_matches_arn_1
 
-    def get_entity_bindings(self, entity: schema.AuthenticationToken):
+    def get_entity_bindings(self, entity: schema.AuthenticationToken) -> Set[schema.Permissions]:
         authenticated = entity is not None
         entity_role_bindings = {} if entity is None else entity.role_bindings
 
@@ -281,7 +281,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
                 **entity_role_bindings,
             }
 
-    def convert_roles_to_permissions(self, roles):
+    def convert_roles_to_permissions(self, roles: Iterable[str]) -> Set[schema.Permissions]:
         permissions = set()
         for role in roles:
             # 'editor' is the new alias of 'developer'. The new name is
@@ -583,7 +583,7 @@ form.addEventListener('submit', loginHandler);
             )
         return request.state.entity
 
-    def entity_bindings(self, entity):
+    def entity_bindings(self, entity: schema.AuthenticationToken):
         return self.authorization.get_entity_bindings(entity)
 
     def authorize_request(self, request: Request, arn, permissions, require=False):
@@ -623,7 +623,7 @@ form.addEventListener('submit', loginHandler);
             .filter(or_(*cases))
         )
 
-    def filter_environments(self, entity, query):
+    def filter_environments(self, entity: schema.AuthenticationToken, query: Query) -> Query:
         cases = []
         for entity_arn, entity_roles in self.entity_bindings(entity).items():
             namespace, name = self.authorization.compile_arn_sql_like(entity_arn)

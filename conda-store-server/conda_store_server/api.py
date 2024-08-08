@@ -278,6 +278,7 @@ def list_environments(
     db,
     namespace: str = None,
     name: str = None,
+    roles: List[str] | str = None,
     status: schema.BuildStatus = None,
     packages: List[str] = None,
     artifact: schema.BuildArtifactType = None,
@@ -308,6 +309,11 @@ def list_environments(
 
     if status:
         query = query.filter(orm.Build.status == status)
+
+    if roles:
+        if isinstance(roles, str):
+            roles = [roles]
+        query = query.filter(orm.Namespace.role_mappings.in_(roles))
 
     if artifact:
         # DOCKER_BLOB can return multiple results
