@@ -4,7 +4,7 @@ from pathlib import Path
 
 from fastapi.openapi.utils import get_openapi
 
-from conda_store_server.server import app as server_app
+from conda_store_server._internal.server import app as server_app
 
 
 def gen_openapi_json():

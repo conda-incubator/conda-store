@@ -24,7 +24,7 @@ If you are a first-time contributor:
 Once you have a local copy of the `conda-store` repository, you can set up your development environment.
 There are two main ways to set up your local environment for development:
 
-- Using [Docker and docker-compose(recommended)](#docker-based-development---conda-store-core)
+- Using [Docker and Docker compose(recommended)](#docker-based-development---conda-store-core)
 - Local development [without Docker](#local-development-without-docker---conda-store-core)
 
 ### Docker-based development - conda-store-core
@@ -32,12 +32,12 @@ There are two main ways to set up your local environment for development:
 Install the following dependencies before developing on `conda-store`.
 
 - [Docker](https://docs.docker.com/engine/install/)
-- [docker-compose](https://docs.docker.com/compose/install/)
+- [Docker compose](https://docs.docker.com/compose/install/)
 
 To deploy `conda-store` run the following command:
 
 ```bash
-docker-compose up --build -d
+docker compose up --build -d
 ```
 
 :::important
@@ -48,7 +48,7 @@ Otherwise, this workflow has been shown to run and build on OSX.
 **Notice** the `architecture: amd64` within the `docker-compose.yaml` files.
 :::
 
-After running the `docker-compose` command, the following resources will be available:
+After running the `docker compose` command, the following resources will be available:
 
 | Resource | Localhost port | username | password |
 |----------|----------------|----------|----------|
@@ -65,17 +65,17 @@ If you are making any changes to `conda-store-server` and would like to see
 those changes in the deployment, run:
 
 ```shell
-docker-compose down -v # not always necessary
-docker-compose up --build
+docker compose down -v # not always necessary
+docker compose up --build
 ```
 
 To stop the deployment, run:
 
 ```bash
-docker-compose stop
+docker compose stop
 
 # optional to remove the containers
-docker-compose rm -f
+docker compose rm -f
 ```
 
 ### Local development without Docker - conda-store-core
@@ -125,7 +125,7 @@ If you are a first-time contributor:
 Once you have a local copy of the `conda-store` repository, you can set up your development environment.
 There are two main ways to set up your local environment for development:
 
-- Using [Docker and docker-compose(recommended)](#docker-based-development---conda-store-ui)
+- Using [Docker and Docker compose(recommended)](#docker-based-development---conda-store-ui)
 - Local development [without Docker](#local-development-without-docker---conda-store-ui)
 
 ### Pre-requisites
@@ -137,9 +137,9 @@ There are two main ways to set up your local environment for development:
 
 Running conda-store-ui in Docker is the simplest way to set up your local development environment.
 
-We use [docker-compose](https://docs.docker.com/compose/) to set up the infrastructure before starting,
-you must ensure you have docker-compose installed.
-If you need to install docker-compose, please see their [installation documentation](https://docs.docker.com/compose/install/).
+We use [Docker compose](https://docs.docker.com/compose/) to set up the infrastructure before starting,
+you must ensure you have Docker compose installed.
+If you need to install Docker compose, please see their [installation documentation](https://docs.docker.com/compose/install/).
 
 1. After cloning the repository change to the project directory:
 

@@ -1,64 +1,34 @@
+# only development dependencies should be added to this file
+# if you add a new dev dependency you must ensure to add it to the [tool.hatch.envs.dev]
+# section of the pyproject.toml file too
+# required conda-store-server or conda-store (core) dependencies MUST ONLY be added/updated in the [dependencies]
+# section of the corresponding pyproject.toml file
+# the only exceptions to this rule are conda and constructor which are only conda installable
 name: conda-store-server-dev
 channels:
   - conda-forge
-  - microsoft
   - nodefaults
 dependencies:
-  - python ==3.10
+  # must be kept in sync with .python-version-default
+  - python=3.12
   # conda builds
-  - conda ==23.5.2
-  - conda-docker >= 0.1.2
-  - python-docker
-  - conda-pack
-  - conda-lock >=1.0.5
-  - conda-package-handling
-  - conda-package-streaming
-  # web server
-  - celery
-  - flower
-  - redis-py
-  - sqlalchemy<=1.4.47
-  - psycopg2
-  - pymysql
-  - requests
-  - uvicorn
-  - fastapi
-  - pydantic < 2.0
-  - pyyaml
-  - traitlets
-  - yarl
-  - pyjwt
-  - filelock
-  - itsdangerous
-  - jinja2
-  - python-multipart
-  - alembic
-  - platformdirs >=4.0,<5.0a0
-  # artifact storage
-  - minio
-  # installer
-  - constructor
-  # CLI
-  - typer
-
+  - conda
   # dev dependencies
   - aiohttp>=3.8.1
-  - hatch
   - pytest
   - pytest-celery
   - pytest-mock
-  - black ==22.3.0
-  - flake8
-  - ruff
-  - sphinx
-  - myst-parser
-  - sphinx-panels
-  - sphinx-copybutton
-  - pydata-sphinx-theme
-  - playwright
-  - docker-py<7  # for docker-compose
+  - docker-py<=7
   - docker-compose
+  # build dependencies
+  - hatch
+  - build
+  - twine>=5.0.0
+  - pkginfo>=1.10 # needed to support metadata 2.3
+  # installer
+  - constructor # runtime dep but must be conda installed
+  # linting
+  - pre_commit
   - pip
-
   - pip:
       - pytest-playwright

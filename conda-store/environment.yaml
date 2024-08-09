@@ -1,8 +1,0 @@
-name: conda-store
-channels:
-  - conda-forge
-dependencies:
-  - nb_conda_kernels
-  - nodejs=18
-  - yarn
-  - constructor # Runtime dependency, but must be conda-installed

@@ -1,8 +1,8 @@
 name: "Test conda-store-server (integration)"
 
 env:
-  DEFAULT_PYTHON_VERSION: "3.10"
   FORCE_COLOR: "1" # Make tools pretty.
+  PYTHONUNBUFFERED: "1" # Make stdout and stderr behave well
 
 on:
   pull_request:
@@ -20,12 +20,12 @@ on:
 
 # ensuring only one instance is running at a given time
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: true
 
 jobs:
   integration-test-conda-store-server:
-    name: "integration-test conda-store-server"
+    name: "integration-test - ${{ matrix.test-type }}"
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -38,20 +38,29 @@ jobs:
       - name: "Checkout Repository 🛎"
         uses: actions/checkout@v4
 
-      - name: "Set up env 🐍"
+      - name: "Get project's default Python version 🏷️"
+        run: |
+          echo "PYTHON_VERSION_DEFAULT=$(cat .python-version-default)" >> $GITHUB_ENV
+
+      - name: "Set up conda env 🐍"
         uses: conda-incubator/setup-miniconda@v3
         with:
-          environment-file: conda-store-server/environment-dev.yaml
-          miniforge-version: latest
+            environment-file: conda-store-server/environment-dev.yaml
+            miniforge-version: latest
+            auto-activate-base: false
+            activate-environment: conda-store-server-dev
+            python-version: ${{ env.PYTHON_VERSION_DEFAULT }}
 
-      - name: "Install build dependencies 📦"
+      - name: "Install dependencies 📦"
         run: |
-          pip install hatch
+          which python
           sudo apt install wait-for-it -y
+          # install conda-store-server
+          python -m pip install .
 
-      - name: "Deploy docker-compose"
+      - name: "Deploy docker compose 🏗️"
         run: |
-          docker-compose up -d
+          docker compose up -d
           docker ps
 
           wait-for-it localhost:5432 # postgresql
@@ -61,29 +70,28 @@ jobs:
 
       - name: "Run Playwright tests 🎭"
         run: |
-          playwright install
-          pytest --video on ../tests/test_playwright.py
+          python -m playwright install --with-deps chromium
+          python -m pytest --video on ../tests/test_playwright.py
         if: matrix.test-type == 'playwright'
 
       - name: "Upload test results 📤"
         uses: actions/upload-artifact@v4
-        if: ${{ always() }} && matrix.test-type == 'playwright'
+        if: matrix.test-type == 'playwright'
         with:
           name: playwright-tests
           path: conda-store-server/test-results
 
       - name: "Run integration tests ✅"
         run: |
-          export PYTHONPATH=$PYTHONPATH:$PWD
-          pytest ../tests/test_api.py ../tests/test_metrics.py
+          python -m pytest ../tests/test_api.py ../tests/test_metrics.py
         if: matrix.test-type == 'integration'
 
       - name: "Run user journey tests ✅"
         run: |
-          pytest -m "user_journey"
+          python -m pytest -m "user_journey"
         if: matrix.test-type == 'user-journey'
 
       - name: "Get Docker logs 🔍"
         if: ${{ failure() }}
         run: |
-          docker-compose logs
+          docker compose logs

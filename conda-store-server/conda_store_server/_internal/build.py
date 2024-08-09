@@ -49,8 +49,13 @@ def append_to_logs(db: Session, conda_store, build, logs: typing.Union[str, byte
         except Exception:
             current_logs = b""
 
+        if current_logs is None:
+            current_logs = b""
+
         if isinstance(logs, str):
             logs = logs.encode("utf-8")
+        elif logs is None:
+            logs = b""
 
         conda_store.storage.set(
             db,
