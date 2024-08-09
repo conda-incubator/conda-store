@@ -12,7 +12,7 @@ To install on a local docker daemon there is an existing `docker-compose.yaml` f
 The example files required are in `examples/docker`:
 
 ```shell
-docker-compose up --build
+docker compose up --build
 ```
 
 On your web browser, visit: [https://conda-store.localhost/conda-store](https://conda-store.localhost/conda-store).

@@ -1,5 +1,5 @@
 # conda-store-server Dockerfile
-# the generated Docker image is used with docker-compose to run the conda-store
+# the generated Docker image is used with docker compose to run the conda-store
 # server and public conda-store Docker images
 
 FROM condaforge/miniforge3:24.3.0-0 AS base

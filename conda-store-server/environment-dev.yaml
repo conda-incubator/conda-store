@@ -19,7 +19,7 @@ dependencies:
   - pytest-celery
   - pytest-mock
   - docker-py<=7
-  - docker-compose
+  - docker compose
   # build dependencies
   - hatch
   - build

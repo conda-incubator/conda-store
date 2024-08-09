@@ -58,9 +58,9 @@ jobs:
           # install conda-store-server
           python -m pip install .
 
-      - name: "Deploy docker-compose 🏗️"
+      - name: "Deploy docker compose 🏗️"
         run: |
-          docker-compose up -d
+          docker compose up -d
           docker ps
 
           wait-for-it localhost:5432 # postgresql
@@ -94,4 +94,4 @@ jobs:
       - name: "Get Docker logs 🔍"
         if: ${{ failure() }}
         run: |
-          docker-compose logs
+          docker compose logs
