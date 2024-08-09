@@ -1,0 +1,41 @@
+name: "Generate openapi.json"
+
+env:
+  DEFAULT_PYTHON_VERSION: "3.12"
+
+on:
+  pull_request:
+    paths: ['conda-store-server/conda_store_server/**']
+
+jobs:
+  update-openapi-json:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    defaults:
+      run:
+        shell: bash -el {0}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Set up Miniconda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          environment-file: conda-store-server/environment-dev.yaml
+
+      - name: Install conda-store-server
+        run: python -m pip install conda-store-server/.
+
+      - name: Run openapi.json generation script
+        run: python docusaurus-docs/scripts/generate_openapi_json.py
+
+      - name: Commit changes
+        uses: EndBug/add-and-commit@v9
+        with:
+          default_author: github_actions
+          message: 'Update REST API documentation (openapi.json)'
+          add: 'openapi.json'
+          push: true
