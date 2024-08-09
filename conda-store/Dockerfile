@@ -2,7 +2,7 @@
 # the generated Docker image is used with docker-compose to run the conda-store
 # worker and public conda-store Docker images
 
-FROM condaforge/mambaforge:24.3.0-0 AS base
+FROM condaforge/miniforge3:24.3.0-0 AS base
 
 LABEL org.opencontainers.image.authors="conda-store development team"
 
