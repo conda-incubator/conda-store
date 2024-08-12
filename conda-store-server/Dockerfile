@@ -77,6 +77,9 @@ WORKDIR /var/lib/conda-store
 # ---------------------------------------------------------------------------------
 # for development images we install conda-store-server in editable mode
 FROM base AS dev
+ARG PSEUDO_VERSION=1.0.0
+# we need to set the environment variable for setuptools_scm to work
+ENV SETUPTOOLS_SCM_PRETEND_VERSION=${PSEUDO_VERSION}
 
 WORKDIR /opt/conda-store-server
 RUN which python && \
