@@ -7,9 +7,10 @@ import re
 from typing import Any, Dict, List, Union
 
 from sqlalchemy import distinct, func, null, or_
-from sqlalchemy.orm import aliased
+from sqlalchemy.orm import Query, aliased
 
 from conda_store_server._internal import conda_utils, orm, schema, utils
+from conda_store_server.server import auth
 
 
 def list_namespaces(db, show_soft_deleted: bool = False):
@@ -278,13 +279,43 @@ def list_environments(
     db,
     namespace: str = None,
     name: str = None,
-    roles: List[str] | str = None,
     status: schema.BuildStatus = None,
     packages: List[str] = None,
     artifact: schema.BuildArtifactType = None,
     search: str = None,
     show_soft_deleted: bool = False,
-):
+    entity_bindings: Dict[str, str] = None,
+) -> Query:
+    """Retrieve all environments managed by conda-store.
+
+    Parameters
+    ----------
+    db :
+
+    namespace : str | None
+        If specified, filter by environments in the given namespace
+    name : str | None
+        If specified, filter by environments with the given name
+    status : schema.BuildStatus
+        If specified, filter by environments with the given status
+    packages : List[str] | None
+        If specified, filter by environments containing the given package name(s)
+    artifact : schema.BuildArtifactType | None
+        If specified, filter by environments with the given BuildArtifactType
+    search : str | None
+        If specified, filter by environment names or namespace names containing the
+        search term
+    show_soft_deleted : bool
+
+    entity_bindings : Dict[str, str] | None
+        If specified, filter by only the environments the given entity_bindings have
+        read, write, or admin access to.
+
+    Returns
+    -------
+    Query
+        Sqlalchemy query containing the requested environments
+    """
     query = db.query(orm.Environment).join(orm.Environment.namespace)
 
     if namespace:
@@ -310,11 +341,6 @@ def list_environments(
     if status:
         query = query.filter(orm.Build.status == status)
 
-    if roles:
-        if isinstance(roles, str):
-            roles = [roles]
-        query = query.filter(orm.Namespace.role_mappings.in_(roles))
-
     if artifact:
         # DOCKER_BLOB can return multiple results
         # use DOCKER_MANIFEST instead
@@ -332,6 +358,12 @@ def list_environments(
             .group_by(orm.Namespace.name, orm.Environment.name, orm.Environment.id)
             .having(func.count() == len(packages))
         )
+
+    if entity_bindings:
+        entity = auth.AuthenticationToken(
+            primary_namespace="example_namespace", role_bindings=entity_bindings
+        )
+        query = auth.filter_environments(entity, query)
 
     return query
 

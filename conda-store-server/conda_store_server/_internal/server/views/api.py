@@ -626,7 +626,6 @@ async def api_list_environments(
     artifact: Optional[schema.BuildArtifactType] = None,
     auth=Depends(dependencies.get_auth),
     entity: schema.AuthenticationToken = Depends(dependencies.get_entity),
-    roles: Optional[List[str] | str] = None,
     paginated_args=Depends(get_paginated_args),
     conda_store=Depends(dependencies.get_conda_store),
 ):
@@ -653,14 +652,7 @@ async def api_list_environments(
     artifact : Optional[schema.BuildArtifactType]
 
     entity : schema.AuthenticationToken
-
-    roles : Optional[List[str] | str]
-        If specified, all environments which are part of namespaces for
-        the given roles will be returned. In this way, admins can query
-        which environments a user has access to based on their role.
-
-        If unspecified, only the environments the current entity has access
-        to will be returned.
+        Only environments which the entity has access to will be returned
 
     Returns
     -------
@@ -669,8 +661,9 @@ async def api_list_environments(
 
     """
     with conda_store.get_db() as db:
-        if roles:
-            orm_environments = api.list_environments(
+        orm_environments = auth.filter_environments(
+            entity,
+            api.list_environments(
                 db,
                 search=search,
                 namespace=namespace,
@@ -678,23 +671,9 @@ async def api_list_environments(
                 status=status,
                 packages=packages,
                 artifact=artifact,
-                roles=roles,
-            )
-
-        else:
-            orm_environments = auth.filter_environments(
-                entity,
-                api.list_environments(
-                    db,
-                    search=search,
-                    namespace=namespace,
-                    name=name,
-                    status=status,
-                    packages=packages,
-                    artifact=artifact,
-                    show_soft_deleted=False,
-                ),
-            )
+                show_soft_deleted=False,
+            ),
+        )
 
         return paginated_api_response(
             orm_environments,
