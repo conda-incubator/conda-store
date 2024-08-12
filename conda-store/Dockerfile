@@ -42,7 +42,6 @@ ARG RELEASE_VERSION
 
 WORKDIR /opt/conda-store
 
-
 RUN which python && \
     python -m pip install conda-store==${RELEASE_VERSION} --no-cache-dir
 
@@ -54,6 +53,9 @@ WORKDIR /opt/jupyterhub
 # for development images we install conda-store-server in editable mode
 FROM base AS dev
 
+ARG PSEUDO_VERSION=1.0.0
+# we need to set the environment variable for setuptools_scm to work
+ENV SETUPTOOLS_SCM_PRETEND_VERSION=${PSEUDO_VERSION}
 
 RUN --mount=type=cache,target=/root/.cache/pip
 WORKDIR /opt/conda-store
