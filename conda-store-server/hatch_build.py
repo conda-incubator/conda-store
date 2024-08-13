@@ -10,10 +10,7 @@ from typing import Any, Dict, List
 
 from hatchling.builders.hooks.plugin.interface import BuildHookInterface
 
-from conda_store_server import __version__
 
-
-CONDA_STORE_SERVER_VERSION = __version__
 CONDA_STORE_UI_VERSION = "2024.6.1"
 CONDA_STORE_UI_URL = f"https://registry.npmjs.org/@conda-store/conda-store-ui/-/conda-store-ui-{CONDA_STORE_UI_VERSION}.tgz"
 CONDA_STORE_UI_FILES = [
@@ -113,7 +110,7 @@ def annotate_vendored(file_path: str):
 
     vendoring_string = (
         f"{(comment_string.get(Path(file_path).suffix)[0])} "
-        f"conda-store-ui version: {CONDA_STORE_UI_VERSION} -- vendored for conda-store version: {CONDA_STORE_SERVER_VERSION}"
+        f"conda-store-ui version: {CONDA_STORE_UI_VERSION} "
         f"{(comment_string.get(Path(file_path).suffix)[1])} \n"
     )
 
