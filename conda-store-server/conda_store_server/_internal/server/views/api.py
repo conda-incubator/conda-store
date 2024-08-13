@@ -3,8 +3,9 @@
 # license that can be found in the LICENSE file.
 
 import datetime
+import json
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, TypedDict
 
 import pydantic
 import yaml
@@ -12,10 +13,20 @@ import yaml
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request
 from fastapi.responses import PlainTextResponse, RedirectResponse
 
-from conda_store_server import __version__, api
+from conda_store_server import __version__, api, app
 from conda_store_server._internal import orm, schema, utils
 from conda_store_server._internal.schema import Permissions
 from conda_store_server.server import dependencies
+from conda_store_server.server.auth import Authentication
+
+
+class PaginatedArgs(TypedDict):
+    """Dictionary type holding information about paginated requests."""
+
+    limit: int
+    offset: int
+    sort_by: List[str]
+    order: str
 
 
 router_api = APIRouter(
@@ -30,7 +41,7 @@ def get_paginated_args(
     size: Optional[int] = None,
     sort_by: List[str] = Query([]),
     server=Depends(dependencies.get_server),
-):
+) -> PaginatedArgs:
     if size is None:
         size = server.max_page_size
     size = min(size, server.max_page_size)
@@ -250,7 +261,7 @@ async def api_post_token(
 async def api_list_namespaces(
     auth=Depends(dependencies.get_auth),
     entity=Depends(dependencies.get_entity),
-    paginated_args: Dict = Depends(get_paginated_args),
+    paginated_args: PaginatedArgs = Depends(get_paginated_args),
     conda_store=Depends(dependencies.get_conda_store),
 ):
     with conda_store.get_db() as db:
@@ -624,35 +635,44 @@ async def api_list_environments(
     status: Optional[schema.BuildStatus] = None,
     packages: Optional[List[str]] = Query([]),
     artifact: Optional[schema.BuildArtifactType] = None,
-    auth=Depends(dependencies.get_auth),
-    entity: schema.AuthenticationToken = Depends(dependencies.get_entity),
-    paginated_args=Depends(get_paginated_args),
-    conda_store=Depends(dependencies.get_conda_store),
+    role_bindings: Optional[str] = None,
+    auth: Authentication = Depends(dependencies.get_auth),
+    paginated_args: PaginatedArgs = Depends(get_paginated_args),
+    conda_store: app.CondaStore = Depends(dependencies.get_conda_store),
 ):
     """Retrieve a list of environments.
 
     Parameters
     ----------
-    auth :
-
-    paginated_args :
-
-    conda_store :
-
+    auth : Authentication
+        Authentication instance; unused here
+    paginated_args : PaginatedArgs
+        Arguments for controlling pagination of the response
+    conda_store : app.CondaStore
+        The running conda store application
     search : Optional[str]
-
+        If specified, filter by environment names or namespace names containing the
+        search term
     namespace : Optional[str]
-
+        If specified, filter by environments in the given namespace
     name : Optional[str]
-
+        If specified, filter by environments with the given name
     status : Optional[schema.BuildStatus]
-
+        If specified, filter by environments with the given status
     packages : Optional[List[str]]
-
+        If specified, filter by environments containing the given package name(s)
     artifact : Optional[schema.BuildArtifactType]
+        If specified, filter by environments with the given BuildArtifactType
+    role_bindings : schema.RoleBindings
+        If specified, filter by only the environments the given role_bindings
+        have read, write, or admin access to. This should be a json blob of the
+        same sort of dict as the role bindings in conda_store_config.py, for
+        example:
 
-    entity : schema.AuthenticationToken
-        Only environments which the entity has access to will be returned
+            {
+                "*/*": ["admin"],
+                ...
+            }
 
     Returns
     -------
@@ -670,7 +690,7 @@ async def api_list_environments(
             packages=packages,
             artifact=artifact,
             show_soft_deleted=False,
-            entity_bindings=entity.role_bindings,
+            entity_bindings=json.loads(role_bindings) if role_bindings else None,
         )
 
         return paginated_api_response(
@@ -694,7 +714,7 @@ async def api_get_environment(
     namespace: str,
     environment_name: str,
     request: Request,
-    auth=Depends(dependencies.get_auth),
+    auth: Authentication = Depends(dependencies.get_auth),
     conda_store=Depends(dependencies.get_conda_store),
 ):
     with conda_store.get_db() as db:

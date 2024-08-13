@@ -7,7 +7,7 @@ import re
 from typing import Any, Dict, List, Union
 
 from sqlalchemy import and_, distinct, func, null, or_
-from sqlalchemy.orm import Query, aliased
+from sqlalchemy.orm import Query, aliased, session
 
 from conda_store_server._internal import conda_utils, orm, schema, utils
 
@@ -275,7 +275,7 @@ def delete_namespace(db, name: str = None, id: int = None):
 
 
 def list_environments(
-    db: orm.session.Session,
+    db: session.Session,
     namespace: str = None,
     name: str = None,
     status: schema.BuildStatus = None,
@@ -289,7 +289,7 @@ def list_environments(
 
     Parameters
     ----------
-    db : orm.session.Session
+    db : session.Session
         Database to query for environments
     namespace : str | None
         If specified, filter by environments in the given namespace

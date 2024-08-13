@@ -178,6 +178,19 @@ def test_api_list_environments_auth(testclient, seed_conda_store, authenticate):
     assert sorted([_.name for _ in r.data]) == ["name1", "name2", "name3", "name4"]
 
 
+def test_api_list_environments_role_bindings_auth(
+    testclient, seed_conda_store, authenticate
+):
+    response = testclient.get(
+        'api/v1/environment/?role_bindings={"namespace*/name*": ["editor"]}'
+    )
+    response.raise_for_status()
+
+    r = schema.APIListEnvironment.parse_obj(response.json())
+    assert r.status == schema.APIStatus.OK
+    assert sorted([_.name for _ in r.data]) == ["name3", "name4"]
+
+
 def test_api_get_environment_unauth(testclient, seed_conda_store):
     response = testclient.get("api/v1/environment/namespace1/name3")
     assert response.status_code == 403
