@@ -6,11 +6,10 @@ import re
 
 from typing import Any, Dict, List, Union
 
-from sqlalchemy import distinct, func, null, or_
+from sqlalchemy import and_, distinct, func, null, or_
 from sqlalchemy.orm import Query, aliased
 
 from conda_store_server._internal import conda_utils, orm, schema, utils
-from conda_store_server.server import auth
 
 
 def list_namespaces(db, show_soft_deleted: bool = False):
@@ -276,7 +275,7 @@ def delete_namespace(db, name: str = None, id: int = None):
 
 
 def list_environments(
-    db,
+    db: orm.session.Session,
     namespace: str = None,
     name: str = None,
     status: schema.BuildStatus = None,
@@ -284,14 +283,14 @@ def list_environments(
     artifact: schema.BuildArtifactType = None,
     search: str = None,
     show_soft_deleted: bool = False,
-    entity_bindings: Dict[str, str] = None,
+    entity_bindings: Dict[str, List[str]] = None,
 ) -> Query:
     """Retrieve all environments managed by conda-store.
 
     Parameters
     ----------
-    db :
-
+    db : orm.session.Session
+        Database to query for environments
     namespace : str | None
         If specified, filter by environments in the given namespace
     name : str | None
@@ -307,9 +306,15 @@ def list_environments(
         search term
     show_soft_deleted : bool
 
-    entity_bindings : Dict[str, str] | None
+    entity_bindings : Dict[str, List[str]] | None
         If specified, filter by only the environments the given entity_bindings have
-        read, write, or admin access to.
+        read, write, or admin access to. This should be the same object as the role
+        bindings in conda_store_config.py, for example:
+
+            {
+                "*/*": ['admin'],
+                ...
+            }
 
     Returns
     -------
@@ -360,10 +365,22 @@ def list_environments(
         )
 
     if entity_bindings:
-        entity = auth.AuthenticationToken(
-            primary_namespace="example_namespace", role_bindings=entity_bindings
-        )
-        query = auth.filter_environments(entity, query)
+        # Any entity binding is sufficient permissions to view an environment;
+        # no entity binding will hide the environment
+        filters = []
+        for entity in entity_bindings:
+            namespace_like, name_like = utils.compile_arn_sql_like(
+                entity, schema.ARN_ALLOWED_REGEX
+            )
+            filters.append(
+                and_(
+                    orm.Namespace.name.like(namespace_like),
+                    orm.Environment.name.like(name_like),
+                )
+            )
+
+        if filters:
+            query = query.filter(or_(*filters))
 
     return query
 

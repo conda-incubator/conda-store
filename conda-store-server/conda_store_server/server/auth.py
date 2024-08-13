@@ -18,7 +18,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from sqlalchemy import and_, or_, text
-from sqlalchemy.orm import sessionmaker, Query
+from sqlalchemy.orm import Query, sessionmaker
 from traitlets import (
     Bool,
     Callable,
@@ -37,9 +37,6 @@ from traitlets.config import LoggingConfigurable
 from conda_store_server import api
 from conda_store_server._internal import orm, schema, utils
 from conda_store_server.server import dependencies
-
-
-ARN_ALLOWED_REGEX = re.compile(schema.ARN_ALLOWED)
 
 
 class AuthenticationBackend(LoggingConfigurable):
@@ -223,7 +220,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
           - "example-asdf"
           - "example-asdf/example-qwer"
         """
-        if not ARN_ALLOWED_REGEX.match(arn):
+        if not schema.ARN_ALLOWED_REGEX.match(arn):
             raise ValueError(f"invalid arn={arn}")
 
         # replace "*" with schema.ALLOWED_CHARACTERS
@@ -231,14 +228,6 @@ class RBACAuthorizationBackend(LoggingConfigurable):
         namespace_regex, name_regex = arn.split("/")
         regex_arn = "^" + namespace_regex + "(?:/" + name_regex + ")?$"
         return re.compile(regex_arn)
-
-    @staticmethod
-    def compile_arn_sql_like(arn: str) -> str:
-        match = ARN_ALLOWED_REGEX.match(arn)
-        if match is None:
-            raise ValueError(f"invalid arn={arn}")
-
-        return re.sub(r"\*", "%", match.group(1)), re.sub(r"\*", "%", match.group(2))
 
     @staticmethod
     def is_arn_subset(arn_1: str, arn_2: str):
@@ -263,7 +252,9 @@ class RBACAuthorizationBackend(LoggingConfigurable):
         )
         return (arn_1_matches_arn_2 and arn_2_matches_arn_1) or arn_2_matches_arn_1
 
-    def get_entity_bindings(self, entity: schema.AuthenticationToken) -> Set[schema.Permissions]:
+    def get_entity_bindings(
+        self, entity: schema.AuthenticationToken
+    ) -> Set[schema.Permissions]:
         authenticated = entity is not None
         entity_role_bindings = {} if entity is None else entity.role_bindings
 
@@ -281,7 +272,9 @@ class RBACAuthorizationBackend(LoggingConfigurable):
                 **entity_role_bindings,
             }
 
-    def convert_roles_to_permissions(self, roles: Iterable[str]) -> Set[schema.Permissions]:
+    def convert_roles_to_permissions(
+        self, roles: Iterable[str]
+    ) -> Set[schema.Permissions]:
         permissions = set()
         for role in roles:
             # 'editor' is the new alias of 'developer'. The new name is
@@ -606,7 +599,9 @@ form.addEventListener('submit', loginHandler);
     def filter_builds(self, entity, query):
         cases = []
         for entity_arn, entity_roles in self.entity_bindings(entity).items():
-            namespace, name = self.authorization.compile_arn_sql_like(entity_arn)
+            namespace, name = utils.compile_arn_sql_like(
+                entity_arn, schema.ARN_ALLOWED_REGEX
+            )
             cases.append(
                 and_(
                     orm.Namespace.name.like(namespace),
@@ -623,10 +618,14 @@ form.addEventListener('submit', loginHandler);
             .filter(or_(*cases))
         )
 
-    def filter_environments(self, entity: schema.AuthenticationToken, query: Query) -> Query:
+    def filter_environments(
+        self, entity: schema.AuthenticationToken, query: Query
+    ) -> Query:
         cases = []
         for entity_arn, entity_roles in self.entity_bindings(entity).items():
-            namespace, name = self.authorization.compile_arn_sql_like(entity_arn)
+            namespace, name = utils.compile_arn_sql_like(
+                entity_arn, schema.ARN_ALLOWED_REGEX
+            )
             cases.append(
                 and_(
                     orm.Namespace.name.like(namespace), orm.Environment.name.like(name)
@@ -641,7 +640,9 @@ form.addEventListener('submit', loginHandler);
     def filter_namespaces(self, entity, query):
         cases = []
         for entity_arn, entity_roles in self.entity_bindings(entity).items():
-            namespace, name = self.authorization.compile_arn_sql_like(entity_arn)
+            namespace, name = utils.compile_arn_sql_like(
+                entity_arn, schema.ARN_ALLOWED_REGEX
+            )
             cases.append(orm.Namespace.name.like(namespace))
 
         if not cases:

@@ -661,18 +661,16 @@ async def api_list_environments(
 
     """
     with conda_store.get_db() as db:
-        orm_environments = auth.filter_environments(
-            entity,
-            api.list_environments(
-                db,
-                search=search,
-                namespace=namespace,
-                name=name,
-                status=status,
-                packages=packages,
-                artifact=artifact,
-                show_soft_deleted=False,
-            ),
+        orm_environments = api.list_environments(
+            db,
+            search=search,
+            namespace=namespace,
+            name=name,
+            status=status,
+            packages=packages,
+            artifact=artifact,
+            show_soft_deleted=False,
+            entity_bindings=entity.role_bindings,
         )
 
         return paginated_api_response(
