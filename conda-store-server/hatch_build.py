@@ -5,11 +5,15 @@ import tarfile
 import tempfile
 import urllib.request
 
+from pathlib import Path
 from typing import Any, Dict, List
 
 from hatchling.builders.hooks.plugin.interface import BuildHookInterface
 
+from conda_store_server import __version__
 
+
+CONDA_STORE_SERVER_VERSION = __version__
 CONDA_STORE_UI_VERSION = "2024.6.1"
 CONDA_STORE_UI_URL = f"https://registry.npmjs.org/@conda-store/conda-store-ui/-/conda-store-ui-{CONDA_STORE_UI_VERSION}.tgz"
 CONDA_STORE_UI_FILES = [
@@ -23,6 +27,11 @@ CONDA_STORE_UI_FILES = [
 
 class DownloadCondaStoreUIHook(BuildHookInterface):
     def clean(self, versions: List[str]) -> None:
+        """Quick utility method to remove any straggling ui files from previous versions
+
+        Args:
+            versions (List[str]): a list of published versions in npm
+        """
         super().clean(versions)
         destination_directory = (
             pathlib.Path(self.root)
@@ -31,6 +40,13 @@ class DownloadCondaStoreUIHook(BuildHookInterface):
         shutil.rmtree(destination_directory, ignore_errors=True)
 
     def initialize(self, version: str, build_data: Dict[str, Any]) -> None:
+        """UI vendoring within conda-store-server, right now it downloads the
+        published UI, copies the distributed html, js and css files and
+        does some on the fly env vars injection.
+
+        Args:
+            version (str): ui version to vendor
+        """
         super().initialize(version, build_data)
 
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -53,7 +69,9 @@ class DownloadCondaStoreUIHook(BuildHookInterface):
             )
             destination_directory.mkdir(parents=True, exist_ok=True)
 
-            print(f"Copying files {CONDA_STORE_UI_FILES}")
+            print(
+                f"Copying conda-store-ui {CONDA_STORE_UI_FILES} to {destination_directory}"
+            )
             for filename in CONDA_STORE_UI_FILES:
                 shutil.copy(
                     source_directory / filename,
@@ -73,3 +91,37 @@ class DownloadCondaStoreUIHook(BuildHookInterface):
                     "w", encoding="utf-8"
                 ) as dest_f:
                     dest_f.write(content)
+            # Add vendoring string to files
+            for filename in CONDA_STORE_UI_FILES:
+                annotate_vendored(destination_directory / filename)
+
+
+def annotate_vendored(file_path: str):
+    """Auxiliary method to add a vendoring string to the top of a file.
+    This helps with tracking the version of the vendored file and the conda-store
+    version for which we bundled the artefacts.
+
+    Args:
+        file_path (str): conda-store-ui file path
+    """
+    comment_string = {
+        ".js": ["//", ""],
+        ".map": ["//", ""],
+        ".css": ["/*", "*/"],
+        ".html": ["<!--", "-->"],
+    }
+
+    vendoring_string = (
+        f"{(comment_string.get(Path(file_path).suffix)[0])} "
+        f"conda-store-ui version: {CONDA_STORE_UI_VERSION} -- vendored for conda-store version: {CONDA_STORE_SERVER_VERSION}"
+        f"{(comment_string.get(Path(file_path).suffix)[1])} \n"
+    )
+
+    with open(file_path, "r") as file:
+        raw_content = file.read()
+
+    modified_content = vendoring_string + raw_content
+
+    # Write the modified content back to the file
+    with open(file_path, "w") as file:
+        file.write(modified_content)
