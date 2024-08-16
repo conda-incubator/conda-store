@@ -11,6 +11,43 @@ from conda_store_server._internal.orm import NamespaceRoleMapping
 from conda_store_server._internal.utils import BuildPathError
 
 
+@pytest.fixture()
+def populated_db(db):
+    """A database fixture populated with 4 envs in 3 namespaces."""
+    description = "Hello World"
+    namespace1 = api.create_namespace(db, name="pytest1")
+    namespace2 = api.create_namespace(db, name="pytest2")
+    namespace3 = api.create_namespace(db, name="pytest3")
+    db.commit()
+
+    api.create_environment(
+        db,
+        namespace_id=namespace1.id,
+        name="env1",
+        description=description,
+    )
+    api.create_environment(
+        db,
+        namespace_id=namespace2.id,
+        name="env2",
+        description=description,
+    )
+    api.create_environment(
+        db,
+        namespace_id=namespace3.id,
+        name="env3",
+        description=description,
+    )
+    api.create_environment(
+        db,
+        namespace_id=namespace3.id,
+        name="foo",
+        description=description,
+    )
+    db.commit()
+    return db
+
+
 def test_namespace_crud(db):
     namespace_name = "pytest-namespace"
 
@@ -45,74 +82,35 @@ def test_namespace_crud(db):
     assert len(api.list_namespaces(db).all()) == 1
 
 
-def test_list_environments(db):
-    """Test that environments can be listed and filtered by role mappings."""
-    description = "Hello World"
-
-    namespace1 = api.create_namespace(db, name="pytest1")
-    namespace2 = api.create_namespace(db, name="pytest2")
-    namespace3 = api.create_namespace(db, name="pytest3")
-    db.commit()
-
-    environment1 = api.create_environment(
-        db,
-        namespace_id=namespace1.id,
-        name="env1",
-        description=description,
-    )
-    environment2 = api.create_environment(
-        db,
-        namespace_id=namespace2.id,
-        name="env2",
-        description=description,
-    )
-    environment3 = api.create_environment(
-        db,
-        namespace_id=namespace3.id,
-        name="env3",
-        description=description,
-    )
-    db.commit()
-
-    assert len(api.list_namespaces(db).all()) == 3
-    assert api.list_environments(
-        db,
-        entity_bindings={
-            "*/env1": ["viewer"],
-        },
-    ).all() == [environment1]
-
-    assert api.list_environments(
-        db,
-        entity_bindings={
-            "pytest2/*": ["viewer"],
-            "e*/e*": ["admin"],
-        },
-    ).all() == [environment2]
-    assert api.list_environments(
-        db,
-        entity_bindings={
-            "pytest3/env3": ["viewer"],
-        },
-    ).all() == [environment3]
-
-    assert set(
-        api.list_environments(
-            db,
-            entity_bindings={
+@pytest.mark.parametrize(
+    ("role_bindings", "expected_envs"),
+    [
+        ({"*/env1": ["viewer"]}, ["env1"]),
+        ({"pytest2/*": ["viewer"], "e*/e*": ["admin"]}, ["env2"]),
+        ({"pytest3/env3": ["viewer"]}, ["env3"]),
+        (
+            {
                 "pytest*/env*": ["viewer"],
             },
-        ).all()
-    ) == set([environment1, environment2, environment3])
-
-    assert set(
-        api.list_environments(
-            db,
-            entity_bindings={
+            ["env1", "env2", "env3"],
+        ),
+        (
+            {
                 "*/*": ["viewer"],
             },
+            ["env1", "env2", "env3", "foo"],
+        ),
+    ],
+)
+def test_list_environments_role_bindings(populated_db, role_bindings, expected_envs):
+    """Test that environments can be listed and filtered by role mappings."""
+    assert len(api.list_namespaces(populated_db).all()) == 3
+    assert set(
+        obj.name
+        for obj in api.list_environments(
+            populated_db, role_bindings=role_bindings
         ).all()
-    ) == set([environment1, environment2, environment3])
+    ) == set(expected_envs)
 
 
 def test_namespace_role_mapping(db):

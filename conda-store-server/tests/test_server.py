@@ -178,17 +178,52 @@ def test_api_list_environments_auth(testclient, seed_conda_store, authenticate):
     assert sorted([_.name for _ in r.data]) == ["name1", "name2", "name3", "name4"]
 
 
-def test_api_list_environments_role_bindings_auth(
-    testclient, seed_conda_store, authenticate
+@pytest.mark.parametrize(
+    ("role_bindings", "expected_envs"),
+    [
+        ({"*/name1": ["viewer"]}, ["name1"]),
+        ({"default/*": ["viewer"], "e*/e*": ["admin"]}, ["name1", "name2"]),
+        ({"namespace1/name3": ["viewer"]}, ["name3"]),
+        (
+            {
+                "namespace*/name*": ["viewer"],
+            },
+            ["name3", "name4"],
+        ),
+        (
+            {
+                "*/*": ["viewer"],
+            },
+            ["name1", "name2", "name3", "name4"],
+        ),
+    ],
+)
+def test_api_list_environments_jwt(
+    conda_store_server,
+    testclient,
+    seed_conda_store,
+    authenticate,
+    role_bindings,
+    expected_envs,
 ):
-    response = testclient.get(
-        'api/v1/environment/?role_bindings={"namespace*/name*": ["editor"]}'
+    """Test that the REST API lists the expected environments for a given jwt."""
+    # Since these are authenticated, they also include the default
+    # role bindings as well.
+    # {
+    #     "default/*": ["viewer"],
+    #     "filesystem/*": ["viewer"],
+    # }
+    expected_envs.extend(["name1", "name2"])
+
+    jwt = conda_store_server.authentication.authentication.encrypt_token(
+        schema.AuthenticationToken(role_bindings=role_bindings)
     )
+    response = testclient.get(f"api/v1/environment/?jwt={jwt}")
     response.raise_for_status()
 
     r = schema.APIListEnvironment.parse_obj(response.json())
     assert r.status == schema.APIStatus.OK
-    assert sorted([_.name for _ in r.data]) == ["name3", "name4"]
+    assert set(obj.name for obj in r.data) == set(expected_envs)
 
 
 def test_api_get_environment_unauth(testclient, seed_conda_store):

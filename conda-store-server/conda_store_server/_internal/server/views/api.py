@@ -3,7 +3,6 @@
 # license that can be found in the LICENSE file.
 
 import datetime
-import json
 
 from typing import Any, Dict, List, Optional, TypedDict
 
@@ -15,7 +14,7 @@ from fastapi.responses import PlainTextResponse, RedirectResponse
 
 from conda_store_server import __version__, api, app
 from conda_store_server._internal import orm, schema, utils
-from conda_store_server._internal.schema import Permissions
+from conda_store_server._internal.schema import AuthenticationToken, Permissions
 from conda_store_server.server import dependencies
 from conda_store_server.server.auth import Authentication
 
@@ -635,7 +634,7 @@ async def api_list_environments(
     status: Optional[schema.BuildStatus] = None,
     packages: Optional[List[str]] = Query([]),
     artifact: Optional[schema.BuildArtifactType] = None,
-    role_bindings: Optional[str] = None,
+    jwt: Optional[str] = None,
     auth: Authentication = Depends(dependencies.get_auth),
     paginated_args: PaginatedArgs = Depends(get_paginated_args),
     conda_store: app.CondaStore = Depends(dependencies.get_conda_store),
@@ -663,16 +662,10 @@ async def api_list_environments(
         If specified, filter by environments containing the given package name(s)
     artifact : Optional[schema.BuildArtifactType]
         If specified, filter by environments with the given BuildArtifactType
-    role_bindings : schema.RoleBindings
-        If specified, filter by only the environments the given role_bindings
-        have read, write, or admin access to. This should be a json blob of the
-        same sort of dict as the role bindings in conda_store_config.py, for
-        example:
-
-            {
-                "*/*": ["admin"],
-                ...
-            }
+    jwt : Optional[schema.AuthenticationToken]
+        If specified, retrieve only the environments accessible to this token; that is,
+        only return environments that the user has 'admin', 'editor', and 'viewer'
+        role bindings for.
 
     Returns
     -------
@@ -681,6 +674,13 @@ async def api_list_environments(
 
     """
     with conda_store.get_db() as db:
+        if jwt:
+            role_bindings = auth.entity_bindings(
+                AuthenticationToken.parse_obj(auth.authentication.decrypt_token(jwt))
+            )
+        else:
+            role_bindings = None
+
         orm_environments = api.list_environments(
             db,
             search=search,
@@ -690,7 +690,7 @@ async def api_list_environments(
             packages=packages,
             artifact=artifact,
             show_soft_deleted=False,
-            entity_bindings=json.loads(role_bindings) if role_bindings else None,
+            role_bindings=role_bindings,
         )
 
         return paginated_api_response(

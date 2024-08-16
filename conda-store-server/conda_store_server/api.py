@@ -283,7 +283,7 @@ def list_environments(
     artifact: schema.BuildArtifactType = None,
     search: str = None,
     show_soft_deleted: bool = False,
-    entity_bindings: Dict[str, List[str]] = None,
+    role_bindings: Dict[str, List[str]] = None,
 ) -> Query:
     """Retrieve all environments managed by conda-store.
 
@@ -305,8 +305,9 @@ def list_environments(
         If specified, filter by environment names or namespace names containing the
         search term
     show_soft_deleted : bool
-
-    entity_bindings : Dict[str, List[str]] | None
+        If specified, filter by environments which have a null value for the
+        deleted_on attribute
+    role_bindings : Dict[str, List[str]] | None
         If specified, filter by only the environments the given entity_bindings have
         read, write, or admin access to. This should be the same object as the role
         bindings in conda_store_config.py, for example:
@@ -364,11 +365,11 @@ def list_environments(
             .having(func.count() == len(packages))
         )
 
-    if entity_bindings:
+    if role_bindings:
         # Any entity binding is sufficient permissions to view an environment;
         # no entity binding will hide the environment
         filters = []
-        for entity in entity_bindings:
+        for entity in role_bindings:
             namespace_like, name_like = utils.compile_arn_sql_like(
                 entity, schema.ARN_ALLOWED_REGEX
             )
