@@ -35,7 +35,7 @@ from traitlets import (
 from traitlets.config import LoggingConfigurable
 
 from conda_store_server import api
-from conda_store_server._internal import orm, schema, utils
+from conda_store_server._internal import environment, orm, schema, utils
 from conda_store_server.server import dependencies
 
 
@@ -621,21 +621,10 @@ form.addEventListener('submit', loginHandler);
     def filter_environments(
         self, entity: schema.AuthenticationToken, query: Query
     ) -> Query:
-        cases = []
-        for entity_arn, entity_roles in self.entity_bindings(entity).items():
-            namespace, name = utils.compile_arn_sql_like(
-                entity_arn, schema.ARN_ALLOWED_REGEX
-            )
-            cases.append(
-                and_(
-                    orm.Namespace.name.like(namespace), orm.Environment.name.like(name)
-                )
-            )
-
-        if not cases:
-            return query.filter(False)
-
-        return query.join(orm.Environment.namespace).filter(or_(*cases))
+        return environment.filter_environments(
+            query,
+            self.entity_bindings(entity),
+        )
 
     def filter_namespaces(self, entity, query):
         cases = []

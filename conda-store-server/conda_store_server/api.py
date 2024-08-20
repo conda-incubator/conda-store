@@ -1,15 +1,17 @@
 # Copyright (c) conda-store development team. All rights reserved.
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
+from __future__ import annotations
 
 import re
 
 from typing import Any, Dict, List, Union
 
-from sqlalchemy import and_, distinct, func, null, or_
+from sqlalchemy import distinct, func, null, or_
 from sqlalchemy.orm import Query, aliased, session
 
 from conda_store_server._internal import conda_utils, orm, schema, utils
+from conda_store_server._internal.environment import filter_environments
 
 
 def list_namespaces(db, show_soft_deleted: bool = False):
@@ -283,7 +285,7 @@ def list_environments(
     artifact: schema.BuildArtifactType = None,
     search: str = None,
     show_soft_deleted: bool = False,
-    role_bindings: Dict[str, List[str]] = None,
+    role_bindings: schema.RoleBindings | None = None,
 ) -> Query:
     """Retrieve all environments managed by conda-store.
 
@@ -307,10 +309,10 @@ def list_environments(
     show_soft_deleted : bool
         If specified, filter by environments which have a null value for the
         deleted_on attribute
-    role_bindings : Dict[str, List[str]] | None
-        If specified, filter by only the environments the given entity_bindings have
-        read, write, or admin access to. This should be the same object as the role
-        bindings in conda_store_config.py, for example:
+    role_bindings : schema.RoleBindings | None
+        If specified, filter by only the environments the given role_bindings
+        have read, write, or admin access to. This should be the same object as
+        the role bindings in conda_store_config.py, for example:
 
             {
                 "*/*": ['admin'],
@@ -368,20 +370,7 @@ def list_environments(
     if role_bindings:
         # Any entity binding is sufficient permissions to view an environment;
         # no entity binding will hide the environment
-        filters = []
-        for entity in role_bindings:
-            namespace_like, name_like = utils.compile_arn_sql_like(
-                entity, schema.ARN_ALLOWED_REGEX
-            )
-            filters.append(
-                and_(
-                    orm.Namespace.name.like(namespace_like),
-                    orm.Environment.name.like(name_like),
-                )
-            )
-
-        if filters:
-            query = query.filter(or_(*filters))
+        query = filter_environments(query, role_bindings)
 
     return query
 

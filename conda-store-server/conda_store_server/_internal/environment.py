@@ -7,7 +7,10 @@ import pathlib
 import pydantic
 import yaml
 
-from conda_store_server._internal import conda_utils, schema
+from sqlalchemy import and_, or_
+from sqlalchemy.orm import Query
+
+from conda_store_server._internal import conda_utils, orm, schema, utils
 
 
 def validate_environment(specification):
@@ -145,3 +148,40 @@ def validate_environment_pypi_packages(
         )
 
     return specification
+
+
+def filter_environments(
+    query: Query,
+    role_bindings: schema.RoleBindings,
+) -> Query:
+    """Filter a query containin environments and namespaces by a set of role bindings.
+
+    Parameters
+    ----------
+    query : Query
+        Query containing both environments and namespaces
+    role_bindings : schema.RoleBindings
+        Role bindings to filter the results by
+
+    Returns
+    -------
+    Query
+        A query containing only the environments and namespaces accessible to the
+        given role bindings
+    """
+    cases = []
+    for entity_arn, entity_roles in role_bindings.items():
+        namespace, name = utils.compile_arn_sql_like(
+            entity_arn, schema.ARN_ALLOWED_REGEX
+        )
+        cases.append(
+            and_(
+                orm.Namespace.name.like(namespace),
+                orm.Environment.name.like(name),
+            )
+        )
+
+    if not cases:
+        return query.filter(False)
+
+    return query.join(orm.Environment.namespace).filter(or_(*cases))

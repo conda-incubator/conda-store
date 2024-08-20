@@ -14,6 +14,7 @@ from fastapi.responses import PlainTextResponse, RedirectResponse
 
 from conda_store_server import __version__, api, app
 from conda_store_server._internal import orm, schema, utils
+from conda_store_server._internal.environment import filter_environments
 from conda_store_server._internal.schema import AuthenticationToken, Permissions
 from conda_store_server.server import dependencies
 from conda_store_server.server.auth import Authentication
@@ -636,6 +637,7 @@ async def api_list_environments(
     artifact: Optional[schema.BuildArtifactType] = None,
     jwt: Optional[str] = None,
     auth: Authentication = Depends(dependencies.get_auth),
+    entity: AuthenticationToken = Depends(dependencies.get_entity),
     paginated_args: PaginatedArgs = Depends(get_paginated_args),
     conda_store: app.CondaStore = Depends(dependencies.get_conda_store),
 ):
@@ -644,7 +646,11 @@ async def api_list_environments(
     Parameters
     ----------
     auth : Authentication
-        Authentication instance; unused here
+        Authentication instance for the request. Used to get role bindings
+        and filter environments returned to those visible by the user making
+        the request
+    entity : AuthenticationToken
+        Token of the user making the request
     paginated_args : PaginatedArgs
         Arguments for controlling pagination of the response
     conda_store : app.CondaStore
@@ -675,6 +681,7 @@ async def api_list_environments(
     """
     with conda_store.get_db() as db:
         if jwt:
+            # Fetch the environments visible to the supplied token
             role_bindings = auth.entity_bindings(
                 AuthenticationToken.parse_obj(auth.authentication.decrypt_token(jwt))
             )
@@ -691,6 +698,12 @@ async def api_list_environments(
             artifact=artifact,
             show_soft_deleted=False,
             role_bindings=role_bindings,
+        )
+
+        # Filter by environments that the user who made the query has access to
+        orm_environments = filter_environments(
+            query=orm_environments,
+            role_bindings=auth.entity_bindings(entity),
         )
 
         return paginated_api_response(
