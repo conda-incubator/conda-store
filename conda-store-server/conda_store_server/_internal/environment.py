@@ -154,7 +154,7 @@ def filter_environments(
     query: Query,
     role_bindings: schema.RoleBindings,
 ) -> Query:
-    """Filter a query containin environments and namespaces by a set of role bindings.
+    """Filter a query containing environments and namespaces by a set of role bindings.
 
     Parameters
     ----------
