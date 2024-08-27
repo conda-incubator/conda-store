@@ -1,6 +1,8 @@
 # conda-store (core) Dockerfile
 # the generated Docker image is used with docker compose to run the conda-store
 # worker and public conda-store Docker images
+# To build locally, run:
+# docker build --rm -f "conda-store/Dockerfile" -t conda-store:latest "conda-store"  --platform=linux/arm64 .
 
 FROM condaforge/miniforge3:24.3.0-0 AS base
 
@@ -33,35 +35,43 @@ RUN mamba create --name ${conda_env_name} \
     conda clean --force-pkgs-dirs
 
 COPY ./ /opt/conda-store/
+COPY --from=repo_root .git/ /opt/conda-store/.git/
+
+# needed to get the dynamic version for the project
+WORKDIR /opt/conda-store
+RUN PSEUDO_VERSION=$(git describe --tags) && \
+    echo "PSEUDO_VERSION=${PSEUDO_VERSION}" > /etc/environment && \
+    echo ${PSEUDO_VERSION}
 
 # ---------------------------------------------------------------------------------
 # for production-ready images we install a specific version of conda-store
-FROM base AS prod
+# FROM base AS prod
 
-ARG RELEASE_VERSION
+# ARG RELEASE_VERSION
 
-WORKDIR /opt/conda-store
+# WORKDIR /opt/conda-store
 
-RUN which python && \
-    python -m pip install conda-store==${RELEASE_VERSION} --no-cache-dir
+# RUN which python && \
+#     python -m pip install conda-store==${RELEASE_VERSION} --no-cache-dir
 
-USER conda-store
-WORKDIR /opt/jupyterhub
+# USER conda-store
+# WORKDIR /opt/jupyterhub
 # ---------------------------------------------------------------------------------
 
 # ---------------------------------------------------------------------------------
 # for development images we install conda-store-server in editable mode
 FROM base AS dev
 
-ARG PSEUDO_VERSION=1.0.0
 # we need to set the environment variable for setuptools_scm to work
-ENV SETUPTOOLS_SCM_PRETEND_VERSION=${PSEUDO_VERSION}
+ENV SETUPTOOLS_SCM_PRETEND_VERSION_FOR_CONDA_STORE=${PSEUDO_VERSION}
 
 RUN --mount=type=cache,target=/root/.cache/pip
 WORKDIR /opt/conda-store
 
 RUN which python && \
-    python -m pip install -e . --no-cache-dir
+    echo ${PSEUDO_VERSION} && \
+    echo ${SETUPTOOLS_SCM_PRETEND_VERSION_FOR_CONDA_STORE}
+# pip install -e . --no-cache-dir
 
 USER conda-store
 WORKDIR /opt/jupyterhub

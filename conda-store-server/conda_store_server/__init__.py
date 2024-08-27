@@ -2,12 +2,21 @@ import datetime
 import hashlib
 import typing
 
-import platformdirs
+from pathlib import Path
 
 
-CONDA_STORE_DIR = platformdirs.user_data_path(appname="conda-store")
+# For runtime, we use platformdirs to get the user data directory and ensure
+# this is cross-platform
+try:
+    import platformdirs
 
-# Define the variable '__version__':
+    CONDA_STORE_DIR = platformdirs.user_data_path(appname="conda-store")
+# at build time, we use Path.home() to default to the user's home directory
+# this is a workaround as we cannot import platformdirs at build time
+except ImportError:
+    CONDA_STORE_DIR = Path.home() / ".conda-store"
+
+# Since we are now using vcs we need to define the variable '__version__':
 try:
     # If setuptools_scm is installed (e.g. in a development environment with
     # an editable install), then use it to determine the version dynamically.

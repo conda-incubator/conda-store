@@ -38,8 +38,7 @@ jobs:
       - name: "Checkout Repository 🛎"
         uses: actions/checkout@v4
         with:
-          # Fetch HEAD - since we need to get tags for versioning
-          fetch-depth: 2
+          fetch-depth: 0
 
       - name: "Setup CI environment - Docker 🛠"
         uses: ./.github/actions/docker-setup

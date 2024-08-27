@@ -104,6 +104,8 @@ dependencies = ["pre-commit"]
 
 [tool.hatch.envs.lint.scripts]
 lint = ["pre-commit run --all"]
+
+[tool.hatch.envs.test.scripts]
 unit-test = "pytest -m 'not extended_prefix and not user_journey' tests"
 playwright-test = [
   "playwright install",
