@@ -32,3 +32,4 @@ dependencies:
   - pip
   - pip:
       - pytest-playwright
+      - setuptools-scm>=6.4.0

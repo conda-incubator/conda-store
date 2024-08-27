@@ -4,6 +4,8 @@ dist
 build
 *.egg-info
 .pytest_cache
+**/_version.py
+_version.py
 
 # data from deployments
 data
