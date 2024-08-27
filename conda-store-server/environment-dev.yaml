@@ -1,4 +1,4 @@
-# Copyright (c) conda-store development team.All rights reserved.
+# Copyright (c) conda-store development team. All rights reserved.
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
 
@@ -26,7 +26,6 @@ dependencies:
   - docker-compose
   # build dependencies
   - hatch
-  - build
   - twine>=5.0.0
   - pkginfo>=1.10 # needed to support metadata 2.3
   # installer
@@ -36,3 +35,4 @@ dependencies:
   - pip
   - pip:
       - pytest-playwright
+      - build
