@@ -1,3 +1,6 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
 [build-system]
 # https://github.com/ofek/hatch-vcs
 requires = ["hatchling>=1.14.0", "hatch-vcs"]
@@ -70,6 +73,7 @@ dependencies = [
   "pytest",
   "twine>=5.0.0",
   "pkginfo >= 1.10", # Needed to support metadata 2.3
+
 ]
 
 [tool.hatch.envs.lint]
@@ -91,6 +95,7 @@ target-version = ['py38', 'py39', 'py310']
 [tool.ruff]
 ignore = [
   "E501", # line-length
+
 ]
 
 [tool.isort]

@@ -1,3 +1,7 @@
+# Copyright (c) conda-store development team.All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
 """Adding CONTAINER_REGISTRY value to enum
 
 Revision ID: 5ad723de2abd

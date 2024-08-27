@@ -1,3 +1,7 @@
+# Copyright (c) conda-store development team.All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
 from conda_store_server._internal.action.base import action  # noqa isort: skip
 from conda_store_server._internal.action.add_conda_prefix_packages import (  # noqa
     action_add_conda_prefix_packages,

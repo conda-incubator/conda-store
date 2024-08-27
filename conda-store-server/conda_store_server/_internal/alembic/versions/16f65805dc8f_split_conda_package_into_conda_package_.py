@@ -1,3 +1,7 @@
+# Copyright (c) conda-store development team.All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
 """split conda_package into conda_package and conda_package_build
 
 Revision ID: 16f65805dc8f
