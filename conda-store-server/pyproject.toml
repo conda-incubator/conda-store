@@ -134,7 +134,8 @@ ignore = [
 
 [tool.check-wheel-contents]
 # ignore alembic migrations https://github.com/jwodder/check-wheel-contents?tab=readme-ov-file#w004--module-is-not-located-at-importable-path
-ignore = ["W004"]
+# ignore empty files w/license header
+ignore = ["W004", "W002"]
 
 [tool.pytest.ini_options]
 markers = [

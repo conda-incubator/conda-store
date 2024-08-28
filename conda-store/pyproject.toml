@@ -101,3 +101,8 @@ ignore = [
 [tool.isort]
 lines_between_types = 1
 lines_after_imports = 2
+
+[tool.check-wheel-contents]
+# ignore alembic migrations https://github.com/jwodder/check-wheel-contents?tab=readme-ov-file#w004--module-is-not-located-at-importable-path
+# ignore empty files w/license header
+ignore = ["W004", "W002"]
