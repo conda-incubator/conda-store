@@ -103,7 +103,7 @@ services:
       - conda_store_data:/opt/conda-store
       - ./assets/jupyter_notebook_config.py:/etc/jupyter/jupyter_notebook_config.py:ro
       - ./assets/jupyterhub_config.py:/opt/jupyterhub/jupyterhub_config.py:ro
-      - ./assets/overrides.json:/opt/conda/envs/conda-store/share/jupyter/lab/settings/overrides.json:ro
+      - ./assets/overrides.json5:/opt/conda/envs/conda-store/share/jupyter/lab/settings/overrides.json5:ro
     platform: linux/amd64
     command: ['/opt/conda/envs/conda-store/bin/jupyterhub', '--config', '/opt/jupyterhub/jupyterhub_config.py', '--debug']
     ports:
