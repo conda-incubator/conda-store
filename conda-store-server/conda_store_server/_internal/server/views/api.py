@@ -629,17 +629,17 @@ async def api_delete_namespace(
     response_model=schema.APIListEnvironment,
 )
 async def api_list_environments(
-    search: Optional[str] = None,
-    namespace: Optional[str] = None,
-    name: Optional[str] = None,
-    status: Optional[schema.BuildStatus] = None,
-    packages: Optional[List[str]] = Query([]),
-    artifact: Optional[schema.BuildArtifactType] = None,
-    jwt: Optional[str] = None,
     auth: Authentication = Depends(dependencies.get_auth),
+    conda_store: app.CondaStore = Depends(dependencies.get_conda_store),
     entity: AuthenticationToken = Depends(dependencies.get_entity),
     paginated_args: PaginatedArgs = Depends(get_paginated_args),
-    conda_store: app.CondaStore = Depends(dependencies.get_conda_store),
+    artifact: Optional[schema.BuildArtifactType] = None,
+    jwt: Optional[str] = None,
+    name: Optional[str] = None,
+    namespace: Optional[str] = None,
+    packages: Optional[List[str]] = Query([]),
+    search: Optional[str] = None,
+    status: Optional[schema.BuildStatus] = None,
 ):
     """Retrieve a list of environments.
 

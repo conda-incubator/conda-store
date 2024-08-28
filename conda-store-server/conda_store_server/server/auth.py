@@ -220,7 +220,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
           - "example-asdf"
           - "example-asdf/example-qwer"
         """
-        if not schema.ARN_ALLOWED_REGEX.match(arn):
+        if schema.ARN_ALLOWED_REGEX.match(arn) is None:
             raise ValueError(f"invalid arn={arn}")
 
         # replace "*" with schema.ALLOWED_CHARACTERS

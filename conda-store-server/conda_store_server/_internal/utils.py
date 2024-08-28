@@ -180,6 +180,11 @@ def compile_arn_sql_like(
     """
     match = allowed_regex.match(arn)
     if match is None:
-        raise ValueError(f"invalid arn={arn}")
+        raise ValueError(
+            "Could not find a match for the requested " f"namespace/environment={arn}"
+        )
 
-    return re.sub(r"\*", "%", match.group(1)), re.sub(r"\*", "%", match.group(2))
+    return (
+        re.sub(r"\*", "%", match.group(1)),
+        re.sub(r"\*", "%", match.group(2)),
+    )

@@ -23,8 +23,11 @@ def _datetime_factory(offset: datetime.timedelta):
     return datetime.datetime.utcnow() + offset
 
 
-# namespace and name cannot contain "*" ":" "#" " " "/"
-# this is a more restrictive list
+# An ARN is a string which matches namespaces and environments. For example:
+#     */*          matches all environments
+#     */team       matches all environments named 'team' in any namespace
+#
+# Namespaces and environment names cannot contain "*" ":" "#" " " "/"
 ALLOWED_CHARACTERS = "A-Za-z0-9-+_@$&?^~.="
 ARN_ALLOWED = f"^([{ALLOWED_CHARACTERS}*]+)/([{ALLOWED_CHARACTERS}*]+)$"
 ARN_ALLOWED_REGEX = re.compile(ARN_ALLOWED)
