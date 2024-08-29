@@ -1,3 +1,7 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
 # only development dependencies should be added to this file
 # if you add a new dev dependency you must ensure to add it to the [tool.hatch.envs.dev]
 # section of the pyproject.toml file too
@@ -22,7 +26,6 @@ dependencies:
   - docker-compose
   # build dependencies
   - hatch
-  - build
   - twine>=5.0.0
   - pkginfo>=1.10 # needed to support metadata 2.3
   # installer
@@ -32,3 +35,4 @@ dependencies:
   - pip
   - pip:
       - pytest-playwright
+      - build

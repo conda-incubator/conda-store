@@ -1,3 +1,7 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
 # conda-store (core) Dockerfile
 # the generated Docker image is used with docker compose to run the conda-store
 # worker and public conda-store Docker images

@@ -1,3 +1,7 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
 """These tests an assumption
 `tests/assets/environments/python-flask-env.yaml` is the first
 environment added to conda-store.  The given environment has build 1

@@ -10,29 +10,32 @@ on:
 jobs:
   update-openapi-json:
     runs-on: ubuntu-latest
+    # so that we can skip this job by adding 'skip openapi' to the commit message
+    # and only run it when the PR is against the main branch of our repo
+    if: "!contains(github.event.head_commit.message, '[openapi skip]') && github.repository=='conda-incubator/conda-store'"
     permissions:
       contents: write
     defaults:
       run:
         shell: bash -el {0}
     steps:
-      - name: Checkout repository
+      - name: "Checkout repository 🛎️"
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
-      - name: Set up Miniconda
+      - name: "Set up Miniconda 🐍"
         uses: conda-incubator/setup-miniconda@v3
         with:
           environment-file: conda-store-server/environment-dev.yaml
 
-      - name: Install conda-store-server
+      - name: "Install conda-store-server 📦"
         run: python -m pip install conda-store-server/.
 
-      - name: Run openapi.json generation script
+      - name: "Run openapi.json generation script"
         run: python docusaurus-docs/scripts/generate_openapi_json.py
 
-      - name: Commit changes
+      - name: "Commit changes"
         uses: EndBug/add-and-commit@v9
         with:
           default_author: github_actions
