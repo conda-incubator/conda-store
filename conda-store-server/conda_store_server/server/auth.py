@@ -230,6 +230,33 @@ class RBACAuthorizationBackend(LoggingConfigurable):
         return re.compile(regex_arn)
 
     @staticmethod
+    def compile_arn_sql_like(arn: str) -> tuple[str, str]:
+        """Turn an arn into a string suitable for use in a SQL LIKE statement.
+
+        The use of this function is discouraged; use
+        conda_store_server._internal.utils.compile_arn_sql_like instead.
+
+        Parameters
+        ----------
+        arn : str
+            String which matches namespaces and environments. For example:
+
+                */*          matches all environments
+                */team       matches all environments named 'team' in any namespace
+
+        allowed_regex : re.Pattern[AnyStr]
+            Regex to use to match the ARN.
+
+        Returns
+        -------
+        tuple[str, str]
+            (namespace regex, environment regex) to match in a sql LIKE statement.
+            See conda_store_server.server.auth.Authentication.filter_environments
+            for usage.
+        """
+        return utils.compile_arn_sql_like(arn, schema.ARN_ALLOWED_REGEX)
+
+    @staticmethod
     def is_arn_subset(arn_1: str, arn_2: str):
         """Return true if arn_1 is a subset of arn_2
 
