@@ -7,16 +7,16 @@ description: Local development setup for conda-store-ui codebase
 
 To get started with conda-store-ui development, there are a couple of options. This guide will help you to set up your local development environment.
 
-## Prerequisites
+## Pre-requisites
 
-Before setting up conda-store-ui, you must prepare your environment.
+We use [Docker Compose](https://docs.docker.com/compose/) to set up the infrastructure before starting ensure that you have Docker compose installed. If you need to install docker-compose, please see their [installation documentation](https://docs.docker.com/compose/install/)
 
-We use [Docker Compose](https://docs.docker.com/compose/) to set up the infrastructure before starting ensure that you have docker-compose installed. If you need to install docker-compose, please see their [installation documentation](https://docs.docker.com/compose/install/)
-
-1. Clone the [conda-store-ui](https://github.com/conda-incubator/conda-store-ui.git) repository.
+1. Fork and clone the [conda-store-ui](https://github.com/conda-incubator/conda-store-ui.git) repository.
 2. Copy `.env.example` to `.env`. All default settings should work, but if you want to test against a different version of conda-store-server, you can specify it in the `.env` file by setting the `CONDA_STORE_SERVER_VERSION` variable to the desired version
 
-## conda-store-ui running in Docker
+## Docker (Recommended)
+
+Once you have a [local copy of the `conda-store` repository](community/contribute/contribute-code#setup-for-local-development)
 
 Running conda-store-ui in Docker is the simplest way to set up your local development environment.
 
@@ -26,7 +26,7 @@ Open your local browser and go to [http://localhost:8000](http://localhost:8000)
 
 **Note:** Hot reloading is enabled, so when you make changes to source files, your browser will reload and reflect the changes.
 
-## without running conda-store-ui in Docker
+## Without Docker
 
 This setup still uses Docker for supporting services but runs conda-store-ui locally.
 

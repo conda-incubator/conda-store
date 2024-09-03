@@ -5,21 +5,28 @@ description: Local development setup for conda-store
 
 # Local setup for conda-store (core)
 
+Once you have a [local copy of the `conda-store` repository](community/contribute/contribute-code#setup-for-local-development), you can set up your development environment.
+
+There are two main ways to set up your local environment for development:
+
+- Using [Docker and Docker compose(recommended)](#docker-recommended)
+- Local development [without Docker](#without-docker)
+
 ## Docker (recommended)
 
-## Pre-requisites
+### Pre-requisites
 
 Install the following dependencies before developing on conda-store:
 
 - [Docker](https://docs.docker.com/engine/install/)
-- [docker-compose](https://docs.docker.com/compose/install/)
+- [Docker compose](https://docs.docker.com/compose/install/)
 
-## Local deployment
+### Local deployment
 
 To deploy `conda-store` locally, run the following command:
 
 ```bash
-docker-compose up --build -d
+docker compose up --build -d
 ```
 
 On a fast machine, this should take about 10 seconds, assuming the docker images have been partially built before.
@@ -47,15 +54,22 @@ If you make any changes to `conda-store-server`,
 run the following to have those changes in the deployment:
 
 ```bash
-docker-compose down -v # not always necessary
-docker-compose up --build
+docker compose down -v # not always necessary
+docker compose up --build
 ```
 
-## Linux
+To stop the deployment, run:
 
-1. Install the following dependencies before developing on conda-store:
+```bash
+docker compose stop
 
-   - [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html)
+# optional to remove the containers
+docker compose rm -f
+```
+
+## Without Docker
+
+1. Install [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html) before developing on conda-store.
 
 2. Install the development dependencies and activate the environment:
 
@@ -73,15 +87,15 @@ subprocess of the web server.
     python -m conda_store_server.server --standalone
    ```
 
-4. Visit [localhost:8080](http://localhost:8080/)
+1. Visit [localhost:8080](http://localhost:8080/) from your web browser.
 
-## Testing
+## Run tests
 
 ### conda-store (client)
 
 Linting and formatting checks can be performed via hatch.
 
-```shell
+```bash
 $ cd conda-store
 $ hatch env run -e dev lint
 ```
@@ -90,10 +104,10 @@ Running integration tests. These tests are stateful! So you will need
 to clear the state if you have run the conda-store-server service on
 docker.
 
-```shell
+```bash
 $ cd conda-store
-$ docker-compose down -v # ensure you've cleared state
-$ docker-compose up --build
+$ docker compose down -v # ensure you've cleared state
+$ docker compose up --build
 # wait until the conda-store-server is running check by visiting localhost:8080
 
 $ pip install -e .
@@ -110,21 +124,21 @@ $ ./tests/shebang.sh
 
 Linting and formatting checks can be performed via hatch.
 
-```shell
+```bash
 $ cd conda-store-server
 $ hatch env run -e dev lint
 ```
 
 Checking that the package builds
 
-```shell
+```bash
 $ cd conda-store-server
 $ hatch build
 ```
 
 Running unit tests
 
-```shell
+```bash
 $ cd conda-store-server
 $ pytest
 ```
@@ -133,7 +147,7 @@ Running integration tests. These tests are stateful! So you will need
 to clear the state if you have run the conda-store-server service on
 docker.
 
-```shell
+```bash
 $ cd conda-store-server
 $ docker-compose down -v # ensure you've cleared state
 $ docker-compose up --build
