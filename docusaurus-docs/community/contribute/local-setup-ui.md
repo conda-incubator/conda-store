@@ -54,10 +54,11 @@ Tip: Make sure are in the project root: `cd conda-store-ui`
 
 1. Activate the development environment: `conda activate cs-ui-dev-env`
 2. Set environment variables. Copy `.env.example` to `.env`. All default settings should work, but if you want to test against a different version of conda-store-server, you can specify it in the `.env` file by setting the `CONDA_STORE_SERVER_VERSION` variable to the desired version.
-3. Install/update JavaScript dependencies: `yarn install`
-4. Run `yarn run start` and wait for the application to finish starting up. This command will run a local dev server for the UI app and run the other Conda Store services in Docker.
-5. Open your local browser and go to [http://localhost:8000](http://localhost:8000) to see conda-store-ui.
-6. You can then log in using the default username of `username` and default password of `password`.
+3. Set the package manager to match package.json (`packageManager`): `corepack enable`
+4. Install/update JavaScript dependencies: `yarn install`
+5. Run `yarn run start` and wait for the application to finish starting up. This command will run a local dev server for the UI app and run the other Conda Store services in Docker.
+6. Open your local browser and go to [http://localhost:8000](http://localhost:8000) to see conda-store-ui.
+7. You can then log in using the default username of `username` and default password of `password`.
 
 **Note:** Hot reloading is enabled, so when you make changes to source files, your browser will reload and reflect the changes.
 
