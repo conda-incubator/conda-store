@@ -53,7 +53,7 @@ This project uses [Conda](https://conda.io) for package management. To set up Co
 Tip: Make sure you are in the project root: `cd conda-store-ui`
 
 1. Activate the development environment: `conda activate cs-ui-dev-env`
-2. Set environment variables. Copy `.env.example` to `.env`. All default settings should work, but if you want to test against a different version of conda-store-server, you can specify it in the `.env` file by setting the `CONDA_STORE_SERVER_VERSION` variable to the desired version.
+2. Set environment variables: copy `.env.example` to `.env`. All default settings should work, but if you want to test against a different version of conda-store-server, you can specify it in the `.env` file by setting the `CONDA_STORE_SERVER_VERSION` variable to the desired version.
 3. Set the package manager to match package.json (`packageManager`): `corepack enable`
 4. Install/update JavaScript dependencies: `yarn install`
 5. Run `yarn run start` and wait for the application to finish starting up. This command will run a local dev server for the UI app and run the other Conda Store services in Docker.
