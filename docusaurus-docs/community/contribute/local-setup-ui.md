@@ -50,7 +50,7 @@ This project uses [Conda](https://conda.io) for package management. To set up Co
 
 ### Run conda-store-ui locally (and the rest of the stack in Docker)
 
-Tip: Make sure are in the project root: `cd conda-store-ui`
+Tip: Make sure you are in the project root: `cd conda-store-ui`
 
 1. Activate the development environment: `conda activate cs-ui-dev-env`
 2. Set environment variables. Copy `.env.example` to `.env`. All default settings should work, but if you want to test against a different version of conda-store-server, you can specify it in the `.env` file by setting the `CONDA_STORE_SERVER_VERSION` variable to the desired version.
