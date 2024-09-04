@@ -62,9 +62,9 @@ Tip: Make sure you are in the project root: `cd conda-store-ui`
 
 **Note:** Hot reloading is enabled, so when you make changes to source files, your browser will reload and reflect the changes.
 
-## Run the test suite
+### Run the test suite
 
-We currently use Jest in order to run unit tests.
+If you chose the advanced option for local development, you will be able to run the tests locally. We currently use Jest in order to run unit tests.
 
 ```bash
 yarn test     // find every test with the .test.[tsx|ts] extension
