@@ -9,11 +9,19 @@ To get started with conda-store-ui development, there are a couple of options. T
 
 ## Pre-requisites
 
-No matter which option you choose, you must first complete the following steps.
+This document assumes that you have the following tools set up on your computer:
 
-1. [Install Docker Compose](https://docs.docker.com/compose/install/). We use [Docker Compose](https://docs.docker.com/compose/) to set up the infrastructure. So before starting, ensure that you have Docker Compose installed.
-2. [Fork the conda-store-ui repository](https://github.com/conda-incubator/conda-store-ui/fork)
-3. `git clone` the fork to your computer.
+- Docker Compose (which requires Docker)
+- Git
+
+You also need to have:
+
+- A GitHub.com account
+
+Once you have all of those things, then you need to:
+
+1. [Fork the conda-store-ui repository](https://github.com/conda-incubator/conda-store-ui/fork)
+2. `git clone` the fork to your computer.
 
 ## Basic Option (recommended): Run the UI in Docker
 
