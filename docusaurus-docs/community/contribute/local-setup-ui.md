@@ -12,35 +12,26 @@ To get started with conda-store-ui development, there are a couple of options. T
 No matter which option you choose, you must first complete the following steps.
 
 1. [Install Docker Compose](https://docs.docker.com/compose/install/). We use [Docker Compose](https://docs.docker.com/compose/) to set up the infrastructure. So before starting, ensure that you have Docker Compose installed.
-2. [Fork the conda-store-ui repository](https://github.com/conda-incubator/conda-store-ui/fork), then `git clone` it to your computer.
-3. Copy `.env.example` to `.env`. All default settings should work, but if you want to test against a different version of conda-store-server, you can specify it in the `.env` file by setting the `CONDA_STORE_SERVER_VERSION` variable to the desired version.
+2. [Fork the conda-store-ui repository](https://github.com/conda-incubator/conda-store-ui/fork)
+3. `git clone` the fork to your computer.
 
-## Basic local development (recommended)
+## Basic Option (recommended): Run the UI in Docker
 
-Running conda-store-ui in Docker is the simplest way to set up your local development environment.
+For basic local development on the UI, running conda-store-ui in Docker is the simplest way to get started.
 
-### Install the right version of Yarn
+1. Change your working directory to the project root: `cd conda-store-ui`
+2. Optional. Set environment variables. Copy `.env.example` to `.env`. All default settings should work, but if you want to test against a different version of conda-store-server, you can specify it in the `.env` file by setting the `CONDA_STORE_SERVER_VERSION` variable to the desired version. If you skip this step, it will be done automatically for you.
+3. Run `docker compose --profile local-dev up --build` to start the entire development stack. This step may take a few minutes the first time you run it.
+4. Open your local browser and go to [http://localhost:8000](http://localhost:8000) to see conda-store-ui.
+5. You can then log in using the default username of `username` and default password of `password`.
 
-Yarn is a package manager for JavaScript dependencies. It requires that you [download and install Node.js](https://nodejs.org/en/download/package-manager). Once you have Node.js installed, you can follow the instructions to [install Yarn](https://yarnpkg.com/getting-started/install).
+**Note:** Hot reloading is enabled, so when you make changes to source files (i.e., files under the conda-store-ui/src/ directory), your browser will reload and reflect the changes.
 
-1. Change to the project root: `cd conda-store-ui`
-2. Find out what version of Yarn is required: `cat package.json | grep packageManager`
-3. Compare to the version of Yarn that you installed: `yarn --version`
+## Advanced Option: Run the UI locally (with the rest of the stack in Docker)
 
-### Run the UI web app in Docker container
+For more advanced development on conda-store-ui, the first option might not be sufficient. If you need to work extensively in the UI codebase, then you will probably want to run the UI web app locally rather than within a Docker container.
 
-1. Run `yarn install`. This will download or update the needed JavaScript dependencies into a directory named `node_modules/`. This directory will be exposed in the next step to the `conda-store-ui` Docker container for use at runtime by the Conda Store UI app.
-2. Run `yarn run start:docker` to start the entire development stack. This step may take a few minutes the first time you run it.
-3. Open your local browser and go to [http://localhost:8000](http://localhost:8000) to see conda-store-ui.
-4. You can then log in using the default username of `username` and default password of `password`.
-
-**Note:** Hot reloading is enabled, so when you make changes to source files, your browser will reload and reflect the changes.
-
-## Advanced local development
-
-For many Conda Store UI development tasks, the basic setup should work. But if you need to work extensively in the UI codebase, then you will probably want to run the conde-store-ui app locally rather than within a Docker container.
-
-Note: this setup still uses Docker for supporting services (such as the database, server, worker, and cloud storage), but runs conda-store-ui locally.
+Note: this setup still uses Docker to run the rest of the Conda Store stack. That means that the Conda Store database, server, worker, and storage services will all run in Docker containers. But the frontend web app (conda-store-ui) will run locally (not in a Docker container) with this setup.
 
 ### Set up your Conda environment
 
@@ -49,13 +40,16 @@ This project uses [Conda](https://conda.io) for package management. To set up Co
 1. Change to the project root: `cd conda-store-ui`
 2. From the project root, create the conda environment: `conda env create -f environment_dev.yml`
 
-### Run the UI app locally
+### Run conda-store-ui locally (and the rest of the stack in Docker)
+
+Tip: Make sure are in the project root: `cd conda-store-ui`
 
 1. Activate the development environment: `conda activate cs-ui-dev-env`
-2. Install/update JavaScript dependencies: `yarn install`
-3. Run `yarn run start` and wait for the application to finish starting up
-4. Open your local browser and go to [http://localhost:8000](http://localhost:8000) to see conda-store-ui.
-5. You can then log in using the default username of `username` and default password of `password`.
+2. Set environment variables. Copy `.env.example` to `.env`. All default settings should work, but if you want to test against a different version of conda-store-server, you can specify it in the `.env` file by setting the `CONDA_STORE_SERVER_VERSION` variable to the desired version.
+3. Install/update JavaScript dependencies: `yarn install`
+4. Run `yarn run start` and wait for the application to finish starting up. This command will run a local dev server for the UI app and run the other Conda Store services in Docker.
+5. Open your local browser and go to [http://localhost:8000](http://localhost:8000) to see conda-store-ui.
+6. You can then log in using the default username of `username` and default password of `password`.
 
 **Note:** Hot reloading is enabled, so when you make changes to source files, your browser will reload and reflect the changes.
 
