@@ -45,7 +45,7 @@ For more advanced development on conda-store-ui, the first option might not be s
 
 :::note
 
-this setup still uses Docker to run the rest of the Conda Store stack. That means that the Conda Store database, server, worker, and storage services will all run in Docker containers. However, the frontend web app (conda-store-ui) will run locally (not in a Docker container) with this setup.
+This setup still uses Docker to run the rest of the Conda Store stack. That means that the Conda Store database, server, worker, and storage services will all run in Docker containers. However, the frontend web app (conda-store-ui) will run locally (not in a Docker container) with this setup.
 
 :::
 
