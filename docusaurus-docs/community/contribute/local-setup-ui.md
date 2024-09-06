@@ -33,7 +33,11 @@ For basic local development on the UI, running conda-store-ui in Docker is the s
 4. Open your local browser and go to [http://localhost:8000](http://localhost:8000) to see conda-store-ui.
 5. You can then log in using the default username of `username` and default password of `password`.
 
-**Note:** Hot reloading is enabled, so when you make changes to source files (i.e., files under the conda-store-ui/src/ directory), your browser will reload and reflect the changes.
+:::note 
+
+Hot reloading is enabled, so when you make changes to source files (i.e., files under the conda-store-ui/src/ directory), your browser will reload and reflect the changes.
+
+:::
 
 ## Advanced Option: Run the UI locally (with the rest of the stack in Docker)
 
