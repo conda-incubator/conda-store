@@ -43,7 +43,11 @@ Hot reloading is enabled, so when you make changes to source files (i.e., files 
 
 For more advanced development on conda-store-ui, the first option might not be sufficient. If you need to work extensively in the UI codebase, then you will probably want to run the UI web app locally rather than within a Docker container.
 
-**Note:** this setup still uses Docker to run the rest of the Conda Store stack. That means that the Conda Store database, server, worker, and storage services will all run in Docker containers. However, the frontend web app (conda-store-ui) will run locally (not in a Docker container) with this setup.
+:::note
+
+this setup still uses Docker to run the rest of the Conda Store stack. That means that the Conda Store database, server, worker, and storage services will all run in Docker containers. However, the frontend web app (conda-store-ui) will run locally (not in a Docker container) with this setup.
+
+:::
 
 ### Set up your Conda environment
 
