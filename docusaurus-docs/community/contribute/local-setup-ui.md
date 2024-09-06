@@ -54,7 +54,7 @@ Tip: Make sure you are in the project root: `cd conda-store-ui`
 
 1. Activate the development environment: `conda activate cs-ui-dev-env`
 2. Set environment variables: copy `.env.example` to `.env`. All default settings should work, but if you want to test against a different version of conda-store-server, you can specify it in the `.env` file by setting the `CONDA_STORE_SERVER_VERSION` variable to the desired version.
-3. Set the package manager to match package.json (`packageManager`): `corepack enable`
+3. Run: `corepack enable`. Corepack comes with Node.js which was installed when you set up your Conda dev environment. Running `corepack enable` ensures that the version of Yarn that you use in the next step matches the version required by the repo (see package.json > packageManager). Yarn also comes with Node.js but is not automatically added to your environment's path until you run `corepack enable`.
 4. Install/update JavaScript dependencies: `yarn install`
 5. Run `yarn run start` and wait for the application to finish starting up. This command will run a local dev server for the UI app and run the other Conda Store services in Docker.
 6. Open your local browser and go to [http://localhost:8000](http://localhost:8000) to see conda-store-ui.
