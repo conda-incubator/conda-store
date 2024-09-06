@@ -68,7 +68,11 @@ Make sure you are in the project root: `cd conda-store-ui`
 6. Open your local browser and go to [http://localhost:8000](http://localhost:8000) to see conda-store-ui.
 7. You can then log in using the default username of `username` and default password of `password`.
 
-**Note:** Hot reloading is enabled, so when you make changes to source files, your browser will reload and reflect the changes.
+:::note
+
+Hot reloading is enabled, so when you make changes to source files, your browser will reload and reflect the changes.
+
+:::
 
 ### Run the test suite
 
