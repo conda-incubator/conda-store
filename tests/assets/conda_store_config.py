@@ -3,7 +3,6 @@ import logging
 from conda_store_server.server.auth import DummyAuthentication
 from conda_store_server.storage import S3Storage
 
-
 # ==================================
 #      conda-store settings
 # ==================================
@@ -55,7 +54,7 @@ c.CondaStoreServer.url_prefix = "/conda-store"
 c.CondaStoreServer.authentication_class = DummyAuthentication
 c.CondaStoreServer.template_vars = {
     "banner": '<div class="alert alert-danger" role="alert">This is a localhost server</div>',
-    "logo": "https://quansight.com/_next/image?url=https%3A%2F%2Fa.storyblok.com%2Ff%2F147759%2F1076x520%2Fe6cd6af012%2Fquansight-logo-no-tagline.png&w=3840&q=75",
+    "logo": "https://raw.githubusercontent.com/conda-incubator/conda-store/main/docusaurus-docs/community/assets/logos/conda-store-logo-horizontal-lockup.svg&w=3840",
 }
 
 # ==================================
