@@ -11,7 +11,7 @@ license = "BSD-3-Clause"
 requires-python = ">=3.8"
 keywords = ["conda"]
 authors = [
-  { name = "Christopher Ostrouchov", email = "crhsi.ostrouchov@gmail.com" },
+  { name = "Christopher Ostrouchov", email = "chris.ostrouchov@gmail.com" },
 ]
 maintainers = [
   { name = "Tania Allard", email = "trallard@bitsandchips.me" },
@@ -106,6 +106,7 @@ playwright-test = [
 integration-test = ["pytest ../tests/test_api.py ../tests/test_metrics.py"]
 user-journey-test = ["pytest -m user_journey"]
 
+# custom conda-store build hook, used to bundle ui artefacts
 [tool.hatch.build.hooks.custom]
 
 [tool.hatch.build.targets.sdist.hooks.custom]
@@ -116,7 +117,6 @@ conda-store-worker = "conda_store_server._internal.worker.__main__:main"
 
 [tool.black]
 line-length = 88
-target-version = ['py37', 'py38', 'py39']
 
 [tool.isort]
 lines_between_types = 1

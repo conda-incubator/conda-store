@@ -70,6 +70,7 @@ dependencies = [
   "pytest",
   "twine>=5.0.0",
   "pkginfo >= 1.10", # Needed to support metadata 2.3
+
 ]
 
 [tool.hatch.envs.lint]
@@ -86,11 +87,11 @@ conda-store = "conda_store.__main__:main"
 
 [tool.black]
 line-length = 88
-target-version = ['py38', 'py39', 'py310']
 
 [tool.ruff]
 ignore = [
   "E501", # line-length
+
 ]
 
 [tool.isort]
