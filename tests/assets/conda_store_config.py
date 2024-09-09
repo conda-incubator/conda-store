@@ -54,7 +54,7 @@ c.CondaStoreServer.url_prefix = "/conda-store"
 c.CondaStoreServer.authentication_class = DummyAuthentication
 c.CondaStoreServer.template_vars = {
     "banner": '<div class="alert alert-danger" role="alert">This is a localhost server</div>',
-    "logo": "https://raw.githubusercontent.com/conda-incubator/conda-store/main/docusaurus-docs/community/assets/logos/conda-store-logo-horizontal-lockup.svg&w=3840",
+    "logo": "https://raw.githubusercontent.com/conda-incubator/conda-store/main/docusaurus-docs/community/assets/logos/conda-store-logo-horizontal-lockup.svg",
 }
 
 # ==================================
