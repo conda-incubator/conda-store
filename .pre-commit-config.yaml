@@ -14,14 +14,14 @@ ci:
 
 repos:
   - repo: https://github.com/psf/black
-    rev: 24.4.2
+    rev: 24.8.0
     hooks:
       - id: black
         exclude: "examples|tests/assets"
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
-    rev: "v0.5.0"
+    rev: "v0.6.3"
     hooks:
       - id: ruff
         exclude: "examples|tests/assets"
@@ -31,11 +31,10 @@ repos:
     rev: v4.6.0
     hooks:
       - id: trailing-whitespace
-        files: ".*\\.py"
       - id: check-added-large-files
       - id: check-toml
       - id: end-of-file-fixer
-      - id: trailing-whitespace
+        exclude: ".python-version-default"
 
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: v4.0.0-alpha.8

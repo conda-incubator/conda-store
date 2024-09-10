@@ -28,6 +28,10 @@ jobs:
       - name: "Checkout Repository 🛎"
         uses: actions/checkout@v4
 
+      - name: "Get project's default Python version 🏷️"
+        run: |
+          echo "PYTHON_VERSION_DEFAULT=$(cat .python-version-default)" >> $GITHUB_ENV
+
       - name: "Retrieve secret from Vault 🗝"
         uses: hashicorp/vault-action@v3
         with:
@@ -68,6 +72,12 @@ jobs:
             type=ref,event=tag
             type=sha
 
+      # we need this as we are setting the context to subproject directory
+      - name: "Copy .dockerignore"
+        run: |
+          cp .dockerignore ${{ matrix.docker-image }}/.dockerignore
+        shell: bash
+
       - name: "Publish Docker image 🚀"
         uses: docker/build-push-action@v5
         with:
@@ -80,4 +90,6 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          build-args: |
+            python_version=${{ env.PYTHON_VERSION_DEFAULT }}
           platforms: ${{ matrix.platform }}

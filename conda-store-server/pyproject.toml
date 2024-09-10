@@ -1,3 +1,6 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
 [build-system]
 # https://github.com/ofek/hatch-vcs
 requires = ["hatchling>=1.14.0", "hatch-vcs"]
@@ -37,6 +40,7 @@ classifiers = [
 dependencies = [
   # env builds
   # conda (which cannot be installed via pip see https://github.com/conda/conda/issues/11715)
+  # constructor also not pip installable
   "python-docker",
   # we need platform dependent dependencies here
   "conda-docker; sys_platform == 'linux'",
@@ -60,7 +64,7 @@ dependencies = [
   "requests",
   "pydantic >=1.10.16,<2.0a0",
   "python-multipart",
-  "sqlalchemy<2",
+  "sqlalchemy<2.0a0",
   "traitlets",
   "uvicorn",
   "yarl",
@@ -123,6 +127,9 @@ lines_between_types = 1
 lines_after_imports = 2
 
 [tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
 ignore = [
   "E501", # line-length
 
@@ -130,7 +137,8 @@ ignore = [
 
 [tool.check-wheel-contents]
 # ignore alembic migrations https://github.com/jwodder/check-wheel-contents?tab=readme-ov-file#w004--module-is-not-located-at-importable-path
-ignore = ["W004"]
+# ignore empty files w/license header
+ignore = ["W004", "W002"]
 
 [tool.pytest.ini_options]
 markers = [

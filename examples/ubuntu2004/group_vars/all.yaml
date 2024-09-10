@@ -1,3 +1,7 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
 miniforge:
   version: "4.9.2-3"
   sha256: de5b309312e9b2e3ad777262324865cbc40a61bfd1f497d7eb9925bf593b9d94

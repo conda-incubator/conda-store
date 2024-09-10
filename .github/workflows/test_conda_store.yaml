@@ -1,8 +1,8 @@
 name: "Test conda-store"
 
 env:
-  DEFAULT_PYTHON_VERSION: "3.10"
   FORCE_COLOR: "1" # Make tools pretty.
+  PYTHONUNBUFFERED: "1" # Make stdout and stderr behave well
 
 on:
   pull_request:
@@ -20,7 +20,7 @@ on:
 
 # ensuring only one instance is running at a given time
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: true
 
 jobs:
@@ -40,33 +40,28 @@ jobs:
       - name: "Set up Python 🐍"
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version-file: .python-version-default
+          cache: "pip"
 
       - name: "Install Dependencies 📦"
         run: |
-          pip install hatch
           sudo apt install wait-for-it -y
+          python -m pip install hatch
+          # install conda-store
+          pip install .
 
       - name: "Linting Checks 🧹"
         run: |
           hatch env run -e lint lint
 
-      - name: "Build package 📦"
+      - name: "Deploy docker compose 🏗️"
         run: |
-          hatch build
-
-      - name: "Deploy docker-compose"
-        run: |
-          docker-compose up -d
+          docker compose up -d
           docker ps
 
           wait-for-it localhost:5432 # postgresql
           wait-for-it localhost:9000 # minio
           wait-for-it localhost:8080 # conda-store-server
-
-      - name: "Install conda-store for tests 📦"
-        run: |
-          pip install .
 
       - name: "Run basic tests -  not authenticated"
         run: |
@@ -88,4 +83,4 @@ jobs:
       - name: "Get Docker logs 🔍"
         if: ${{ failure() }}
         run: |
-          docker-compose logs
+          docker compose logs

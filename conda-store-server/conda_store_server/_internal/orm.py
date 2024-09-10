@@ -1,9 +1,12 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
 import datetime
 import json
 import logging
 import os
 import pathlib
-import re
 import shutil
 import sys
 
@@ -43,8 +46,6 @@ from conda_store_server._internal.environment import validate_environment
 logger = logging.getLogger("orm")
 
 Base = declarative_base()
-
-ARN_ALLOWED_REGEX = re.compile(schema.ARN_ALLOWED)
 
 
 class Worker(Base):
@@ -93,7 +94,7 @@ class NamespaceRoleMapping(Base):
 
     @validates("entity")
     def validate_entity(self, key, entity):
-        if not ARN_ALLOWED_REGEX.match(entity):
+        if not schema.ARN_ALLOWED_REGEX.match(entity):
             raise ValueError(f"invalid entity={entity}")
 
         return entity

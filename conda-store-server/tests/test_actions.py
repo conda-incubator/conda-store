@@ -1,3 +1,7 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
 import asyncio
 import datetime
 import pathlib
@@ -11,6 +15,7 @@ import pytest
 import yaml
 import yarl
 
+from celery.result import AsyncResult
 from conda.base.context import context as conda_base_context
 from constructor import construct
 from fastapi.responses import RedirectResponse
@@ -387,7 +392,11 @@ def test_add_conda_prefix_packages(db, conda_store, simple_specification, conda_
 
 
 def test_add_lockfile_packages(
-    db, conda_store, simple_specification, simple_conda_lock
+    db,
+    conda_store,
+    simple_specification,
+    simple_conda_lock,
+    celery_worker,
 ):
     task, solve_id = conda_store.register_solve(db, specification=simple_specification)
 
@@ -399,6 +408,10 @@ def test_add_lockfile_packages(
 
     solve = api.get_solve(db, solve_id=solve_id)
     assert len(solve.package_builds) > 0
+
+    result = AsyncResult(task)
+    result.get(timeout=30)
+    assert result.state == "SUCCESS"
 
 
 @pytest.mark.parametrize(

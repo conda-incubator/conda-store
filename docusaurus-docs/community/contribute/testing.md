@@ -23,8 +23,8 @@ docker.
 
 ```shell
 $ cd conda-store
-$ docker-compose down -v # ensure you've cleared state
-$ docker-compose up --build
+$ docker compose down -v # ensure you've cleared state
+$ docker compose up --build
 # wait until the conda-store-server is running check by visiting localhost:8080
 
 $ pip install -e .
@@ -66,8 +66,8 @@ docker.
 
 ```shell
 $ cd conda-store-server
-$ docker-compose down -v # ensure you've cleared state
-$ docker-compose up --build
+$ docker compose down -v # ensure you've cleared state
+$ docker compose up --build
 # wait until the conda-store-server is running check by visiting localhos:8080
 $ hatch env run -e dev playwright-test
 $ hatch env run -e dev integration-test

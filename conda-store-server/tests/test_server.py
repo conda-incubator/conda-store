@@ -1,3 +1,8 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
+import contextlib
 import json
 import os
 import sys
@@ -7,8 +12,36 @@ import pytest
 import traitlets
 import yaml
 
+from fastapi.testclient import TestClient
+
 from conda_store_server import CONDA_STORE_DIR, __version__
 from conda_store_server._internal import schema
+from conda_store_server.server import dependencies
+
+
+@contextlib.contextmanager
+def mock_entity_role_bindings(
+    testclient: TestClient,
+    role_bindings: schema.RoleBindings,
+):
+    """Override the entity role bindings for the FastAPI app temporarily.
+
+    Parameters
+    ----------
+    testclient : TestClient
+        FastAPI application for which the entity should be mocked
+    role_bindings : schema.RoleBindings
+        Role bindings that the mocked entity should have
+    """
+
+    def mock_get_entity():
+        return schema.AuthenticationToken(role_bindings=role_bindings)
+
+    testclient.app.dependency_overrides[dependencies.get_entity] = mock_get_entity
+
+    yield
+
+    testclient.app.dependency_overrides = {}
 
 
 def test_api_version_unauth(testclient):
@@ -172,6 +205,105 @@ def test_api_list_environments_auth(testclient, seed_conda_store, authenticate):
     r = schema.APIListEnvironment.parse_obj(response.json())
     assert r.status == schema.APIStatus.OK
     assert sorted([_.name for _ in r.data]) == ["name1", "name2", "name3", "name4"]
+
+
+@pytest.mark.parametrize(
+    ("requester_role_bindings", "envs_accessible_to_requester"),
+    [
+        (
+            {"*/*": ["viewer"]},
+            ["name1", "name2", "name3", "name4"],
+        ),
+        (
+            {"*/*": ["admin"]},
+            ["name1", "name2", "name3", "name4"],
+        ),
+        (
+            {"default/*": ["viewer"]},
+            ["name1", "name2"],
+        ),
+        (
+            {"namespace1/name3": ["editor"]},
+            ["name3"],
+        ),
+        (
+            {"namespace*/*": ["admin"]},
+            ["name3", "name4"],
+        ),
+        (
+            {"foo/bar": ["viewer"]},
+            [],
+        ),
+    ],
+)
+@pytest.mark.parametrize(
+    ("target_role_bindings", "envs_accessible_to_target"),
+    [
+        (
+            {"*/name1": ["viewer"]},
+            ["name1"],
+        ),
+        (
+            {"default/*": ["viewer"], "e*/e*": ["admin"]},
+            ["name1", "name2"],
+        ),
+        (
+            {"namespace1/name3": ["viewer"]},
+            ["name3"],
+        ),
+        (
+            {"namespace*/name*": ["viewer"]},
+            ["name3", "name4"],
+        ),
+        (
+            {"*/*": ["viewer"]},
+            ["name1", "name2", "name3", "name4"],
+        ),
+    ],
+)
+def test_api_list_environments_jwt(
+    conda_store_server,
+    testclient,
+    seed_conda_store,
+    authenticate,
+    target_role_bindings,
+    requester_role_bindings,
+    envs_accessible_to_target,
+    envs_accessible_to_requester,
+):
+    """Test that the REST API lists the expected environments for a given jwt.
+
+    Since these are authenticated, they also include the default
+    role bindings as well.
+
+        {
+            "default/*": ["viewer"],
+            "filesystem/*": ["viewer"],
+        }
+    """
+    # Update the target and requester envs to include the envs accessible by default
+    envs_accessible_to_requester.extend(["name1", "name2"])
+    envs_accessible_to_target.extend(["name1", "name2"])
+
+    jwt = conda_store_server.authentication.authentication.encrypt_token(
+        schema.AuthenticationToken(role_bindings=target_role_bindings)
+    )
+
+    # Override the get_entity dependency to allow the request to appear to be
+    # made by the mock entity
+    with mock_entity_role_bindings(testclient, requester_role_bindings):
+        response = testclient.get(f"api/v1/environment/?jwt={jwt}")
+
+    response.raise_for_status()
+
+    r = schema.APIListEnvironment.parse_obj(response.json())
+    assert r.status == schema.APIStatus.OK
+
+    # The environments returned by `/environment/` should only be the ones
+    # visible to both the requesting entity and the target JWT
+    assert set(obj.name for obj in r.data) == (
+        set(envs_accessible_to_target) & set(envs_accessible_to_requester)
+    )
 
 
 def test_api_get_environment_unauth(testclient, seed_conda_store):

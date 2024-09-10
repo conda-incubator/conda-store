@@ -1,3 +1,7 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
 import os
 import pathlib
 import sys
@@ -40,6 +44,8 @@ def action_generate_constructor_installer(
     # Checks if constructor is available
     try:
         command = [
+            "python",
+            "-m",
             "constructor",
             "--help",
         ]
@@ -114,9 +120,7 @@ def action_generate_constructor_installer(
         }
 
         if sys.platform == "win32":
-            post_install = """\
-call "%PREFIX%\Scripts\\activate.bat"
-"""
+            post_install = "\n" r'call "%PREFIX%\Scripts\activate.bat' "\n"
         else:
             post_install = """\
 #!/usr/bin/env bash

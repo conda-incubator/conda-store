@@ -1,3 +1,7 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
 """add build_key_version
 
 Revision ID: 30b37e725c32

@@ -1,11 +1,17 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+from __future__ import annotations
+
 import re
 
 from typing import Any, Dict, List, Union
 
 from sqlalchemy import distinct, func, null, or_
-from sqlalchemy.orm import aliased
+from sqlalchemy.orm import Query, aliased, session
 
 from conda_store_server._internal import conda_utils, orm, schema, utils
+from conda_store_server._internal.environment import filter_environments
 
 
 def list_namespaces(db, show_soft_deleted: bool = False):
@@ -271,7 +277,7 @@ def delete_namespace(db, name: str = None, id: int = None):
 
 
 def list_environments(
-    db,
+    db: session.Session,
     namespace: str = None,
     name: str = None,
     status: schema.BuildStatus = None,
@@ -279,7 +285,45 @@ def list_environments(
     artifact: schema.BuildArtifactType = None,
     search: str = None,
     show_soft_deleted: bool = False,
-):
+    role_bindings: schema.RoleBindings | None = None,
+) -> Query:
+    """Retrieve all environments managed by conda-store.
+
+    Parameters
+    ----------
+    db : session.Session
+        Database to query for environments
+    namespace : str | None
+        If specified, filter by environments in the given namespace
+    name : str | None
+        If specified, filter by environments with the given name
+    status : schema.BuildStatus
+        If specified, filter by environments with the given status
+    packages : List[str] | None
+        If specified, filter by environments containing the given package name(s)
+    artifact : schema.BuildArtifactType | None
+        If specified, filter by environments with the given BuildArtifactType
+    search : str | None
+        If specified, filter by environment names or namespace names containing the
+        search term
+    show_soft_deleted : bool
+        If specified, filter by environments which have a null value for the
+        deleted_on attribute
+    role_bindings : schema.RoleBindings | None
+        If specified, filter by only the environments the given role_bindings
+        have read, write, or admin access to. This should be the same object as
+        the role bindings in conda_store_config.py, for example:
+
+            {
+                "*/*": ['admin'],
+                ...
+            }
+
+    Returns
+    -------
+    Query
+        Sqlalchemy query containing the requested environments
+    """
     query = db.query(orm.Environment).join(orm.Environment.namespace)
 
     if namespace:
@@ -322,6 +366,11 @@ def list_environments(
             .group_by(orm.Namespace.name, orm.Environment.name, orm.Environment.id)
             .having(func.count() == len(packages))
         )
+
+    if role_bindings:
+        # Any entity binding is sufficient permissions to view an environment;
+        # no entity binding will hide the environment
+        query = filter_environments(query, role_bindings)
 
     return query
 

@@ -1,3 +1,7 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
 # Custom hook to build conda-store-server with a local or released version of conda-store-ui.
 # To build with a released version of conda-store-ui: make sure to set the CONDA_STORE_UI_VERSION to a valid release
 # version in npm.
