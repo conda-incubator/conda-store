@@ -123,7 +123,7 @@ class DownloadCondaStoreUIHook(BuildHookInterface):
                 shutil.copy(file_path, target_path)
 
             print(
-                f"Copied files: {[p.name for p in server_build_static_assets.glob("*")]}"
+                f"Copied files: {[p.name for p in server_build_static_assets.glob('*')]}"
             )
 
         except (IOError, OSError) as e:
