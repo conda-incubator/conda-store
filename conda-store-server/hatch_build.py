@@ -79,7 +79,7 @@ class DownloadCondaStoreUIHook(BuildHookInterface):
             self.get_ui_release(CONDA_STORE_UI_VERSION)
 
     def get_ui_release(self, ui_version: str) -> None:
-        """Donwload a released version of conda-store-ui and add it to the
+        """Download a released version of conda-store-ui and add it to the
         server's static assets directory.
 
         Args:
