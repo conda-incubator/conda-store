@@ -127,6 +127,9 @@ lines_between_types = 1
 lines_after_imports = 2
 
 [tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
 ignore = [
   "E501", # line-length
 
