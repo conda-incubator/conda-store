@@ -9,7 +9,7 @@ import os
 import re
 import sys
 
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, TypeAlias, Union
 
 from conda_lock.lockfile.v1.models import Lockfile
 from pydantic import BaseModel, Field, ValidationError, constr, validator
@@ -23,15 +23,21 @@ def _datetime_factory(offset: datetime.timedelta):
     return datetime.datetime.utcnow() + offset
 
 
-# namespace and name cannot contain "*" ":" "#" " " "/"
-# this is a more restrictive list
+# An ARN is a string which matches namespaces and environments. For example:
+#     */*          matches all environments
+#     */team       matches all environments named 'team' in any namespace
+#
+# Namespaces and environment names cannot contain "*" ":" "#" " " "/"
 ALLOWED_CHARACTERS = "A-Za-z0-9-+_@$&?^~.="
 ARN_ALLOWED = f"^([{ALLOWED_CHARACTERS}*]+)/([{ALLOWED_CHARACTERS}*]+)$"
+ARN_ALLOWED_REGEX = re.compile(ARN_ALLOWED)
 
 
 #########################
 # Authentication Schema
 #########################
+
+RoleBindings: TypeAlias = Dict[constr(regex=ARN_ALLOWED), List[str]]
 
 
 class Permissions(enum.Enum):
@@ -60,7 +66,7 @@ class AuthenticationToken(BaseModel):
         default_factory=functools.partial(_datetime_factory, datetime.timedelta(days=1))
     )
     primary_namespace: str = "default"
-    role_bindings: Dict[constr(regex=ARN_ALLOWED), List[str]] = {}
+    role_bindings: RoleBindings = {}
 
 
 ##########################
