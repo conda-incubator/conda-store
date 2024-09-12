@@ -27,7 +27,7 @@ The conda-store development team pledges to create a welcoming, supportive, and 
 
 ## Governance
 
-As a [federated project](https://github.com/conda-incubator/governance/tree/main#federated-projects) under the [conda-incubator organization](https://github.com/conda-incubator), conda-store follows the [conda-incubator governance](https://github.com/conda-incubator/governance/tree/main#conda--conda-incubator-governance). The [conda-store development team (documented through GitHub Teams)](https://github.com/orgs/conda-incubator/teams) makes all project decisions using a [consent-based approach](https://www.sociocracyforall.org/consent-decision-making/) on the issue tracker or in team meetings.
+As a [federated project](https://github.com/conda-incubator/governance/tree/main#federated-projects) under the [conda-incubator organization](https://github.com/conda-incubator), conda-store follows the [conda-incubator governance](https://github.com/conda-incubator/governance/tree/main#conda--conda-incubator-governance). The [conda-store development team (documented through GitHub Teams)](https://github.com/orgs/conda-incubator/teams/conda-store) makes all project decisions using a [consent-based approach](https://www.sociocracyforall.org/consent-decision-making/) on the issue tracker or in team meetings.
 
 ## Support
 
@@ -37,7 +37,7 @@ conda-store's issue trackers are the best way to reach the conda-store developme
 * [conda-store-ui](https://github.com/conda-incubator/conda-store-ui/issues/new/choose)
 * [jupyterlab-conda-store](https://github.com/conda-incubator/jupyterlab-conda-store/issues/new/choose)
 
-If you are unsure about the repository, open your issues against the `conda-store`` repository and the development team will move it to the relevant space.
+If you are unsure about the repository, open your issues against the `conda-store` repository and the development team will move it to the relevant space.
 
 ## Contribute
 
