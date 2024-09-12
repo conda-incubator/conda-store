@@ -4,6 +4,10 @@
  license that can be found in the LICENSE file.
 -->
 
+<!-- Note we do not modify the main.js file directly anymore. Instead we leverage
+the use of runtime configuration through condaStoreConfig per
+https://conda.store/conda-store-ui/how-tos/configure-ui -->
+
 <!DOCTYPE html>
 <html>
     <head>
@@ -11,7 +15,7 @@
         <title>conda-store</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <script>
-         var GLOBAL_CONDA_STORE_STATE = {
+         var condaStoreConfig = {
              NODE_DEBUG: null,
              REACT_APP_CONTEXT: "single-page-app", // not a true setting
              REACT_APP_AUTH_METHOD: "cookie",
