@@ -19,7 +19,7 @@ jobs:
       run:
         shell: bash -el {0}
     steps:
-      - name: Install jq
+      - name: "Install jq 📦"
         run: |
           sudo apt update
           sudo apt install -y jq
