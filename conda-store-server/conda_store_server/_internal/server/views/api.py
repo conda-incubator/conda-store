@@ -675,8 +675,10 @@ async def api_list_environments(
     Returns
     -------
     Dict
-        Paginated JSON response containing the requested environments
-
+        Paginated JSON response containing the requested environments. Results are sorted by each
+        envrionment's build's scheduled_on time to ensure all results are returned when iterating
+        over pages in systems where the number of environments is changing while results are being
+        requested; see https://github.com/conda-incubator/conda-store/issues/859 for context
     """
     with conda_store.get_db() as db:
         if jwt:
@@ -711,10 +713,10 @@ async def api_list_environments(
             schema.Environment,
             exclude={"current_build"},
             allowed_sort_bys={
-                "namespace": orm.Namespace.name,
-                "name": orm.Environment.name,
+                "scheduled_on": orm.Environment.current_build.scheduled_on,
             },
-            default_sort_by=["namespace", "name"],
+            default_sort_by=["scheduled_on"],
+            default_order="asc",
         )
 
 
