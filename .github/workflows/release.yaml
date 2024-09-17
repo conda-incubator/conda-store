@@ -38,20 +38,14 @@ jobs:
 
       - run: echo "Running on ${{ matrix.directory }}"
 
-      - name: "Check package build - ${{ matrix.directory }} 📦"
+      - name: "Build and check package - ${{ matrix.directory }} 📦"
         uses: hynek/build-and-inspect-python-package@v2
+        id: baipp
         with:
           path: ${{ matrix.directory }}
           upload-name-suffix: "-${{ matrix.directory }}"
 
-      # Adding a separate upload for publishing
-      - name: "Upload build artefacts 📤"
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ matrix.directory }}-package
-          path: |
-            /tmp/baipp/dist/*.whl
-            /tmp/baipp/dist/*.tar.gz
+      - run: echo Packages can be found at ${{ steps.baipp.outputs.dist }} and in artifact ${{ steps.baipp.outputs.artifact-name }}
 
   # Upload to Test PyPI on every commit on main
   release-test-pypi:
@@ -72,8 +66,10 @@ jobs:
       - name: "Download build artefacts 📥"
         uses: actions/download-artifact@v4.1.7
         with:
-          name: ${{ matrix.directory }}-package
+          name: Packages-${{ matrix.directory }}
           path: dist
+
+      - run: tar xf dist/*.tar.gz --strip-components=1
 
       - name: "Upload package to Test PyPI"
         uses: pypa/gh-action-pypi-publish@release/v1
@@ -104,8 +100,10 @@ jobs:
       - name: "Download build artefacts 📥"
         uses: actions/download-artifact@v4.1.7
         with:
-          name: ${{ matrix.directory }}-package
+          name: Packages-${{ matrix.directory }}
           path: dist
+
+      - run: tar xf dist/*.tar.gz --strip-components=1
 
       - name: "Upload to PyPI 🚀"
         uses: pypa/gh-action-pypi-publish@release/v1

@@ -12,7 +12,7 @@ The new conda-store documentation website is built using [Docusaurus 2](https://
 ### Pre-requisites
 
 1. Fork and clone the conda-store repository: `git clone https://github.com/<your-username>/conda-store.git`
-2. Install [Node.js](https://nodejs.org/en), and verify the installation with `node -`v`
+2. Install [Node.js](https://nodejs.org/en), and verify the installation with `node -v`
 
 ### Local development
 
@@ -20,7 +20,7 @@ The new conda-store documentation website is built using [Docusaurus 2](https://
 You can also create an isolated environment for development.
 :::
 
-Navigate to the  `/docusaurus-docs` directory, and run:
+From the root of the repository, navigate to the `/docusaurus-docs` directory, and run:
 
 ```bash
 npm install
@@ -33,6 +33,7 @@ npm run start
 ```
 
 This command starts a local development server and opens up a browser window. Most changes are reflected live without having to restart the server.
+The only time you'd need to restart the server is if you are making changes to the documentation site through the `docusaurus.config.js` file.
 
 ### Build website
 
