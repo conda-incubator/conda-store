@@ -1,3 +1,7 @@
+// Copyright (c) conda-store development team. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 // @ts-check
 // Note: type annotations allow type checking and IDEs autocompletion
 
@@ -14,6 +18,9 @@ const config = {
   url: "https://conda.store",
   // Set /<baseUrl>/ pathname under which your site is served
   baseUrl: "/",
+
+  organizationName: "conda-incubator",
+  projectName: "conda-store",
 
   onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "warn",
@@ -92,10 +99,15 @@ const config = {
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
+      // og:image
+      image: "img/horizontal-logo.png",
+      metadata: [
+        { name: 'keywords', content: 'conda, python, conda environments, dependencies, reproducibility' },
+      ],
       navbar: {
         title: "Home",
         logo: {
-          alt: "conda-store logo",
+          alt: "conda-store logo - conda-store Homepage",
           src: "img/logo.svg",
         },
         items: [
@@ -171,7 +183,7 @@ const config = {
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} | Made with 💚 by conda-store development team`,
+        copyright: `Copyright © ${new Date().getFullYear()} | Made with 💚 by conda - store development team`,
       },
       prism: {
         theme: lightCodeTheme,
@@ -182,6 +194,11 @@ const config = {
         content:
           '⚠️ We are in the process of revamping our docs, some pages may be incomplete or inaccurate. ⚠️',
         isCloseable: false,
+      },
+      docs: {
+        sidebar: {
+          hideable: true,
+        },
       },
     }),
 };

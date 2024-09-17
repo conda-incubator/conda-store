@@ -1,10 +1,17 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
 import datetime
 import math
 import os
+
 from typing import Dict, List
 
 import yarl
-from conda_store import auth, exception, utils
+
+from conda_store import exception
+from conda_store._internal import auth, utils
 
 
 class CondaStoreAPIError(exception.CondaStoreError):

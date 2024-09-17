@@ -1,3 +1,6 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
 [build-system]
 # https://github.com/ofek/hatch-vcs
 requires = ["hatchling>=1.14.0", "hatch-vcs"]
@@ -9,12 +12,19 @@ description = "conda-store client"
 readme = "README.md"
 license = "BSD-3-Clause"
 requires-python = ">=3.8"
-keywords = ["conda"]
+keywords = [
+  "conda",
+  "dependency management",
+  "environment management",
+  "reproducibility"
+]
 authors = [
   { name = "Christopher Ostrouchov", email = "chris.ostrouchov@gmail.com" },
 ]
-maintainers = [{ name = "Tania Allard", email = "trallard@bitsandchips.me" }]
-# TODO: update maintainers
+maintainers = [
+  { name = "Tania Allard", email = "trallard@bitsandchips.me" },
+  { name = "Pavithra Eswaramoorthy", email = "pavithraes@outlook.com" },
+]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
@@ -25,18 +35,30 @@ classifiers = [
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3 :: Only",
   "Intended Audience :: Developers",
   "Intended Audience :: Information Technology",
   "Intended Audience :: Science/Research",
   "Intended Audience :: System Administrators",
 ]
-dependencies = ["rich", "click", "yarl", "aiohttp", "ruamel.yaml"]
+dependencies = [
+  "rich",
+  "click",
+  "yarl",
+  "aiohttp>=3.8.1",
+  "ruamel.yaml",
+  "jupyterhub<2.0.0",
+  "jupyterlab>=4.0.0",
+  "jupyter-launcher-shortcuts",
+  "jupyterlab-conda-store",
+]
 dynamic = ["version"]
 
 [project.urls]
 Homepage = "https://conda.store/"
 Source = "https://github.com/conda-incubator/conda-store"
+Issues = "https://github.com/conda-incubator/conda-store/issues"
 
 [tool.hatch.version]
 path = "conda_store/__init__.py"
@@ -46,18 +68,21 @@ dev = ["build", "twine"]
 
 [tool.hatch.envs.dev]
 dependencies = [
+  "build",
   "pre-commit",
-  "sphinx",
-  "myst-parser",
-  "sphinx-panels",
-  "sphinx-copybutton",
-  "pydata-sphinx-theme",
   "pytest",
-  "pytest-mock",
+  "twine>=5.0.0",
+  "pkginfo >= 1.10", # Needed to support metadata 2.3
+
 ]
 
-[tool.hatch.envs.dev.scripts]
+[tool.hatch.envs.lint]
+dependencies = ["pre-commit"]
+
+[tool.hatch.envs.lint.scripts]
 lint = ["pre-commit run --all"]
+
+[tool.hatch.envs.dev.scripts]
 test = "pytest tests"
 
 [project.scripts]
@@ -65,10 +90,21 @@ conda-store = "conda_store.__main__:main"
 
 [tool.black]
 line-length = 88
-target-version = ['py38', 'py39', 'py310']
 
 [tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
 ignore = [
   "E501", # line-length
 
 ]
+
+[tool.isort]
+lines_between_types = 1
+lines_after_imports = 2
+
+[tool.check-wheel-contents]
+# ignore alembic migrations https://github.com/jwodder/check-wheel-contents?tab=readme-ov-file#w004--module-is-not-located-at-importable-path
+# ignore empty files w/license header
+ignore = ["W004", "W002"]

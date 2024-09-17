@@ -1,0 +1,97 @@
+name: "Test conda-store-server (integration)"
+
+env:
+  FORCE_COLOR: "1" # Make tools pretty.
+  PYTHONUNBUFFERED: "1" # Make stdout and stderr behave well
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/**"
+      - ".github/actions/**"
+      - "conda-store/**"
+      - "conda-store-server/**"
+      - "examples/**"
+      - "tests/**"
+  push:
+    branches:
+      - main
+
+
+# ensuring only one instance is running at a given time
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  integration-test-conda-store-server:
+    name: "integration-test - ${{ matrix.test-type }}"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        test-type: ["playwright", "integration", "user-journey"]
+    defaults:
+      run:
+        shell: bash -el {0}
+        working-directory: conda-store-server
+    steps:
+      - name: "Checkout Repository 🛎"
+        uses: actions/checkout@v4
+
+      - name: "Get project's default Python version 🏷️"
+        run: |
+          echo "PYTHON_VERSION_DEFAULT=$(cat .python-version-default)" >> $GITHUB_ENV
+
+      - name: "Set up conda env 🐍"
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+            environment-file: conda-store-server/environment-dev.yaml
+            miniforge-version: latest
+            auto-activate-base: false
+            activate-environment: conda-store-server-dev
+            python-version: ${{ env.PYTHON_VERSION_DEFAULT }}
+
+      - name: "Install dependencies 📦"
+        run: |
+          which python
+          sudo apt install wait-for-it -y
+          # install conda-store-server
+          python -m pip install .
+
+      - name: "Deploy docker compose 🏗️"
+        run: |
+          docker compose up -d
+          docker ps
+
+          wait-for-it localhost:5432 # postgresql
+          wait-for-it localhost:9000 # minio
+          wait-for-it localhost:8080 # conda-store-server
+          sleep 10 # give the server more time to initialize
+
+      - name: "Run Playwright tests 🎭"
+        run: |
+          python -m playwright install --with-deps chromium
+          python -m pytest --video on ../tests/test_playwright.py
+        if: matrix.test-type == 'playwright'
+
+      - name: "Upload test results 📤"
+        uses: actions/upload-artifact@v4
+        if: matrix.test-type == 'playwright'
+        with:
+          name: playwright-tests
+          path: conda-store-server/test-results
+
+      - name: "Run integration tests ✅"
+        run: |
+          python -m pytest ../tests/test_api.py ../tests/test_metrics.py
+        if: matrix.test-type == 'integration'
+
+      - name: "Run user journey tests ✅"
+        run: |
+          python -m pytest -m "user_journey"
+        if: matrix.test-type == 'user-journey'
+
+      - name: "Get Docker logs 🔍"
+        if: ${{ failure() }}
+        run: |
+          docker compose logs

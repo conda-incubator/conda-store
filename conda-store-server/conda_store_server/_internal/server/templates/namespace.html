@@ -1,0 +1,59 @@
+<!--
+ Copyright (c) conda-store development team. All rights reserved.
+ Use of this source code is governed by a BSD-style
+ license that can be found in the LICENSE file.
+-->
+
+{% extends 'base.html' %}
+
+{% block title %}Namespaces{% endblock %}
+
+{% block content %}
+<h2>Namespaces</h2>
+
+<ul class="list-group">
+    {% for namespace in namespaces %}
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+        <span>{{ namespace.name }}</span>
+        <div class="btn-group" role="group" aria-label="Namespace actions">
+            <a class="btn btn-primary mb-2" href="{{ url_for('ui_get_setting', namespace=namespace.name) }}#environment-settings"><ion-icon name="settings"></ion-icon></a>
+            <button type="button" onclick="deleteNamespace('{{ namespace.name }}')" class="btn btn-primary mb-2">
+                <ion-icon name="trash"></ion-icon>
+            </button>
+        </div>
+    </li>
+    {% endfor %}
+</ul>
+
+<div class="card my-2">
+    <div class="card-body">
+        <form class="form-namespace" id="namespaceForm">
+            <div class="form-floating">
+                <input name="namespace" class="form-control" id="namespaceInput" placeholder="Namespace">
+            </div>
+            <button class="w-100 btn btn-lg btn-primary" type="submit">Create Namespace</button>
+        </form>
+    </div>
+</div>
+
+<script>
+ function deleteNamespace(name) {
+     fetch(`{{ url_for('api_list_namespaces') }}${name}/`, {
+         method: 'DELETE',
+     }).then(response => window.location.reload(true));
+ }
+
+ form = document.getElementById("namespaceForm");
+ form.onsubmit = function(event) {
+     event.preventDefault();
+
+     name = document.getElementById("namespaceInput").value;
+     fetch(`{{ url_for('api_list_namespaces') }}${name}/`, {
+         method: 'POST',
+     }).then(response => window.location.reload(true));
+
+     return false;
+ }
+
+</script>
+{% endblock %}

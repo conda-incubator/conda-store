@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
 set -euo pipefail
 
 export CONDA_STORE_URL=http://localhost:8080/conda-store

@@ -1,0 +1,51 @@
+<!--
+ Copyright (c) conda-store development team. All rights reserved.
+ Use of this source code is governed by a BSD-style
+ license that can be found in the LICENSE file.
+-->
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-2" role="navigation">
+    <a class="navbar-brand" href="{{ url_for('ui_list_environments') }}">
+        {% if logo is defined %}
+        <img height="60" src="{{ logo }}"/>
+        {% else %}
+        conda-store
+        {% endif %}
+    </a>
+
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#thenavbar" aria-controls="thenavbar" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div id="thenavbar" class="collapse navbar-collapse">
+        <ul class="nav navbar-nav mr-auto">
+            <li>
+                <a class="btn btn-outline-secondary my-2 my-sm-0 mr-2" href="{{ url_for('ui_list_environments') }}" role="button">
+                    Environments
+                </a>
+            </li>
+        </ul>
+
+        <ul class="nav navbar-nav navbar-right">
+            {% if entity is none %}
+            <li>
+                <a class="btn btn-outline-success my-2 my-sm-0 mr-2" href="{{ url_for('get_login_method') }}" role="button">
+                    Login
+                </a>
+            </li>
+            {% else %}
+            <li>
+                <a class="btn btn-outline-success my-2 my-sm-0 mr-2" href="{{ url_for('ui_get_user') }}" role="button">
+                    User
+                </a>
+            </li>
+            {% endif %}
+            <li>
+                <a class="btn btn-outline-secondary my-2 my-sm-0" href="https://conda.store/"
+                   target="_blank" role="button">
+                    Help
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>

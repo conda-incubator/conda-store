@@ -1,11 +1,19 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
 import logging
 
 from conda_store_server.server.auth import DummyAuthentication
 from conda_store_server.storage import S3Storage
 
+
 # ==================================
 #      conda-store settings
 # ==================================
+# The default storage_threshold limit was reached on CI, which caused test
+# failures
+c.CondaStore.storage_threshold = 1024**3
 c.CondaStore.storage_class = S3Storage
 c.CondaStore.store_directory = "/var/lib/conda-store/"
 c.CondaStore.environment_directory = "/opt/conda-store/envs/{namespace}-{name}"
@@ -51,7 +59,7 @@ c.CondaStoreServer.url_prefix = "/conda-store"
 c.CondaStoreServer.authentication_class = DummyAuthentication
 c.CondaStoreServer.template_vars = {
     "banner": '<div class="alert alert-danger" role="alert">This is a localhost server</div>',
-    "logo": "https://quansight.com/_next/image?url=https%3A%2F%2Fa.storyblok.com%2Ff%2F147759%2F1076x520%2Fe6cd6af012%2Fquansight-logo-no-tagline.png&w=3840&q=75",
+    "logo": "https://raw.githubusercontent.com/conda-incubator/conda-store/main/docusaurus-docs/community/assets/logos/conda-store-logo-horizontal-lockup.svg",
 }
 
 # ==================================

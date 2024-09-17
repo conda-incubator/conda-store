@@ -1,26 +1,37 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
 import sys
 
 from celery.result import AsyncResult
-from conda_store_server import api, schema
+
+from conda_store_server import api
+from conda_store_server._internal import action, conda_utils, schema
 
 
-def test_conda_store_app_register_solve(db, conda_store, celery_worker):
-    conda_specification = schema.CondaSpecification(
-        name="pytest-name",
-        channels=["main"],
-        dependencies=["python"],
+def test_conda_store_app_register_solve(
+    db, conda_store, simple_specification, simple_conda_lock, celery_worker
+):
+    """Test that CondaStore can register Solve objects and dispatch solve tasks."""
+    task_id, solve_id = conda_store.register_solve(db, simple_specification)
+    action.action_add_lockfile_packages(
+        db=db,
+        conda_lock_spec=simple_conda_lock,
+        solve_id=solve_id,
     )
-
-    task_id, solve_id = conda_store.register_solve(db, conda_specification)
     solve = api.get_solve(db, solve_id=solve_id)
+    platform = conda_utils.conda_platform()
 
     assert solve is not None
     assert solve.started_on is None
     assert solve.ended_on is None
-    assert solve.package_builds == []
-    assert solve.specification.spec["name"] == conda_specification.name
-    assert solve.specification.spec["channels"] == conda_specification.channels
-    assert solve.specification.spec["dependencies"] == conda_specification.dependencies
+    assert len(solve.package_builds) == len(
+        [item for item in simple_conda_lock["package"] if item["platform"] == platform]
+    )
+    assert solve.specification.spec["name"] == simple_specification.name
+    assert solve.specification.spec["channels"] == simple_specification.channels
+    assert solve.specification.spec["dependencies"] == simple_specification.dependencies
     task = AsyncResult(task_id)
     task.get(timeout=30)
     assert task.state == "SUCCESS"
@@ -30,31 +41,26 @@ def test_conda_store_app_register_solve(db, conda_store, celery_worker):
     assert len(solve.package_builds) > 0
 
 
-def test_conda_store_register_environment_workflow(db, conda_store, celery_worker):
-    """Test entire environment build workflow"""
-    conda_specification = schema.CondaSpecification(
-        name="pytest-name",
-        channels=["main"],
-        dependencies=["python"],
-    )
+def test_conda_store_register_environment_workflow(
+    db, simple_specification, conda_store, celery_worker
+):
+    """Test entire environment build workflow."""
     namespace_name = "pytest-namespace"
 
     build_id = conda_store.register_environment(
-        db, specification=conda_specification.dict(), namespace=namespace_name
+        db, specification=simple_specification.dict(), namespace=namespace_name
     )
 
     build = api.get_build(db, build_id=build_id)
     assert build is not None
     assert build.status == schema.BuildStatus.QUEUED
-    assert build.environment.name == conda_specification.name
+    assert build.environment.name == simple_specification.name
     assert build.environment.namespace.name == namespace_name
-    assert build.specification.spec["name"] == conda_specification.name
-    assert build.specification.spec["channels"] == conda_specification.channels
-    assert build.specification.spec["dependencies"] == conda_specification.dependencies
+    assert build.specification.spec["name"] == simple_specification.name
+    assert build.specification.spec["channels"] == simple_specification.channels
+    assert build.specification.spec["dependencies"] == simple_specification.dependencies
     # when new environment is created current_build should be the default build
     assert build.environment.current_build == build
-
-    from celery.result import AsyncResult
 
     # wait for task to complete
     # build: environment, export, archive

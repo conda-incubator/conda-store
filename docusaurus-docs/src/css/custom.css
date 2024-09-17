@@ -1,39 +1,46 @@
 /**
+ * Copyright (c) conda-store development team. All rights reserved.
+ * Use of this source code is governed by a BSD-style
+ * license that can be found in the LICENSE file.
+ */
+
+/**
  * Any CSS included here will be global. The classic template
  * bundles Infima by default. Infima is a CSS framework designed to
  * work well for content-centric websites.
  */
 
-/* You can override the default Infima variables here. */
+/* Override the default Infima variables here. */
 :root {
-  --ifm-color-primary: #2e8555;
-  --ifm-color-primary-dark: #29784c;
-  --ifm-color-primary-darker: #277148;
-  --ifm-color-primary-darkest: #205d3b;
-  --ifm-color-primary-light: #33925d;
-  --ifm-color-primary-lighter: #359962;
-  --ifm-color-primary-lightest: #3cad6e;
+  --ifm-color-primary: #298642;
+  --ifm-color-primary-dark: #206532;
+  --ifm-color-primary-darker: #144321;
+  --ifm-color-primary-darkest: #0a2210;
+  --ifm-color-primary-light: #85cb97;
+  --ifm-color-primary-lighter: #addcba;
+  --ifm-color-primary-lightest: #d6eedc;
   --ifm-code-font-size: 95%;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+  --ifm-breadcrumb-color-active: var(--ifm-color-primary-dark);
 }
 
-/* For readability concerns, you should choose a lighter palette in dark mode. */
+/* For readability concerns, choose a lighter palette in dark mode. */
 [data-theme="dark"] {
-  --ifm-color-primary: #25c2a0;
-  --ifm-color-primary-dark: #21af90;
-  --ifm-color-primary-darker: #1fa588;
-  --ifm-color-primary-darkest: #1a8870;
-  --ifm-color-primary-light: #29d5b0;
-  --ifm-color-primary-lighter: #32d8b4;
-  --ifm-color-primary-lightest: #4fddbf;
+  --ifm-color-primary: #5cb975;
+  --ifm-color-primary-dark: #85cb97;
+  --ifm-color-primary-darker: #addcba;
+  --ifm-color-primary-darkest: #d6eedc;
+  --ifm-color-primary-light: #206532;
+  --ifm-color-primary-lighter: #144321;
+  --ifm-color-primary-lightest: #0a2210;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
 }
 
 div[class^="announcementBar_"] {
   font-weight: 500;
-  color: var(--ifm-color-black);
-  background-color: var(--ifm-color-primary-lightest);
-  border-bottom: 2px solid var(--ifm-color-primary-darkest);
+  color: var(--ifm-color-content);
+  background-color: var(--ifm-color-primary-light);
+  border-bottom: 1.5px solid var(--ifm-color-primary-darkest);
 }
 
 div[class^="announcementBarContent_"] {
@@ -45,6 +52,10 @@ img {
   border-color: var(--ifm-color-primary);
   border-width: 2px;
   border-style: solid;
+}
+
+.footer--dark {
+  --ifm-footer-background-color: #242526;
 }
 
 /* Remove border (only) for conda-store logo in the top navbar */

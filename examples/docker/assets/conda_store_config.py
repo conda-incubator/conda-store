@@ -1,7 +1,12 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
 import logging
 
 from conda_store_server.server.auth import JupyterHubOAuthAuthentication
 from conda_store_server.storage import S3Storage
+
 
 # ==================================
 #      conda-store settings
@@ -9,15 +14,15 @@ from conda_store_server.storage import S3Storage
 c.CondaStore.storage_class = S3Storage
 c.CondaStore.store_directory = "/opt/conda-store/conda-store"
 # Also edit `conda-store-server/alembic.ini` accordingly for key sqlalchemy.url
-c.CondaStore.database_url = "postgresql+psycopg2://postgres:password@postgres/conda-store"
+c.CondaStore.database_url = (
+    "postgresql+psycopg2://postgres:password@postgres/conda-store"
+)
 c.CondaStore.upgrade_db = True
 c.CondaStore.redis_url = "redis://:password@redis:6379/0"
 c.CondaStore.default_uid = 1000
 c.CondaStore.default_gid = 1000
 c.CondaStore.default_permissions = "775"
-c.CondaStore.conda_included_packages = [
-    "ipykernel"
-]
+c.CondaStore.conda_included_packages = ["ipykernel"]
 
 c.S3Storage.internal_endpoint = "minio:9000"
 c.S3Storage.external_endpoint = "conda-store.localhost:9080"
@@ -58,7 +63,6 @@ c.JupyterHubOAuthAuthentication.tls_verify = False
 c.CondaStoreWorker.log_level = logging.INFO
 c.CondaStoreWorker.watch_paths = ["/opt/conda-store/environments/"]
 c.CondaStoreWorker.concurrency = 4
-
 
 
 # For local dev, make it so that anybody can access any endpoint

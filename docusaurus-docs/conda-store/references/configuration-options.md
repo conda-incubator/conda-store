@@ -4,6 +4,8 @@ description: conda-store configuration options
 
 # Configuration options
 
+### Traitlets
+
 :::warning
 This page is in active development, content may be inaccurate and incomplete.
 :::
@@ -22,9 +24,32 @@ conda-store-server --config <path-to-conda-store-config.py>
 conda-store-worker --config <path-to-conda-store-config.py>
 ```
 
-Below we outline the options for conda-store.
+### Data directory
 
-### `conda_store_server.app.CondaStore`
+The `CONDA_STORE_DIR` Python variable specifies the conda-store data directory,
+which is used by some of the configuration options mentioned below, like
+`CondaStore.store_directory` and `LocalStorage.storage_path`. This variable
+relies on the [`platformdirs`][platformdirs] library to select the recommended user data
+location on each platform. On most systems, this will default to:
+
+- Linux: `/home/<USER>/.local/share/conda-store`
+- Windows: `C:\Users\<USER>\AppData\Local\conda-store\conda-store`
+- macOS: `/Users/<USER>/Library/Application Support/conda-store`.
+
+The platform user data directory prefix, which is the parent of the `conda-store` directory above,
+should correspond to the following environment variables:
+
+- Linux: `$XDG_DATA_HOME`
+- Windows: `%LOCALAPPDATA%`
+- macOS: no dedicated environment variable.
+
+Note that whether these environment variables are actually used by
+[`platformdirs`][platformdirs] is up to the library authors and can be changed at any time.
+Please use the conda-store configuration options mentioned below instead.
+
+[platformdirs]: https://github.com/platformdirs/platformdirs
+
+### `conda_store_server._internal.app.CondaStore`
 
 `CondaStore.storage_class` configures the storage backend to use for
 storing build artifacts from
@@ -48,7 +73,7 @@ store_directory, namespace, name. The default will put all
 environments in the same namespace within the same directory.
 
 `CondaStore.build_key_version` is the [build key version](#build-key-versions)
-to use: 1 (long, legacy), 2 (short, default).
+to use: 1 (long, legacy), 2 (shorter hash, default), 3 (hash-only, experimental).
 
 `CondaStore.validate_specification` callable function taking
 `conda_store` and `specification` as input arguments to apply for
@@ -275,7 +300,8 @@ the `schema.AuthenticaitonToken` all fields are optional.
 
 `AuthorizationBackend.role_mappings` is a dictionary that maps `roles`
 to application `permissions`. There are three default roles at the
-moment `viewer`, `developer`, and `admin`.
+moment `viewer`, `editor`, and `admin`. Additionally, the role `developer` is
+supported, which is a legacy alias of `editor`. The name `editor` is preferred.
 
 `AuthorizationBackend.unauthenticated_role_bindings` are the role
 bindings that an unauthenticated user assumes.
@@ -412,7 +438,7 @@ metadata and set the roles:
 PUT /api/v1/namespace/{namespace}/
 ```
 
-### `conda_store_server.server.app.CondaStoreServer`
+### `conda_store_server._internal.server.app.CondaStoreServer`
 
 `CondaStoreServer.log_level` is the level for all server
 logging. Default is `INFO`. Common options are `DEBUG`, `INFO`,
@@ -469,7 +495,7 @@ to serve in form `[(path, method, function), ...]`. `path` is a
 string, `method` is `get`, `post`, `put`, `delete` etc. and function
 is a regular python fastapi function.
 
-### `conda_store_server.worker.app.CondaStoreWorker`
+### `conda_store_server.._internal.worker.app.CondaStoreWorker`
 
 `CondaStoreWorker.log_level` is the level for all server
 logging. Default is `INFO`. Common options are `DEBUG`, `INFO`,

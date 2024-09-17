@@ -125,7 +125,7 @@ To update your PR to incorporate the suggestions, make your changes on your loca
 
 ## Guidelines for specific workflows
 
-### Changes to API
+### Changes to the API
 
 The REST API is considered somewhat stable. If any changes are made to
 the API make sure the update the OpenAPI/Swagger specification in

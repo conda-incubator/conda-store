@@ -1,0 +1,2033 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
+{
+    "version": 1,
+    "metadata":
+        {
+            "content_hash":
+                {
+                    "linux-64": "de7cf1a070eb94958977d572b129f74f1216dc525ae645ebd6548b593c1a3826",
+                    "osx-64": "0cfac6c4d51c2bcd4a73c548adec42b16032e617ab54e3a81146c694ec132ab2",
+                    "win-64": "d12553f071b779ad11018dfce1c8e7f2ade87659a955ac06382cda25f68bd75a",
+                },
+            "channels": [{ "url": "main", "used_env_vars": [] }],
+            "platforms": ["linux-64", "osx-64", "win-64"],
+            "sources": ["environment.yaml"],
+        },
+    "package":
+        [
+            {
+                "name": "_libgcc_mutex",
+                "version": "0.1",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies": {},
+                "url": "https://conda.anaconda.org/main/linux-64/_libgcc_mutex-0.1-main.tar.bz2",
+                "hash":
+                    {
+                        "md5": "013d3f22cd3b87f71224bd936765bcad",
+                        "sha256": "bd36a740479053a94d9c2a92bc55333a7a1a3e63ec0341d4cde6b7825bae0ee3",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "_openmp_mutex",
+                "version": "5.1",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies":
+                    { "_libgcc_mutex": "0.1", "libgomp": ">=7.5.0" },
+                "url": "https://conda.anaconda.org/main/linux-64/_openmp_mutex-5.1-1_gnu.tar.bz2",
+                "hash":
+                    {
+                        "md5": "613805add1c05b538ff06d217252feb7",
+                        "sha256": "9e1391519971e7ce527b3f268900d079bedf0eff3fb70cdb4844cd0f64dfe086",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "asttokens",
+                "version": "2.0.5",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies": { "python": ">=3.5", "six": "" },
+                "url": "https://conda.anaconda.org/main/noarch/asttokens-2.0.5-pyhd3eb1b0_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "d9c6faf4f1a52c664ef1343f464e45b5",
+                        "sha256": "5030ffb4c9a501359be889681081e5542725b0529b6119331a07aaa563e2f9f9",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "bzip2",
+                "version": "1.0.8",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies": { "libgcc-ng": ">=11.2.0" },
+                "url": "https://conda.anaconda.org/main/linux-64/bzip2-1.0.8-h5eee18b_5.tar.bz2",
+                "hash":
+                    {
+                        "md5": "b02d65d19a697e8a84045027f1808b31",
+                        "sha256": "f8b8221aa41ef3a18177a44ec397d6fea5ba4d5fc6586f2d1a685bb7eb2c4196",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "ca-certificates",
+                "version": "2024.3.11",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies": {},
+                "url": "https://conda.anaconda.org/main/linux-64/ca-certificates-2024.3.11-h06a4308_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "1202b4ed32215c6405bb42fbff355316",
+                        "sha256": "394f74202c2efc8fcfd02b8953f508eb6a2961d224a2f9d15091caf5cbe1be67",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "comm",
+                "version": "0.2.1",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies":
+                    { "python": ">=3.12,<3.13.0a0", "traitlets": ">=4" },
+                "url": "https://conda.anaconda.org/main/linux-64/comm-0.2.1-py312h06a4308_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "5a520ff1b4a2b11fc3f038dda68fea74",
+                        "sha256": "6293802595fe7095a2d20723974bbb44a372d9e1c72e658316524f67544c254b",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "debugpy",
+                "version": "1.6.7",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies":
+                    {
+                        "libgcc-ng": ">=11.2.0",
+                        "libstdcxx-ng": ">=11.2.0",
+                        "python": ">=3.12,<3.13.0a0",
+                    },
+                "url": "https://conda.anaconda.org/main/linux-64/debugpy-1.6.7-py312h6a678d5_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "235487077ba807e742a62b21093b1351",
+                        "sha256": "00c8242c6a558311a015f7b1891993f8d0c5b6c3dd840fe848e0d4092949c2b7",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "decorator",
+                "version": "5.1.1",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies": { "python": ">=3.5" },
+                "url": "https://conda.anaconda.org/main/noarch/decorator-5.1.1-pyhd3eb1b0_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "6072a09eeab81c07c98065234e46af1e",
+                        "sha256": "a14463f2c25c4cb9eae1af565b6fef33c6b95dce387b36b5c2bc1eb91f00e1a4",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "executing",
+                "version": "0.8.3",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies": { "python": ">=2.7" },
+                "url": "https://conda.anaconda.org/main/noarch/executing-0.8.3-pyhd3eb1b0_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "1bdd5a02233d229e76081a73659e9405",
+                        "sha256": "b67a5d4fdad35e881a497820699b2dc466a03aeff00a774ec412dba856a5895e",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "expat",
+                "version": "2.5.0",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies":
+                    { "libgcc-ng": ">=11.2.0", "libstdcxx-ng": ">=11.2.0" },
+                "url": "https://conda.anaconda.org/main/linux-64/expat-2.5.0-h6a678d5_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "42d5d947fb3bebc9465ddeaf0093a1cb",
+                        "sha256": "3afaaa4f71028c9ea0cb94681eb679b751c1f65dc3b692fb0d8a36ae0d3f0fed",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "iniconfig",
+                "version": "1.1.1",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies": { "python": "" },
+                "url": "https://conda.anaconda.org/main/noarch/iniconfig-1.1.1-pyhd3eb1b0_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "e40edff2c5708f342cef43c7f280c507",
+                        "sha256": "d288f67c03b20a885464056a215baef626d29f95df56e1974379a17f8e55a24e",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "ipykernel",
+                "version": "6.28.0",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies":
+                    {
+                        "comm": ">=0.1.1",
+                        "debugpy": ">=1.6.5",
+                        "ipython": ">=7.23.1",
+                        "jupyter_client": ">=6.1.12",
+                        "jupyter_core": ">=4.12,!=5.0.*",
+                        "matplotlib-inline": ">=0.1",
+                        "nest-asyncio": "",
+                        "packaging": "",
+                        "psutil": "",
+                        "python": ">=3.12,<3.13.0a0",
+                        "pyzmq": ">=24",
+                        "tornado": ">=6.1",
+                        "traitlets": ">=5.4.0",
+                    },
+                "url": "https://conda.anaconda.org/main/linux-64/ipykernel-6.28.0-py312h06a4308_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "e976e45bb0b93c518f2fab76da3969df",
+                        "sha256": "3e921678ba11b375b83a16e82b917b03233955e3801ee732ad36e9b9496b1e81",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "ipython",
+                "version": "8.20.0",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies":
+                    {
+                        "decorator": "",
+                        "jedi": ">=0.16",
+                        "matplotlib-inline": "",
+                        "pexpect": ">4.3",
+                        "prompt_toolkit": ">=3.0.41,<3.1.0",
+                        "pygments": ">=2.4.0",
+                        "python": ">=3.12,<3.13.0a0",
+                        "stack_data": "",
+                        "traitlets": ">=5",
+                    },
+                "url": "https://conda.anaconda.org/main/linux-64/ipython-8.20.0-py312h06a4308_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "7c3d5fa908e066a72b677f1f611e4327",
+                        "sha256": "7861476f4599f5c8423e787c9891215b61e091687e706c35e2bea3179f948043",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "jedi",
+                "version": "0.18.1",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies":
+                    { "parso": ">=0.8.0,<0.9.0", "python": ">=3.12,<3.13.0a0" },
+                "url": "https://conda.anaconda.org/main/linux-64/jedi-0.18.1-py312h06a4308_1.tar.bz2",
+                "hash":
+                    {
+                        "md5": "b49eaf97401068cc5cd5fd126124db16",
+                        "sha256": "d36557496d63440af281cd4b5712581ec93ca08bb050d2eda63f4c1908f520f3",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "jupyter_client",
+                "version": "8.6.0",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies":
+                    {
+                        "jupyter_core": ">=4.12,!=5.0.*",
+                        "python": ">=3.12,<3.13.0a0",
+                        "python-dateutil": ">=2.8.2",
+                        "pyzmq": ">=23.0",
+                        "tornado": ">=6.2",
+                        "traitlets": ">=5.3",
+                    },
+                "url": "https://conda.anaconda.org/main/linux-64/jupyter_client-8.6.0-py312h06a4308_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "4c9ba393e2a10358d24fbf61ec3eff91",
+                        "sha256": "1ee17578e7446dedcc90ea7c66f3daac90b689a66a3c17433610503434207699",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "jupyter_core",
+                "version": "5.5.0",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies":
+                    {
+                        "platformdirs": ">=2.5",
+                        "python": ">=3.12,<3.13.0a0",
+                        "traitlets": ">=5.3",
+                    },
+                "url": "https://conda.anaconda.org/main/linux-64/jupyter_core-5.5.0-py312h06a4308_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "00f46b6690d8af9724e4e3574310b888",
+                        "sha256": "678d3d8043ebfffc19a84e80a4f45cb3bf6b2a8d51c0e75f1a3d1706f5eddc52",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "ld_impl_linux-64",
+                "version": "2.38",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies": {},
+                "url": "https://conda.anaconda.org/main/linux-64/ld_impl_linux-64-2.38-h1181459_1.tar.bz2",
+                "hash":
+                    {
+                        "md5": "9508af80612e4fa1b5d1abb43ca7e63c",
+                        "sha256": "9efd56db85f14f597db9844207d0fa81cbdc5d7a163ca38a7c5dd6c08219db21",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "libffi",
+                "version": "3.4.4",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies":
+                    { "libgcc-ng": ">=11.2.0", "libstdcxx-ng": ">=11.2.0" },
+                "url": "https://conda.anaconda.org/main/linux-64/libffi-3.4.4-h6a678d5_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "32ac65d639d6c155ea7276cadf1fd2b6",
+                        "sha256": "ec1c6341cf0091b55be05285037cb3fbba90573e00257f383ab274d8b8e6d46f",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "libgcc-ng",
+                "version": "11.2.0",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies":
+                    {
+                        "_libgcc_mutex": "*",
+                        "_openmp_mutex": "",
+                        "__glibc": ">=2.17",
+                    },
+                "url": "https://conda.anaconda.org/main/linux-64/libgcc-ng-11.2.0-h1234567_1.tar.bz2",
+                "hash":
+                    {
+                        "md5": "641e72e5067bd6d5454405879e1cd2a7",
+                        "sha256": "f52d33d9c7cccf09b429a341d0bf803c8365a02a73a77b7ff887ec88f25d1c1a",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "libgomp",
+                "version": "11.2.0",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies": { "_libgcc_mutex": "0.1" },
+                "url": "https://conda.anaconda.org/main/linux-64/libgomp-11.2.0-h1234567_1.tar.bz2",
+                "hash":
+                    {
+                        "md5": "3080c2813e6e1d0f8a100a38b5b3456d",
+                        "sha256": "118665c3af6392704fe608da9b98dbf815304537bb80ae99fb9fd59fc81f8b8e",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "libsodium",
+                "version": "1.0.18",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies": { "libgcc-ng": ">=7.3.0" },
+                "url": "https://conda.anaconda.org/main/linux-64/libsodium-1.0.18-h7b6447c_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "6f662c6b244a444869f0c537da106d6d",
+                        "sha256": "e31aa60464b87c49b12d3baa2f95f92486238246810845365b10d53aab0809ff",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "libstdcxx-ng",
+                "version": "11.2.0",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies": { "__glibc": ">=2.17" },
+                "url": "https://conda.anaconda.org/main/linux-64/libstdcxx-ng-11.2.0-h1234567_1.tar.bz2",
+                "hash":
+                    {
+                        "md5": "8c195584a5f5471b600ee180e4052773",
+                        "sha256": "112ea187f09c690a87d419450d64f49d6cb3163206fcba38d2fdd8f2c7b5388e",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "libuuid",
+                "version": "1.41.5",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies": { "libgcc-ng": ">=11.2.0" },
+                "url": "https://conda.anaconda.org/main/linux-64/libuuid-1.41.5-h5eee18b_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "292768ec77416ae257cfdd44ea2071c8",
+                        "sha256": "bf310692ee3f3f9aa4a62c5ab334fa8068c1a1add4cf5c741492ca97a172d112",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "matplotlib-inline",
+                "version": "0.1.6",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies":
+                    { "python": ">=3.12,<3.13.0a0", "traitlets": "" },
+                "url": "https://conda.anaconda.org/main/linux-64/matplotlib-inline-0.1.6-py312h06a4308_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "761a787154486c15faa29e8078e1d602",
+                        "sha256": "897bf8c8391746142b1ba608970eb255cb6f35222c0c66c0c94c90e0deba5277",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "ncurses",
+                "version": "6.4",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies": { "libgcc-ng": ">=11.2.0" },
+                "url": "https://conda.anaconda.org/main/linux-64/ncurses-6.4-h6a678d5_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "57ea097dc15f8d9f9eb90e1d919143b0",
+                        "sha256": "1a04f65c955ea5e7c8fc2f79c80f918d7ba21e9c248757217710e48b882d9820",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "nest-asyncio",
+                "version": "1.6.0",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies": { "python": ">=3.12,<3.13.0a0" },
+                "url": "https://conda.anaconda.org/main/linux-64/nest-asyncio-1.6.0-py312h06a4308_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "2acf8e5d9f6215cfe4c35c22df1215c6",
+                        "sha256": "5862799685dc3f8c46ca44bdd4f2a21bd492066a781f3a99e4315995d21bc09f",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "openssl",
+                "version": "3.0.13",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies":
+                    { "ca-certificates": "", "libgcc-ng": ">=7.5.0" },
+                "url": "https://conda.anaconda.org/main/linux-64/openssl-3.0.13-h7f8727e_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "40a571ff3839c015f034b51da60a69a1",
+                        "sha256": "71f97234bc7d69c59e4a3dd2eb7c0f983e2c21547695c42fa00579362372d528",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "packaging",
+                "version": "23.2",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies": { "python": ">=3.12,<3.13.0a0" },
+                "url": "https://conda.anaconda.org/main/linux-64/packaging-23.2-py312h06a4308_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "bc3d75319ba60ab3535121a3172835bf",
+                        "sha256": "1cc8eaadf7bc04afaa3901c99d17ae48cd1e02c90f3e7348162ef21562d94308",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "parso",
+                "version": "0.8.3",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies": { "python": ">=3.6" },
+                "url": "https://conda.anaconda.org/main/noarch/parso-0.8.3-pyhd3eb1b0_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "19dd0314629d343382a76a309cb7d183",
+                        "sha256": "0343630fb79796c9055e4b5d03346e2b7b4a78956dd152dc84e3bb051f5f5dc2",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "pexpect",
+                "version": "4.8.0",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies": { "ptyprocess": ">=0.5", "python": "" },
+                "url": "https://conda.anaconda.org/main/noarch/pexpect-4.8.0-pyhd3eb1b0_3.tar.bz2",
+                "hash":
+                    {
+                        "md5": "5122a68ef2c53409eda11f07f1c3d7c7",
+                        "sha256": "543fe5710ecf50274fd6a8ac77c7e9058d15c9daee0aec04e85c2509e5cff9ed",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "pip",
+                "version": "23.3.1",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies":
+                    {
+                        "python": ">=3.12,<3.13.0a0",
+                        "setuptools": "",
+                        "wheel": "",
+                    },
+                "url": "https://conda.anaconda.org/main/linux-64/pip-23.3.1-py312h06a4308_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "89d19edd4e364f6fbf934e9ce905bf64",
+                        "sha256": "21db2c885b3275e9fe6e127bd8ef654efee8ccd76f7f0e62eca4159116b3d174",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "platformdirs",
+                "version": "3.10.0",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies": { "python": ">=3.12,<3.13.0a0" },
+                "url": "https://conda.anaconda.org/main/linux-64/platformdirs-3.10.0-py312h06a4308_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "3e10522eb312860cf3da2a6167921754",
+                        "sha256": "67f31e9c65c1a3cc1b78263618095ae10f9f8e9cbe2f3ab2e54053ae63954cc9",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "pluggy",
+                "version": "1.0.0",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies": { "python": ">=3.12,<3.13.0a0" },
+                "url": "https://conda.anaconda.org/main/linux-64/pluggy-1.0.0-py312h06a4308_1.tar.bz2",
+                "hash":
+                    {
+                        "md5": "2d1853e41ec0635daccd33f318f7f233",
+                        "sha256": "9762a79cb8ae9390fce7783e884f757dd49b52fcc9bd1917f76ffa20ecb5c4d3",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "prompt-toolkit",
+                "version": "3.0.43",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies": { "python": ">=3.12,<3.13.0a0", "wcwidth": "" },
+                "url": "https://conda.anaconda.org/main/linux-64/prompt-toolkit-3.0.43-py312h06a4308_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "7957a8f3dfee5de561c72c14b40611bd",
+                        "sha256": "efff5ff9d2d833db58ff5eb2cfb3ffd9519d3af2c9aab30e0a175d74d70d7fa1",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "prompt_toolkit",
+                "version": "3.0.43",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies": { "prompt-toolkit": ">=3.0.43,<3.0.44.0a0" },
+                "url": "https://conda.anaconda.org/main/noarch/prompt_toolkit-3.0.43-hd3eb1b0_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "f824bca0e3a4f9dcc1eb5ea22b5e00a3",
+                        "sha256": "5ffd50c0d69c5bd368072c1bb7639073688f57e2e5b482bddf14fb2b218144e8",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "psutil",
+                "version": "5.9.0",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies":
+                    { "libgcc-ng": ">=11.2.0", "python": ">=3.12,<3.13.0a0" },
+                "url": "https://conda.anaconda.org/main/linux-64/psutil-5.9.0-py312h5eee18b_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "e1559cd6bceb1a1d45eba6b92293b8cb",
+                        "sha256": "f9b7a956e69576cf376c3b6d0fec96fa1789298583d2efa1182c81b343e42329",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "ptyprocess",
+                "version": "0.7.0",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies": { "python": "" },
+                "url": "https://conda.anaconda.org/main/noarch/ptyprocess-0.7.0-pyhd3eb1b0_2.tar.bz2",
+                "hash":
+                    {
+                        "md5": "62f3bb16b31fa9498a41fc4ad2b4f43c",
+                        "sha256": "f661e9966229ec33ef4102771a12f6123fafe226337ad5531f6fd06820783eff",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "pure_eval",
+                "version": "0.2.2",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies": { "python": ">=3.5" },
+                "url": "https://conda.anaconda.org/main/noarch/pure_eval-0.2.2-pyhd3eb1b0_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "8be7529b5e573e3cbc6df277b9950109",
+                        "sha256": "163e7d3545b6575c03c3ab8613e527e5359986360cc1a13b27c8534cfb3c5004",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "pygments",
+                "version": "2.15.1",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies": { "python": ">=3.12,<3.13.0a0" },
+                "url": "https://conda.anaconda.org/main/linux-64/pygments-2.15.1-py312h06a4308_1.tar.bz2",
+                "hash":
+                    {
+                        "md5": "5b47bcea417ab35de122551d5b4ca12e",
+                        "sha256": "213e9d691b5581d1686d1b157a56255ecdf5160eb0005576ac367c0e5796013b",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "pytest",
+                "version": "7.4.0",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies":
+                    {
+                        "iniconfig": "",
+                        "packaging": "",
+                        "pluggy": ">=0.12,<2.0",
+                        "python": ">=3.12,<3.13.0a0",
+                    },
+                "url": "https://conda.anaconda.org/main/linux-64/pytest-7.4.0-py312h06a4308_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "a43166573cce5e941652168e0cf07d08",
+                        "sha256": "7eb005ccff56fa2a6b812a7fb4473e8a74e20ee4df71719d74dfa451643fc5e7",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "python",
+                "version": "3.12.2",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies":
+                    {
+                        "bzip2": ">=1.0.8,<2.0a0",
+                        "expat": ">=2.5.0,<3.0a0",
+                        "ld_impl_linux-64": ">=2.35.1",
+                        "libffi": ">=3.4,<4.0a0",
+                        "libgcc-ng": ">=11.2.0",
+                        "libuuid": ">=1.41.5,<2.0a0",
+                        "ncurses": ">=6.4,<7.0a0",
+                        "openssl": ">=3.0.13,<4.0a0",
+                        "readline": ">=8.0,<9.0a0",
+                        "sqlite": ">=3.41.2,<4.0a0",
+                        "tk": ">=8.6.12,<8.7.0a0",
+                        "tzdata": "",
+                        "xz": ">=5.4.6,<6.0a0",
+                        "zlib": ">=1.2.13,<1.3.0a0",
+                    },
+                "url": "https://conda.anaconda.org/main/linux-64/python-3.12.2-h996f2a0_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "13453b5c410f7811212ab4e76e90c164",
+                        "sha256": "93a5aef758c1e0cf6e6bd7639722bae091be7ea153846afa4f9adb3bce5dc130",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "python-dateutil",
+                "version": "2.8.2",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies": { "python": "", "six": ">=1.5" },
+                "url": "https://conda.anaconda.org/main/noarch/python-dateutil-2.8.2-pyhd3eb1b0_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "2eb923cc014094f4acf7f849d67d73f8",
+                        "sha256": "2745290a16cda0ae986b70c21f77ca43112c7be15f26041bec436f9f76aa3faf",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "pyzmq",
+                "version": "25.1.2",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies":
+                    {
+                        "libgcc-ng": ">=11.2.0",
+                        "libstdcxx-ng": ">=11.2.0",
+                        "python": ">=3.12,<3.13.0a0",
+                        "zeromq": ">=4.3.5,<4.4.0a0",
+                    },
+                "url": "https://conda.anaconda.org/main/linux-64/pyzmq-25.1.2-py312h6a678d5_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "e9c56bf59b755eeac4ec08cbc39846bb",
+                        "sha256": "5a05b386dfece51112b1e34883ddbdc531cb8c78edef266102a096afd1bd0196",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "readline",
+                "version": "8.2",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies":
+                    { "libgcc-ng": ">=11.2.0", "ncurses": ">=6.3,<7.0a0" },
+                "url": "https://conda.anaconda.org/main/linux-64/readline-8.2-h5eee18b_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "960bf00d81e7bbdeff2c7d01ed78eaeb",
+                        "sha256": "8a665f0160013939ee6b0c048d4d8f034b6d6feb7feec6844994322b7aaaa6e4",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "setuptools",
+                "version": "68.2.2",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies": { "python": ">=3.12,<3.13.0a0" },
+                "url": "https://conda.anaconda.org/main/linux-64/setuptools-68.2.2-py312h06a4308_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "93a9d0422ea5c9aaf752b6d714822b5e",
+                        "sha256": "24a14f0dd1408d60c0849d15197a9848093aae3efc37a550740561fb5b7cd4ac",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "six",
+                "version": "1.16.0",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies": { "python": "" },
+                "url": "https://conda.anaconda.org/main/noarch/six-1.16.0-pyhd3eb1b0_1.tar.bz2",
+                "hash":
+                    {
+                        "md5": "0a3ab834ba49016e183e715bff48a2b6",
+                        "sha256": "5635e90c76aeac45a09f4ddb377ab215c01d0e17ecb18b43fad2c5447e351f6e",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "sqlite",
+                "version": "3.41.2",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies":
+                    {
+                        "libgcc-ng": ">=11.2.0",
+                        "ncurses": ">=6.4,<7.0a0",
+                        "readline": ">=8.0,<9.0a0",
+                        "zlib": ">=1.2.13,<2.0a0",
+                    },
+                "url": "https://conda.anaconda.org/main/linux-64/sqlite-3.41.2-h5eee18b_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "68c24a824d36a16bbb28d80d70cee8d2",
+                        "sha256": "8b45ba506984fe9c061b4acde6f5243d52dda8c1eae4992f8d80c03f425214fe",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "stack_data",
+                "version": "0.2.0",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies":
+                    {
+                        "asttokens": "",
+                        "executing": "",
+                        "pure_eval": "",
+                        "python": ">=3.5",
+                    },
+                "url": "https://conda.anaconda.org/main/noarch/stack_data-0.2.0-pyhd3eb1b0_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "fa3edcfd4c2c0d744bc177cbfcd77626",
+                        "sha256": "94e18c3bb250423255b00c9e3dd64880e076a1b8c2701c43492b2cc5e7cb91f3",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "tk",
+                "version": "8.6.12",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies":
+                    { "libgcc-ng": ">=7.5.0", "zlib": ">=1.2.12,<1.3.0a0" },
+                "url": "https://conda.anaconda.org/main/linux-64/tk-8.6.12-h1ccaba5_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "5b8375e2092012db69d2123dc0c68630",
+                        "sha256": "4a822e705b349b3ba698cc1845397977aa17a0b853e9ea63d1b228e3fc60ba9b",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "tornado",
+                "version": "6.3.3",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies":
+                    { "libgcc-ng": ">=11.2.0", "python": ">=3.12,<3.13.0a0" },
+                "url": "https://conda.anaconda.org/main/linux-64/tornado-6.3.3-py312h5eee18b_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "5f8322a1234bcd650dd792a2f02a35bd",
+                        "sha256": "be5c61d643acc7e2d66807139fb0e8b0bc23ce1486dc97d7b0a395dafe04bb7f",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "traitlets",
+                "version": "5.7.1",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies": { "python": ">=3.12,<3.13.0a0" },
+                "url": "https://conda.anaconda.org/main/linux-64/traitlets-5.7.1-py312h06a4308_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "178b46c77824ba0a485c3120a1329b78",
+                        "sha256": "7efd794f79afb815cc6adbb150e4a476b12ad6ad37b046f1c8734d46a6ef727d",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "tzdata",
+                "version": "2024a",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies": {},
+                "url": "https://conda.anaconda.org/main/noarch/tzdata-2024a-h04d1e81_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "ece0f5837a4de2d4d5f1abf8347cd10a",
+                        "sha256": "dc9f709bacbaf08a0941d2622d82f91f18b355e82c55348ec29f1391215ca7e0",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "wcwidth",
+                "version": "0.2.5",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies": { "python": "" },
+                "url": "https://conda.anaconda.org/main/noarch/wcwidth-0.2.5-pyhd3eb1b0_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "98982290b7b7eff532ec6dead415172b",
+                        "sha256": "2a886caffe9384c6ae32ee72f92d6c4bea0cbcc744682db1a1759d9b17b37af4",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "wheel",
+                "version": "0.41.2",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies": { "python": ">=3.12,<3.13.0a0" },
+                "url": "https://conda.anaconda.org/main/linux-64/wheel-0.41.2-py312h06a4308_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "2ae311b0d40b786851f5703e76cbff30",
+                        "sha256": "eaa0ff7290b7ade93d1eacb4018512aacbe4f1d9efe6287767b0021e87a589a5",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "xz",
+                "version": "5.4.6",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies": { "libgcc-ng": ">=11.2.0" },
+                "url": "https://conda.anaconda.org/main/linux-64/xz-5.4.6-h5eee18b_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "456c2ad05120ad4756f690c1144aa999",
+                        "sha256": "27f1a89843c5fb9306168df51c7b8114423ea5b8161334e01bb23feec56eb0cc",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "zeromq",
+                "version": "4.3.5",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies":
+                    {
+                        "libgcc-ng": ">=11.2.0",
+                        "libsodium": ">=1.0.18,<1.0.19.0a0",
+                        "libstdcxx-ng": ">=11.2.0",
+                    },
+                "url": "https://conda.anaconda.org/main/linux-64/zeromq-4.3.5-h6a678d5_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "943f1247a22b6b64171363bcee1eec27",
+                        "sha256": "893ffbb21c563f63220be0fd7cdd017f31ed3c7dc17606613f68da0e1c772fb6",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "zlib",
+                "version": "1.2.13",
+                "manager": "conda",
+                "platform": "linux-64",
+                "dependencies": { "libgcc-ng": ">=11.2.0" },
+                "url": "https://conda.anaconda.org/main/linux-64/zlib-1.2.13-h5eee18b_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "4f315d7551f4bbeb06b6fc28342a9aa5",
+                        "sha256": "2dc9150a95704d83efd39bb9dfb44bdf8419022f4fb0fc416380a922a27c130d",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "blinker",
+                "version": "1.7.0",
+                "manager": "pip",
+                "platform": "linux-64",
+                "dependencies": {},
+                "url": "https://files.pythonhosted.org/packages/fa/2a/7f3714cbc6356a0efec525ce7a0613d581072ed6eb53eb7b9754f33db807/blinker-1.7.0-py3-none-any.whl",
+                "hash":
+                    {
+                        "sha256": "c3f865d4d54db7abc53758a01601cf343fe55b84c1de4e3fa910e420b438d5b9",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "click",
+                "version": "8.1.7",
+                "manager": "pip",
+                "platform": "linux-64",
+                "dependencies": {},
+                "url": "https://files.pythonhosted.org/packages/00/2e/d53fa4befbf2cfa713304affc7ca780ce4fc1fd8710527771b58311a3229/click-8.1.7-py3-none-any.whl",
+                "hash":
+                    {
+                        "sha256": "ae74fb96c20a0277a1d615f1e4d73c8414f5a98db8b799a7931d1582f3390c28",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "flask",
+                "version": "3.0.3",
+                "manager": "pip",
+                "platform": "linux-64",
+                "dependencies":
+                    {
+                        "werkzeug": ">=3.0.0",
+                        "jinja2": ">=3.1.2",
+                        "itsdangerous": ">=2.1.2",
+                        "click": ">=8.1.3",
+                        "blinker": ">=1.6.2",
+                    },
+                "url": "https://files.pythonhosted.org/packages/61/80/ffe1da13ad9300f87c93af113edd0638c75138c42a0994becfacac078c06/flask-3.0.3-py3-none-any.whl",
+                "hash":
+                    {
+                        "sha256": "34e815dfaa43340d1d15a5c3a02b8476004037eb4840b34910c6e21679d288f3",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "itsdangerous",
+                "version": "2.1.2",
+                "manager": "pip",
+                "platform": "linux-64",
+                "dependencies": {},
+                "url": "https://files.pythonhosted.org/packages/68/5f/447e04e828f47465eeab35b5d408b7ebaaaee207f48b7136c5a7267a30ae/itsdangerous-2.1.2-py3-none-any.whl",
+                "hash":
+                    {
+                        "sha256": "2c2349112351b88699d8d4b6b075022c0808887cb7ad10069318a8b0bc88db44",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "jinja2",
+                "version": "3.1.3",
+                "manager": "pip",
+                "platform": "linux-64",
+                "dependencies": { "markupsafe": ">=2.0" },
+                "url": "https://files.pythonhosted.org/packages/30/6d/6de6be2d02603ab56e72997708809e8a5b0fbfee080735109b40a3564843/Jinja2-3.1.3-py3-none-any.whl",
+                "hash":
+                    {
+                        "sha256": "7d6d50dd97d52cbc355597bd845fabfbac3f551e1f99619e39a35ce8c370b5fa",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "markupsafe",
+                "version": "2.1.5",
+                "manager": "pip",
+                "platform": "linux-64",
+                "dependencies": {},
+                "url": "https://files.pythonhosted.org/packages/0a/0d/2454f072fae3b5a137c119abf15465d1771319dfe9e4acbb31722a0fff91/MarkupSafe-2.1.5-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+                "hash":
+                    {
+                        "sha256": "f5dfb42c4604dddc8e4305050aa6deb084540643ed5804d7455b5df8fe16f5e5",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "nothing",
+                "version": "0.0.3",
+                "manager": "pip",
+                "platform": "linux-64",
+                "dependencies": {},
+                "url": "https://files.pythonhosted.org/packages/9c/a9/5cb3898915c07aea9b6705b82578f4a5dd6526af34754b52423f0ecb89be/nothing-0.0.3-py2.py3-none-any.whl",
+                "hash":
+                    {
+                        "sha256": "62071d8fe82ac7f63ac700642da994360690e9949019ee88d0a8018b127778ef",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "werkzeug",
+                "version": "3.0.2",
+                "manager": "pip",
+                "platform": "linux-64",
+                "dependencies": { "markupsafe": ">=2.1.1" },
+                "url": "https://files.pythonhosted.org/packages/e3/23/c9843d7550092ae7ad380611c238f44afef66f58f76c1dab7dcf313e4339/werkzeug-3.0.2-py3-none-any.whl",
+                "hash":
+                    {
+                        "sha256": "3aac3f5da756f93030740bc235d3e09449efcf65f2f55e3602e1d851b8f48795",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "bzip2",
+                "version": "1.0.8",
+                "manager": "conda",
+                "platform": "osx-64",
+                "dependencies": {},
+                "url": "https://conda.anaconda.org/main/osx-64/bzip2-1.0.8-h6c40b1e_5.tar.bz2",
+                "hash":
+                    {
+                        "md5": "12dea79e2208f1eb08fb0fa2c83caa78",
+                        "sha256": "7e2172cff3b4ea31c574f23faa57cf6fd1317c12b597f9be429d4ea13ab7fb93",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "ca-certificates",
+                "version": "2024.3.11",
+                "manager": "conda",
+                "platform": "osx-64",
+                "dependencies": {},
+                "url": "https://conda.anaconda.org/main/osx-64/ca-certificates-2024.3.11-hecd8cb5_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "34583b436e62a2ce55d6a7e8eb818e33",
+                        "sha256": "0c5f9766aa2dcc08ae71b6c0102046a56b30297d0bedc3039b7f72d1658baa43",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "expat",
+                "version": "2.5.0",
+                "manager": "conda",
+                "platform": "osx-64",
+                "dependencies": { "libcxx": ">=14.0.6" },
+                "url": "https://conda.anaconda.org/main/osx-64/expat-2.5.0-hcec6c5f_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "57cd2dedd78fd34dcd445e59bb50b901",
+                        "sha256": "4ed38bee31511bbea15cd0277637cb0118063db777aad9640c9599777837cc6a",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "iniconfig",
+                "version": "1.1.1",
+                "manager": "conda",
+                "platform": "osx-64",
+                "dependencies": { "python": "" },
+                "url": "https://conda.anaconda.org/main/noarch/iniconfig-1.1.1-pyhd3eb1b0_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "e40edff2c5708f342cef43c7f280c507",
+                        "sha256": "d288f67c03b20a885464056a215baef626d29f95df56e1974379a17f8e55a24e",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "libcxx",
+                "version": "14.0.6",
+                "manager": "conda",
+                "platform": "osx-64",
+                "dependencies": {},
+                "url": "https://conda.anaconda.org/main/osx-64/libcxx-14.0.6-h9765a3e_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "af92f506156c9defc9b4dff41ecea1f9",
+                        "sha256": "7bff6afa61f71c268279f70c7d23a27a97fcc4b7144c33c4de46f1cf4b8da16b",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "libffi",
+                "version": "3.4.4",
+                "manager": "conda",
+                "platform": "osx-64",
+                "dependencies": {},
+                "url": "https://conda.anaconda.org/main/osx-64/libffi-3.4.4-hecd8cb5_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "817848d0e2b2808acdc9b3fbbf581726",
+                        "sha256": "5d97bdc320e4c9cecf4510517c33764387163e25c36d94785da93d1e936c48c1",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "ncurses",
+                "version": "6.4",
+                "manager": "conda",
+                "platform": "osx-64",
+                "dependencies": {},
+                "url": "https://conda.anaconda.org/main/osx-64/ncurses-6.4-hcec6c5f_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "20344bea303e2aff2796ee9963c12c7d",
+                        "sha256": "89766624cdd4de2e901400445ebcdccfbbd936e8dba040ea40e33c662a23a029",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "openssl",
+                "version": "3.0.13",
+                "manager": "conda",
+                "platform": "osx-64",
+                "dependencies": { "ca-certificates": "" },
+                "url": "https://conda.anaconda.org/main/osx-64/openssl-3.0.13-hca72f7f_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "978612352a91a0d147af8ef7b6f1abff",
+                        "sha256": "a2436a86c232a907fb262e2fb08a3548f94270e5920414cabcc11d64f7c3a951",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "packaging",
+                "version": "23.2",
+                "manager": "conda",
+                "platform": "osx-64",
+                "dependencies": { "python": ">=3.12,<3.13.0a0" },
+                "url": "https://conda.anaconda.org/main/osx-64/packaging-23.2-py312hecd8cb5_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "54196221912de601251f644bf2cebb1c",
+                        "sha256": "4d2daf0e840bb7606b675a271425a29a29df8cd219ca71f4c518612652ddc043",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "pip",
+                "version": "23.3.1",
+                "manager": "conda",
+                "platform": "osx-64",
+                "dependencies":
+                    {
+                        "setuptools": "",
+                        "wheel": "",
+                        "python": ">=3.12,<3.13.0a0",
+                    },
+                "url": "https://conda.anaconda.org/main/osx-64/pip-23.3.1-py312hecd8cb5_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "5790176eaaed531217119389b92e1b5b",
+                        "sha256": "54c90e232b85f45a71d550640dd593d43fa3fbe59887583c94df9e20edd2da48",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "pluggy",
+                "version": "1.0.0",
+                "manager": "conda",
+                "platform": "osx-64",
+                "dependencies": { "python": ">=3.12,<3.13.0a0" },
+                "url": "https://conda.anaconda.org/main/osx-64/pluggy-1.0.0-py312hecd8cb5_1.tar.bz2",
+                "hash":
+                    {
+                        "md5": "ca8a53b036eda29414e92df8b5d6fcb1",
+                        "sha256": "39298d863a20ccbb1010f17a2f1f7113908a8a7e37e5c98cfe01deb22c3dddf3",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "pytest",
+                "version": "7.4.0",
+                "manager": "conda",
+                "platform": "osx-64",
+                "dependencies":
+                    {
+                        "packaging": "",
+                        "iniconfig": "",
+                        "python": ">=3.12,<3.13.0a0",
+                        "pluggy": ">=0.12,<2.0",
+                    },
+                "url": "https://conda.anaconda.org/main/osx-64/pytest-7.4.0-py312hecd8cb5_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "365f60ff57f50022f72e96bfd6e27a88",
+                        "sha256": "6a7e177ddce277c16a7dfe3de705ea3c371771e798ae459ddd310538c6141c49",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "python",
+                "version": "3.12.2",
+                "manager": "conda",
+                "platform": "osx-64",
+                "dependencies":
+                    {
+                        "tzdata": "",
+                        "zlib": ">=1.2.13,<1.3.0a0",
+                        "bzip2": ">=1.0.8,<2.0a0",
+                        "readline": ">=8.0,<9.0a0",
+                        "libffi": ">=3.4,<4.0a0",
+                        "tk": ">=8.6.12,<8.7.0a0",
+                        "ncurses": ">=6.4,<7.0a0",
+                        "sqlite": ">=3.41.2,<4.0a0",
+                        "openssl": ">=3.0.13,<4.0a0",
+                        "expat": ">=2.5.0,<3.0a0",
+                        "xz": ">=5.4.6,<6.0a0",
+                    },
+                "url": "https://conda.anaconda.org/main/osx-64/python-3.12.2-hd58486a_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "19fb7b04ac44b070dde0286648d23905",
+                        "sha256": "b75d6aa4fba626274c39dc3d47bd2c35618c2e8150baa5fd3958f7a2079b9c42",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "readline",
+                "version": "8.2",
+                "manager": "conda",
+                "platform": "osx-64",
+                "dependencies": { "ncurses": ">=6.3,<7.0a0" },
+                "url": "https://conda.anaconda.org/main/osx-64/readline-8.2-hca72f7f_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "e8977fc2e69cb52f8dbb1b676d04cc45",
+                        "sha256": "1735fe90c89244a6144598197cc99a4daf21ccd8152520d953d88fd094193a7f",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "setuptools",
+                "version": "68.2.2",
+                "manager": "conda",
+                "platform": "osx-64",
+                "dependencies": { "python": ">=3.12,<3.13.0a0" },
+                "url": "https://conda.anaconda.org/main/osx-64/setuptools-68.2.2-py312hecd8cb5_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "29050c2fc69b814b3ede974910477e35",
+                        "sha256": "c9057a19977f02cc1744998cc3e2a11b3ba11d6c18db544ec60fadd9b9747cd5",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "sqlite",
+                "version": "3.41.2",
+                "manager": "conda",
+                "platform": "osx-64",
+                "dependencies":
+                    {
+                        "zlib": ">=1.2.13,<2.0a0",
+                        "readline": ">=8.0,<9.0a0",
+                        "ncurses": ">=6.4,<7.0a0",
+                    },
+                "url": "https://conda.anaconda.org/main/osx-64/sqlite-3.41.2-h6c40b1e_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "82e4db6a498480a75d53c55bd35b6478",
+                        "sha256": "47d38e4651870afa01557e1de4fe29e6e2dfbfdba4a0a68109750cb0be6dbf68",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "tk",
+                "version": "8.6.12",
+                "manager": "conda",
+                "platform": "osx-64",
+                "dependencies": { "zlib": ">=1.2.12,<1.3.0a0" },
+                "url": "https://conda.anaconda.org/main/osx-64/tk-8.6.12-h5d9f67b_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "d5b05e38d3bc8fe6d9bcdd91029db1c7",
+                        "sha256": "b0c2866ed3b190b0d84024a08273846c335644bcbfe23a8521a418f2be98044c",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "tzdata",
+                "version": "2024a",
+                "manager": "conda",
+                "platform": "osx-64",
+                "dependencies": {},
+                "url": "https://conda.anaconda.org/main/noarch/tzdata-2024a-h04d1e81_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "ece0f5837a4de2d4d5f1abf8347cd10a",
+                        "sha256": "dc9f709bacbaf08a0941d2622d82f91f18b355e82c55348ec29f1391215ca7e0",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "wheel",
+                "version": "0.41.2",
+                "manager": "conda",
+                "platform": "osx-64",
+                "dependencies": { "python": ">=3.12,<3.13.0a0" },
+                "url": "https://conda.anaconda.org/main/osx-64/wheel-0.41.2-py312hecd8cb5_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "3c2bd6bb4fce45b856fa964ae1859496",
+                        "sha256": "6fc6013f742ad1d4c639d1f29dd4f57183e001073280d03032dbbcfd5b7c89f2",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "xz",
+                "version": "5.4.6",
+                "manager": "conda",
+                "platform": "osx-64",
+                "dependencies": {},
+                "url": "https://conda.anaconda.org/main/osx-64/xz-5.4.6-h6c40b1e_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "4b947ef4c6c62f0248b01a557b05f08b",
+                        "sha256": "1534a1e1364db8c8c39d84e48a9210d86913403e5fcccbf352eb08d05ce27742",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "zlib",
+                "version": "1.2.13",
+                "manager": "conda",
+                "platform": "osx-64",
+                "dependencies": {},
+                "url": "https://conda.anaconda.org/main/osx-64/zlib-1.2.13-h4dc903c_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "8e495591e369ac161857a72011c0a296",
+                        "sha256": "656a87c551a958f974ee409319b30ca29a205957ece617dbb21405b59bd66604",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "blinker",
+                "version": "1.7.0",
+                "manager": "pip",
+                "platform": "osx-64",
+                "dependencies": {},
+                "url": "https://files.pythonhosted.org/packages/fa/2a/7f3714cbc6356a0efec525ce7a0613d581072ed6eb53eb7b9754f33db807/blinker-1.7.0-py3-none-any.whl",
+                "hash":
+                    {
+                        "sha256": "c3f865d4d54db7abc53758a01601cf343fe55b84c1de4e3fa910e420b438d5b9",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "click",
+                "version": "8.1.7",
+                "manager": "pip",
+                "platform": "osx-64",
+                "dependencies": {},
+                "url": "https://files.pythonhosted.org/packages/00/2e/d53fa4befbf2cfa713304affc7ca780ce4fc1fd8710527771b58311a3229/click-8.1.7-py3-none-any.whl",
+                "hash":
+                    {
+                        "sha256": "ae74fb96c20a0277a1d615f1e4d73c8414f5a98db8b799a7931d1582f3390c28",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "flask",
+                "version": "3.0.3",
+                "manager": "pip",
+                "platform": "osx-64",
+                "dependencies":
+                    {
+                        "werkzeug": ">=3.0.0",
+                        "jinja2": ">=3.1.2",
+                        "itsdangerous": ">=2.1.2",
+                        "click": ">=8.1.3",
+                        "blinker": ">=1.6.2",
+                    },
+                "url": "https://files.pythonhosted.org/packages/61/80/ffe1da13ad9300f87c93af113edd0638c75138c42a0994becfacac078c06/flask-3.0.3-py3-none-any.whl",
+                "hash":
+                    {
+                        "sha256": "34e815dfaa43340d1d15a5c3a02b8476004037eb4840b34910c6e21679d288f3",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "itsdangerous",
+                "version": "2.1.2",
+                "manager": "pip",
+                "platform": "osx-64",
+                "dependencies": {},
+                "url": "https://files.pythonhosted.org/packages/68/5f/447e04e828f47465eeab35b5d408b7ebaaaee207f48b7136c5a7267a30ae/itsdangerous-2.1.2-py3-none-any.whl",
+                "hash":
+                    {
+                        "sha256": "2c2349112351b88699d8d4b6b075022c0808887cb7ad10069318a8b0bc88db44",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "jinja2",
+                "version": "3.1.3",
+                "manager": "pip",
+                "platform": "osx-64",
+                "dependencies": { "markupsafe": ">=2.0" },
+                "url": "https://files.pythonhosted.org/packages/30/6d/6de6be2d02603ab56e72997708809e8a5b0fbfee080735109b40a3564843/Jinja2-3.1.3-py3-none-any.whl",
+                "hash":
+                    {
+                        "sha256": "7d6d50dd97d52cbc355597bd845fabfbac3f551e1f99619e39a35ce8c370b5fa",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "markupsafe",
+                "version": "2.1.5",
+                "manager": "pip",
+                "platform": "osx-64",
+                "dependencies": {},
+                "url": "https://files.pythonhosted.org/packages/48/d6/e7cd795fc710292c3af3a06d80868ce4b02bfbbf370b7cee11d282815a2a/MarkupSafe-2.1.5-cp312-cp312-macosx_10_9_x86_64.whl",
+                "hash":
+                    {
+                        "sha256": "3c6b973f22eb18a789b1460b4b91bf04ae3f0c4234a0a6aa6b0a92f6f7b951d4",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "werkzeug",
+                "version": "3.0.2",
+                "manager": "pip",
+                "platform": "osx-64",
+                "dependencies": { "markupsafe": ">=2.1.1" },
+                "url": "https://files.pythonhosted.org/packages/e3/23/c9843d7550092ae7ad380611c238f44afef66f58f76c1dab7dcf313e4339/werkzeug-3.0.2-py3-none-any.whl",
+                "hash":
+                    {
+                        "sha256": "3aac3f5da756f93030740bc235d3e09449efcf65f2f55e3602e1d851b8f48795",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "ca-certificates",
+                "version": "2024.3.11",
+                "manager": "conda",
+                "platform": "win-64",
+                "dependencies": {},
+                "url": "https://conda.anaconda.org/main/win-64/ca-certificates-2024.3.11-haa95532_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "501ded4f9b5ed895077802defee912cf",
+                        "sha256": "73391a74a5300ad3fb063ea0f0c3491d220128a0611a84036da2e23c1e93dc0e",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "tzdata",
+                "version": "2024a",
+                "manager": "conda",
+                "platform": "win-64",
+                "dependencies": {},
+                "url": "https://conda.anaconda.org/main/noarch/tzdata-2024a-h04d1e81_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "ece0f5837a4de2d4d5f1abf8347cd10a",
+                        "sha256": "dc9f709bacbaf08a0941d2622d82f91f18b355e82c55348ec29f1391215ca7e0",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "vs2015_runtime",
+                "version": "14.27.29016",
+                "manager": "conda",
+                "platform": "win-64",
+                "dependencies": {},
+                "url": "https://conda.anaconda.org/main/win-64/vs2015_runtime-14.27.29016-h5e58377_2.tar.bz2",
+                "hash":
+                    {
+                        "md5": "4daaceb6cfc1af6274509081d8018ef1",
+                        "sha256": "cf1dbd738c479b1fd6668629a3fe4485b4935a1cd01951f92a4e741e8b6a9501",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "vc",
+                "version": "14.2",
+                "manager": "conda",
+                "platform": "win-64",
+                "dependencies": { "vs2015_runtime": ">=14.27.29016" },
+                "url": "https://conda.anaconda.org/main/win-64/vc-14.2-h21ff451_1.tar.bz2",
+                "hash":
+                    {
+                        "md5": "45ef24c486a484f079faf1dc90e4c7e9",
+                        "sha256": "dd86ecdc7a11af2624841b0670b7de722078e050f2a91bcd4bdc3df1871f45b1",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "bzip2",
+                "version": "1.0.8",
+                "manager": "conda",
+                "platform": "win-64",
+                "dependencies":
+                    {
+                        "vc": ">=14.1,<15.0a0",
+                        "vs2015_runtime": ">=14.16.27012,<15.0a0",
+                    },
+                "url": "https://conda.anaconda.org/main/win-64/bzip2-1.0.8-h2bbff1b_5.tar.bz2",
+                "hash":
+                    {
+                        "md5": "08085c8a9c0fa1a1a404a973695b2af3",
+                        "sha256": "8845552a84555d4adb13a5f16e2b5d55040a732b7df9319e00f9fc713e0f896f",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "expat",
+                "version": "2.5.0",
+                "manager": "conda",
+                "platform": "win-64",
+                "dependencies":
+                    {
+                        "vc": ">=14.1,<15.0a0",
+                        "vs2015_runtime": ">=14.16.27012,<15.0a0",
+                    },
+                "url": "https://conda.anaconda.org/main/win-64/expat-2.5.0-hd77b12b_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "5e7da8f3ad8b0c31c45a16b93c83cfd7",
+                        "sha256": "700d0aedee50fdcfe4d4c4557e79cd1a7c0f4ed0e4c9300c2b24933b511f4896",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "libffi",
+                "version": "3.4.4",
+                "manager": "conda",
+                "platform": "win-64",
+                "dependencies":
+                    {
+                        "vc": ">=14.1,<15.0a0",
+                        "vs2015_runtime": ">=14.16.27012,<15.0a0",
+                    },
+                "url": "https://conda.anaconda.org/main/win-64/libffi-3.4.4-hd77b12b_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "5cdcd99f18d9dedb772d272088e72b4c",
+                        "sha256": "1b3b9be41dba504e468a336196de9fd09568ba42585e493888aaa3708f687d0a",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "openssl",
+                "version": "3.0.13",
+                "manager": "conda",
+                "platform": "win-64",
+                "dependencies":
+                    {
+                        "ca-certificates": "",
+                        "vc": ">=14.1,<15.0a0",
+                        "vs2015_runtime": ">=14.16.27012,<15.0a0",
+                    },
+                "url": "https://conda.anaconda.org/main/win-64/openssl-3.0.13-h2bbff1b_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "39fdacf2d8eaeca0aac16629c415b5b7",
+                        "sha256": "d7065fb018761770402c537b7010faac29e72078f0a956dfb719cd03ed8e8eca",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "sqlite",
+                "version": "3.41.2",
+                "manager": "conda",
+                "platform": "win-64",
+                "dependencies":
+                    {
+                        "vc": ">=14.1,<15.0a0",
+                        "vs2015_runtime": ">=14.16.27012,<15.0a0",
+                    },
+                "url": "https://conda.anaconda.org/main/win-64/sqlite-3.41.2-h2bbff1b_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "32f95c4ef7dfbf22fd35292ff8bd51a5",
+                        "sha256": "2050ce6672c53b888dd58dda0a3f76b0cf8573577540fd86427a904ea0158352",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "tk",
+                "version": "8.6.12",
+                "manager": "conda",
+                "platform": "win-64",
+                "dependencies":
+                    {
+                        "vc": ">=14.1,<15.0a0",
+                        "vs2015_runtime": ">=14.16.27012,<15.0a0",
+                    },
+                "url": "https://conda.anaconda.org/main/win-64/tk-8.6.12-h2bbff1b_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "52cdcdb96383c010ca833a7c24b3935b",
+                        "sha256": "95e7b0ac7780147defd47242ef2e28b31719a8e40c077db2b302dd951335feca",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "xz",
+                "version": "5.4.6",
+                "manager": "conda",
+                "platform": "win-64",
+                "dependencies":
+                    {
+                        "vc": ">=14.1,<15.0a0",
+                        "vs2015_runtime": ">=14.16.27012,<15.0a0",
+                    },
+                "url": "https://conda.anaconda.org/main/win-64/xz-5.4.6-h8cc25b3_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "76e728c35d284bfce7867c48d7046cc9",
+                        "sha256": "74c3575a7b72b952797c7c775522d8cf329fe06ec6b6949f45253e40c3f188cf",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "zlib",
+                "version": "1.2.13",
+                "manager": "conda",
+                "platform": "win-64",
+                "dependencies":
+                    {
+                        "vc": ">=14.1,<15.0a0",
+                        "vs2015_runtime": ">=14.16.27012,<15.0a0",
+                    },
+                "url": "https://conda.anaconda.org/main/win-64/zlib-1.2.13-h8cc25b3_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "05f29aa81cd3a3b38ebaccfa5a0d0e17",
+                        "sha256": "174b1b82719c185e17104b504ca50d322a28e996b20fd547de0d2f2ce39f1fd9",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "python",
+                "version": "3.12.2",
+                "manager": "conda",
+                "platform": "win-64",
+                "dependencies":
+                    {
+                        "bzip2": ">=1.0.8,<2.0a0",
+                        "expat": ">=2.5.0,<3.0a0",
+                        "libffi": ">=3.4,<4.0a0",
+                        "openssl": ">=3.0.13,<4.0a0",
+                        "sqlite": ">=3.41.2,<4.0a0",
+                        "tk": ">=8.6.12,<8.7.0a0",
+                        "tzdata": "",
+                        "vc": ">=14.1,<15.0a0",
+                        "vs2015_runtime": ">=14.16.27012,<15.0a0",
+                        "xz": ">=5.4.6,<6.0a0",
+                        "zlib": ">=1.2.13,<1.3.0a0",
+                    },
+                "url": "https://conda.anaconda.org/main/win-64/python-3.12.2-h1d929f7_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "b887174a19e4548a33f52a6c7c18ab1d",
+                        "sha256": "953821c940adcda23f3f229ea4176a427c8dfcfeda0572454ec75eb2764659e9",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "colorama",
+                "version": "0.4.6",
+                "manager": "conda",
+                "platform": "win-64",
+                "dependencies": { "python": ">=3.12,<3.13.0a0" },
+                "url": "https://conda.anaconda.org/main/win-64/colorama-0.4.6-py312haa95532_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "e85831995d312cf915d0543939a7422c",
+                        "sha256": "14153bf6ee516e020267371e39991dc65351f97399ab6c26cd662c290ec49e64",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "iniconfig",
+                "version": "1.1.1",
+                "manager": "conda",
+                "platform": "win-64",
+                "dependencies": { "python": "" },
+                "url": "https://conda.anaconda.org/main/noarch/iniconfig-1.1.1-pyhd3eb1b0_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "e40edff2c5708f342cef43c7f280c507",
+                        "sha256": "d288f67c03b20a885464056a215baef626d29f95df56e1974379a17f8e55a24e",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "packaging",
+                "version": "23.2",
+                "manager": "conda",
+                "platform": "win-64",
+                "dependencies": { "python": ">=3.12,<3.13.0a0" },
+                "url": "https://conda.anaconda.org/main/win-64/packaging-23.2-py312haa95532_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "a72598ce71bb6865e6ff33a47406cdab",
+                        "sha256": "f8645fa06854ec1ffdc32004b5fff9a63ee5061a01adb8b1871e444daedaae16",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "pluggy",
+                "version": "1.0.0",
+                "manager": "conda",
+                "platform": "win-64",
+                "dependencies": { "python": ">=3.12,<3.13.0a0" },
+                "url": "https://conda.anaconda.org/main/win-64/pluggy-1.0.0-py312haa95532_1.tar.bz2",
+                "hash":
+                    {
+                        "md5": "869dd7d96885e8f1a56215b90b2529a0",
+                        "sha256": "7311aeac45fe543d645d1ea9ca7f2890c6b1d351a0fec5c935e079999ff6e47e",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "setuptools",
+                "version": "68.2.2",
+                "manager": "conda",
+                "platform": "win-64",
+                "dependencies": { "python": ">=3.12,<3.13.0a0" },
+                "url": "https://conda.anaconda.org/main/win-64/setuptools-68.2.2-py312haa95532_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "5f626a2c8096c6e4e3b39157f70f1769",
+                        "sha256": "9c3f8c670c9d21c5bf07fe9a61aa76b56f934e497cdbd737fe65c96552fa59fe",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "wheel",
+                "version": "0.41.2",
+                "manager": "conda",
+                "platform": "win-64",
+                "dependencies": { "python": ">=3.12,<3.13.0a0" },
+                "url": "https://conda.anaconda.org/main/win-64/wheel-0.41.2-py312haa95532_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "76c6ed843f06659d3d39a940f11060ac",
+                        "sha256": "6ab853ce5a6bab469ad318a7ecbdae6d598f8009fe9c16567e754688ff0def71",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "pip",
+                "version": "23.3.1",
+                "manager": "conda",
+                "platform": "win-64",
+                "dependencies":
+                    {
+                        "python": ">=3.12,<3.13.0a0",
+                        "setuptools": "",
+                        "wheel": "",
+                    },
+                "url": "https://conda.anaconda.org/main/win-64/pip-23.3.1-py312haa95532_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "1f1ee004cbd475c473b18c93ee9108a0",
+                        "sha256": "74ac90b2008d2a42f9b28270bea53cdc651735e098cfabe06ca1cc10bf605126",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "pytest",
+                "version": "7.4.0",
+                "manager": "conda",
+                "platform": "win-64",
+                "dependencies":
+                    {
+                        "colorama": "",
+                        "iniconfig": "",
+                        "packaging": "",
+                        "pluggy": ">=0.12,<2.0",
+                        "python": ">=3.12,<3.13.0a0",
+                    },
+                "url": "https://conda.anaconda.org/main/win-64/pytest-7.4.0-py312haa95532_0.tar.bz2",
+                "hash":
+                    {
+                        "md5": "f593a3647abbc80392d624a8c21ba14f",
+                        "sha256": "50f79d07f60187e3086c035dac01d9e1d6aa4a54a80278a95dcd690a5400dc08",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "blinker",
+                "version": "1.7.0",
+                "manager": "pip",
+                "platform": "win-64",
+                "dependencies": {},
+                "url": "https://files.pythonhosted.org/packages/fa/2a/7f3714cbc6356a0efec525ce7a0613d581072ed6eb53eb7b9754f33db807/blinker-1.7.0-py3-none-any.whl",
+                "hash":
+                    {
+                        "sha256": "c3f865d4d54db7abc53758a01601cf343fe55b84c1de4e3fa910e420b438d5b9",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "itsdangerous",
+                "version": "2.1.2",
+                "manager": "pip",
+                "platform": "win-64",
+                "dependencies": {},
+                "url": "https://files.pythonhosted.org/packages/68/5f/447e04e828f47465eeab35b5d408b7ebaaaee207f48b7136c5a7267a30ae/itsdangerous-2.1.2-py3-none-any.whl",
+                "hash":
+                    {
+                        "sha256": "2c2349112351b88699d8d4b6b075022c0808887cb7ad10069318a8b0bc88db44",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "markupsafe",
+                "version": "2.1.5",
+                "manager": "pip",
+                "platform": "win-64",
+                "dependencies": {},
+                "url": "https://files.pythonhosted.org/packages/3f/14/c3554d512d5f9100a95e737502f4a2323a1959f6d0d01e0d0997b35f7b10/MarkupSafe-2.1.5-cp312-cp312-win_amd64.whl",
+                "hash":
+                    {
+                        "sha256": "823b65d8706e32ad2df51ed89496147a42a2a6e01c13cfb6ffb8b1e92bc910bb",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "click",
+                "version": "8.1.7",
+                "manager": "pip",
+                "platform": "win-64",
+                "dependencies": { "colorama": "*" },
+                "url": "https://files.pythonhosted.org/packages/00/2e/d53fa4befbf2cfa713304affc7ca780ce4fc1fd8710527771b58311a3229/click-8.1.7-py3-none-any.whl",
+                "hash":
+                    {
+                        "sha256": "ae74fb96c20a0277a1d615f1e4d73c8414f5a98db8b799a7931d1582f3390c28",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "jinja2",
+                "version": "3.1.3",
+                "manager": "pip",
+                "platform": "win-64",
+                "dependencies": { "markupsafe": ">=2.0" },
+                "url": "https://files.pythonhosted.org/packages/30/6d/6de6be2d02603ab56e72997708809e8a5b0fbfee080735109b40a3564843/Jinja2-3.1.3-py3-none-any.whl",
+                "hash":
+                    {
+                        "sha256": "7d6d50dd97d52cbc355597bd845fabfbac3f551e1f99619e39a35ce8c370b5fa",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "werkzeug",
+                "version": "3.0.2",
+                "manager": "pip",
+                "platform": "win-64",
+                "dependencies": { "markupsafe": ">=2.1.1" },
+                "url": "https://files.pythonhosted.org/packages/e3/23/c9843d7550092ae7ad380611c238f44afef66f58f76c1dab7dcf313e4339/werkzeug-3.0.2-py3-none-any.whl",
+                "hash":
+                    {
+                        "sha256": "3aac3f5da756f93030740bc235d3e09449efcf65f2f55e3602e1d851b8f48795",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+            {
+                "name": "flask",
+                "version": "3.0.3",
+                "manager": "pip",
+                "platform": "win-64",
+                "dependencies":
+                    {
+                        "werkzeug": ">=3.0.0",
+                        "jinja2": ">=3.1.2",
+                        "itsdangerous": ">=2.1.2",
+                        "click": ">=8.1.3",
+                        "blinker": ">=1.6.2",
+                    },
+                "url": "https://files.pythonhosted.org/packages/61/80/ffe1da13ad9300f87c93af113edd0638c75138c42a0994becfacac078c06/flask-3.0.3-py3-none-any.whl",
+                "hash":
+                    {
+                        "sha256": "34e815dfaa43340d1d15a5c3a02b8476004037eb4840b34910c6e21679d288f3",
+                    },
+                "category": "main",
+                "optional": false,
+            },
+        ],
+}

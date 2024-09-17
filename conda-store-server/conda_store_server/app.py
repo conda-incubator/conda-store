@@ -1,24 +1,18 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
 import datetime
 import os
 import sys
+
 from contextlib import contextmanager
 from typing import Any, Dict
 
 import pydantic
+
 from celery import Celery, group
-from conda_store_server import (
-    CONDA_STORE_DIR,
-    BuildKey,
-    api,
-    conda_utils,
-    environment,
-    orm,
-    registry,
-    schema,
-    storage,
-    utils,
-)
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import QueuePool
 from traitlets import (
     Bool,
@@ -33,6 +27,9 @@ from traitlets import (
     validate,
 )
 from traitlets.config import LoggingConfigurable
+
+from conda_store_server import CONDA_STORE_DIR, BuildKey, api, registry, storage
+from conda_store_server._internal import conda_utils, environment, orm, schema, utils
 
 
 def conda_store_validate_specification(
@@ -109,7 +106,7 @@ class CondaStore(LoggingConfigurable):
 
     build_key_version = Integer(
         BuildKey.set_current_version(2),
-        help="Build key version to use: 1 (long, legacy), 2 (short, default)",
+        help="Build key version to use: 1 (long, legacy), 2 (shorter hash, default), 3 (hash-only, experimental)",
         config=True,
     )
 
@@ -141,6 +138,12 @@ class CondaStore(LoggingConfigurable):
     conda_channel_alias = Unicode(
         "https://conda.anaconda.org",
         help="The prepended url location to associate with channel names",
+        config=True,
+    )
+
+    conda_flags = Unicode(
+        "--strict-channel-priority",
+        help="The flags to be passed through the CONDA_FLAGS environment variable during the environment build",
         config=True,
     )
 
@@ -377,7 +380,7 @@ class CondaStore(LoggingConfigurable):
     )
 
     @property
-    def session_factory(self):
+    def session_factory(self) -> sessionmaker:
         if hasattr(self, "_session_factory"):
             return self._session_factory
 
@@ -438,7 +441,7 @@ class CondaStore(LoggingConfigurable):
             "broker_url": self.celery_broker_url,
             "result_backend": self.celery_results_backend,
             "imports": [
-                "conda_store_server.worker.tasks",
+                "conda_store_server._internal.worker.tasks",
                 "celery.contrib.testing.tasks",
             ],
             "task_track_started": True,
@@ -601,7 +604,7 @@ class CondaStore(LoggingConfigurable):
 
         self.celery_app
 
-        from conda_store_server.worker import tasks
+        from conda_store_server._internal.worker import tasks
 
         task_id = f"solve-{solve.id}"
         tasks.task_solve_conda_environment.apply_async(
@@ -618,8 +621,10 @@ class CondaStore(LoggingConfigurable):
         specification: dict,
         namespace: str = None,
         force: bool = True,
+        is_lockfile: bool = False,
     ):
         """Register a given specification to conda store with given namespace/name."""
+
         settings = self.get_settings(db)
 
         namespace = namespace or settings.default_namespace
@@ -632,12 +637,18 @@ class CondaStore(LoggingConfigurable):
             action=schema.Permissions.ENVIRONMENT_CREATE,
         )
 
-        specification_model = self.validate_specification(
-            db=db,
-            conda_store=self,
-            namespace=namespace.name,
-            specification=schema.CondaSpecification.parse_obj(specification),
-        )
+        if is_lockfile:
+            # It's a lockfile, do not do any validation in this case. If there
+            # are problems, these would be caught earlier during parsing or
+            # later when conda-lock attempts to install it.
+            specification_model = specification
+        else:
+            specification_model = self.validate_specification(
+                db=db,
+                conda_store=self,
+                namespace=namespace.name,
+                specification=schema.CondaSpecification.parse_obj(specification),
+            )
 
         spec_sha256 = utils.datastructure_hash(specification_model.dict())
         matching_specification = api.get_specification(db, sha256=spec_sha256)
@@ -651,7 +662,9 @@ class CondaStore(LoggingConfigurable):
         ):
             return None
 
-        specification = api.ensure_specification(db, specification_model)
+        specification = api.ensure_specification(
+            db, specification_model, is_lockfile=is_lockfile
+        )
         environment_was_empty = (
             api.get_environment(db, name=specification.name, namespace_id=namespace.id)
             is None
@@ -693,7 +706,7 @@ class CondaStore(LoggingConfigurable):
         self.celery_app
 
         # must import tasks after a celery app has been initialized
-        from conda_store_server.worker import tasks
+        from conda_store_server._internal.worker import tasks
 
         # Note: task ids used here must also be in api_put_build_cancel
 
@@ -782,7 +795,7 @@ class CondaStore(LoggingConfigurable):
 
         self.celery_app
         # must import tasks after a celery app has been initialized
-        from conda_store_server.worker import tasks
+        from conda_store_server._internal.worker import tasks
 
         tasks.task_update_environment_build.si(environment.id).apply_async()
 
@@ -821,7 +834,7 @@ class CondaStore(LoggingConfigurable):
         self.celery_app
 
         # must import tasks after a celery app has been initialized
-        from conda_store_server.worker import tasks
+        from conda_store_server._internal.worker import tasks
 
         tasks.task_delete_namespace.si(namespace.id).apply_async()
 
@@ -848,7 +861,7 @@ class CondaStore(LoggingConfigurable):
         self.celery_app
 
         # must import tasks after a celery app has been initialized
-        from conda_store_server.worker import tasks
+        from conda_store_server._internal.worker import tasks
 
         tasks.task_delete_environment.si(environment.id).apply_async()
 
@@ -876,6 +889,6 @@ class CondaStore(LoggingConfigurable):
         self.celery_app
 
         # must import tasks after a celery app has been initialized
-        from conda_store_server.worker import tasks
+        from conda_store_server._internal.worker import tasks
 
         tasks.task_delete_build.si(build.id).apply_async()

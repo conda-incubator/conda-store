@@ -1,0 +1,167 @@
+<!--
+ Copyright (c) conda-store development team. All rights reserved.
+ Use of this source code is governed by a BSD-style
+ license that can be found in the LICENSE file.
+-->
+
+{% extends 'base.html' %}
+
+{% block title %}Create Environment{% endblock %}
+
+{% block content %}
+{% if message %}
+<pre class="alert alert-danger" role="alert">{{ message }}</pre>
+{% endif %}
+
+<form id="create-environment">
+    <div>
+        <label for="namespace">Namespace</label>
+        <select class="form-select" name="namespace" id="namespace" aria-label="namespace">
+            {% for namespace in namespaces %}
+            <option {% if loop.index == 0 %}selected{% endif %} value="{{ namespace.name }}">{{ namespace.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div>
+        <label for="inputType">Input type</label>
+        <select class="form-select" name="inputType" id="inputType" aria-label="input type">
+            <option {% if not is_lockfile %}selected{% endif %} value="specification">specification</option>
+            <option {% if is_lockfile %}selected{% endif %} value="lockfile">unified lockfile</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        {% if is_lockfile %}
+        <div class="collapse show" id="collapseDiv">
+        {% else %}
+        <div class="collapse hide" id="collapseDiv">
+        {% endif %}
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Name</span>
+                </div>
+                <input class="form-control" type="text" id="environmentName" name="environmentName" placeholder="Environment name" value="{{ environment_name }}" aria-label="Environment name">
+            </div>
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Description</span>
+                </div>
+                <textarea class="form-control" id="environmentDescription" name="environmentDescription" placeholder="Description of your environment" aria-label="Environment description">{{ environment_description }}</textarea>
+            </div>
+        </div>
+    </div>
+
+    <div class="custom-file">
+        <input type="file" class="custom-file-input" id="customFile">
+        <label class="custom-file-label" for="customFile" id="customFileLabel">
+        {% if is_lockfile %}
+            Upload unified lockfile
+        {% else %}
+            Upload specification
+        {% endif %}
+        </label>
+    </div>
+
+    <div class="form-group">
+        <label for="specification" id="specificationLabel">
+        {% if is_lockfile %}
+            Unified lockfile:
+        {% else %}
+            Specification:
+        {% endif %}
+        </label>
+        <div id="editor" style="height: 400px;">{{ specification or "" }}</div>
+        <textarea name="specification" id="specification" style="display: none;"></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary mb-2">Submit</button>
+</form>
+
+<script>
+$(document).ready(function() {
+    $("#inputType").change(function() {
+        var selectedValue = $(this).val();
+
+        if(selectedValue === "lockfile") {
+            $("#collapseDiv").collapse("show");
+            $("#specificationLabel").text("Unified lockfile:");
+            $("#customFileLabel").text("Upload unified lockfile");
+        } else {
+            $("#collapseDiv").collapse("hide");
+            $("#specificationLabel").text("Specification:");
+            $("#customFileLabel").text("Upload specification");
+        }
+    });
+});
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js" integrity="sha512-GZ1RIgZaSc8rnco/8CXfRdCpDxRCphenIiZ2ztLy3XQfCbQUSCuk8IudvNHxkRA3oUg6q0qejgN/qqyG1duv5Q==" crossorigin="anonymous"></script>
+<script>
+ const editor = ace.edit("editor");
+ editor.setTheme("ace/theme/github");
+ editor.getSession().setMode("ace/mode/yaml");
+ editor.setFontSize("20px");
+
+ const textarea = document.querySelector('textarea[name="specification"]');
+ editor.getSession().on("change", function() {
+     textarea.value = editor.getSession().getValue();
+ })
+
+ const fileSelector = document.querySelector('#customFile');
+ fileSelector.addEventListener('change', (event) => {
+     const reader = new FileReader();
+     reader.addEventListener('load', (event) => {
+         textarea.value = event.target.result;
+         editor.setValue(event.target.result, 1);
+     });
+     reader.readAsText(event.target.files[0]);
+ });
+
+ function bannerMessage(message) {
+     let banner = document.querySelector('#message');
+     banner.innerHTML = message;
+ }
+
+ async function createEnvironmentHandler(event) {
+     event.preventDefault();
+
+     let url = "{{ url_for('api_post_specification') }}";
+     let namespaceInput = document.querySelector('#namespace');
+     let specificationInput = document.querySelector('#specification');
+     let inputType = document.querySelector('#inputType');
+     let isLockfile = inputType.value === "lockfile";
+     let environmentName = document.querySelector('#environmentName');
+     let environmentDescription = document.querySelector('#environmentDescription');
+
+     let response = await fetch(url, {
+         method: 'POST',
+         headers: {
+             'Content-Type': 'application/json'
+         },
+         body: JSON.stringify({
+             'namespace': namespaceInput.value,
+             'specification': specificationInput.value,
+             'is_lockfile': isLockfile,
+             'environment_name': environmentName.value,
+             'environment_description': environmentDescription.value,
+         })
+     });
+
+     if (response.ok) {
+         window.location = "{{ url_for('ui_list_environments') }}";
+     } else {
+         let data = await response.json();
+         let message = data.message;
+         if (message.search('[\n\r]') !== -1) {
+             bannerMessage(`<pre class="alert alert-danger col">${data.message}</pre>`);
+         } else {
+             bannerMessage(`<div class="alert alert-danger col">${data.message}</div>`);
+         }
+     }
+ }
+
+ let form = document.querySelector('#create-environment');
+ form.addEventListener('submit', (event) => createEnvironmentHandler(event));
+</script>
+{% endblock %}

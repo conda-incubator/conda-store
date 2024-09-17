@@ -1,7 +1,12 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
 import logging
 
 from conda_store_server.server.auth import DummyAuthentication
 from conda_store_server.storage import S3Storage
+
 
 # ==================================
 #      conda-store settings

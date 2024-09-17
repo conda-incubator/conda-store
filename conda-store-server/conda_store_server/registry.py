@@ -1,12 +1,17 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
 import gzip
 import hashlib
 import urllib.parse
 
-from conda_store_server import orm, schema, utils
 from python_docker.registry import Image, Registry
 from sqlalchemy.orm import Session
 from traitlets import Callable, Dict, default
 from traitlets.config import LoggingConfigurable
+
+from conda_store_server._internal import orm, schema, utils
 
 
 class ContainerRegistry(LoggingConfigurable):

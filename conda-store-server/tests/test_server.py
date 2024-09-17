@@ -1,11 +1,47 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
+import contextlib
 import json
+import os
 import sys
 import time
 
 import pytest
 import traitlets
 import yaml
-from conda_store_server import __version__, schema
+
+from fastapi.testclient import TestClient
+
+from conda_store_server import CONDA_STORE_DIR, __version__
+from conda_store_server._internal import schema
+from conda_store_server.server import dependencies
+
+
+@contextlib.contextmanager
+def mock_entity_role_bindings(
+    testclient: TestClient,
+    role_bindings: schema.RoleBindings,
+):
+    """Override the entity role bindings for the FastAPI app temporarily.
+
+    Parameters
+    ----------
+    testclient : TestClient
+        FastAPI application for which the entity should be mocked
+    role_bindings : schema.RoleBindings
+        Role bindings that the mocked entity should have
+    """
+
+    def mock_get_entity():
+        return schema.AuthenticationToken(role_bindings=role_bindings)
+
+    testclient.app.dependency_overrides[dependencies.get_entity] = mock_get_entity
+
+    yield
+
+    testclient.app.dependency_overrides = {}
 
 
 def test_api_version_unauth(testclient):
@@ -26,11 +62,13 @@ def test_api_permissions_unauth(testclient):
     assert r.data.authenticated is False
     assert r.data.primary_namespace == "default"
     assert r.data.entity_permissions == {
-        "default/*": sorted([
-            schema.Permissions.ENVIRONMENT_READ.value,
-            schema.Permissions.NAMESPACE_READ.value,
-            schema.Permissions.NAMESPACE_ROLE_MAPPING_READ.value,
-        ])
+        "default/*": sorted(
+            [
+                schema.Permissions.ENVIRONMENT_READ.value,
+                schema.Permissions.NAMESPACE_READ.value,
+                schema.Permissions.NAMESPACE_ROLE_MAPPING_READ.value,
+            ]
+        )
     }
 
 
@@ -167,6 +205,105 @@ def test_api_list_environments_auth(testclient, seed_conda_store, authenticate):
     r = schema.APIListEnvironment.parse_obj(response.json())
     assert r.status == schema.APIStatus.OK
     assert sorted([_.name for _ in r.data]) == ["name1", "name2", "name3", "name4"]
+
+
+@pytest.mark.parametrize(
+    ("requester_role_bindings", "envs_accessible_to_requester"),
+    [
+        (
+            {"*/*": ["viewer"]},
+            ["name1", "name2", "name3", "name4"],
+        ),
+        (
+            {"*/*": ["admin"]},
+            ["name1", "name2", "name3", "name4"],
+        ),
+        (
+            {"default/*": ["viewer"]},
+            ["name1", "name2"],
+        ),
+        (
+            {"namespace1/name3": ["editor"]},
+            ["name3"],
+        ),
+        (
+            {"namespace*/*": ["admin"]},
+            ["name3", "name4"],
+        ),
+        (
+            {"foo/bar": ["viewer"]},
+            [],
+        ),
+    ],
+)
+@pytest.mark.parametrize(
+    ("target_role_bindings", "envs_accessible_to_target"),
+    [
+        (
+            {"*/name1": ["viewer"]},
+            ["name1"],
+        ),
+        (
+            {"default/*": ["viewer"], "e*/e*": ["admin"]},
+            ["name1", "name2"],
+        ),
+        (
+            {"namespace1/name3": ["viewer"]},
+            ["name3"],
+        ),
+        (
+            {"namespace*/name*": ["viewer"]},
+            ["name3", "name4"],
+        ),
+        (
+            {"*/*": ["viewer"]},
+            ["name1", "name2", "name3", "name4"],
+        ),
+    ],
+)
+def test_api_list_environments_jwt(
+    conda_store_server,
+    testclient,
+    seed_conda_store,
+    authenticate,
+    target_role_bindings,
+    requester_role_bindings,
+    envs_accessible_to_target,
+    envs_accessible_to_requester,
+):
+    """Test that the REST API lists the expected environments for a given jwt.
+
+    Since these are authenticated, they also include the default
+    role bindings as well.
+
+        {
+            "default/*": ["viewer"],
+            "filesystem/*": ["viewer"],
+        }
+    """
+    # Update the target and requester envs to include the envs accessible by default
+    envs_accessible_to_requester.extend(["name1", "name2"])
+    envs_accessible_to_target.extend(["name1", "name2"])
+
+    jwt = conda_store_server.authentication.authentication.encrypt_token(
+        schema.AuthenticationToken(role_bindings=target_role_bindings)
+    )
+
+    # Override the get_entity dependency to allow the request to appear to be
+    # made by the mock entity
+    with mock_entity_role_bindings(testclient, requester_role_bindings):
+        response = testclient.get(f"api/v1/environment/?jwt={jwt}")
+
+    response.raise_for_status()
+
+    r = schema.APIListEnvironment.parse_obj(response.json())
+    assert r.status == schema.APIStatus.OK
+
+    # The environments returned by `/environment/` should only be the ones
+    # visible to both the requesting entity and the target JWT
+    assert set(obj.name for obj in r.data) == (
+        set(envs_accessible_to_target) & set(envs_accessible_to_requester)
+    )
 
 
 def test_api_get_environment_unauth(testclient, seed_conda_store):
@@ -357,9 +494,11 @@ def test_create_specification_unauth(testclient):
         256,
     ],
 )
-def test_create_specification_auth_env_name_too_long(testclient, celery_worker, authenticate, size):
+def test_create_specification_auth_env_name_too_long(
+    testclient, celery_worker, authenticate, size
+):
     namespace = "default"
-    environment_name = 'A' * size
+    environment_name = "A" * size
 
     response = testclient.post(
         "api/v1/specification",
@@ -395,13 +534,14 @@ def test_create_specification_auth_env_name_too_long(testclient, celery_worker, 
 
     # If we're here, the task didn't update the status on failure
     if not is_updated:
-        assert False, f"failed to update status"
+        assert False, "failed to update status"
 
 
 @pytest.fixture
 def win_extended_length_prefix(request):
     # Overrides the attribute before other fixtures are called
     from conda_store_server.app import CondaStore
+
     assert type(CondaStore.win_extended_length_prefix) is traitlets.Bool
     old_prefix = CondaStore.win_extended_length_prefix
     CondaStore.win_extended_length_prefix = request.param
@@ -410,11 +550,13 @@ def win_extended_length_prefix(request):
 
 
 @pytest.mark.skipif(sys.platform != "win32", reason="tests a Windows issue")
-@pytest.mark.parametrize('win_extended_length_prefix', [True, False], indirect=True)
+@pytest.mark.parametrize("win_extended_length_prefix", [True, False], indirect=True)
 @pytest.mark.extended_prefix
-def test_create_specification_auth_extended_prefix(win_extended_length_prefix, testclient, celery_worker, authenticate):
+def test_create_specification_auth_extended_prefix(
+    win_extended_length_prefix, testclient, celery_worker, authenticate
+):
     # Adds padding to cause an error if the extended prefix is not enabled
-    namespace = "default" + 'A' * 10
+    namespace = "default" + "A" * 10
     environment_name = "pytest"
 
     # The debugpy 1.8.0 package was deliberately chosen because it has long
@@ -424,14 +566,16 @@ def test_create_specification_auth_extended_prefix(win_extended_length_prefix, t
         "api/v1/specification",
         json={
             "namespace": namespace,
-            "specification": json.dumps({
-                "name": environment_name,
-                "channels": ["conda-forge"],
-                "dependencies": ["debugpy==1.8.0"],
-                "variables": None,
-                "prefix": None,
-                "description": "test"
-            }),
+            "specification": json.dumps(
+                {
+                    "name": environment_name,
+                    "channels": ["conda-forge"],
+                    "dependencies": ["debugpy==1.8.0"],
+                    "variables": None,
+                    "prefix": None,
+                    "description": "test",
+                }
+            ),
         },
         timeout=30,
     )
@@ -462,7 +606,9 @@ def test_create_specification_auth_extended_prefix(win_extended_length_prefix, t
             assert r.data.status == "FAILED"
             response = testclient.get(f"api/v1/build/{build_id}/logs", timeout=30)
             response.raise_for_status()
-            assert "[WinError 206] The filename or extension is too long" in response.text
+            assert (
+                "[WinError 206] The filename or extension is too long" in response.text
+            )
 
         is_updated = True
         break
@@ -937,3 +1083,15 @@ def test_put_global_settings_auth_in_namespace_environment(
     r = schema.APIPutSetting.parse_obj(response.json())
     assert r.status == schema.APIStatus.ERROR
     assert "global setting" in r.message
+
+
+def test_default_conda_store_dir():
+    # Checks the default value of CONDA_STORE_DIR on different platforms
+    dir = str(CONDA_STORE_DIR)
+    user = os.environ.get("USER") or os.environ.get("USERNAME")
+    if sys.platform == "darwin":
+        assert dir == f"/Users/{user}/Library/Application Support/conda-store"
+    elif sys.platform == "win32":
+        assert dir == rf"C:\Users\{user}\AppData\Local\conda-store\conda-store"
+    else:
+        assert dir == f"/home/{user}/.local/share/conda-store"

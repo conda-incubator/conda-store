@@ -20,7 +20,7 @@ permissions:
 jobs:
   # Always build & verify package.
   build-package:
-    name: Build & verify package
+    name: "Build & verify package"
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -39,9 +39,10 @@ jobs:
       - run: echo "Running on ${{ matrix.directory }}"
 
       - name: "Check package build - ${{ matrix.directory }} 📦"
-        uses: hynek/build-and-inspect-python-package@v1
+        uses: hynek/build-and-inspect-python-package@v2
         with:
           path: ${{ matrix.directory }}
+          upload-name-suffix: "-${{ matrix.directory }}"
 
       # Adding a separate upload for publishing
       - name: "Upload build artefacts 📤"
@@ -54,7 +55,7 @@ jobs:
 
   # Upload to Test PyPI on every commit on main
   release-test-pypi:
-    name: Publish in-dev to test.pypi.org
+    name: "Publish in-dev to test.pypi.org"
     environment: release-test-pypi
     if: github.repository_owner == 'conda-incubator' && github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
@@ -69,7 +70,7 @@ jobs:
 
     steps:
       - name: "Download build artefacts 📥"
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: ${{ matrix.directory }}-package
           path: dist
@@ -81,9 +82,9 @@ jobs:
           print-hash: true
           verbose: true
 
-
+  # Upload to PyPI on every tag/release
   release-pypi:
-    name: Publish released package to pypi.org
+    name: "Publish released package to pypi.org"
     environment: release-pypi
     if:  github.repository_owner == 'conda-incubator' && github.event_name == 'release' && startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
@@ -101,7 +102,7 @@ jobs:
 
     steps:
       - name: "Download build artefacts 📥"
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.7
         with:
           name: ${{ matrix.directory }}-package
           path: dist
@@ -126,6 +127,15 @@ jobs:
     steps:
       - name: "Checkout Repository 🛎"
         uses: actions/checkout@v4
+
+      - name: "Get project's default Python version 🏷️"
+        run: |
+          echo "PYTHON_VERSION_DEFAULT=$(cat .python-version-default)" >> $GITHUB_ENV
+
+      - name: "Copy .dockerignore"
+        run: |
+          cp .dockerignore ${{ matrix.docker-image }}/.dockerignore
+        shell: bash
 
       - name: "Retrieve secret from Vault 🗝"
         uses: hashicorp/vault-action@v2
@@ -176,6 +186,7 @@ jobs:
           file: "${{ matrix.docker-image }}/Dockerfile"
           build-args: |
             RELEASE_VERSION=${{github.ref_name}}
+            python_version=${{ env.PYTHON_VERSION_DEFAULT }}
           tags: |
             ${{ steps.meta.outputs.tags }}
           push: true

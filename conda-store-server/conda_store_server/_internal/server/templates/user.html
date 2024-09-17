@@ -1,0 +1,158 @@
+<!--
+ Copyright (c) conda-store development team. All rights reserved.
+ Use of this source code is governed by a BSD-style
+ license that can be found in the LICENSE file.
+-->
+
+{% extends 'base.html' %}
+
+{% block title %}User info{% endblock %}
+
+{% block content %}
+
+{% block user %}
+<div class="card m-2">
+    <div class="card-body">
+        <h5 class="card-title">User</h5>
+        <form class="m-2" action="{{ url_for('post_logout_method') }}" method="POST">
+            <button type="submit" class="btn btn-outline-success my-2 my-sm-0 mr-2">Logout</button>
+        </form>
+    </div>
+</div>
+
+<div class="card m-2">
+    <div class="card-body">
+        <form id="create-token" class="m-2">
+            <button type="submit" class="btn btn-outline-success my-2 my-sm-0 mr-2">Create token</button>
+        </form>
+        <div id="new-token"></div>
+    </div>
+</div>
+
+<div class="card m-2">
+    <div class="card-body">
+        <h5 class="card-title">Settings</h5>
+        <a class="btn btn-outline-success my-2 my-sm-0 mr-2 text-center" href="{{ url_for('ui_get_setting') }}#environment-settings">Manage Environment Settings <ion-icon name="settings"></ion-icon></a>
+        <a class="btn btn-outline-success my-2 my-sm-0 mr-2 text-center" href="{{ url_for('ui_get_setting') }}#global-settings">Manage Global Settings <ion-icon name="settings"></ion-icon></a>
+    </div>
+</div>
+
+<div class="card m-2">
+    <div class="card-body">
+        <h5 class="card-title">Namespace</h5>
+        <p>Your current default namespace is <span class="badge badge-light">{{ username }}</span> with access to the following existing namespaces
+            {% for namespace in namespaces %}
+            <span class="badge badge-light">{{ namespace.name }}</span>
+            {% endfor %}
+        </p>
+        <p>The ability to create and manage namespace are controlled by permissions shown below.</p>
+        <a class="btn btn-outline-success my-2 my-sm-0 mr-2 text-center" href="{{ url_for('ui_list_namespaces') }}" role="button">
+            Manage Namespaces
+        </a>
+    </div>
+</div>
+
+<div class="card m-2">
+    <div class="card-body">
+        <h5 class="card-title">Permissions</h5>
+        <p>Below are your current permissions within the conda-store application. The "*" will match any string of characters e.g. "na*ce" will match "namespace". This allows conda-store to have flexible and powerful authorization. For further information on authorization see the <a href="https://conda.store/conda-store/references/auth">docs</a></p>
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th scope="col">Namespace</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Permissions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entity_arn, entity_permissions in entity_binding_permissions.items() %}
+                <tr>
+                    <td>{{ entity_arn.split("/")[0] }}</td>
+                    <td>{{ entity_arn.split("/")[1] }}</td>
+                    <td>
+                        {% for permission in entity_permissions|map(attribute="value")|sort %}
+                        <span class="badge badge-light">{{ permission }}</span>
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card m-2">
+    <div class="card-body">
+        <h5 class="card-title">Usage</h5>
+        <p>Bellow is your current usage for namespaces you have access to.</p>
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th scope="col">Namespace</th>
+                    <th scope="col"># Environments</th>
+                    <th scope="col"># Builds</th>
+                    <th scope="col">Total Storage</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for namespace, num_environments, num_builds, storage in namespace_usage_metrics %}
+                <tr>
+                    <td>{{ namespace }}</td>
+                    <td>{{ num_environments }}</td>
+                    <td>{{ num_builds }}</td>
+                    <td><span class="badge badge-light">{{ storage | filesizeformat(true) }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card m-2">
+    <div class="card-body">
+        <h5>System</h5>
+        <p>Bellow is system metrics.</p>
+        <ul class="list-group">
+            <li class="list-group-item">Storage Total<span class="badge badge-light">{{ system_metrics.disk_total | filesizeformat(true) }}</span></li>
+            <li class="list-group-item">Storage Free<span class="badge badge-light">{{ system_metrics.disk_free | filesizeformat(true) }}</span></li>
+            <li class="list-group-item">Storage Used<span class="badge badge-light">{{ system_metrics.disk_usage | filesizeformat(true) }}</span></li>
+        </ul>
+
+        <div class="progress">
+            <div class="progress-bar" role="progressbar" style="width: {{ (system_metrics.disk_usage / system_metrics.disk_total * 100) | round | int }}%;" aria-valuenow="{{ (system_metrics.disk_usage / system_metrics.disk_total * 100) | round | int }}" aria-valuemin="0" aria-valuemax="100">{{ (system_metrics.disk_usage / system_metrics.disk_total * 100) | round | int }}%</div>
+        </div>
+    </div>
+</div>
+
+<script>
+ function setClipboard(value) {
+     var tempInput = document.createElement("input");
+     tempInput.style = "position: absolute; left: -1000px; top: -1000px";
+     tempInput.value = value;
+     document.body.appendChild(tempInput);
+     tempInput.select();
+     document.execCommand("copy");
+     document.body.removeChild(tempInput);
+ }
+
+ async function createTokenHandler(event) {
+     event.preventDefault();
+
+     let url = "{{ url_for('api_post_token') }}";
+     let response = await fetch(url, {method: 'POST'});
+     let tokenDiv = document.querySelector('#new-token');
+
+     if (response.ok) {
+         let data = await response.json();
+         tokenDiv.innerHTML = `<div onclick="setClipboard('${data.data.token}')"><div><code>${data.data.token}</code></div><div><button type="button" class="btn btn-primary"><ion-icon name="copy-outline"></ion-icon> copy</button></div></div>`;
+     } else {
+         tokenDiv.innerHTML = '<span class="text-danger">Error creating token</span>';
+     }
+ }
+
+ let tokenForm = document.querySelector('#create-token');
+ tokenForm.addEventListener('submit', (event) => createTokenHandler(event));
+</script>
+{% endblock %}
+
+{% endblock %}

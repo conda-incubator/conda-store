@@ -1,0 +1,84 @@
+name: "Test build Docker image"
+
+env:
+  FORCE_COLOR: "1" # Make tools pretty.
+  PYTHONUNBUFFERED: "1" # Make stdout and stderr behave well
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/**"
+      - ".github/actions/**"
+      - "conda-store/**"
+      - "conda-store-server/**"
+      - "examples/**"
+      - "tests/**"
+  push:
+    branches:
+      - main
+
+
+# ensuring only one instance is running at a given time
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  build-docker-image:
+    name: "Build docker images"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        docker-image:
+          - conda-store
+          - conda-store-server
+        platform:
+          - linux/amd64
+          - linux/arm64
+    steps:
+      - name: "Checkout Repository 🛎"
+        uses: actions/checkout@v4
+
+      - name: "Get project's default Python version 🏷️"
+        run: |
+          echo "PYTHON_VERSION_DEFAULT=$(cat .python-version-default)" >> $GITHUB_ENV
+
+      - name: "Set up Docker Buildx 🏗"
+        uses: docker/setup-buildx-action@v3
+
+      - name: "Lint Dockerfiles 🔍"
+        uses: jbergstroem/hadolint-gh-action@v1
+        with:
+          dockerfile: ${{ matrix.docker-image }}/Dockerfile
+          output_format: tty
+          error_level: 0
+
+      - name: "Copy .dockerignore"
+        run: |
+          cp .dockerignore ${{ matrix.docker-image }}/.dockerignore
+        shell: bash
+
+      - name: "Add Docker metadata 📝"
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            quansight/${{ matrix.docker-image }}
+          tags: |
+            type=sha
+
+      - name: "Build Docker images 🐳"
+        uses: docker/build-push-action@v5
+        with:
+          context: "${{ matrix.docker-image }}"
+          file: "${{ matrix.docker-image }}/Dockerfile"
+          tags: |
+            ${{ steps.meta.outputs.tags }}
+          target: "dev"
+          push: false
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            python_version=${{ env.PYTHON_VERSION_DEFAULT }}
+          platforms: ${{ matrix.platform }}

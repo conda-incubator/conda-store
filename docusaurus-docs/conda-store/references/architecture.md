@@ -55,7 +55,7 @@ due to it being battle tested and that conda-store is not doing any
 special things with the web server. However, over time the ability for
 robust input and output guarantees from the endpoints along with auto
 documentation made FastAPI appealing. The backend web app is defined
-in `conda_store_server.server.app`. There are several components to
+in `conda_store_server._internal.server.app`. There are several components to
 the server:
 
 - UI :: `conda_store_server/server/views/ui.py`

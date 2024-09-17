@@ -1,0 +1,46 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
+name: complicated-environment
+channels:
+  - conda-forge
+  - bokeh
+dependencies:
+  - python=3.12
+  - panel
+  - ipykernel
+  - ipywidgets
+  - ipywidgets_bokeh
+  - holoviews
+  - openjdk=17.0.9
+  - pyspark
+  - findspark
+  - jhsingle-native-proxy>=0.8.2
+  - bokeh-root-cmd>=0.1.2
+  - nbconvert
+  - pip:
+      - nrtk==0.3.0
+      - xaitk-saliency==0.7.0
+      - maite==0.5.0
+      - daml==0.44.5
+      - hypothesis >=6.61.0,<7.0.0
+      - pytest >=7.2.0,<8.0
+      - pytest-cov >=4.0.0,<5.0
+      - pytest-mock >= 3.10.0,<4.0
+      - pytest-snapshot >= 0.9.0
+      - pytest-xdist >=3.3.1,<4.0.0
+      - types-python-dateutil >=2.8.19,<3.0.0
+      - tox >=4.6.4,<5.0.0
+      - virtualenv-pyenv >=0.3.0,<1.0.0
+      - jupytext >= 1.14.0
+      - numpydoc >= 1.5.0
+      - pyright >= 1.1.280
+      - loguru
+      - torch>=2.1
+      - torchmetrics
+      - torchvision
+      - multiprocess
+      - keras
+      - yolov5
+      - smqtk-detection[centernet]

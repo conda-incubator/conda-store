@@ -1,0 +1,182 @@
+<!--
+ Copyright (c) conda-store development team. All rights reserved.
+ Use of this source code is governed by a BSD-style
+ license that can be found in the LICENSE file.
+-->
+
+{% extends 'base.html' %}
+
+{% block title %}Environment {{ environment.namespace.name }}/{{ environment.name }}{% endblock %}
+
+{% block content %}
+<h3>Environment</h3>
+<div class="card my-2">
+    <div class="card-body">
+        <h5 class="card-title">{{ environment.namespace.name }}/{{ environment.name }}
+            <span class="badge badge-light">{{ (environment.current_build.size or 0) | filesizeformat(true) }}</span>
+        </h5>
+    </div>
+
+    <ul class="list-group list-group-flush">
+        {% if environment_description %}
+        <li class="list-group-item">{{ environment_description }}</li>
+        {% endif %}
+        <li class="list-group-item">
+            <div class="card-body">
+                <div id="editor" style="height: 300px;">{{ spec }}</div>
+            </div>
+        </li>
+    </ul>
+    <div class="card-body">
+        <a href="{{ url_for('ui_get_setting', namespace=environment.namespace.name, environment_name=environment.name) }}" class="btn btn-primary btn-block">Settings</a>
+        <a href="{{ url_for('ui_edit_environment', namespace=environment.namespace.name, environment_name=environment.name) }}" class="btn btn-primary btn-block">Edit</a>
+        <button id="delete-environment" type="button" class="btn btn-primary btn-block">
+            Delete
+        </button>
+    </div>
+</div>
+
+<h3>Builds</h3>
+<ul class="list-group">
+    {% for build in environment.builds %}
+    <li class="list-group-item d-flex justify-content-between align-items-center {% if build.id == environment.current_build_id %}list-group-item-success{% elif build.deleted_on is not none %}list-group-item-secondary{% endif %}">
+        <a href="{{ url_for('ui_get_build', build_id=build.id) }}">Build {{ build.id }}</a>
+        <span>{{ build.status.value }}</span>
+        <div id="actions-build" class="btn-group" role="group" aria-label="Build actions">
+            {% if build.id != environment.current_build_id and build.status.value == 'COMPLETED' and build.deleted_on is none %}
+            <button type="button" data-action="set-current" data-id="{{ build.id }}" class="btn btn-primary mb-2">
+                <ion-icon name="checkmark"></ion-icon>
+            </button>
+            {% endif %}
+            <button type="button" data-action="refresh" data-id="{{ build.id }}" class="btn btn-primary mb-2">
+                <ion-icon name="refresh"></ion-icon>
+            </button>
+            {% if build.status.value in ["COMPLETED", "FAILED"] and  build.deleted_on is none %}
+            <button type="button" data-action="delete" data-id="{{ build.id }}" class="btn btn-primary mb-2">
+                <ion-icon name="trash"></ion-icon>
+            </button>
+            {% endif %}
+            {% if build.status.value in ["BUILDING"] %}
+            <button type="button" data-action="cancel" data-id="{{ build.id }}" class="btn btn-primary mb-2">
+                <ion-icon name="ban-outline"></ion-icon>
+            </button>
+            {% endif %}
+        </div>
+    </li>
+    {% endfor %}
+</ul>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js" integrity="sha512-GZ1RIgZaSc8rnco/8CXfRdCpDxRCphenIiZ2ztLy3XQfCbQUSCuk8IudvNHxkRA3oUg6q0qejgN/qqyG1duv5Q==" crossorigin="anonymous"></script>
+<script>
+ var editor = ace.edit("editor");
+ editor.setTheme("ace/theme/github");
+ editor.getSession().setMode("ace/mode/yaml");
+ editor.setFontSize("20px");
+ editor.setReadOnly(true);
+
+ function bannerMessage(message) {
+     let banner = document.querySelector('#message');
+     banner.innerHTML = message;
+ }
+
+ async function setCurrentEnvironmentBuild(event) {
+     event.preventDefault();
+     let buildId = event.currentTarget.getAttribute('data-id');
+
+     let url = `{{ url_for('api_get_environment', namespace=environment.namespace.name, environment_name=environment.name) }}`;
+     let response = await fetch(url, {
+         method: 'PUT',
+         headers: {
+             'Content-Type': 'application/json'
+         },
+         body: JSON.stringify({ build_id: buildId })
+     })
+
+     if (response.ok) {
+         window.location.reload(true);
+     } else {
+         let data = await response.json();
+         bannerMessage(`<div class="alert alert-danger col">${data.message}</div>`);
+     }
+ }
+
+ async function refreshBuild(event) {
+     event.preventDefault();
+     let buildId = event.currentTarget.getAttribute('data-id');
+
+     let url = `{{ url_for('api_list_builds') }}${ buildId }/`;
+     let response = await fetch(url, { method: 'PUT' });
+
+     if (response.ok) {
+         window.location.reload(true);
+     } else {
+         let data = await response.json();
+         bannerMessage(`<div class="alert alert-danger col">${data.message}</div>`);
+     }
+ }
+
+ async function deleteBuild(event) {
+     event.preventDefault();
+     let buildId = event.currentTarget.getAttribute('data-id');
+
+     let url = `{{ url_for('api_list_builds') }}${ buildId }/`;
+     let response = await fetch(url, { method: 'DELETE' });
+
+     if (response.ok) {
+         window.location.reload(true);
+     } else {
+         let data = await response.json();
+         bannerMessage(`<div class="alert alert-danger col">${data.message}</div>`);
+     }
+ }
+
+ async function cancelBuild(event) {
+     event.preventDefault();
+     let buildId = event.currentTarget.getAttribute('data-id');
+
+     let url = `{{ url_for('api_list_builds') }}${ buildId }/cancel/`;
+     let response = await fetch(url, { method: 'PUT' });
+
+     if (response.ok) {
+         window.location.reload(true);
+     } else {
+         let data = await response.json();
+         bannerMessage(`<div class="alert alert-danger col">${data.message}</div>`);
+     }
+ }
+
+ document.querySelectorAll('button[data-action="set-current"]').forEach(item => {
+     item.addEventListener('click', (event) => setCurrentEnvironmentBuild(event));
+ })
+
+ document.querySelectorAll('button[data-action="refresh"]').forEach(item => {
+     item.addEventListener('click', (event) => refreshBuild(event));
+ })
+
+ document.querySelectorAll('button[data-action="delete"]').forEach(item => {
+     item.addEventListener('click', (event) => deleteBuild(event));
+ })
+
+ document.querySelectorAll('button[data-action="cancel"]').forEach(item => {
+     item.addEventListener('click', (event) => cancelBuild(event));
+ })
+
+ async function deleteEnvironment(event) {
+     event.preventDefault();
+
+     let url = "{{ url_for('api_get_environment', namespace=environment.namespace.name, environment_name=environment.name) }}";
+     let response = await fetch(url, { method: 'DELETE' })
+
+     if (response.ok) {
+         window.location = "{{ url_for('ui_list_environments') }}";
+     } else {
+         let data = await response.json();
+         bannerMessage(`<div class="alert alert-danger col">${data.message}</div>`);
+     }
+ }
+
+ let deleteEnvironmentButton = document.querySelector('#delete-environment');
+ deleteEnvironmentButton.addEventListener('click', (event) => deleteEnvironment(event));
+
+</script>
+{% endblock %}

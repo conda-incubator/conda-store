@@ -11,9 +11,9 @@ This page is in active development, content may be incomplete or inaccurate.
 ## Authentication Model
 
 Authentication was modeled after JupyterHub for implementation. There
-is a base class `conda_store_server.server.auth.Authenticaiton`. If
+is a base class `conda_store_server._internal.server.auth.Authenticaiton`. If
 you are extending and using a form of OAuth2 use the
-`conda_store_server.server.auth.GenericOAuthAuthentication`. Similar
+`conda_store_server._internal.server.auth.GenericOAuthAuthentication`. Similar
 to JupyterHub all configuration is modified via
 [Traitlets](https://traitlets.readthedocs.io/en/stable/). Below shows
 an example of setting us OAuth2 via JupyterHub for conda-store.
@@ -30,11 +30,11 @@ Token](https://jwt.io/) is created to store the user credentials to
 ensure that conda-store is as stateless as possible. At this current
 point in time conda-store does not differentiate between a service and
 user. Similar to JupyterHub
-`conda_store_server.server.auth.Authentication` has an `authenticate`
+`conda_store_server._internal.server.auth.Authentication` has an `authenticate`
 method. This method is the primary way to customize authentication. It
 is responsible for checking that the user credentials to login are
 correct as well as returning a dictionary following the schema
-`conda_store_server.schema.AuthenticationToken`. This stores a
+`conda_store_server._internal.schema.AuthenticationToken`. This stores a
 `primary_namespace` for a given authenticated service or user. In
 addition a dictionary of `<namespace>/<name>` map to a set of
 roles. See the Authorization model to better understand the key to set
@@ -87,7 +87,7 @@ c.RBACAuthorizationBackend.role_mappings = {
     "viewer": {
         Permissions.ENVIRONMENT_READ
     },
-    "developer": {
+    "editor": {
         Permissions.ENVIRONMENT_CREATE,
         Permissions.ENVIRONMENT_READ,
         Permissions.ENVIRONMENT_UPDATE,
@@ -101,7 +101,10 @@ c.RBACAuthorizationBackend.role_mappings = {
 }
 ```
 
-Lets go through a few examples to make this more concrete and assume
+Additionally, the role `developer` is supported, which is a legacy alias of
+`editor`. The name `editor` is preferred.
+
+Let's go through a few examples to make this more concrete and assume
 the default configuration of conda-store.
 
 > Suppose we have an unauthenticated user trying to view the
