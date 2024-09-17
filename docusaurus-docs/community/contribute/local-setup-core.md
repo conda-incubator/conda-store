@@ -87,6 +87,13 @@ conda env create -f conda-store-server/environment-dev.yaml
 conda activate conda-store-server-dev
 ```
 
+Install the package in editable mode:
+
+```bash
+# from the root of the repository
+python -m pip install -e ./conda-store-server
+```
+
 ### Start conda-store in standalone mode
 
 Running `conda-store` in `--standalone` mode launches celery as a
