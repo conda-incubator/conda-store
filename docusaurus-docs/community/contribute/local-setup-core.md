@@ -42,7 +42,7 @@ The following resources will be available on the deployment:
 
 | Resource | Localhost port | username | password |
 |----------|----------------|----------|----------|
-| conda-store web server | [localhost:8080](http://localhost:8080)| `admin` | `password`|
+| conda-store web server (UI) | [localhost:8080](http://localhost:8080)| `admin` | `password`|
 | [JupyterHub](https://jupyter.org/hub) | [localhost:8000](http://localhost:8000) | any | `test` |
 | [MinIO](https://min.io/) S3 |  [localhost:9000](http://localhost:9000) | `admin` | `password` |
 | [PostgreSQL](https://www.postgresql.org/) (database: `conda-store`)| [localhost:5432](http://localhost:5432) | `admin` | `password` |
@@ -54,42 +54,57 @@ If you make any changes to `conda-store-server`,
 run the following to have those changes in the deployment:
 
 ```bash
-docker compose down -v # not always necessary
+docker compose down -v
 docker compose up --build
 ```
+
+### Stop deployment
 
 To stop the deployment, run:
 
 ```bash
 docker compose stop
+```
 
-# optional to remove the containers
+Optionally, to remove the containers, run:
+
+```bash
 docker compose rm -f
 ```
 
 ## Without Docker
 
-1. Install [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html) before developing on conda-store.
+### Pre-requisites
 
-2. Install the development dependencies and activate the environment:
+Install **conda** with the instructions in the [conda documentation][conda-install].
 
-   ```bash
-   # replace this with environment-macos-dev.yaml or environment-windows-dev.yaml
-   # if you are on Mac or Windows
-   conda env create -f conda-store-server/environment-dev.yaml
-   conda activate conda-store-server-dev
-   ```
+### Development environment
 
-3. Running `conda-store` in `--standalone` mode launches celery as a
+Create a conda environment with the development dependencies, and activate the environment:
+
+```bash
+conda env create -f conda-store-server/environment-dev.yaml
+conda activate conda-store-server-dev
+```
+
+### Start conda-store in standalone mode
+
+Running `conda-store` in `--standalone` mode launches celery as a
 subprocess of the web server.
 
-    ```bash
-    python -m conda_store_server.server --standalone
-   ```
+```bash
+python -m conda_store_server.server --standalone
+```
 
-1. Visit [localhost:8080](http://localhost:8080/) from your web browser.
+Visit [localhost:8080](http://localhost:8080/) from your web browser to access the web UI.
 
 ## Run tests
+
+You can run the codebase tests locally to verify your changes before submitting a pull request.
+
+### Pre-requisites
+
+[Install conda][conda-install], and [create a development environment](#development-environment) to run the test suite.
 
 ### conda-store (client)
 
@@ -151,7 +166,11 @@ docker.
 $ cd conda-store-server
 $ docker-compose down -v # ensure you've cleared state
 $ docker-compose up --build
-# wait until the conda-store-server is running check by visiting localhos:8080
+# wait until the conda-store-server is running check by visiting localhost:8080
 $ hatch env run -e dev playwright-test
 $ hatch env run -e dev integration-test
 ```
+
+<!-- External links -->
+
+[conda-install]: https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html
