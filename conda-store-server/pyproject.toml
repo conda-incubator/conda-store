@@ -126,9 +126,6 @@ user-journey-test = ["pytest -m user_journey"]
 conda-store-server = "conda_store_server._internal.server.__main__:main"
 conda-store-worker = "conda_store_server._internal.worker.__main__:main"
 
-[tool.black]
-line-length = 88
-
 [tool.isort]
 lines_between_types = 1
 lines_after_imports = 2
@@ -143,12 +140,9 @@ exclude = [
 [tool.ruff.lint]
 ignore = [
     "E501", # line-length
-
     "ANN001",	# missing-type-function-argument
     "ANN002",	# missing-type-args
     "ANN003",	# missing-type-kwargs
-    "ANN101",	# missing-type-self
-    "ANN102",	# missing-type-cls
     "ANN201",	# missing-return-type-undocumented-public-function
     "ANN202",	# missing-return-type-private-function
     "ANN204",	# missing-return-type-special-method
@@ -180,7 +174,6 @@ ignore = [
     "FIX002",	# line-contains-todo
     "N805",  	# invalid-first-argument-name-for-method
     "N815",  	# mixed-case-variable-in-class-scope
-    "PT004", 	# pytest-missing-fixture-name-underscore
     "PT006", 	# pytest-parametrize-names-wrong-type
     "PT011", 	# pytest-raises-too-broad
     "PT012", 	# pytest-raises-with-multiple-statements
