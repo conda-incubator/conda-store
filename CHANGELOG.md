@@ -1,10 +1,50 @@
-
 # Changelog
 
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 The project changed to `CalVer` in September 2023.
+
+## [2024.9.1] - 2024-09-17
+
+([full changelog](https://github.com/conda-incubator/conda-store/compare/2024.6.1...ca48ae04c1d1dd913e1c60f97a7a551800417c22))
+
+## Merged PRs
+
+- MAINT - Miscellaneous maintenance/governance tasks [#865](https://github.com/conda-incubator/conda-store/pull/865) ([@trallard](https://github.com/trallard))
+- Update `openapi.json` file path in `generate_api_docs.yaml` [#863](https://github.com/conda-incubator/conda-store/pull/863) ([@pavithraes](https://github.com/pavithraes))
+- [pre-commit.ci] pre-commit autoupdate [#860](https://github.com/conda-incubator/conda-store/pull/860) ([@pre-commit-ci](https://github.com/pre-commit-ci))
+- [MAINT] Prevent workers from trying to parse sys.argv upon intialization [#850](https://github.com/conda-incubator/conda-store/pull/850) ([@peytondmurray](https://github.com/peytondmurray))
+- MAINT - Add dependabot config [#847](https://github.com/conda-incubator/conda-store/pull/847) ([@trallard](https://github.com/trallard))
+- [MAINT] Remove deprecated docker-compose config option [#846](https://github.com/conda-incubator/conda-store/pull/846) ([@peytondmurray](https://github.com/peytondmurray))
+- DEV -  Set a canonical default Python version (3.12) [#844](https://github.com/conda-incubator/conda-store/pull/844) ([@trallard](https://github.com/trallard))
+- DEV - Simplify Docker images [#841](https://github.com/conda-incubator/conda-store/pull/841) ([@trallard](https://github.com/trallard))
+- restart workers after executing 10 tasks to mitigate memory leaks [#840](https://github.com/conda-incubator/conda-store/pull/840) ([@Adam-D-Lewis](https://github.com/Adam-D-Lewis))
+- [pre-commit.ci] pre-commit autoupdate [#839](https://github.com/conda-incubator/conda-store/pull/839) ([@pre-commit-ci](https://github.com/pre-commit-ci))
+- DEV - Update dev environments [#838](https://github.com/conda-incubator/conda-store/pull/838) ([@trallard](https://github.com/trallard))
+- BUG - Fix triggers [#837](https://github.com/conda-incubator/conda-store/pull/837) ([@trallard](https://github.com/trallard))
+- Bump braces from 3.0.2 to 3.0.3 in /docusaurus-docs [#835](https://github.com/conda-incubator/conda-store/pull/835) ([@dependabot](https://github.com/dependabot))
+- MAINT - Mock out calls to `conda-lock` for `test_solve_lockfile` [#834](https://github.com/conda-incubator/conda-store/pull/834) ([@peytondmurray](https://github.com/peytondmurray))
+- MAINT - Mock out call to env solve in `test_generate_constructor_installer` [#833](https://github.com/conda-incubator/conda-store/pull/833) ([@peytondmurray](https://github.com/peytondmurray))
+- ENH - Update workflows triggers [#832](https://github.com/conda-incubator/conda-store/pull/832) ([@trallard](https://github.com/trallard))
+- DOC - Update documentation [#831](https://github.com/conda-incubator/conda-store/pull/831) ([@trallard](https://github.com/trallard))
+- REL - 2024.6.1 [#829](https://github.com/conda-incubator/conda-store/pull/829) ([@peytondmurray](https://github.com/peytondmurray))
+- Add `conda config` warning docs/message; add duration log for actions [#823](https://github.com/conda-incubator/conda-store/pull/823) ([@peytondmurray](https://github.com/peytondmurray))
+- Build docker images for arm (aarch64) [#822](https://github.com/conda-incubator/conda-store/pull/822) ([@aktech](https://github.com/aktech))
+- Privatize internal conda-store API [#820](https://github.com/conda-incubator/conda-store/pull/820) ([@peytondmurray](https://github.com/peytondmurray))
+- MAINT - Misc improvements to repo [#802](https://github.com/conda-incubator/conda-store/pull/802) ([@trallard](https://github.com/trallard))
+- Bump express from 4.18.2 to 4.19.2 in /docusaurus-docs [#800](https://github.com/conda-incubator/conda-store/pull/800) ([@dependabot](https://github.com/dependabot))
+- Bump follow-redirects from 1.15.4 to 1.15.6 in /docusaurus-docs [#785](https://github.com/conda-incubator/conda-store/pull/785) ([@dependabot](https://github.com/dependabot))
+- [DOC] Auto-generate openapi.json [#782](https://github.com/conda-incubator/conda-store/pull/782) ([@pavithraes](https://github.com/pavithraes))
+- Update metadata on landing page [#774](https://github.com/conda-incubator/conda-store/pull/774) ([@pavithraes](https://github.com/pavithraes))
+- Update conda-store explanations [#726](https://github.com/conda-incubator/conda-store/pull/726) ([@pavithraes](https://github.com/pavithraes))
+
+## Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/conda-incubator/conda-store/graphs/contributors?from=2024-06-10&to=2024-09-01&type=c))
+
+[@Adam-D-Lewis](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3AAdam-D-Lewis+updated%3A2024-06-10..2024-09-01&type=Issues) | [@aktech](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Aaktech+updated%3A2024-06-10..2024-09-01&type=Issues) | [@asmeurer](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Aasmeurer+updated%3A2024-06-10..2024-09-01&type=Issues) | [@costrouc](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Acostrouc+updated%3A2024-06-10..2024-09-01&type=Issues) | [@dependabot](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Adependabot+updated%3A2024-06-10..2024-09-01&type=Issues) | [@dharhas](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Adharhas+updated%3A2024-06-10..2024-09-01&type=Issues) | [@jaimergp](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Ajaimergp+updated%3A2024-06-10..2024-09-01&type=Issues) | [@kcpevey](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Akcpevey+updated%3A2024-06-10..2024-09-01&type=Issues) | [@netlify](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Anetlify+updated%3A2024-06-10..2024-09-01&type=Issues) | [@pavithraes](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Apavithraes+updated%3A2024-06-10..2024-09-01&type=Issues) | [@peytondmurray](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Apeytondmurray+updated%3A2024-06-10..2024-09-01&type=Issues) | [@pre-commit-ci](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Apre-commit-ci+updated%3A2024-06-10..2024-09-01&type=Issues) | [@trallard](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Atrallard+updated%3A2024-06-10..2024-09-01&type=Issues)
+
 
 ## [2024.6.1] - 2024-06-10
 

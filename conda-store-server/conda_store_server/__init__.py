@@ -9,7 +9,7 @@ import typing
 import platformdirs
 
 
-__version__ = "2024.6.1"
+__version__ = "2024.9.1"
 
 
 CONDA_STORE_DIR = platformdirs.user_data_path(appname="conda-store")
