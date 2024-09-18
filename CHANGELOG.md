@@ -12,7 +12,7 @@ The project changed to `CalVer` in September 2023.
 ## Merged PRs
 
 - MAINT - Miscellaneous maintenance/governance tasks [#865](https://github.com/conda-incubator/conda-store/pull/865) ([@trallard](https://github.com/trallard))
-- Update `openapi.json` file path in `generate_api_docs.yaml` [#863](https://github.com/conda-incubator/conda-store/pull/863) ([@pavithraes](https://github.com/pavithraes))
+- MAINT - Update `openapi.json` file path in `generate_api_docs.yaml` [#863](https://github.com/conda-incubator/conda-store/pull/863) ([@pavithraes](https://github.com/pavithraes))
 - [pre-commit.ci] pre-commit autoupdate [#860](https://github.com/conda-incubator/conda-store/pull/860) ([@pre-commit-ci](https://github.com/pre-commit-ci))
 - [MAINT] Prevent workers from trying to parse sys.argv upon intialization [#850](https://github.com/conda-incubator/conda-store/pull/850) ([@peytondmurray](https://github.com/peytondmurray))
 - MAINT - Add dependabot config [#847](https://github.com/conda-incubator/conda-store/pull/847) ([@trallard](https://github.com/trallard))
@@ -29,14 +29,14 @@ The project changed to `CalVer` in September 2023.
 - ENH - Update workflows triggers [#832](https://github.com/conda-incubator/conda-store/pull/832) ([@trallard](https://github.com/trallard))
 - DOC - Update documentation [#831](https://github.com/conda-incubator/conda-store/pull/831) ([@trallard](https://github.com/trallard))
 - REL - 2024.6.1 [#829](https://github.com/conda-incubator/conda-store/pull/829) ([@peytondmurray](https://github.com/peytondmurray))
-- Add `conda config` warning docs/message; add duration log for actions [#823](https://github.com/conda-incubator/conda-store/pull/823) ([@peytondmurray](https://github.com/peytondmurray))
-- Build docker images for arm (aarch64) [#822](https://github.com/conda-incubator/conda-store/pull/822) ([@aktech](https://github.com/aktech))
-- Privatize internal conda-store API [#820](https://github.com/conda-incubator/conda-store/pull/820) ([@peytondmurray](https://github.com/peytondmurray))
+- MAINT - Add `conda config` warning docs/message; add duration log for actions [#823](https://github.com/conda-incubator/conda-store/pull/823) ([@peytondmurray](https://github.com/peytondmurray))
+- DEV - Build docker images for arm (aarch64) [#822](https://github.com/conda-incubator/conda-store/pull/822) ([@aktech](https://github.com/aktech))
+- DEV - Privatize internal conda-store API [#820](https://github.com/conda-incubator/conda-store/pull/820) ([@peytondmurray](https://github.com/peytondmurray))
 - MAINT - Misc improvements to repo [#802](https://github.com/conda-incubator/conda-store/pull/802) ([@trallard](https://github.com/trallard))
 - Bump express from 4.18.2 to 4.19.2 in /docusaurus-docs [#800](https://github.com/conda-incubator/conda-store/pull/800) ([@dependabot](https://github.com/dependabot))
 - Bump follow-redirects from 1.15.4 to 1.15.6 in /docusaurus-docs [#785](https://github.com/conda-incubator/conda-store/pull/785) ([@dependabot](https://github.com/dependabot))
 - [DOC] Auto-generate openapi.json [#782](https://github.com/conda-incubator/conda-store/pull/782) ([@pavithraes](https://github.com/pavithraes))
-- Update metadata on landing page [#774](https://github.com/conda-incubator/conda-store/pull/774) ([@pavithraes](https://github.com/pavithraes))
+- DOC - Update metadata on landing page [#774](https://github.com/conda-incubator/conda-store/pull/774) ([@pavithraes](https://github.com/pavithraes))
 - Update conda-store explanations [#726](https://github.com/conda-incubator/conda-store/pull/726) ([@pavithraes](https://github.com/pavithraes))
 
 ## Contributors to this release
