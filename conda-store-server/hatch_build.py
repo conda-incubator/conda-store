@@ -21,7 +21,7 @@ from typing import Any, Dict, List
 from hatchling.builders.hooks.plugin.interface import BuildHookInterface
 
 
-CONDA_STORE_UI_VERSION = "2024.9.1"
+CONDA_STORE_UI_VERSION = "2024.3.1"
 CONDA_STORE_UI_URL = f"https://registry.npmjs.org/@conda-store/conda-store-ui/-/conda-store-ui-{CONDA_STORE_UI_VERSION}.tgz"
 
 UI_FILES_EXTENSIONS = ["*.js", "*.css", "*.js.map", "*.css.map", "*.html"]
@@ -67,7 +67,10 @@ class DownloadCondaStoreUIHook(BuildHookInterface):
             if Path(os.getenv("LOCAL_UI")).exists():
                 local_ui_path = os.getenv("LOCAL_UI")
                 source_directory = Path(local_ui_path) / "dist"
-                self.copy_ui_files(source_directory)
+                if source_directory.exists():
+                    self.copy_ui_files(source_directory)
+                else:
+                    print(f"Directory does not exist: {source_directory}")
 
             else:
                 raise FileNotFoundError(
@@ -121,10 +124,10 @@ class DownloadCondaStoreUIHook(BuildHookInterface):
             for extension in UI_FILES_EXTENSIONS:
                 for file_path in source_directory.glob(extension):
                     target_path = server_build_static_assets / file_path.name
-                # in case the file already exists, remove it
-                if target_path.exists():
-                    target_path.unlink()
-                shutil.copy(file_path, target_path)
+                    # in case the file already exists, remove it
+                    if target_path.exists():
+                        target_path.unlink()
+                    shutil.copy(file_path, target_path)
 
             print(
                 f"Copied files: {[p.name for p in server_build_static_assets.glob('*')]}"
