@@ -24,6 +24,7 @@ https://conda.store/conda-store-ui/how-tos/configure-ui -->
              REACT_APP_SHOW_LOGIN_ICON: "true",
              REACT_APP_API_URL: "{{ url_for('get_conda_store_ui') }}",
              REACT_APP_LOGIN_PAGE_URL: "{{ url_for('get_login_method') }}?next=",
+             REACT_APP_LOGOUT_PAGE_URL: "{{ url_for('post_logout_method') }}?next=/",
          };
         </script>
         <script defer src="static/conda-store-ui/main.js"></script>

@@ -3,6 +3,6 @@ contact_links:
   - name: conda-store documentation
     url: https://conda.store/en/latest/
     about: Check out the conda-store documentation
-  - name: conda-store issue tracker
-    about: Did you find a bug or want to suggest something? Please open an issue on our tracker.
-    url: https://https://github.com/conda-incubator/conda-store/issues/new/choose
+  - name: Contribution guidelines
+    about: Do you want to contribute to conda-store? Visit our community guidelines
+    url: https://conda.store/community/contribute/

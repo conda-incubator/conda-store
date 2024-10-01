@@ -50,6 +50,7 @@ npm run start
 ```
 
 This command starts a local development server at [localhost:3000](http://localhost:3000) which opens automatically in a new browser window. Most changes are reflected live without having to restart the server.
+The only time you'd need to restart the server is if you are making changes to the documentation site through the `docusaurus.config.js` file.
 
 ### Build website
 
