@@ -1,4 +1,4 @@
-# 2024 Roadmap
+# Roadmap
 
 The conda-store roadmap for the remaining part of 2024 into 2025 will revolve around several key areas of iterative improvement:
 
