@@ -61,7 +61,7 @@ There are many ways in which you can contribute to conda-store (they're all impo
 
 ## Roadmap
 
-Check out the current roadmap for conda-store [here](./roadmap.md).
+Check out the [current roadmap for conda-store](./roadmap.md).
 
 <!-- ## Design assets -->
 
