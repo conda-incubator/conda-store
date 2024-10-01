@@ -1,4 +1,5 @@
 ---
+sidebar_position: 3
 description: Best practices for opening issues
 ---
 
