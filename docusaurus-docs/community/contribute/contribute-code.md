@@ -40,7 +40,7 @@ Optionally, you can use tools like conda, pipenv, or venv to create an isolated 
 
 ### Fork and clone the repository
 
-1. Create a personal copy of the corresponding conda-store GitHub repository by clicking the fork button in the top-right corner.
+1. Create a personal copy of the corresponding conda-store GitHub repository by clicking the fork button in the top-right section of the repository page. You need a [GitHub account](https://github.com/) to fork the repository.
 
 2. Clone the forked project to your local computer:
 

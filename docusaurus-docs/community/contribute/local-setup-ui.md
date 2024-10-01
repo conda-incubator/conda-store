@@ -9,19 +9,10 @@ To get started with conda-store-ui development, there are a couple of options. T
 
 ## Pre-requisites
 
-This document assumes that you have the following tools set up on your computer:
+This document assumes that you have the following set up on your computer:
 
-- Docker Compose (which requires Docker)
-- Git
-
-You also need to have:
-
-- A GitHub.com account
-
-Once you have all of those things, then you need to:
-
-1. [Fork the conda-store-ui repository](https://github.com/conda-incubator/conda-store-ui/fork)
-2. `git clone` the fork to your computer.
+- Local [clone of your fork](community/contribute/contribute-code#setup-for-local-development) of the [`conda-store-ui` repository](https://github.com/conda-incubator/conda-store-ui)
+- [Docker compose](https://docs.docker.com/compose/install/) (which requires [Docker](https://docs.docker.com/engine/install/))
 
 ## Basic Option (recommended): Run the UI in Docker
 
@@ -33,7 +24,7 @@ For basic local development on the UI, running conda-store-ui in Docker is the s
 4. Open your local browser and go to [http://localhost:8000](http://localhost:8000) to see conda-store-ui.
 5. You can then log in using the default username of `username` and default password of `password`.
 
-:::note 
+:::note
 
 Hot reloading is enabled, so when you make changes to source files (i.e., files under the conda-store-ui/src/ directory), your browser will reload and reflect the changes.
 
@@ -49,16 +40,16 @@ This setup still uses Docker to run the rest of the Conda Store stack. That mean
 
 :::
 
-### Set up your Conda environment
+### Set up your conda environment
 
-This project uses [Conda](https://conda.io) for package management. To set up Conda, please see their [installation documentation](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html).
+This project uses [conda](https://conda.io) for package management. To set up conda, please see their [installation documentation](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html).
 
 1. Change to the project root: `cd conda-store-ui`
 2. From the project root, create the conda environment: `conda env create -f environment_dev.yml`
 
 ### Run conda-store-ui locally (and the rest of the stack in Docker)
 
-:::tip 
+:::tip
 
 Make sure you are in the project root: `cd conda-store-ui`
 
