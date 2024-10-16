@@ -37,8 +37,19 @@ spec:
             - name: config
               mountPath: "/etc/conda-store/"
               readOnly: true
+            - name: secret
+              mountPath: "/var/lib/conda-store"
+              readOnly: true
+            - name: home
+              mountPath: "/home/conda"
       restartPolicy: Always
       volumes:
         - name: config
           configMap:
-            name: "{{ template "condaStore.fullname" . }}-server"
+            name: "{{ template "condaStore.fullname" . }}"
+        - name: secret
+          secret:
+            secretName: {{ .Values.global.condaStoreConfigSecretsName }}
+        - name: home
+          emptyDir:
+            sizeLimit: 1Mi
