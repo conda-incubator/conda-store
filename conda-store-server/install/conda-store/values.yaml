@@ -1,0 +1,46 @@
+podAnnotations: {}
+podLabels: {}
+
+global:
+  namespace: conda-store
+
+server:
+  nodePort: 30500
+  port: 8080
+  replicas: 1
+  image:
+    repository: quansight/conda-store-server
+    pullPolicy: IfNotPresent
+    tag: 2024.6.1
+  appConfig: ""
+
+worker:
+  port: 8080
+  replicas: 1
+  image:
+    repository: quansight/conda-store-server
+    pullPolicy: IfNotPresent
+    tag: 2024.6.1
+  appConfig: ""
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+# This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+livenessProbe:
+  httpGet:
+    path: /
+    port: http
+readinessProbe:
+  httpGet:
+    path: /
+    port: http
