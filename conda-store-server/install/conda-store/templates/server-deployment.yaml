@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ template "condaStore.fullname" . }}-server"
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    helm.sh/chart: {{ include "condaStore.chart" . }}
+    app.kubernetes.io/name: {{ include "condaStore.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app: "{{ template "condaStore.fullname" . }}-server"
+spec:
+  replicas: {{ .Values.server.replicas }}
+  selector:
+    matchLabels:
+      app: "{{ template "condaStore.fullname" . }}-server"
+  template:
+    metadata:
+      labels:
+        helm.sh/chart: {{ include "condaStore.chart" . }}
+        app.kubernetes.io/name: {{ include "condaStore.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        app: "{{ template "condaStore.fullname" . }}-server"
+    spec:
+      containers:
+        - name: "{{ template "condaStore.fullname" . }}-server"
+          image: "{{ .Values.server.image.repository }}:{{ .Values.server.image.tag }}"
+          imagePullPolicy: {{ .Values.server.image.pullPolicy }}
+          args:
+            - "conda-store-server"
+            - "--config"
+            - "/etc/conda-store/conda_store_config.py"
+          ports:
+            - containerPort: {{ .Values.server.port }}
+          volumeMounts:
+            - name: config
+              mountPath: "/etc/conda-store/"
+              readOnly: true
+      restartPolicy: Always
+      volumes:
+        - name: config
+          configMap:
+            name: "{{ template "condaStore.fullname" . }}-server"
