@@ -37,13 +37,19 @@ spec:
             - name: config
               mountPath: "/etc/conda-store/"
               readOnly: true
+            - name: secret
+              mountPath: "/var/lib/conda-store"
+              readOnly: true
             - name: storage
               mountPath: "/opt/conda-store/"
       restartPolicy: Always
       volumes:
         - name: config
           configMap:
-            name: "{{ template "condaStore.fullname" . }}-worker"
+            name: "{{ template "condaStore.fullname" . }}"
+        - name: secret
+          secret:
+            secretName: {{ .Values.global.condaStoreConfigSecretsName }}
         - name: storage
           persistentVolumeClaim:
             claimName: "{{ template "condaStore.fullname" . }}-worker-claim"

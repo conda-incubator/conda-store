@@ -1,10 +1,10 @@
 apiVersion: v1
 data:
   conda_store_config.py: |
-    {{ .Values.server.appConfig | nindent 4 }} 
+    {{ .Values.global.condaStoreConfig | nindent 4 }} 
 kind: ConfigMap
 metadata:
-  name: "{{ template "condaStore.fullname" . }}-server"
+  name: "{{ template "condaStore.fullname" . }}"
   namespace: {{ .Values.global.namespace }}
   labels:
     helm.sh/chart: {{ include "condaStore.chart" . }}

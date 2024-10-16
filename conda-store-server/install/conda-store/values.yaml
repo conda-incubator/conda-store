@@ -3,6 +3,25 @@ podLabels: {}
 
 global:
   namespace: conda-store
+  condaStoreConfig: |
+    import logging
+
+    from conda_store_server.server.auth import DummyAuthentication
+    from conda_store_server.storage import S3Storage
+
+
+    c.CondaStore.storage_class = S3Storage
+    c.CondaStore.store_directory = "/opt/conda-store/conda-store/"
+    c.CondaStore.default_uid = 1000
+    c.CondaStore.default_gid = 100
+    c.CondaStore.default_permissions = "555"
+    c.CondaStoreServer.address = "0.0.0.0"
+    c.CondaStoreServer.port = 8080
+    c.CondaStoreServer.url_prefix = "/"
+    c.CondaStoreServer.authentication_class = DummyAuthentication
+    c.CondaStoreWorker.watch_paths = ["/opt/environments"]
+    c.CondaStore.environment_directory = "/home/conda/{namespace}/envs/{namespace}-{name}"
+  condaStoreConfigSecretsName: conda-store-secret
 
 server:
   nodePort: 30500
@@ -12,7 +31,6 @@ server:
     repository: quansight/conda-store-server
     pullPolicy: IfNotPresent
     tag: 2024.6.1
-  appConfig: ""
 
 worker:
   port: 8080
@@ -21,7 +39,6 @@ worker:
     repository: quansight/conda-store-server
     pullPolicy: IfNotPresent
     tag: 2024.6.1
-  appConfig: ""
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
