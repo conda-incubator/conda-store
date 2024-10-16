@@ -1,0 +1,7 @@
+{
+  "minio-username": "admin",
+  "minio-password": "password",
+  "redis-password": "password",
+  "postgres-username": "admin",
+  "postgres-password": "password"
+}
