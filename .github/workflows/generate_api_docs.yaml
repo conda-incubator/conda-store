@@ -1,33 +1,22 @@
 name: "Generate openapi.json"
 
-env:
-  DEFAULT_PYTHON_VERSION: "3.12"
-
 on:
-  pull_request:
-    paths: ['conda-store-server/conda_store_server/**']
+  workflow_dispatch:
+  schedule:
+    - cron: "15 0 * * 0"   # Run at 00:15 every Sunday
 
 jobs:
   update-openapi-json:
     runs-on: ubuntu-latest
-    # so that we can skip this job by adding 'skip openapi' to the commit message
-    # and only run it when the PR is against the main branch of our repo
-    if: "!contains(github.event.head_commit.message, '[openapi skip]') && github.repository=='conda-incubator/conda-store'"
     permissions:
       contents: write
+      pull-requests: write
     defaults:
       run:
         shell: bash -el {0}
     steps:
-      - name: "Install jq 📦"
-        run: |
-          sudo apt update
-          sudo apt install -y jq
-
       - name: "Checkout repository 🛎️"
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
 
       - name: "Set up Miniconda 🐍"
         uses: conda-incubator/setup-miniconda@v3
@@ -43,10 +32,14 @@ jobs:
           jq . --sort-keys docusaurus-docs/static/openapi.json > docusaurus-docs/static/openapi.json.formatted
           mv docusaurus-docs/static/openapi.json.formatted docusaurus-docs/static/openapi.json
 
-      - name: "Commit changes"
-        uses: EndBug/add-and-commit@v9
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7
         with:
-          default_author: github_actions
-          message: 'Update REST API documentation (openapi.json)'
-          add: 'docusaurus-docs/static/openapi.json'
-          push: true
+          title: "[AUTO] Update openapi.json"
+          commit-message: "[AUTO] Update openapi.json"
+          add-paths: docusaurus-docs/static/openapi.json
+          labels: |
+            needs: review 👀
+            type: maintenance 🛠
+            area: api
+            area: documentation 📖
