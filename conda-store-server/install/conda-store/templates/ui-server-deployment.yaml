@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ template "condaStore.fullname" . }}-ui-server"
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    helm.sh/chart: {{ include "condaStore.chart" . }}
+    app.kubernetes.io/name: {{ include "condaStore.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app: "{{ template "condaStore.fullname" . }}-ui-server"
+spec:
+  replicas: {{ .Values.uiServer.replicas }}
+  selector:
+    matchLabels:
+      app: "{{ template "condaStore.fullname" . }}-ui-server"
+  template:
+    metadata:
+      labels:
+        helm.sh/chart: {{ include "condaStore.chart" . }}
+        app.kubernetes.io/name: {{ include "condaStore.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        app: "{{ template "condaStore.fullname" . }}-ui-server"
+    spec:
+      containers:
+        - name: "{{ template "condaStore.fullname" . }}-ui-server"
+          image: "{{ .Values.uiServer.image.repository }}:{{ .Values.uiServer.image.tag }}"
+          imagePullPolicy: {{ .Values.uiServer.image.pullPolicy }}
+          args:
+            - "conda-store-server"
+            - "--config"
+            - "/etc/conda-store/conda_store_config.py"
+          ports:
+            - containerPort: {{ .Values.uiServer.port }}
+          volumeMounts:
+            - name: config
+              mountPath: "/etc/conda-store/"
+              readOnly: true
+            - name: secret
+              mountPath: "/var/lib/conda-store"
+              readOnly: true
+            - name: home
+              mountPath: "/home/conda"
+      restartPolicy: Always
+      volumes:
+        - name: config
+          configMap:
+            name: "{{ template "condaStore.fullname" . }}"
+        - name: secret
+          secret:
+            secretName: {{ .Values.global.condaStoreConfigSecretsName }}
+        - name: home
+          emptyDir:
+            sizeLimit: 1Mi
