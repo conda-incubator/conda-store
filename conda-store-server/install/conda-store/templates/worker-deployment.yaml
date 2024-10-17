@@ -42,6 +42,9 @@ spec:
               readOnly: true
             - name: storage
               mountPath: "/opt/conda-store/"
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
       restartPolicy: Always
       volumes:
         - name: config

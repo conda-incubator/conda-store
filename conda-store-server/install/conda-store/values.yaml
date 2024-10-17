@@ -20,7 +20,7 @@ global:
     c.CondaStoreServer.url_prefix = "/"
     c.CondaStoreServer.authentication_class = DummyAuthentication
     c.CondaStoreWorker.watch_paths = ["/opt/environments"]
-    c.CondaStore.environment_directory = "/home/conda/{namespace}/envs/{namespace}-{name}"
+    c.CondaStore.environment_directory = "{store_directory}/{namespace}/envs/{namespace}-{name}"
   condaStoreConfigSecretsName: conda-store-secret
 
 apiServer:
