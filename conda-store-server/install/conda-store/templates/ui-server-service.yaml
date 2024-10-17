@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ template "condaStore.fullname" . }}-ui-server"
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    helm.sh/chart: {{ include "condaStore.chart" . }}
+    app.kubernetes.io/name: {{ include "condaStore.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  type: NodePort
+  ports:
+    - port: 8080
+      nodePort: {{ .Values.uiServer.nodePort }}
+      targetPort: {{ .Values.uiServer.port }}
+      protocol: TCP
+      name: http
+  selector:
+    app: "{{ template "condaStore.fullname" . }}-ui-server"
+
