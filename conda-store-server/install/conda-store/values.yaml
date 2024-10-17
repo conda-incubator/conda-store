@@ -23,7 +23,16 @@ global:
     c.CondaStore.environment_directory = "/home/conda/{namespace}/envs/{namespace}-{name}"
   condaStoreConfigSecretsName: conda-store-secret
 
-server:
+apiServer:
+  nodePort: 30501
+  port: 8081
+  replicas: 1
+  image:
+    repository: quansight/conda-store-server
+    pullPolicy: IfNotPresent
+    tag: 2024.6.1
+
+uiServer:
   nodePort: 30500
   port: 8080
   replicas: 1
@@ -33,7 +42,6 @@ server:
     tag: 2024.6.1
 
 worker:
-  port: 8080
   replicas: 1
   image:
     repository: quansight/conda-store-server
