@@ -18,6 +18,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from fastapi_pagination import add_pagination
 from sqlalchemy.pool import QueuePool
 from starlette.middleware.sessions import SessionMiddleware
 from traitlets import (
@@ -238,6 +239,8 @@ class CondaStoreServer(Application):
                 "url": "https://opensource.org/licenses/BSD-3-Clause",
             },
         )
+
+        add_pagination(app)
 
         app.add_middleware(
             CORSMiddleware,
