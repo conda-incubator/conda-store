@@ -15,13 +15,13 @@ from conda_store_server.storage import S3Storage
 # failures
 c.CondaStore.storage_threshold = 1024**3
 c.CondaStore.storage_class = S3Storage
-c.CondaStore.store_directory = "/var/lib/conda-store/"
-c.CondaStore.environment_directory = "/opt/conda-store/envs/{namespace}-{name}"
+c.CondaStore.store_directory = "./conda-store-workspace/"
+c.CondaStore.environment_directory = "./conda-store-workspace/envs/{namespace}-{name}"
 # c.CondaStore.database_url = "mysql+pymysql://admin:password@mysql/conda-store"
 c.CondaStore.database_url = (
-    "postgresql+psycopg2://postgres:password@postgres/conda-store"
+    "postgresql+psycopg2://postgres:password@localhost/conda-store"
 )
-c.CondaStore.redis_url = "redis://:password@redis:6379/0"
+c.CondaStore.redis_url = "redis://:password@localhost:6379/0"
 c.CondaStore.default_uid = 1000
 c.CondaStore.default_gid = 1000
 c.CondaStore.default_permissions = "775"
@@ -67,7 +67,7 @@ c.CondaStoreServer.template_vars = {
 #         worker settings
 # ==================================
 c.CondaStoreWorker.log_level = logging.INFO
-c.CondaStoreWorker.watch_paths = ["/opt/environments"]
+c.CondaStoreWorker.watch_paths = ["./conda-store-workspace/environments"]
 c.CondaStoreWorker.concurrency = 4
 
 # ==================================
