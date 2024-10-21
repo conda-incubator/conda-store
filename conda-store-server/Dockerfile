@@ -61,7 +61,10 @@ RUN mamba create --name ${conda_env_name} \
 COPY ./ /opt/conda-store-server/
 
 USER 0:0
-RUN chown -R ${user_no}:${user_no} /opt/conda-store-server/
+RUN chown -R ${user_no}:${user_no} /opt/conda-store-server/ && \
+ mkdir -p /.local/share/conda-store && \
+ chown -R ${user_no}:${user_no} /.local/share/conda-store
+
 USER ${user_no}:${user_no}
 
 # ---------------------------------------------------------------------------------
