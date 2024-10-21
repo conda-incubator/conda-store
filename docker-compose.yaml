@@ -7,6 +7,7 @@ services:
     volumes:
       - ./tests/assets/environments:/opt/environments:ro
       - ./tests/assets/conda_store_config.py:/opt/conda_store/conda_store_config.py:ro
+      - ./conda-store-server/:/opt/conda-store-server/:delegated
     depends_on:
       conda-store-server:
         condition: service_healthy
@@ -32,6 +33,7 @@ services:
         condition: service_healthy
     volumes:
       - ./tests/assets/conda_store_config.py:/opt/conda_store/conda_store_config.py:ro
+      - ./conda-store-server/:/opt/conda-store-server/:delegated
     healthcheck:
       test:
         ["CMD", "curl", "--fail", "http://localhost:8080/conda-store/api/v1/"]
