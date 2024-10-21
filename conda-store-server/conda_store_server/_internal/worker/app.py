@@ -72,10 +72,23 @@ class CondaStoreWorker(Application):
         # ensure checks on redis_url
         self.conda_store.redis_url
 
+    def logger_to_celery_logging_level(self, logging_level):
+        # celery supports the log levels DEBUG | INFO | WARNING | ERROR | CRITICAL | FATAL
+        # https://docs.celeryq.dev/en/main/reference/cli.html#celery-worker
+        logging_to_celery_level_map = {
+            50: "CRITICAL",
+            40: "ERROR",
+            30: "WARNING",
+            20: "INFO",
+            10: "DEBUG",
+        }
+        return logging_to_celery_level_map[logging_level]
+
     def start(self):
+
         argv = [
             "worker",
-            "--loglevel=INFO",
+            f"--loglevel={self.logger_to_celery_logging_level(self.log_level)}",
             "--max-tasks-per-child=10",  # mitigate memory leaks
         ]
 
