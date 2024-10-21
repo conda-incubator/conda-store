@@ -68,6 +68,7 @@ Release captain responsible - <@gh_username>
 - [ ] Update the [conda-forge feedstock version](https://github.com/conda-forge/conda-store-feedstock) through a PR or review and merge the regro-bot PR.
   - [ ] If needed - update `meta.yaml` or `recipe.yaml` and re-render the feedstock.
 - [ ] Open a follow-up PR to bump `conda-store` and `conda-store-server` versions to the next dev-release number (for example `2024.10.1`).
+- [ ] Open a follow-up PR to bump the `conda-store-server` version in the [`conda-store-ui` compose file](https://github.com/conda-incubator/conda-store-ui/blob/main/docker-compose.yml).
 - [ ] Celebrate, you're done! 🎉
 
 [^github-activity]: If you wish, use [`github-activity` to generate a Changelog](https://github.com/choldgraf/github-activity), e.g. `github-activity conda-incubator/conda-store --since 2024.9.1 --until 2023.10.1`.
