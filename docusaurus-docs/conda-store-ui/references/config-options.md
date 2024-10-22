@@ -89,10 +89,9 @@ Options:
 
   Manage the history stack in memory instead of using the browser's history
   ([createMemoryRouter](https://reactrouter.com/en/main/routers/create-memory-router)).
-  The [Jupyter
-  extension](https://conda.store/jupyterlab-conda-store/introduction) configures
-  the conda-store-ui to use the memory router so that it does not conflict with
-  JupyterLab trying to manage the browser URL and history.
+  The [Jupyter extension][jupyter-extension] configures the conda-store-ui to
+  use the memory router so that it does not conflict with JupyterLab trying to
+  manage the browser URL and history.
 
 | Key                    | Value  |
 |------------------------|--------|
@@ -105,3 +104,6 @@ variable is passed directly through to React Router's
 [opts.basename](https://reactrouter.com/en/main/routers/create-browser-router#optsbasename).
 
 Only valid when React Router's "browser" router type is used, otherwise ignored.
+
+<!-- Internal links -->
+[jupyter-extension]: ../../jupyterlab-conda-store/introduction
