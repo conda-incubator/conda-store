@@ -106,4 +106,4 @@ variable is passed directly through to React Router's
 Only valid when React Router's "browser" router type is used, otherwise ignored.
 
 <!-- Internal links -->
-[jupyter-extension]: ../../jupyterlab-conda-store/introduction
+[jupyter-extension]: /jupyterlab-conda-store/introduction
