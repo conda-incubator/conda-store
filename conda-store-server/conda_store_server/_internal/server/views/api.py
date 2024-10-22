@@ -4,13 +4,18 @@
 
 import datetime
 
-from typing import Any, Dict, List, Optional, TypedDict
+from typing import Any, Dict, List, Optional, Tuple, TypedDict
 
 import pydantic
 import yaml
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request
 from fastapi.responses import PlainTextResponse, RedirectResponse
+from fastapi_pagination import set_params
+from fastapi_pagination.cursor import CursorPage, CursorParams
+from fastapi_pagination.ext.sqlalchemy import paginate
+from pydantic import BaseModel
+from sqlalchemy.orm import Query as SqlQuery
 
 from conda_store_server import __version__, api, app
 from conda_store_server._internal import orm, schema, utils
@@ -18,6 +23,9 @@ from conda_store_server._internal.environment import filter_environments
 from conda_store_server._internal.schema import AuthenticationToken, Permissions
 from conda_store_server.server import dependencies
 from conda_store_server.server.auth import Authentication
+
+
+set_params(CursorParams(size=10, cursor=None))
 
 
 class PaginatedArgs(TypedDict):
@@ -55,19 +63,40 @@ def get_paginated_args(
 
 
 def filter_distinct_on(
-    query,
-    distinct_on: List[str] = [],
-    allowed_distinct_ons: Dict = {},
-    default_distinct_on: List[str] = [],
-):
-    distinct_on = distinct_on or default_distinct_on
-    distinct_on = [
-        allowed_distinct_ons[d] for d in distinct_on if d in allowed_distinct_ons
-    ]
+    query: SqlQuery,
+    distinct_on: List[str] | None = None,
+    allowed_distinct_ons: Dict | None = None,
+) -> Tuple[List[str], SqlQuery]:
+    """Filter the query using the distinct fields.
 
-    if distinct_on:
-        return distinct_on, query.distinct(*distinct_on)
-    return distinct_on, query
+    Parameters
+    ----------
+    query : SqlQuery
+        Query to filter
+    distinct_on : List[str] | None
+        Parameter to pass to the FILTER DISTINCT statement
+    allowed_distinct_ons : Dict | None
+        Allowed values of the parameter
+
+    Returns
+    -------
+    SqlQuery
+        Query containing filtered results
+    """
+    if distinct_on is None:
+        distinct_on = []
+
+    disallowed = set(distinct_on) - set(allowed_distinct_ons)
+    if disallowed:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Requested distinct_on terms ({disallowed}) are not allowed. "
+                f"Valid terms are {set(allowed_distinct_ons)}"
+            ),
+        )
+
+    return query.distinct(*[allowed_distinct_ons[item] for item in distinct_on])
 
 
 def get_sorts(
@@ -94,6 +123,15 @@ def get_sorts(
     return [order_mapping[order](k) for k in sort_by]
 
 
+def paginate_response(
+    query: SqlQuery,
+    obj_schema: BaseModel,
+    order: str = "asc",
+    sort_by: List[str] = None,
+) -> CursorPage:
+    return
+
+
 def paginated_api_response(
     query,
     paginated_args,
@@ -104,7 +142,7 @@ def paginated_api_response(
     required_sort_bys: List = [],
     default_sort_by: List = [],
     default_order: str = "asc",
-):
+) -> CursorPage:
     sorts = get_sorts(
         order=paginated_args["order"],
         sort_by=paginated_args["sort_by"],
@@ -114,15 +152,17 @@ def paginated_api_response(
         default_order=default_order,
     )
 
-    count = query.count()
-    query = (
-        query.order_by(*sorts)
-        .limit(paginated_args["limit"])
-        .offset(paginated_args["offset"])
+    print(
+        query,
+        paginated_args,
+        object_schema,
+        sorts,
     )
+
+    count = query.count()
     return {
         "status": "ok",
-        "data": [object_schema.from_orm(_).dict(exclude=exclude) for _ in query.all()],
+        "data": paginate(query.order_by(*sorts)),
         "page": (paginated_args["offset"] // paginated_args["limit"]) + 1,
         "size": paginated_args["limit"],
         "count": count,
@@ -676,8 +716,10 @@ async def api_list_environments(
     Returns
     -------
     Dict
-        Paginated JSON response containing the requested environments
-
+        Paginated JSON response containing the requested environments. Results are sorted by each
+        envrionment's build's scheduled_on time to ensure all results are returned when iterating
+        over pages in systems where the number of environments is changing while results are being
+        requested; see https://github.com/conda-incubator/conda-store/issues/859 for context
     """
     with conda_store.get_db() as db:
         if jwt:
@@ -711,11 +753,11 @@ async def api_list_environments(
             paginated_args,
             schema.Environment,
             exclude={"current_build"},
-            allowed_sort_bys={
-                "namespace": orm.Namespace.name,
-                "name": orm.Environment.name,
-            },
-            default_sort_by=["namespace", "name"],
+            # allowed_sort_bys={
+            #     "scheduled_on": orm.Environment.current_build.scheduled_on,
+            # },
+            default_sort_by=["scheduled_on"],
+            default_order="asc",
         )
 
 
