@@ -21,7 +21,7 @@ from typing import Any, Dict, List
 from hatchling.builders.hooks.plugin.interface import BuildHookInterface
 
 
-CONDA_STORE_UI_VERSION = "2024.3.1"
+CONDA_STORE_UI_VERSION = "2024.10.1"
 CONDA_STORE_UI_URL = f"https://registry.npmjs.org/@conda-store/conda-store-ui/-/conda-store-ui-{CONDA_STORE_UI_VERSION}.tgz"
 
 UI_FILES_EXTENSIONS = ["*.js", "*.css", "*.js.map", "*.css.map", "*.html"]
