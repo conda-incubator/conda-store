@@ -1,0 +1,31 @@
+services:
+  conda-store-worker:
+    build:
+      context: conda-store-server
+      target: ui-dev
+    extends:
+      file: docker-compose.yaml
+      service: conda-store-worker
+
+  conda-store-server:
+    build:
+        context: conda-store-server
+        target: ui-dev
+    extends:
+      file: docker-compose.yaml
+      service: conda-store-server
+
+  minio:
+    extends:
+      file: docker-compose.yaml
+      service: minio
+
+  postgres:
+    extends:
+      file: docker-compose.yaml
+      service: postgres
+
+  redis:
+    extends:
+      file: docker-compose.yaml
+      service: redis

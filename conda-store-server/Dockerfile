@@ -91,3 +91,21 @@ RUN which python && \
 
 WORKDIR /var/lib/conda-store
 # ---------------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------------
+# sometimes we need to install the conda-store-server in editable mode with a
+# local bundle of the UI
+FROM base AS ui-dev
+
+ARG UI_PATH=./conda_store_server/_internal/server/static/conda-store-ui
+ENV LOCAL_UI=${UI_PATH}
+
+WORKDIR /opt/conda-store-server
+
+COPY ${UI_PATH}/ /opt/conda-store-server/conda_store_server/UI/dist
+
+RUN which python && \
+    python -m pip install -e . --no-cache-dir
+
+WORKDIR /var/lib/conda-store
+# ---------------------------------------------------------------------------------
