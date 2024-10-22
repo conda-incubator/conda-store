@@ -87,11 +87,12 @@ Options:
 
 * `memory`
 
-  [Manage the history stack in memory instead of using the browser's
-  history.](https://reactrouter.com/en/main/routers/create-memory-router). The
-  [Jupyter extension](https://conda.store/jupyterlab-conda-store/introduction)
-  configures the conda-store-ui to use the memory router so that it does not
-  conflict with JupyterLab trying to manage the browser URL and history.
+  Manage the history stack in memory instead of using the browser's history
+  ([createMemoryRouter](https://reactrouter.com/en/main/routers/create-memory-router)).
+  The [Jupyter
+  extension](https://conda.store/jupyterlab-conda-store/introduction) configures
+  the conda-store-ui to use the memory router so that it does not conflict with
+  JupyterLab trying to manage the browser URL and history.
 
 | Key                    | Value  |
 |------------------------|--------|
