@@ -10,7 +10,6 @@ import pydantic
 import yaml
 
 from celery.result import AsyncResult
-
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request
 from fastapi.responses import PlainTextResponse, RedirectResponse
 
