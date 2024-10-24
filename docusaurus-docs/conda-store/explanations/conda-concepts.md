@@ -6,15 +6,15 @@ description: Understand basics of package management with conda
 # Conda concepts
 
 conda is a Python package and environment manager, used widely in the Python data science ecosystem.
-conda-store build on conda and other supporting libraries in the conda community.
+conda-store is built on conda and other supporting libraries in the conda community.
 This page briefly covers some key conda concepts necessary to use conda-store.
 For detailed explanations, check out the [conda documentation][conda-docs].
 
 ## Python package
 
-Open source software projects (sometimes called libraries) are shared with users as *packages*. You need to "install" the package on your local workspace to use it.
+Open source software projects (sometimes called libraries) are shared with users as *packages*. You need to install the package on your local workspace to use it.
 
-[pip][pip-docs] and [conda][conda-docs] are popular package management tools in the Python ecosystem.
+[pip][pip] and [conda][conda-docs] are popular package management tools in the Python ecosystem.
 
 pip ships with the Python programming language, and can install packages from the PyPI (Python Package Index) - a community managed collection of packages, public/private PyPI mirrors, GitHub sources, and local directories.
 
