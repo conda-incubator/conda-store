@@ -145,4 +145,5 @@ markers = [
   "playwright: mark a test as a playwright test",
   "integration: mark a test as an integration test",
   "user_journey: mark a test as a user journey test",
+  "extended_prefix: mark a test as for windows extended_prefix",
 ]
