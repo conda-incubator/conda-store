@@ -823,7 +823,7 @@ class CondaStore(LoggingConfigurable):
         if namespace is None:
             raise utils.CondaStoreError(f"namespace={namespace} does not exist")
 
-        utcnow = datetime.datetime.utcnow()
+        utcnow = datetime.datetime.now(datetime.UTC)()
         namespace.deleted_on = utcnow
         for environment_orm in namespace.environments:
             environment_orm.deleted_on = utcnow
@@ -852,7 +852,7 @@ class CondaStore(LoggingConfigurable):
                 f"environment namespace={namespace} name={name} does not exist"
             )
 
-        utcnow = datetime.datetime.utcnow()
+        utcnow = datetime.datetime.now(datetime.UTC)()
         environment.deleted_on = utcnow
         for build in environment.builds:
             build.deleted_on = utcnow
@@ -883,7 +883,7 @@ class CondaStore(LoggingConfigurable):
                 "cannot delete build since not finished building"
             )
 
-        build.deleted_on = datetime.datetime.utcnow()
+        build.deleted_on = datetime.datetime.now(datetime.UTC)()
         db.commit()
 
         self.celery_app

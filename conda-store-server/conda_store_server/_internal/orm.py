@@ -688,7 +688,7 @@ class CondaChannel(Base):
 
             logger.info(f"DONE for architecture  : {architecture}")
 
-        self.last_update = datetime.datetime.utcnow()
+        self.last_update = datetime.datetime.now(datetime.UTC)
         db.commit()
         logger.info("update packages DONE ")
 
