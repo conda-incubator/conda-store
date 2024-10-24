@@ -59,7 +59,9 @@ dependencies = [
   "pyjwt",
   "psycopg2-binary",
   "pymysql",
-  "pyyaml",
+  # pyyaml>5.3.1 is broken with cython>=3 transitive dependency
+  # See https://github.com/yaml/pyyaml/issues/724 for details
+  "pyyaml==5.3.1",
   "redis",
   "requests",
   "pydantic >=1.10.16,<2.0a0",
