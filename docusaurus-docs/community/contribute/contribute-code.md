@@ -61,13 +61,8 @@ After running the `docker compose` command, the following resources will be avai
 On a fast machine, this deployment should only take 10 or so seconds
 assuming the Docker images have been partially built before.
 
-If you are making any changes to `conda-store-server` and would like to see
-those changes in the deployment, run:
-
-```shell
-docker compose down -v # not always necessary
-docker compose up --build
-```
+Any changes made to the `conda-store-server` will be hot reloaded, so there's no
+need to bring the services down and then up again between edits.
 
 To stop the deployment, run:
 
