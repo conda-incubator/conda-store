@@ -186,6 +186,59 @@ def conda_store(conda_store_config):
     yield _conda_store
 
 
+@pytest.fixture(scope="session")
+def conda_store_server_session(tmp_path_factory):
+    from traitlets.config import Config
+
+    tmp_path = tmp_path_factory.mktemp("celery_config")
+
+    filename = tmp_path / ".conda-store" / "database.sqlite"
+
+    store_directory = tmp_path / ".conda-store" / "state"
+    store_directory.mkdir(parents=True)
+
+    storage.LocalStorage.storage_path = str(tmp_path / ".conda-store" / "storage")
+
+    original_sys_argv = list(sys.argv)
+    sys.argv = [sys.argv[0]]
+
+    conda_store_config = Config(
+        CondaStore=dict(
+            storage_class=storage.LocalStorage,
+            store_directory=str(store_directory),
+            database_url=f"sqlite:///{filename}?check_same_thread=False",
+        )
+    )
+    _conda_store_server = server_app.CondaStoreServer(config=conda_store_config)
+    _conda_store_server.initialize()
+
+    _conda_store = _conda_store_server.conda_store
+
+    pathlib.Path(_conda_store.store_directory).mkdir(exist_ok=True)
+
+    dbutil.upgrade(_conda_store.database_url)
+
+    with _conda_store.session_factory() as db:
+        _conda_store.ensure_settings(db)
+        _conda_store.configuration(db).update_storage_metrics(
+            db, _conda_store.store_directory
+        )
+
+        _conda_store.celery_app
+
+        # must import tasks after a celery app has been initialized
+        # ensure that models are created
+        from celery.backends.database.session import ResultModelBase
+
+        import conda_store_server._internal.worker.tasks  # noqa
+
+        ResultModelBase.metadata.create_all(db.get_bind())
+
+    yield _conda_store_server
+
+    sys.argv = list(original_sys_argv)
+
+
 @pytest.fixture
 def db(conda_store):
     with conda_store.session_factory() as _db:
