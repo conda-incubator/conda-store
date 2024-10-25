@@ -735,7 +735,7 @@ def test_create_namespace_auth(testclient, authenticate):
     assert r.data.name == namespace
 
 
-def test_create_get_delete_namespace_auth(testclient, celery_sesssion_worker, authenticate):
+def test_create_get_delete_namespace_auth(testclient, celery_session_worker, authenticate):
     namespace = "pytest-delete-namespace"
 
     response = testclient.post(f"api/v1/namespace/{namespace}")
