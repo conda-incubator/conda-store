@@ -7,7 +7,11 @@ See the [documentation](https://conda.store/) for more information.
 
 ### Run tests with pytest
 ```
-$  python -m pytest -m "not extended_prefix and not user_journey" tests/
+# ignoring integration tests
+$ python -m pytest -m "not extended_prefix and not user_journey" tests/
+
+# ignoring long running tests
+$ python -m pytest -m "not extended_prefix and not user_journey and not long_running_test" tests/
 ```
 
 ### Run tests with code coverage
