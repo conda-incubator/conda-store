@@ -162,6 +162,7 @@ def seed_conda_store(db, conda_store):
     build.ended_on = datetime.datetime.utcnow()
     build.status = schema.BuildStatus.COMPLETED
     db.commit()
+    yield db
 
 
 @pytest.fixture
