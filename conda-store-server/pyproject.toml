@@ -146,4 +146,5 @@ markers = [
   "integration: mark a test as an integration test",
   "user_journey: mark a test as a user journey test",
   "extended_prefix: mark a test as for windows extended_prefix",
+  "long_running_test: mark a test that takes a long time to run",
 ]
