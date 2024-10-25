@@ -3,17 +3,17 @@
 # license that can be found in the LICENSE file.
 
 import datetime
+import json
 import pathlib
 import sys
-
-import pytest
-import yaml
-import json
 import typing
 import uuid
 
-from sqlalchemy.orm import Session
+import pytest
+import yaml
+
 from fastapi.testclient import TestClient
+from sqlalchemy.orm import Session
 
 from conda_store_server import api, app, storage
 
@@ -21,11 +21,10 @@ from conda_store_server import api, app, storage
 from conda_store_server._internal import (  # isort:skip
     action,
     dbutil,
-    schema,
     utils,
     conda_utils,
     orm,
-    schema
+    schema,
 )
 
 from conda_store_server._internal.server import app as server_app  # isort:skip
