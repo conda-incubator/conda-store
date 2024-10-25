@@ -20,7 +20,7 @@ from conda_store_server._internal import conda_utils, utils
 
 def _datetime_factory(offset: datetime.timedelta):
     """utcnow datetime + timezone as string"""
-    return datetime.datetime.utcnow() + offset
+    return datetime.datetime.now(datetime.UTC) + offset
 
 
 # An ARN is a string which matches namespaces and environments. For example:
@@ -529,7 +529,7 @@ class LockfileSpecification(BaseModel):
 
 def _docker_datetime_factory():
     """utcnow datetime + timezone as string"""
-    return datetime.datetime.utcnow().astimezone().isoformat()
+    return datetime.datetime.now(datetime.UTC).astimezone().isoformat()
 
 
 class DockerManifestLayer(BaseModel):

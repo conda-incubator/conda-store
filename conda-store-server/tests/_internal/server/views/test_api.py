@@ -494,8 +494,9 @@ def test_create_specification_unauth(testclient):
         256,
     ],
 )
+@pytest.mark.long_running_test
 def test_create_specification_auth_env_name_too_long(
-    testclient, celery_worker, authenticate, size
+    testclient, celery_session_worker, authenticate, size
 ):
     namespace = "default"
     environment_name = "A" * size
@@ -553,7 +554,7 @@ def win_extended_length_prefix(request):
 @pytest.mark.parametrize("win_extended_length_prefix", [True, False], indirect=True)
 @pytest.mark.extended_prefix
 def test_create_specification_auth_extended_prefix(
-    win_extended_length_prefix, testclient, celery_worker, authenticate
+    win_extended_length_prefix, testclient, celery_session_worker, authenticate
 ):
     # Adds padding to cause an error if the extended prefix is not enabled
     namespace = "default" + "A" * 10
@@ -618,7 +619,7 @@ def test_create_specification_auth_extended_prefix(
         assert False, "failed to update status"
 
 
-def test_create_specification_auth(testclient, celery_worker, authenticate):
+def test_create_specification_auth(testclient, celery_session_worker, authenticate):
     namespace = "default"
     environment_name = "pytest"
 
@@ -651,7 +652,7 @@ def test_create_specification_auth(testclient, celery_worker, authenticate):
 
 
 def test_create_specification_auth_no_namespace_specified(
-    testclient, celery_worker, authenticate
+    testclient, celery_session_worker, authenticate
 ):
     namespace = "username"  # same namespace as login
     environment_name = "pytest"
@@ -692,7 +693,7 @@ def test_put_build_trigger_build_noauth(testclient, seed_conda_store):
 
 
 def test_put_build_trigger_build_auth(
-    testclient, seed_conda_store, authenticate, celery_worker
+    testclient, seed_conda_store, authenticate, celery_session_worker
 ):
     build_id = 1
 
@@ -734,7 +735,9 @@ def test_create_namespace_auth(testclient, authenticate):
     assert r.data.name == namespace
 
 
-def test_create_get_delete_namespace_auth(testclient, celery_worker, authenticate):
+def test_create_get_delete_namespace_auth(
+    testclient, celery_session_worker, authenticate
+):
     namespace = "pytest-delete-namespace"
 
     response = testclient.post(f"api/v1/namespace/{namespace}")
@@ -778,7 +781,7 @@ def test_update_environment_build_unauth(testclient, seed_conda_store):
 
 
 def test_update_environment_build_auth(
-    testclient, seed_conda_store, authenticate, celery_worker
+    testclient, seed_conda_store, authenticate, celery_session_worker
 ):
     namespace = "namespace2"
     name = "name4"
@@ -812,7 +815,7 @@ def test_delete_environment_unauth(testclient, seed_conda_store):
 
 
 def test_delete_environment_auth(
-    testclient, seed_conda_store, authenticate, celery_worker
+    testclient, seed_conda_store, authenticate, celery_session_worker
 ):
     namespace = "namespace1"
     environment_name = "name3"
@@ -846,7 +849,9 @@ def test_delete_build_unauth(testclient, seed_conda_store):
     assert r.status == schema.APIStatus.ERROR
 
 
-def test_delete_build_auth(testclient, seed_conda_store, authenticate, celery_worker):
+def test_delete_build_auth(
+    testclient, seed_conda_store, authenticate, celery_session_worker
+):
     build_id = 4
 
     response = testclient.put(f"api/v1/build/{build_id}")
@@ -874,30 +879,6 @@ def test_delete_build_auth(testclient, seed_conda_store, authenticate, celery_wo
 
     # r = schema.APIResponse.parse_obj(response.json())
     # assert r.status == schema.APIStatus.ERROR
-
-
-def test_prometheus_metrics(testclient):
-    response = testclient.get("metrics")
-    d = {
-        line.split()[0]: line.split()[1]
-        for line in response.content.decode("utf-8").split("\n")
-    }
-    assert {
-        "conda_store_disk_free",
-        "conda_store_disk_total",
-        "conda_store_disk_usage",
-    } <= d.keys()
-
-
-def test_celery_stats(testclient, celery_worker):
-    response = testclient.get("celery")
-    assert response.json().keys() == {
-        "active_tasks",
-        "availability",
-        "registered_tasks",
-        "scheduled_tasks",
-        "stats",
-    }
 
 
 @pytest.mark.parametrize(

@@ -25,8 +25,9 @@ from conda_store_server._internal import (  # isort:skip
 from conda_store_server._internal.server import app as server_app  # isort:skip
 
 
-@pytest.fixture
-def celery_config(tmp_path, conda_store):
+@pytest.fixture(scope="session")
+def celery_config(tmp_path_factory, conda_store):
+    tmp_path = tmp_path_factory.mktemp("celery_config")
     config = conda_store.celery_config
     config["traitlets"] = {
         "CondaStore": {
@@ -40,8 +41,8 @@ def celery_config(tmp_path, conda_store):
     return config
 
 
-@pytest.fixture
-def conda_store_config(tmp_path):
+@pytest.fixture(scope="session")
+def conda_store_config(tmp_path_factory):
     """A conda store configuration fixture.
 
     sys.path is manipulated so that only the name of the called program
@@ -51,6 +52,7 @@ def conda_store_config(tmp_path):
     """
     from traitlets.config import Config
 
+    tmp_path = tmp_path_factory.mktemp("conda_store_config")
     filename = tmp_path / ".conda-store" / "database.sqlite"
 
     store_directory = tmp_path / ".conda-store" / "state"
@@ -73,7 +75,7 @@ def conda_store_config(tmp_path):
     sys.argv = list(original_sys_argv)
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def conda_store_server(conda_store_config):
     _conda_store_server = server_app.CondaStoreServer(config=conda_store_config)
     _conda_store_server.initialize()
@@ -153,13 +155,26 @@ def seed_conda_store(db, conda_store):
 
     # for testing purposes make build 4 complete
     build = api.get_build(db, build_id=4)
-    build.started_on = datetime.datetime.utcnow()
-    build.ended_on = datetime.datetime.utcnow()
+    build.started_on = datetime.datetime.now(datetime.UTC)
+    build.ended_on = datetime.datetime.now(datetime.UTC)
     build.status = schema.BuildStatus.COMPLETED
+    db.commit()
+    yield
+    db.execute("DELETE from namespace;")
+    db.execute("DELETE from namespace_role_mapping;")
+    db.execute("DELETE from namespace_role_mapping_v2;")
+    db.execute("DELETE from environment;")
+    db.execute("DELETE from specification;")
+    db.execute("DELETE from build;")
+    db.execute("DELETE from build_artifact;")
+    db.execute("DELETE from conda_channel;")
+    db.execute("DELETE from conda_package;")
+    db.execute("DELETE from conda_package_build;")
+    db.execute("DELETE from solve;")
     db.commit()
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def conda_store(conda_store_config):
     _conda_store = app.CondaStore(config=conda_store_config)
 
