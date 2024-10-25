@@ -430,6 +430,10 @@ class CondaStoreServer(Application):
             process = multiprocessing.Process(target=CondaStoreWorker.launch_instance)
             process.start()
 
+            # If running in standalone mode, also enable automatic reloading of the
+            # webserver
+            self.reload = True
+
         try:
             # Note: the logger needs to be defined here for the output to show
             # up, self.log doesn't work here either

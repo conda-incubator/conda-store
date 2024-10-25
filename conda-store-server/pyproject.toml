@@ -96,12 +96,8 @@ dependencies = [
   "pytest-playwright",
   "twine>=5.0.0",
   "pkginfo>=1.10", # Needed to support metadata 2.3
-]
 
-[tool.hatch.envs.dev.scripts]
-server = "conda-store-server --config ../tests/assets/local_dev_config.py"
-worker = "conda-store-worker --config ../tests/assets/local_dev_config.py"
-services = "docker compose -f ../docker-compose-core.yml up --build"
+]
 
 [tool.hatch.envs.lint]
 dependencies = ["pre-commit"]

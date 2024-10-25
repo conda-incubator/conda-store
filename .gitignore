@@ -61,7 +61,4 @@ yarn-error.log*
 # conda-store
 conda-store.sqlite
 
-# Development workspace
-conda-store-workspace/
-
 *.lockb
