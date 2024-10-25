@@ -1,7 +1,7 @@
 blank_issues_enabled: false
 contact_links:
   - name: conda-store documentation
-    url: https://conda.store/en/latest/
+    url: https://conda.store/
     about: Check out the conda-store documentation
   - name: Contribution guidelines
     about: Do you want to contribute to conda-store? Visit our community guidelines
