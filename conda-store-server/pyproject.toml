@@ -96,7 +96,7 @@ dependencies = [
   "pytest-playwright",
   "twine>=5.0.0",
   "pkginfo>=1.10", # Needed to support metadata 2.3
-
+  "pytest-cov",
 ]
 
 [tool.hatch.envs.lint]
