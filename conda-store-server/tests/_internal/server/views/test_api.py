@@ -875,6 +875,7 @@ def test_delete_build_auth(testclient, seed_conda_store, authenticate, celery_wo
     # r = schema.APIResponse.parse_obj(response.json())
     # assert r.status == schema.APIStatus.ERROR
 
+
 @pytest.mark.parametrize(
     "route",
     [
