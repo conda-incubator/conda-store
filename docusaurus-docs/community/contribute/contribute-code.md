@@ -106,7 +106,10 @@ subprocess of the web server.
     conda-store-server --standalone
     ```
 
-4. You should now be able to access the `conda-store` server at [localhost:8080](http://localhost:8080/) from your web browser.
+4. You should now be able to access the `conda-store` server at
+   [localhost:8080](http://localhost:8080/) from your web browser. Note that
+   this will enable hot reloading by default, allowing code changes to be picked
+   up by the webserver immediately without restart.
 
 ## `conda-store-ui`
 
