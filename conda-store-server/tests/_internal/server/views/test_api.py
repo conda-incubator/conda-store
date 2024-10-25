@@ -735,7 +735,9 @@ def test_create_namespace_auth(testclient, authenticate):
     assert r.data.name == namespace
 
 
-def test_create_get_delete_namespace_auth(testclient, celery_session_worker, authenticate):
+def test_create_get_delete_namespace_auth(
+    testclient, celery_session_worker, authenticate
+):
     namespace = "pytest-delete-namespace"
 
     response = testclient.post(f"api/v1/namespace/{namespace}")
@@ -847,7 +849,9 @@ def test_delete_build_unauth(testclient, seed_conda_store):
     assert r.status == schema.APIStatus.ERROR
 
 
-def test_delete_build_auth(testclient, seed_conda_store, authenticate, celery_session_worker):
+def test_delete_build_auth(
+    testclient, seed_conda_store, authenticate, celery_session_worker
+):
     build_id = 4
 
     response = testclient.put(f"api/v1/build/{build_id}")
@@ -875,6 +879,7 @@ def test_delete_build_auth(testclient, seed_conda_store, authenticate, celery_se
 
     # r = schema.APIResponse.parse_obj(response.json())
     # assert r.status == schema.APIStatus.ERROR
+
 
 @pytest.mark.parametrize(
     "route",
