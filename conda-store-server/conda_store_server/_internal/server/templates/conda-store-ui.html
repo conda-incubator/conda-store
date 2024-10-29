@@ -28,8 +28,8 @@ https://conda.store/conda-store-ui/how-tos/configure-ui -->
              REACT_APP_URL_BASENAME: new URL("{{ url_for('get_conda_store_ui') }}").pathname
          };
         </script>
-        <script defer src="static/conda-store-ui/main.js"></script>
-        <link href="static/conda-store-ui/main.css" rel="stylesheet">
+        <script defer src="{{ url_for('get_conda_store_ui') }}static/conda-store-ui/main.js"></script>
+        <link href="{{ url_for('get_conda_store_ui') }}static/conda-store-ui/main.css" rel="stylesheet">
     </head>
     <body>
     </body>

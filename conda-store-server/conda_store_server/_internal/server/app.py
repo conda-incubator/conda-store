@@ -293,15 +293,32 @@ class CondaStoreServer(Application):
             # docker registry api specification does not support a url_prefix
             app.include_router(views.router_registry)
 
+        if self.enable_metrics:
+            app.include_router(
+                views.router_metrics,
+                prefix=trim_slash(self.url_prefix),
+            )
+
+        if self.additional_routes:
+            for path, method, func in self.additional_routes:
+                getattr(app, method)(path, name=func.__name__)(func)
+
+        if isinstance(self.conda_store.storage, storage.LocalStorage):
+            self.conda_store.storage.storage_url = (
+                f"{trim_slash(self.url_prefix)}/storage"
+            )
+            app.mount(
+                self.conda_store.storage.storage_url,
+                StaticFiles(directory=self.conda_store.storage.storage_path),
+                name="static-storage",
+            )
+
+        # This needs to come at the end because if the UI is enabled,
+        # it becomes the catch all route
         if self.enable_ui:
             app.include_router(
                 views.router_ui,
                 prefix=trim_slash(self.url_prefix) + "/admin",
-            )
-
-            app.include_router(
-                views.router_conda_store_ui,
-                prefix=trim_slash(self.url_prefix),
             )
 
             # serving static files
@@ -336,24 +353,10 @@ class CondaStoreServer(Application):
                     )
                 )
 
-        if self.enable_metrics:
+            # Put this at the very end
             app.include_router(
-                views.router_metrics,
+                views.router_conda_store_ui,
                 prefix=trim_slash(self.url_prefix),
-            )
-
-        if self.additional_routes:
-            for path, method, func in self.additional_routes:
-                getattr(app, method)(path, name=func.__name__)(func)
-
-        if isinstance(self.conda_store.storage, storage.LocalStorage):
-            self.conda_store.storage.storage_url = (
-                f"{trim_slash(self.url_prefix)}/storage"
-            )
-            app.mount(
-                self.conda_store.storage.storage_url,
-                StaticFiles(directory=self.conda_store.storage.storage_path),
-                name="static-storage",
             )
 
         return app
