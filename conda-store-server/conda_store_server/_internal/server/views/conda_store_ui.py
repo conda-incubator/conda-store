@@ -20,4 +20,7 @@ async def get_conda_store_ui(
     context = {
         "request": request,
     }
-    return templates.TemplateResponse("conda-store-ui.html", context)
+    response = templates.TemplateResponse("conda-store-ui.html", context)
+    if full_path.endswith("not-found"):
+        response.status_code = 404
+    return response
