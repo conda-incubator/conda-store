@@ -26,7 +26,7 @@ For basic local development on the UI, running conda-store-ui in Docker is the s
 
 :::note
 
-Hot reloading is enabled, so when you make changes to source files (i.e., files under the conda-store-ui/src/ directory), your browser will reload and reflect the changes.
+Hot reloading is enabled, so when you change source files (files under the conda-store-ui/src/ directory), your browser will reload and reflect the changes.
 
 :::
 
@@ -36,7 +36,7 @@ For more advanced development on conda-store-ui, the first option might not be s
 
 :::note
 
-This setup still uses Docker to run the rest of the Conda Store stack. That means that the Conda Store database, server, worker, and storage services will all run in Docker containers. However, the frontend web app (conda-store-ui) will run locally (not in a Docker container) with this setup.
+This setup still uses Docker to run the rest of the conda-store stack. That means the conda-store database, server, worker, and storage services will all run in Docker containers. However, the frontend web app (conda-store-ui) will run locally (not in a Docker container) with this setup.
 
 :::
 
@@ -57,9 +57,9 @@ Make sure you are in the project root: `cd conda-store-ui`
 
 1. Activate the development environment: `conda activate cs-ui-dev-env`
 2. Set environment variables: copy `.env.example` to `.env`. All default settings should work, but if you want to test against a different version of conda-store-server, you can specify it in the `.env` file by setting the `CONDA_STORE_SERVER_VERSION` variable to the desired version.
-3. Run: `corepack enable`. Corepack comes with Node.js which was installed when you set up your Conda dev environment. Running `corepack enable` ensures that the version of Yarn that you use in the next step matches the version required by the repo (see package.json > packageManager). Yarn also comes with Node.js but is not automatically added to your environment's path until you run `corepack enable`.
+3. Run: `corepack enable`. Corepack comes with Node.js, which is installed when you set up the conda environment. Running `corepack enable` ensures that the version of Yarn that you use in the next step matches the version required by the repo (see `package.json > packageManager`). Yarn also comes with Node.js but is not automatically added to your environment's path until you run `corepack enable`.
 4. Install/update JavaScript dependencies: `yarn install`
-5. Run `yarn run start` and wait for the application to finish starting up. This command will run a local dev server for the UI app and run the other Conda Store services in Docker.
+5. Run `yarn run start` and wait for the application to finish starting up. This command will run a local dev server for the UI app and run the other conda-store services in Docker.
 6. Open your local browser and go to [http://localhost:8000](http://localhost:8000) to see conda-store-ui.
 7. You can then log in using the default username of `username` and default password of `password`.
 
@@ -71,7 +71,7 @@ Hot reloading is enabled, so when you make changes to source files, your browser
 
 ### Run the test suite
 
-If you chose the advanced option for local development, you will be able to run the tests locally. We currently use Jest in order to run unit tests.
+If you choose the advanced option for local development, you can run the tests locally. We currently use Jest to run unit tests.
 
 ```bash
 yarn test     // find every test with the .test.[tsx|ts] extension

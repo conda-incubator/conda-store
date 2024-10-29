@@ -37,7 +37,7 @@ On a fast machine, this should take about 10 seconds, assuming the docker images
 Most of the conda-store docker images are built/tested for amd64(x86-64). Notice the `architecture: amd64` within the `docker-compose.yaml` files.
 
 There will be a performance impact when building and running on
-arm architectures. Otherwise, this workflow has been shown to run and build on OSX.
+ARM architectures. Otherwise, this workflow has been shown to run and build on OSX.
 :::
 
 The following resources will be available on the deployment:
