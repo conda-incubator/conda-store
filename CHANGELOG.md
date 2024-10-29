@@ -6,6 +6,67 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 The project changed to `CalVer` in September 2023.
 
+
+## [2024.10.1] - 2024-10-22
+
+([full changelog](https://github.com/conda-incubator/conda-store/compare/87f8ffc98bd5e54436bfa5707a8d56b9c9d34c15...dc1134f88d02755e6371f655c20120e8402f0365))
+
+### Merged PRs
+
+- [AUTO] Update openapi.json [#904](https://github.com/conda-incubator/conda-store/pull/904) ([@github-actions](https://github.com/github-actions))
+- Create local conda-store dir for celery beat data files [#902](https://github.com/conda-incubator/conda-store/pull/902) ([@soapy1](https://github.com/soapy1))
+- REACT_APP_URL_BASENAME [#898](https://github.com/conda-incubator/conda-store/pull/898) ([@gabalafou](https://github.com/gabalafou))
+- Bump cookie and express in /docusaurus-docs [#896](https://github.com/conda-incubator/conda-store/pull/896) ([@dependabot](https://github.com/dependabot))
+- [BUG] Fix openapi.json generation workflow [#891](https://github.com/conda-incubator/conda-store/pull/891) ([@peytondmurray](https://github.com/peytondmurray))
+- [MAINT] Add the 2024/2025 roadmap [#890](https://github.com/conda-incubator/conda-store/pull/890) ([@peytondmurray](https://github.com/peytondmurray))
+- Revert "REL - 2024.9.1 (#880)" [#887](https://github.com/conda-incubator/conda-store/pull/887) ([@peytondmurray](https://github.com/peytondmurray))
+- BUG - patch release workflow [#885](https://github.com/conda-incubator/conda-store/pull/885) ([@trallard](https://github.com/trallard))
+- Set logout url properly when using the integrated ui [#884](https://github.com/conda-incubator/conda-store/pull/884) ([@dcmcand](https://github.com/dcmcand))
+- update to latest miniforge image [#883](https://github.com/conda-incubator/conda-store/pull/883) ([@Adam-D-Lewis](https://github.com/Adam-D-Lewis))
+- REL - 2024.9.1 [#880](https://github.com/conda-incubator/conda-store/pull/880) ([@peytondmurray](https://github.com/peytondmurray))
+- [MAINT] Make github workflow format openapi.json [#879](https://github.com/conda-incubator/conda-store/pull/879) ([@peytondmurray](https://github.com/peytondmurray))
+- BUG - Fix release workflows [#878](https://github.com/conda-incubator/conda-store/pull/878) ([@trallard](https://github.com/trallard))
+- Bump body-parser and express in /docusaurus-docs [#873](https://github.com/conda-incubator/conda-store/pull/873) ([@dependabot](https://github.com/dependabot))
+- DEV - Update conda-store build hook [#872](https://github.com/conda-incubator/conda-store/pull/872) ([@trallard](https://github.com/trallard))
+- Bump actions/download-artifact from 3 to 4.1.7 in /.github/workflows [#869](https://github.com/conda-incubator/conda-store/pull/869) ([@dependabot](https://github.com/dependabot))
+- [pre-commit.ci] pre-commit autoupdate [#868](https://github.com/conda-incubator/conda-store/pull/868) ([@pre-commit-ci](https://github.com/pre-commit-ci))
+- Bump micromatch from 4.0.5 to 4.0.8 in /docusaurus-docs [#867](https://github.com/conda-incubator/conda-store/pull/867) ([@dependabot](https://github.com/dependabot))
+- Bump webpack from 5.89.0 to 5.94.0 in /docusaurus-docs [#866](https://github.com/conda-incubator/conda-store/pull/866) ([@dependabot](https://github.com/dependabot))
+- MAINT - Miscellaneous maintenance/governance tasks [#865](https://github.com/conda-incubator/conda-store/pull/865) ([@trallard](https://github.com/trallard))
+- [ENH] Allow fetching of arbitrary user environments [#864](https://github.com/conda-incubator/conda-store/pull/864) ([@peytondmurray](https://github.com/peytondmurray))
+- Update `openapi.json` file path in `generate_api_docs.yaml` [#863](https://github.com/conda-incubator/conda-store/pull/863) ([@pavithraes](https://github.com/pavithraes))
+- [pre-commit.ci] pre-commit autoupdate [#860](https://github.com/conda-incubator/conda-store/pull/860) ([@pre-commit-ci](https://github.com/pre-commit-ci))
+- [MAINT] Prevent workers from trying to parse sys.argv upon intialization [#850](https://github.com/conda-incubator/conda-store/pull/850) ([@peytondmurray](https://github.com/peytondmurray))
+- MAINT - Add dependabot config [#847](https://github.com/conda-incubator/conda-store/pull/847) ([@trallard](https://github.com/trallard))
+- [MAINT] Remove deprecated docker-compose config option [#846](https://github.com/conda-incubator/conda-store/pull/846) ([@peytondmurray](https://github.com/peytondmurray))
+- DEV -  Set a canonical default Python version (3.12) [#844](https://github.com/conda-incubator/conda-store/pull/844) ([@trallard](https://github.com/trallard))
+- DEV - Simplify Docker images [#841](https://github.com/conda-incubator/conda-store/pull/841) ([@trallard](https://github.com/trallard))
+- restart workers after executing 10 tasks to mitigate memory leaks [#840](https://github.com/conda-incubator/conda-store/pull/840) ([@Adam-D-Lewis](https://github.com/Adam-D-Lewis))
+- [pre-commit.ci] pre-commit autoupdate [#839](https://github.com/conda-incubator/conda-store/pull/839) ([@pre-commit-ci](https://github.com/pre-commit-ci))
+- DEV - Update dev environments [#838](https://github.com/conda-incubator/conda-store/pull/838) ([@trallard](https://github.com/trallard))
+- BUG - Fix triggers [#837](https://github.com/conda-incubator/conda-store/pull/837) ([@trallard](https://github.com/trallard))
+- Bump braces from 3.0.2 to 3.0.3 in /docusaurus-docs [#835](https://github.com/conda-incubator/conda-store/pull/835) ([@dependabot](https://github.com/dependabot))
+- MAINT - Mock out calls to `conda-lock` for `test_solve_lockfile` [#834](https://github.com/conda-incubator/conda-store/pull/834) ([@peytondmurray](https://github.com/peytondmurray))
+- MAINT - Mock out call to env solve in `test_generate_constructor_installer` [#833](https://github.com/conda-incubator/conda-store/pull/833) ([@peytondmurray](https://github.com/peytondmurray))
+- ENH - Update workflows triggers [#832](https://github.com/conda-incubator/conda-store/pull/832) ([@trallard](https://github.com/trallard))
+- DOC - Update documentation [#831](https://github.com/conda-incubator/conda-store/pull/831) ([@trallard](https://github.com/trallard))
+- REL - 2024.6.1 [#829](https://github.com/conda-incubator/conda-store/pull/829) ([@peytondmurray](https://github.com/peytondmurray))
+- Add `conda config` warning docs/message; add duration log for actions [#823](https://github.com/conda-incubator/conda-store/pull/823) ([@peytondmurray](https://github.com/peytondmurray))
+- Build docker images for arm (aarch64) [#822](https://github.com/conda-incubator/conda-store/pull/822) ([@aktech](https://github.com/aktech))
+- Privatize internal conda-store API [#820](https://github.com/conda-incubator/conda-store/pull/820) ([@peytondmurray](https://github.com/peytondmurray))
+- MAINT - Misc improvements to repo [#802](https://github.com/conda-incubator/conda-store/pull/802) ([@trallard](https://github.com/trallard))
+- Bump express from 4.18.2 to 4.19.2 in /docusaurus-docs [#800](https://github.com/conda-incubator/conda-store/pull/800) ([@dependabot](https://github.com/dependabot))
+- Bump follow-redirects from 1.15.4 to 1.15.6 in /docusaurus-docs [#785](https://github.com/conda-incubator/conda-store/pull/785) ([@dependabot](https://github.com/dependabot))
+- [DOC] Auto-generate openapi.json [#782](https://github.com/conda-incubator/conda-store/pull/782) ([@pavithraes](https://github.com/pavithraes))
+- Update metadata on landing page [#774](https://github.com/conda-incubator/conda-store/pull/774) ([@pavithraes](https://github.com/pavithraes))
+- Update conda-store explanations [#726](https://github.com/conda-incubator/conda-store/pull/726) ([@pavithraes](https://github.com/pavithraes))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/conda-incubator/conda-store/graphs/contributors?from=2024-06-10&to=2024-10-22&type=c))
+
+[@Adam-D-Lewis](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3AAdam-D-Lewis+updated%3A2024-06-10..2024-10-22&type=Issues) | [@aktech](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Aaktech+updated%3A2024-06-10..2024-10-22&type=Issues) | [@asmeurer](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Aasmeurer+updated%3A2024-06-10..2024-10-22&type=Issues) | [@costrouc](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Acostrouc+updated%3A2024-06-10..2024-10-22&type=Issues) | [@dcmcand](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Adcmcand+updated%3A2024-06-10..2024-10-22&type=Issues) | [@dharhas](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Adharhas+updated%3A2024-06-10..2024-10-22&type=Issues) | [@gabalafou](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Agabalafou+updated%3A2024-06-10..2024-10-22&type=Issues) | [@jaimergp](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Ajaimergp+updated%3A2024-06-10..2024-10-22&type=Issues) | [@kcpevey](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Akcpevey+updated%3A2024-06-10..2024-10-22&type=Issues) | [@nkaretnikov](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Ankaretnikov+updated%3A2024-06-10..2024-10-22&type=Issues) | [@pavithraes](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Apavithraes+updated%3A2024-06-10..2024-10-22&type=Issues) | [@peytondmurray](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Apeytondmurray+updated%3A2024-06-10..2024-10-22&type=Issues) | [@soapy1](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Asoapy1+updated%3A2024-06-10..2024-10-22&type=Issues) | [@trallard](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Atrallard+updated%3A2024-06-10..2024-10-22&type=Issues)
+
 ## [2024.6.1] - 2024-06-10
 
 ([full changelog](https://github.com/conda-incubator/conda-store/compare/2024.3.1...293d19fa7a7bce999b1069b147314a5966541a32))

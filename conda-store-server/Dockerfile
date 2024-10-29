@@ -61,7 +61,10 @@ RUN mamba create --name ${conda_env_name} \
 COPY ./ /opt/conda-store-server/
 
 USER 0:0
-RUN chown -R ${user_no}:${user_no} /opt/conda-store-server/
+RUN chown -R ${user_no}:${user_no} /opt/conda-store-server/ && \
+ mkdir -p /.local/share/conda-store && \
+ chown -R ${user_no}:${user_no} /.local/share/conda-store
+
 USER ${user_no}:${user_no}
 
 # ---------------------------------------------------------------------------------
@@ -83,6 +86,24 @@ WORKDIR /var/lib/conda-store
 FROM base AS dev
 
 WORKDIR /opt/conda-store-server
+RUN which python && \
+    python -m pip install -e . --no-cache-dir
+
+WORKDIR /var/lib/conda-store
+# ---------------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------------
+# sometimes we need to install the conda-store-server in editable mode with a
+# local bundle of the UI
+FROM base AS ui-dev
+
+ARG UI_PATH=./conda_store_server/_internal/server/static/conda-store-ui
+ENV LOCAL_UI=${UI_PATH}
+
+WORKDIR /opt/conda-store-server
+
+COPY ${UI_PATH}/ /opt/conda-store-server/conda_store_server/UI/dist
+
 RUN which python && \
     python -m pip install -e . --no-cache-dir
 

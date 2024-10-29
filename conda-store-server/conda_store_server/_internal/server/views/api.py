@@ -9,6 +9,7 @@ from typing import Any, Dict, List, Optional, TypedDict
 import pydantic
 import yaml
 
+from celery.result import AsyncResult
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request
 from fastapi.responses import PlainTextResponse, RedirectResponse
 
@@ -844,13 +845,13 @@ async def api_get_specification(
 
         try:
             task, solve_id = conda_store.register_solve(db, specification)
-            task.wait()
+            AsyncResult(task).wait()
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e.args[0]))
 
         solve = api.get_solve(db, solve_id)
 
-        return {"solve": solve.packages}
+        return {"solve": solve.package_builds}
 
 
 @router_api.post(

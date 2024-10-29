@@ -59,7 +59,9 @@ dependencies = [
   "pyjwt",
   "psycopg2-binary",
   "pymysql",
-  "pyyaml",
+  # pyyaml>5.3.1 is broken with cython>=3 transitive dependency
+  # See https://github.com/yaml/pyyaml/issues/724 for details
+  "pyyaml==5.3.1",
   "redis",
   "requests",
   "pydantic >=1.10.16,<2.0a0",
@@ -94,7 +96,7 @@ dependencies = [
   "pytest-playwright",
   "twine>=5.0.0",
   "pkginfo>=1.10", # Needed to support metadata 2.3
-
+  "pytest-cov",
 ]
 
 [tool.hatch.envs.lint]
@@ -145,4 +147,6 @@ markers = [
   "playwright: mark a test as a playwright test",
   "integration: mark a test as an integration test",
   "user_journey: mark a test as a user journey test",
+  "extended_prefix: mark a test as for windows extended_prefix",
+  "long_running_test: mark a test that takes a long time to run",
 ]

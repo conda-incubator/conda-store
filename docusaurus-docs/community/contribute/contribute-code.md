@@ -78,8 +78,8 @@ Follow the steps for the corresponding project to create a development installat
 1. Before you start, make sure to pull the latest changes from upstream.
 
 ```bash
-git checkout develop
-git pull upstream develop
+git checkout main
+git pull upstream main
 ```
 
 2. Create a branch for the bug or feature you want to work on. The branch name will appear in the merge message, so use a sensible, self-explanatory name:
