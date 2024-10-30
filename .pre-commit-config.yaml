@@ -13,19 +13,15 @@ ci:
     [pre-commit.ci] Apply automatic pre-commit fixes
 
 repos:
-  - repo: https://github.com/psf/black
-    rev: 24.8.0
-    hooks:
-      - id: black
-        exclude: "examples|tests/assets"
-
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
     rev: "v0.6.3"
     hooks:
       - id: ruff
         exclude: "examples|tests/assets"
-        args: ["--fix"]
+        args: ["--fix", "--show-fixes"]
+      - id: ruff-format
+        exclude: "examples|tests/assets"
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
@@ -41,11 +37,3 @@ repos:
     hooks:
       - id: prettier
         exclude: ^(examples/|templates/|)
-
-  - repo: https://github.com/pycqa/isort
-    rev: 5.13.2
-    hooks:
-      - id: isort
-        name: isort
-        args: ["--profile", "black"]
-        exclude: "conda-store-server/conda_store_server/action/__init__.py"

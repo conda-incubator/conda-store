@@ -11,7 +11,6 @@ import time
 import pytest
 import traitlets
 import yaml
-
 from fastapi.testclient import TestClient
 
 from conda_store_server import CONDA_STORE_DIR, __version__
@@ -1047,7 +1046,8 @@ def test_put_global_settings_auth_in_namespace_environment(
     testclient, authenticate, route
 ):
     """This is a test that you cannot set a global setting at the
-    namespace or environment settings level"""
+    namespace or environment settings level
+    """
     response = testclient.put(
         route,
         json={

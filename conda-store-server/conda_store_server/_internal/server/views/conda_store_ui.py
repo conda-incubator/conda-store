@@ -6,7 +6,6 @@ from fastapi import APIRouter, Depends, Request
 
 from conda_store_server.server import dependencies
 
-
 router_conda_store_ui = APIRouter(tags=["conda-store-ui"])
 
 

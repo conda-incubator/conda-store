@@ -9,7 +9,6 @@ import sys
 import typing
 
 import yaml
-
 from celery import Task, platforms, shared_task
 from celery.execute import send_task
 from celery.signals import worker_ready

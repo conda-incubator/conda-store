@@ -6,7 +6,6 @@ import pathlib
 
 import pydantic
 import yaml
-
 from sqlalchemy import and_, or_
 from sqlalchemy.orm import Query
 

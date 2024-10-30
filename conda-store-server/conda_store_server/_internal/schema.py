@@ -8,7 +8,6 @@ import functools
 import os
 import re
 import sys
-
 from typing import Any, Callable, Dict, List, Optional, TypeAlias, Union
 
 from conda_lock.lockfile.v1.models import Lockfile
@@ -19,7 +18,7 @@ from conda_store_server._internal import conda_utils, utils
 
 
 def _datetime_factory(offset: datetime.timedelta):
-    """utcnow datetime + timezone as string"""
+    """Utcnow datetime + timezone as string"""
     return datetime.datetime.utcnow() + offset
 
 
@@ -41,7 +40,8 @@ RoleBindings: TypeAlias = Dict[constr(regex=ARN_ALLOWED), List[str]]
 
 
 class Permissions(enum.Enum):
-    "Permissions map to conda-store actions"
+    """Permissions map to conda-store actions"""
+
     ENVIRONMENT_CREATE = "environment:create"
     ENVIRONMENT_READ = "environment::read"
     ENVIRONMENT_UPDATE = "environment::update"
@@ -528,7 +528,7 @@ class LockfileSpecification(BaseModel):
 
 
 def _docker_datetime_factory():
-    """utcnow datetime + timezone as string"""
+    """Utcnow datetime + timezone as string"""
     return datetime.datetime.utcnow().astimezone().isoformat()
 
 

@@ -3,7 +3,6 @@
 # license that can be found in the LICENSE file.
 
 import pytest
-
 from sqlalchemy.exc import IntegrityError
 
 from conda_store_server import api
@@ -11,7 +10,7 @@ from conda_store_server._internal.orm import NamespaceRoleMapping
 from conda_store_server._internal.utils import BuildPathError
 
 
-@pytest.fixture()
+@pytest.fixture
 def populated_db(db):
     """A database fixture populated with 4 envs in 3 namespaces."""
     description = "Hello World"
@@ -352,11 +351,11 @@ def test_get_set_keyvaluestore(db):
 
     # test updating a prefix
     api.set_kvstore_key_values(db, "pytest", setting_2)
-    assert {**setting_1, **setting_2} == api.get_kvstore_key_values(db, "pytest")
+    assert api.get_kvstore_key_values(db, "pytest") == {**setting_1, **setting_2}
 
     # test updating a prefix
     api.set_kvstore_key_values(db, "pytest", {"c": 999, "d": 999}, update=False)
-    assert {**setting_1, **setting_2} == api.get_kvstore_key_values(db, "pytest")
+    assert api.get_kvstore_key_values(db, "pytest") == {**setting_1, **setting_2}
 
 
 def test_build_path_too_long(db, conda_store, simple_specification):

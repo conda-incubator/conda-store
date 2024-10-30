@@ -9,7 +9,6 @@ import os
 import pathlib
 import shutil
 import sys
-
 from functools import partial
 
 from sqlalchemy import (
@@ -41,7 +40,6 @@ from sqlalchemy.orm import (
 
 from conda_store_server._internal import conda_utils, schema, utils
 from conda_store_server._internal.environment import validate_environment
-
 
 logger = logging.getLogger("orm")
 

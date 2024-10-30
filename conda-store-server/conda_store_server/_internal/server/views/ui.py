@@ -5,7 +5,6 @@
 from typing import Optional
 
 import yaml
-
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import RedirectResponse
 
@@ -15,7 +14,6 @@ from conda_store_server._internal.action.generate_constructor_installer import (
 )
 from conda_store_server._internal.schema import Permissions
 from conda_store_server.server import dependencies
-
 
 router_ui = APIRouter(tags=["ui"])
 
@@ -38,7 +36,7 @@ async def ui_create_get_environment(
         )
 
         def sort_namespace(n):
-            "Default namespace always first, then alphabetical"
+            """Default namespace always first, then alphabetical"""
             if n.name == default_namespace:
                 return f"0{n.name}"
             return f"1{n.name}"

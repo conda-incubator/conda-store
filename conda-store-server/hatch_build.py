@@ -14,12 +14,10 @@ import shutil
 import tarfile
 import tempfile
 import urllib.request
-
 from pathlib import Path
 from typing import Any, Dict, List
 
 from hatchling.builders.hooks.plugin.interface import BuildHookInterface
-
 
 CONDA_STORE_UI_VERSION = "2024.10.1"
 CONDA_STORE_UI_URL = f"https://registry.npmjs.org/@conda-store/conda-store-ui/-/conda-store-ui-{CONDA_STORE_UI_VERSION}.tgz"
@@ -89,7 +87,6 @@ class DownloadCondaStoreUIHook(BuildHookInterface):
             ui_version (str): conda-store-ui version to download, must be a
             valid npm release
         """
-
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp_dir = Path(tmp_dir)
             tmp_filename = tmp_dir / "conda-store-ui.tgz"
@@ -114,7 +111,6 @@ class DownloadCondaStoreUIHook(BuildHookInterface):
         Args:
             source_directory (str): path to the directory containing the UI files
         """
-
         server_build_static_assets = Path(self.root) / SERVER_UI_ASSETS
         server_build_static_assets.mkdir(parents=True, exist_ok=True)
 
@@ -133,6 +129,6 @@ class DownloadCondaStoreUIHook(BuildHookInterface):
                 f"Copied files: {[p.name for p in server_build_static_assets.glob('*')]}"
             )
 
-        except (IOError, OSError) as e:
+        except OSError as e:
             print(f"Error copying files: {e}")
             raise

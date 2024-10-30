@@ -61,9 +61,7 @@ def test_admin_login_and_delete_shared_environment(
     environment = api.create_environment(
         namespace,
         specification_path,
-    ).json()["data"][
-        "specification"
-    ]["name"]
+    ).json()["data"]["specification"]["name"]
 
     api.delete_environment(namespace, environment)
     api.delete_namespace(namespace)
@@ -91,17 +89,13 @@ def test_user_login_and_create_shared_environment(
         token=api.create_token(
             namespace,
             "developer",
-        ).json()[
-            "data"
-        ]["token"],
+        ).json()["data"]["token"],
     )
 
     environment = dev_api.create_environment(
         namespace,
         specification_path,
-    ).json()[
-        "data"
-    ]["specification"]["name"]
+    ).json()["data"]["specification"]["name"]
 
     api.delete_environment(namespace, environment)
     api.delete_namespace(namespace)
@@ -139,9 +133,7 @@ def test_admin_set_active_build(base_url: str):
     assert api.get_environment(
         namespace=namespace,
         environment=environment,
-    )[
-        "current_build_id"
-    ] == max(build_ids)
+    )["current_build_id"] == max(build_ids)
 
     api.set_active_build(
         namespace=namespace, environment=environment, build_id=min(build_ids)
@@ -150,9 +142,7 @@ def test_admin_set_active_build(base_url: str):
     assert api.get_environment(
         namespace=namespace,
         environment=environment,
-    )[
-        "current_build_id"
-    ] == min(build_ids)
+    )["current_build_id"] == min(build_ids)
 
     for env in envs:
         api.delete_environment(namespace, env)

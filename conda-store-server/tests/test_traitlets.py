@@ -6,7 +6,6 @@ import pathlib
 import tempfile
 
 import pytest
-
 from fastapi.templating import Jinja2Templates
 from fastapi.testclient import TestClient
 
