@@ -54,9 +54,7 @@ class CondaStoreWorker(Application):
     def _validate_config_file(self, proposal):
         if not os.path.isfile(proposal.value):
             print(
-                "ERROR: Failed to find specified config file: {}".format(
-                    proposal.value
-                ),
+                f"ERROR: Failed to find specified config file: {proposal.value}",
                 file=sys.stderr,
             )
             sys.exit(1)
@@ -85,7 +83,6 @@ class CondaStoreWorker(Application):
         return logging_to_celery_level_map[logging_level]
 
     def start(self):
-
         argv = [
             "worker",
             f"--loglevel={self.logger_to_celery_logging_level(self.log_level)}",

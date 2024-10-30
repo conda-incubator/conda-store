@@ -19,8 +19,9 @@ repos:
     hooks:
       - id: ruff
         exclude: "examples|tests/assets"
-        args: ["--fix"]
+        args: ["--fix", "--show-fixes"]
       - id: ruff-format
+        exclude: "examples|tests/assets"
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0

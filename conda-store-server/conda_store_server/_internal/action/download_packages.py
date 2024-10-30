@@ -14,7 +14,6 @@ import conda.gateways.logging  # noqa
 import conda_package_handling.api
 import conda_package_streaming.url
 import filelock
-
 from conda.base.constants import PACKAGE_CACHE_MAGIC_FILE
 from conda.common.path import expand, strip_pkg_extension
 from conda.core.package_cache_data import (

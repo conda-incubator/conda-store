@@ -6,7 +6,7 @@ from conda_store_server import api, storage
 from conda_store_server._internal import schema
 
 
-@pytest.fixture()
+@pytest.fixture
 def local_file_store(tmp_path):
     """Setup a tmp dir with 2 test files and a logs dir"""
     tf_one = str(tmp_path / "testfile1")
@@ -20,7 +20,7 @@ def local_file_store(tmp_path):
     logs_path = tmp_path / "logs"
     os.mkdir(logs_path)
 
-    yield tmp_path
+    return tmp_path
 
 
 class TestStorage:
@@ -68,7 +68,7 @@ class TestLocalStorage:
 
         target_file = str(local_file_store / "new_build_key")
         assert os.path.exists(target_file)
-        target_content = open(target_file, "r").read()
+        target_content = open(target_file).read()
         assert target_content == "testfile1"
 
     def test_fset_dont_overwrite_file(self, db, local_file_store):
@@ -83,7 +83,7 @@ class TestLocalStorage:
 
         target_file = str(local_file_store / "testfile2")
         assert os.path.exists(target_file)
-        target_content = open(target_file, "r").read()
+        target_content = open(target_file).read()
         assert target_content == "testfile1"
 
     def test_set_new_package(self, db, local_file_store):
@@ -102,7 +102,7 @@ class TestLocalStorage:
 
         target_file = str(local_file_store / "new_build_key")
         assert os.path.exists(target_file)
-        target_content = open(target_file, "r").read()
+        target_content = open(target_file).read()
         assert target_content == "somestuff"
 
     def test_get(self, local_file_store):

@@ -8,7 +8,6 @@ import posixpath
 import shutil
 
 import minio
-
 from minio.credentials.providers import Provider
 from traitlets import Bool, Dict, List, Type, Unicode
 from traitlets.config import LoggingConfigurable

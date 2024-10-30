@@ -127,6 +127,7 @@ line-length = 88
 [tool.isort]
 lines_between_types = 1
 lines_after_imports = 2
+profile = 'black'
 
 [tool.ruff]
 line-length = 88
@@ -193,41 +194,24 @@ ignore = [
     "UP031", 	# printf-string-formatting
 ]
 select = [
-    # pycodestyle
-    "E",
-    "W",
-    # Pyflakes
-    "F",
-    # pyupgrade
-    "UP",
-    # flake8-bugbear
-    "B",
-    # flake8-simplify
-    "SIM",
-    # isort
-    "I",
-    # pep8 naming
-    "N",
-    # pydocstyle
-    "D",
-    # annotations
-    "ANN",
-    # debugger
-    "T10",
-    # flake8-pytest
-    "PT",
-    # flake8-return
-    "RET",
-    # flake8-unused-arguments
-    "ARG",
-    # flake8-fixme
-    "FIX",
-    # flake8-eradicate
-    "ERA",
-    # pandas-vet
-    "PD",
-    # numpy-specific rules
-    "NPY",
+    "E",   # pycodestyle
+    "W",   # pycodestyle
+    "F",   # Pyflakes
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "SIM", # flake8-simplify
+    "I",   # isort
+    "N",   # pep8 naming
+    "D",   # pydocstyle
+    "ANN", # annotations
+    "T10", # debugger
+    "PT",  # flake8-pytest
+    "RET", # flake8-return
+    "ARG", # flake8-unused-arguments
+    "FIX", # flake8-fixme
+    "ERA", # flake8-eradicate
+    "PD",  # pandas-vet
+    "NPY", # numpy-specific rules
 ]
 
 [tool.ruff.lint.pydocstyle]

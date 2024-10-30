@@ -7,7 +7,6 @@ import pathlib
 import sys
 import tempfile
 import warnings
-
 from typing import Union
 
 import yaml
@@ -54,7 +53,7 @@ def action_generate_constructor_installer(
         warnings.warn(
             "Installer generation requires constructor: https://github.com/conda/constructor"
         )
-        return
+        return None
 
     # pip dependencies are not directly supported by constructor, they will be
     # installed via the post_install script:

@@ -6,14 +6,12 @@ import base64
 import datetime
 import re
 import secrets
-
 from collections import defaultdict
 from typing import Iterable, Optional, Set
 
 import jwt
 import requests
 import yarl
-
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse

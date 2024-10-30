@@ -4,11 +4,9 @@
 
 import logging
 import sys
-
 from unittest.mock import patch
 
 import pytest
-
 from traitlets.config import Config
 
 from conda_store_server._internal.worker.app import CondaStoreWorker

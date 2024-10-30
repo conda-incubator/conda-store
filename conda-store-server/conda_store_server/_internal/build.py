@@ -13,7 +13,6 @@ import traceback
 import typing
 
 import yaml
-
 from filelock import FileLock
 from sqlalchemy.orm import Session
 

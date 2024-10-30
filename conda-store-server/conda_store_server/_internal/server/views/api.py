@@ -3,12 +3,10 @@
 # license that can be found in the LICENSE file.
 
 import datetime
-
 from typing import Any, Dict, List, Optional, TypedDict
 
 import pydantic
 import yaml
-
 from celery.result import AsyncResult
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request
 from fastapi.responses import PlainTextResponse, RedirectResponse
