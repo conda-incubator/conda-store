@@ -130,12 +130,108 @@ lines_after_imports = 2
 
 [tool.ruff]
 line-length = 88
+exclude = [
+    "conda_store_server/_internal/alembic/versions/"
+]
 
 [tool.ruff.lint]
 ignore = [
-  "E501", # line-length
+    "E501", # line-length
 
+    "ANN001",	# missing-type-function-argument
+    "ANN002",	# missing-type-args
+    "ANN003",	# missing-type-kwargs
+    "ANN101",	# missing-type-self
+    "ANN102",	# missing-type-cls
+    "ANN201",	# missing-return-type-undocumented-public-function
+    "ANN202",	# missing-return-type-private-function
+    "ANN204",	# missing-return-type-special-method
+    "ANN205",	# missing-return-type-static-method
+    "ANN206",	# missing-return-type-class-method
+    "ARG001",	# unused-function-argument
+    "ARG002",	# unused-method-argument
+    "B006",  	# mutable-argument-default
+    "B007",  	# unused-loop-control-variable
+    "B008",  	# function-call-in-default-argument
+    "B011",  	# assert-false
+    "B015",  	# useless-comparison
+    "B017",  	# assert-raises-exception
+    "B018",  	# useless-expression
+    "B028",  	# no-explicit-stacklevel
+    "B904",  	# raise-without-from-inside-except
+    "D100",  	# undocumented-public-module
+    "D101",  	# undocumented-public-class
+    "D102",  	# undocumented-public-method
+    "D103",  	# undocumented-public-function
+    "D104",  	# undocumented-public-package
+    "D200",  	# fits-on-one-line
+    "D205",  	# blank-line-after-summary
+    "D400",  	# ends-in-period
+    "D401",  	# non-imperative-mood
+    "D404",  	# docstring-starts-with-this
+    "ERA001",	# commented-out-code
+    "FIX001",	# line-contains-fixme
+    "FIX002",	# line-contains-todo
+    "N805",  	# invalid-first-argument-name-for-method
+    "N815",  	# mixed-case-variable-in-class-scope
+    "PT004", 	# pytest-missing-fixture-name-underscore
+    "PT006", 	# pytest-parametrize-names-wrong-type
+    "PT011", 	# pytest-raises-too-broad
+    "PT012", 	# pytest-raises-with-multiple-statements
+    "PT014", 	# pytest-duplicate-parametrize-test-cases
+    "PT015", 	# pytest-assert-always-false
+    "RET503",	# implicit-return
+    "RET504",	# unnecessary-assign
+    "RET505",	# superfluous-else-return
+    "RET506",	# superfluous-else-raise
+    "SIM105",	# suppressible-exception
+    "SIM115",	# open-file-with-context-handler
+    "SIM117",	# multiple-with-statements
+    "UP006", 	# non-pep585-annotation
+    "UP007", 	# non-pep604-annotation
+    "UP030", 	# format-literals
+    "UP031", 	# printf-string-formatting
 ]
+select = [
+    # pycodestyle
+    "E",
+    "W",
+    # Pyflakes
+    "F",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # flake8-simplify
+    "SIM",
+    # isort
+    "I",
+    # pep8 naming
+    "N",
+    # pydocstyle
+    "D",
+    # annotations
+    "ANN",
+    # debugger
+    "T10",
+    # flake8-pytest
+    "PT",
+    # flake8-return
+    "RET",
+    # flake8-unused-arguments
+    "ARG",
+    # flake8-fixme
+    "FIX",
+    # flake8-eradicate
+    "ERA",
+    # pandas-vet
+    "PD",
+    # numpy-specific rules
+    "NPY",
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
 
 [tool.check-wheel-contents]
 # ignore alembic migrations https://github.com/jwodder/check-wheel-contents?tab=readme-ov-file#w004--module-is-not-located-at-importable-path
