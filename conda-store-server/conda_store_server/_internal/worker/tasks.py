@@ -17,7 +17,7 @@ from sqlalchemy.orm import Session
 
 from conda_store_server import api
 from conda_store_server._internal import environment, schema, utils
-from conda_store_server._internal.build import (
+from conda_store_server._internal.worker.build import (
     build_cleanup,
     build_conda_docker,
     build_conda_env_export,
