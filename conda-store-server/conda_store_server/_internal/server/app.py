@@ -451,6 +451,7 @@ class CondaStoreServer(Application):
                     else []
                 ),
                 factory=True,
+                log_level=self.log_level,
             )
 
         except:
