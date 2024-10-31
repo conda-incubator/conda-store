@@ -16,6 +16,9 @@ The conda-store roadmap for the remaining part of 2024 into 2025 will revolve ar
 
 
 ## Performance
+
+[GH Issues](https://github.com/conda-incubator/conda-store/labels/roadmap%3A%20performance)
+
 - ✅ Identify the parts of conda-store responsible for slowing down new environment builds.
     - 🏃 ~40% of environment build time comes from a slow call to conda-lock, which solves each environment twice (once for conda packages and again to support pip packages with a vendored version of poetry). The dependency on conda-lock will be eliminated by implementing official conda support for lockfile generation:
         - ⬆️🏃 Teach conda create how to handle environment.yml files ([#14113](https://github.com/conda/conda/pull/14113))
@@ -29,6 +32,8 @@ The conda-store roadmap for the remaining part of 2024 into 2025 will revolve ar
 
 ## Storage / Backup and Restore
 
+[GH Issues](https://github.com/conda-incubator/conda-store/issues?q=is%3Aissue%20state%3Aopen%20label%3A%22roadmap%3A%20storage%20%2B%20backup%20%2B%20restore%22)
+
 - 📪 A major concern for existing conda-store deployments is that old, unused builds still take up space on shared volumes. Old builds eventually fill up disk space for deployments with many users, requiring manual intervention to delete them. Implementing a backup mechanism will require reaching consensus on an approach to archiving and recreation old builds ([#889](https://github.com/conda-incubator/conda-store/issues/889)).
     - 📪 Implement archiving of old builds: the yaml spec and the lockfile are kept, but the environments on disk are deleted.
     - 📪 Implement bulk archiving of old builds.
@@ -39,6 +44,8 @@ The conda-store roadmap for the remaining part of 2024 into 2025 will revolve ar
     - 📪 In conda-store, implement the ability to transfer environments along with their histories using the new serialization format.
 
 ## User experience improvements
+
+[GH Issues](https://github.com/conda-incubator/conda-store/issues?q=state%3Aopen%20label%3A%22roadmap%3A%20UX%20Experience%22)
 
 - 🏃 Currently there are three ways to interact with the conda-store-server: the CLI, the REST API, and the Python API. However, these interfaces do not provide the same functionality, leading to maintenance issues. Addressing this will require refactoring the existing CLI.
     - ✅ Determine user workflows to scope CLI functionality
@@ -53,3 +60,10 @@ The conda-store roadmap for the remaining part of 2024 into 2025 will revolve ar
 - 📪 Instead of requiring the user to set an environment variable to build GPU-enabled environments, explicitly add this option to conda-store to make this process smoother.
 - 📪 Deprecation of conda-store admin app
 - 📪 Implement UX improvements based on recently-completed usability study, and practical issues encountered from dogfooding.
+
+## Operations
+
+[GH Issues](https://github.com/conda-incubator/conda-store/labels/roadmap%3A%20performance)
+
+- 🏃 Provide users (responsible for deploying conda-store) a helm chart with a reasonable reference architecture for deploying conda-store
+- 📪 Add Open Telemetry tracing for logging server information for users who are deploying conda-store
