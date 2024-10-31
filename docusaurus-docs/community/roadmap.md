@@ -63,7 +63,7 @@ The conda-store roadmap for the remaining part of 2024 into 2025 will revolve ar
 
 ## Operations
 
-[GH Issues](https://github.com/conda-incubator/conda-store/labels/roadmap%3A%20performance)
+[GH Issues](https://github.com/conda-incubator/conda-store/labels/roadmap%3A%20operations)
 
 - 🏃 Provide users (responsible for deploying conda-store) a helm chart with a reasonable reference architecture for deploying conda-store
 - 📪 Add Open Telemetry tracing for logging server information for users who are deploying conda-store
