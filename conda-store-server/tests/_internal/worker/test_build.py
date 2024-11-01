@@ -2,9 +2,9 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
 
-from conda_store_server._internal.worker import build
-from conda_store_server._internal import schema
 from conda_store_server import api
+from conda_store_server._internal import schema
+from conda_store_server._internal.worker import build
 
 
 def test_build_started(db, seed_conda_store):
@@ -38,5 +38,7 @@ def test_build_completed(db, conda_store, seed_conda_store):
     test_build = api.get_build(db, build_id=2)
     assert test_build.status == schema.BuildStatus.COMPLETED
     assert test_build.environment.current_build == test_build
-    build_artifact = api.get_build_artifact(db, 2, str(test_build.build_path(conda_store)))
+    build_artifact = api.get_build_artifact(
+        db, 2, str(test_build.build_path(conda_store))
+    )
     assert build_artifact is not None
