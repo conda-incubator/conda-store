@@ -818,22 +818,33 @@ def new_session_factory(
     session_factory = sessionmaker(bind=engine)
     return session_factory
 
+
+class Role(Base):
+    """The role of a user for a namespace/environment."""
+
+    id = Column(Integer, primary_key=True)
+    name = Column(Enum(schema.Role), default=schema.BuildStatus.QUEUED)
+
+
 class User(Base):
     """User which contains permissions to namespaces and environments."""
+
     id = Column(Integer, primary_key=True)
     name = Column(Unicode, unique=True)
     permissions = relationship("UserPermission", back_populates="user")
 
+
 class UserPermission(Base):
-    """Table which defines the permissions a User has for an namespace/environment.
+    """The permissions a User has for an namespace/environment.
+
+    Maps a namespace/environment matching rule to a `Role` for the matching
+    namespaces/environments.
 
     Intended to replace NamespaceRoleMapping and NamespaceRoleMappingV2.
     """
+
     id = Column(Integer, primary_key=True)
     user_id = ForeignKey("user.id")
     namespace_id = ForeignKey("namespace.id")
-    role =
-
-class Role(Base):
-    id = Column(Integer, primary_key=True)
-    role = Column(Enum(schema.), default=schema.BuildStatus.QUEUED)
+    role_id = Column(Integer, ForeignKey("role.id"))
+    role = relationship(Role)

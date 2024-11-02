@@ -1,6 +1,7 @@
 # Copyright (c) conda-store development team. All rights reserved.
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
+from __future__ import annotations
 
 import datetime
 import enum
@@ -8,7 +9,8 @@ import functools
 import os
 import re
 import sys
-from typing import Any, Callable, Dict, List, Optional, TypeAlias, Union
+import warnings
+from typing import Any, Callable, Dict, List, Optional, Tuple, TypeAlias, Union
 
 from conda_lock.lockfile.v1.models import Lockfile
 from pydantic import BaseModel, Field, ValidationError, constr, validator
@@ -37,6 +39,56 @@ ARN_ALLOWED_REGEX = re.compile(ARN_ALLOWED)
 #########################
 
 RoleBindings: TypeAlias = Dict[constr(regex=ARN_ALLOWED), List[str]]
+
+
+@functools.total_ordering
+class Role(enum.Enum):
+    """The role determines the permissions of a user for a namespace/env.
+
+    Role members can be looked up by their name, or by their (rank, name)
+    tuples, e.g.
+
+        >>> Role('admin')
+        <Role.ADMIN: (2, 'admin')>
+        >>> Role((2, 'admin'))
+        <Role.ADMIN: (2, 'admin')>
+    """
+
+    VIEWER = (0, "viewer")
+    EDITOR = (1, "editor")
+    ADMIN = (2, "admin")
+
+    @classmethod
+    def _missing_(cls, value: str | Tuple[int, str]):
+        if isinstance(value, str):
+            if value.lower() == "developer":
+                warnings.warn(
+                    (
+                        "'developer' is a deprecated alias for 'editor' and "
+                        "will be removed in a future verison."
+                    ),
+                    DeprecationWarning,
+                )
+                return cls.EDITOR
+
+            for member in Role:
+                if member.value[1] == value.lower():
+                    return member
+
+            return None
+
+        # If the value passed is a tuple, just search the list of members
+        for member in Role:
+            if member == value:
+                return member
+
+        return None
+
+    def __eq__(self, other: Role):
+        return self.value[0] == other.value[0]
+
+    def __ge__(self, other: Role):
+        return self.value[0] >= other.value[0]
 
 
 class Permissions(enum.Enum):
