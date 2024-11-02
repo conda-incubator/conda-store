@@ -14,7 +14,10 @@ from fastapi.responses import PlainTextResponse, RedirectResponse
 from conda_store_server import __version__, api, app
 from conda_store_server._internal import orm, schema, utils
 from conda_store_server._internal.environment import filter_environments
-from conda_store_server._internal.schema import AuthenticationToken, Permissions
+from conda_store_server._internal.schema import (
+    AuthenticationToken,
+    Permissions,
+)
 from conda_store_server._internal.server import dependencies
 from conda_store_server.server.auth import Authentication
 
@@ -1483,3 +1486,14 @@ async def api_put_settings(
             "data": None,
             "message": f"global setting keys {list(data.keys())} updated",
         }
+
+
+@router_api.put(
+    "/user/",
+    response_model=schema.APIPutUser,
+)
+async def api_put_user(
+    request: Request,
+    auth: Authentication = Depends(dependencies.get_auth),
+):
+    auth.authenticate_request(request)
