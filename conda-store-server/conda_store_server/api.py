@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import re
-
 from typing import Any, Dict, List, Union
 
 from sqlalchemy import distinct, func, null, or_
@@ -569,9 +568,7 @@ def get_build_lockfile_legacy(db, build_id: int):
     return """#platform: {0}
 @EXPLICIT
 {1}
-""".format(
-        conda_utils.conda_platform(), "\n".join(packages)
-    )
+""".format(conda_utils.conda_platform(), "\n".join(packages))
 
 
 def get_build_artifact_types(db, build_id: int):

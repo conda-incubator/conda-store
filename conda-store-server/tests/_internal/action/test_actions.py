@@ -8,13 +8,11 @@ import pathlib
 import re
 import sys
 import tempfile
-
 from unittest import mock
 
 import pytest
 import yaml
 import yarl
-
 from celery.result import AsyncResult
 from conda.base.context import context as conda_base_context
 from constructor import construct

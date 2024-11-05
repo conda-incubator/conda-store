@@ -7,12 +7,10 @@ import os
 import posixpath
 import sys
 import time
-
 from enum import Enum
 from threading import Thread
 
 import uvicorn
-
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
@@ -34,7 +32,6 @@ from traitlets import (
 from traitlets.config import Application, catch_config_error
 
 import conda_store_server
-
 from conda_store_server import __version__, storage
 from conda_store_server._internal import dbutil, orm
 from conda_store_server._internal.server import views
@@ -167,9 +164,7 @@ class CondaStoreServer(Application):
     def _validate_config_file(self, proposal):
         if not os.path.isfile(proposal.value):
             print(
-                "ERROR: Failed to find specified config file: {}".format(
-                    proposal.value
-                ),
+                f"ERROR: Failed to find specified config file: {proposal.value}",
                 file=sys.stderr,
             )
             sys.exit(1)
@@ -459,6 +454,7 @@ class CondaStoreServer(Application):
                     else []
                 ),
                 factory=True,
+                log_level=self.log_level,
             )
 
         except:

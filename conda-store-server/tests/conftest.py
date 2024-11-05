@@ -11,12 +11,10 @@ import uuid
 
 import pytest
 import yaml
-
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from conda_store_server import api, app, storage
-
 
 from conda_store_server._internal import (  # isort:skip
     action,
@@ -105,7 +103,7 @@ def conda_store_server(conda_store_config):
 
         ResultModelBase.metadata.create_all(db.get_bind())
 
-    yield _conda_store_server
+    return _conda_store_server
 
 
 @pytest.fixture
@@ -162,6 +160,7 @@ def seed_conda_store(db, conda_store):
     build.ended_on = datetime.datetime.utcnow()
     build.status = schema.BuildStatus.COMPLETED
     db.commit()
+    return db
 
 
 @pytest.fixture
@@ -188,7 +187,7 @@ def conda_store(conda_store_config):
 
         ResultModelBase.metadata.create_all(db.get_bind())
 
-    yield _conda_store
+    return _conda_store
 
 
 @pytest.fixture
@@ -199,7 +198,7 @@ def db(conda_store):
 
 @pytest.fixture
 def simple_specification():
-    yield schema.CondaSpecification(
+    return schema.CondaSpecification(
         name="test",
         channels=["main"],
         dependencies=["zlib"],
@@ -208,7 +207,7 @@ def simple_specification():
 
 @pytest.fixture
 def simple_specification_with_pip():
-    yield schema.CondaSpecification(
+    return schema.CondaSpecification(
         name="test",
         channels=["main"],
         dependencies=[
@@ -234,7 +233,7 @@ def simple_conda_lock_with_pip():
 
 @pytest.fixture
 def simple_lockfile_specification(simple_conda_lock):
-    yield schema.LockfileSpecification.parse_obj(
+    return schema.LockfileSpecification.parse_obj(
         {
             "name": "test",
             "description": "simple lockfile specification",
@@ -245,7 +244,7 @@ def simple_lockfile_specification(simple_conda_lock):
 
 @pytest.fixture
 def simple_lockfile_specification_with_pip(simple_conda_lock_with_pip):
-    yield schema.LockfileSpecification.parse_obj(
+    return schema.LockfileSpecification.parse_obj(
         {
             "name": "test",
             "description": "simple lockfile specification with pip",
@@ -279,7 +278,7 @@ def conda_prefix(conda_store, tmp_path, request):
         specification=specification,
         conda_prefix=conda_prefix,
     )
-    yield conda_prefix
+    return conda_prefix
 
 
 def _seed_conda_store(

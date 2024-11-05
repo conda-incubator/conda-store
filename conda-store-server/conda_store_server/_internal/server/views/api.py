@@ -3,12 +3,10 @@
 # license that can be found in the LICENSE file.
 
 import datetime
-
 from typing import Any, Dict, List, Optional, TypedDict
 
 import pydantic
 import yaml
-
 from celery.result import AsyncResult
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request
 from fastapi.responses import PlainTextResponse, RedirectResponse
@@ -17,7 +15,7 @@ from conda_store_server import __version__, api, app
 from conda_store_server._internal import orm, schema, utils
 from conda_store_server._internal.environment import filter_environments
 from conda_store_server._internal.schema import AuthenticationToken, Permissions
-from conda_store_server.server import dependencies
+from conda_store_server._internal.server import dependencies
 from conda_store_server.server.auth import Authentication
 
 
