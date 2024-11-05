@@ -79,7 +79,7 @@ class Role(enum.Enum):
 
         # If the value passed is a tuple, just search the list of members
         for member in Role:
-            if member == value:
+            if member.value == value:
                 return member
 
         return None

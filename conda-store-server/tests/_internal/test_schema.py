@@ -28,7 +28,7 @@ def test_valid_role(value, expected):
 )
 def test_invalid_role(value):
     """Test that invalid Role values raise an exception."""
-    with pytest.Raises(ValueError):
+    with pytest.raises(ValueError):
         schema.Role(value)
 
 

@@ -1,11 +1,7 @@
 # Copyright (c) conda-store development team. All rights reserved.
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
-
 from fastapi import Depends, Request
-
-from conda_store_server._internal import schema
-from conda_store_server.server.auth import Authentication
 
 
 async def get_conda_store(request: Request):
@@ -16,14 +12,14 @@ async def get_server(request: Request):
     return request.state.server
 
 
-async def get_auth(request: Request) -> Authentication:
+async def get_auth(request: Request):
     return request.state.authentication
 
 
 async def get_entity(
     request: Request,
-    auth: Authentication = Depends(get_auth),
-) -> schema.AuthenticationToken:
+    auth=Depends(get_auth),
+):
     """Get the token representing the user who made the request.
 
     Parameters
