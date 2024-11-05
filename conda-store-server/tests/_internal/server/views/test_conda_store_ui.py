@@ -8,7 +8,8 @@ from fastapi.testclient import TestClient
 
 def assert_client_app(response):
     """A few checks that should all pass if the response is ok and contains
-    the client app"""
+    the client app
+    """
     assert response.is_success
     assert "text/html" in response.headers["content-type"]
     assert "condaStoreConfig" in response.text
@@ -36,7 +37,8 @@ class TestUIRoutes:
 
     def test_unknown_routes(self, testclient):
         """Rather than return a 404, the server should return the client app
-        and let it handle unknown routes"""
+        and let it handle unknown routes
+        """
         response = testclient.get(self.full_route("/foo"))
         assert_client_app(response)
 
@@ -45,7 +47,8 @@ class TestUIRoutes:
 
     def test_not_found_route(self, testclient):
         """The /not-found route should also return the client app
-        but with a 404 status code"""
+        but with a 404 status code
+        """
         response = testclient.get(self.full_route("/not-found"))
         assert response.status_code == 404
         assert "text/html" in response.headers["content-type"]
@@ -53,7 +56,8 @@ class TestUIRoutes:
 
     def test_route_outside_ui_app(self, testclient):
         """The server should not return the client app for a server-side
-        route"""
+        route
+        """
         # Trailing slash needed on next line. Is this a problem?
         response = testclient.get(self.full_route("/admin/"))
         assert response.is_success
@@ -68,19 +72,22 @@ def assert_not_found_not_client_app(response):
     assert response.status_code == 404
     assert "condaStoreConfig" not in response.text
 
+
 class TestUIRoutesCustomPrefix(TestUIRoutes):
     url_prefix = "/conda-store"
 
     def test_unknown_route_outside_prefix(self, testclient):
         """The server should return a 404 for an unknown route outside
-        the url prefix and should not return the client app"""
+        the url prefix and should not return the client app
+        """
         response = testclient.get("/foo/bar")
         assert_not_found_not_client_app(response)
 
 
 def test_ui_disabled(conda_store_server):
     """When the UI is disabled, the server should return 404s for
-    all UI routes and should not return the client app"""
+    all UI routes and should not return the client app
+    """
     conda_store_server.enable_ui = False
     conda_store_server.url_prefix = "/"
     testclient = TestClient(conda_store_server.init_fastapi_app())

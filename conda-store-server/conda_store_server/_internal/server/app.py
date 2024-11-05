@@ -338,7 +338,9 @@ class CondaStoreServer(Application):
                 def redirect_home(request: Request):
                     return RedirectResponse(request.url_for("get_conda_store_ui"))
 
-            @app.get(trim_slash(self.url_prefix) + "/favicon.ico", include_in_schema=False)
+            @app.get(
+                trim_slash(self.url_prefix) + "/favicon.ico", include_in_schema=False
+            )
             async def favicon():
                 return FileResponse(
                     os.path.join(
