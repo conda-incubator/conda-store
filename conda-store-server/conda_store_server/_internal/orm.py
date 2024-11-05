@@ -822,12 +822,16 @@ def new_session_factory(
 class Role(Base):
     """The role of a user for a namespace/environment."""
 
+    __tablename__ = "role"
+
     id = Column(Integer, primary_key=True)
     name = Column(Enum(schema.Role), default=schema.BuildStatus.QUEUED)
 
 
 class User(Base):
     """User which contains permissions to namespaces and environments."""
+
+    __tablename__ = "user"
 
     id = Column(Integer, primary_key=True)
     name = Column(Unicode, unique=True)
@@ -842,6 +846,8 @@ class UserPermission(Base):
 
     Intended to replace NamespaceRoleMapping and NamespaceRoleMappingV2.
     """
+
+    __tablename__ = "userpermission"
 
     id = Column(Integer, primary_key=True)
     user_id = ForeignKey("user.id")
