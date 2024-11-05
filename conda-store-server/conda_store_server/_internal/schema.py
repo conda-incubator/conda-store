@@ -90,6 +90,15 @@ class Role(enum.Enum):
     def __ge__(self, other: Role):
         return self.value[0] >= other.value[0]
 
+    def __hash__(self):
+        """Compute the hash of the Role.
+
+        Required because objects which define __eq__ do not automatically
+        define __hash__, which is required for this class to be used as an
+        Enum column type with sqlalchemy.
+        """
+        return hash(self.value)
+
 
 class Permissions(enum.Enum):
     """Permissions map to conda-store actions"""
