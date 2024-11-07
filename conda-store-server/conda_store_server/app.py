@@ -28,7 +28,7 @@ from traitlets import (
 from traitlets.config import LoggingConfigurable
 
 from conda_store_server import CONDA_STORE_DIR, BuildKey, api, registry, storage
-from conda_store_server.plugins import hookspec, registry
+from conda_store_server.plugins import hookspec, plugin_registry
 from conda_store_server.exception import CondaStorePluginNotFoundError
 from conda_store_server._internal import conda_utils, environment, orm, schema, utils
 
@@ -479,7 +479,7 @@ class CondaStore(LoggingConfigurable):
         if hasattr(self, "_plugin_registry"):
             return self._plugin_registry
 
-        self._plugin_registry = registry.PluginRegistry()
+        self._plugin_registry = plugin_registry.PluginRegistry()
         self._plugin_registry.collect_plugins()
         return self._plugin_registry
 
