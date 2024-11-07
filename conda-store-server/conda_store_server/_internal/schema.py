@@ -830,8 +830,3 @@ class APIPutSetting(APIResponse):
 # GET /api/v1/usage/
 class APIGetUsage(APIResponse):
     data: Dict[str, Dict[str, Any]]
-
-
-# PUT /api/v1/user/
-class APIPutUser(APIAckResponse):
-    pass

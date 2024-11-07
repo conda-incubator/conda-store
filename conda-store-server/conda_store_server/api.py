@@ -4,7 +4,8 @@
 from __future__ import annotations
 
 import re
-from typing import Any, Dict, List, Union
+import uuid
+from typing import Any, Dict, List, Optional, Union
 
 from sqlalchemy import distinct, func, null, or_
 from sqlalchemy.orm import Query, aliased, session
@@ -823,3 +824,20 @@ def set_kvstore_key_values(db, prefix: str, d: Dict[str, Any], update: bool = Tr
         elif update:
             record.value = value
             db.commit()
+
+
+def set_new_user(
+    db: session.Session,
+    token: schema.AuthenticationToken,
+    username: Optional[str] = None,
+):
+    # Parse the token into a set of namespace/environment permissions
+    user_permissions = []
+
+    # Add the user with the given permissions
+    db.add(
+        orm.User(
+            name=username if username else uuid.uuid4(),
+            permissions=user_permissions,
+        )
+    )

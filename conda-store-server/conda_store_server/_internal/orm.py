@@ -828,16 +828,6 @@ class Role(Base):
     name = Column(Enum(schema.Role), default=schema.BuildStatus.QUEUED)
 
 
-class User(Base):
-    """User which contains permissions to namespaces and environments."""
-
-    __tablename__ = "user"
-
-    id = Column(Integer, primary_key=True)
-    name = Column(Unicode, unique=True)
-    permissions = relationship("UserPermission", back_populates="user")
-
-
 class UserPermission(Base):
     """The permissions a User has for an namespace/environment.
 
@@ -850,7 +840,17 @@ class UserPermission(Base):
     __tablename__ = "userpermission"
 
     id = Column(Integer, primary_key=True)
-    user_id = ForeignKey("user.id")
-    namespace_id = ForeignKey("namespace.id")
+    namespace_id = Column(Integer, ForeignKey("namespace.id"))
     role_id = Column(Integer, ForeignKey("role.id"))
     role = relationship(Role)
+
+
+class User(Base):
+    """User which contains permissions to namespaces and environments."""
+
+    __tablename__ = "user"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(Unicode, unique=True)
+    permissions = relationship(UserPermission)
+    permissions_id = Column(Integer, ForeignKey('userpermission.id'))

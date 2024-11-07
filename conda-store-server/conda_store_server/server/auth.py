@@ -572,7 +572,29 @@ form.addEventListener('submit', loginHandler);
         response.set_cookie(self.cookie_name, "", domain=self.cookie_domain, expires=0)
         return response
 
-    def authenticate_request(self, request: Request, require=False):
+    def authenticate_request(
+        self,
+        request: Request,
+        require: bool = False
+    ) -> Optional[schema.AuthenticationToken]:
+        """Authenticate a request.
+
+        Parameters
+        ----------
+        request : Request
+            Web request to authenticate
+        require : bool
+            Require that there be a token in either the request's 'Authorization'
+            header or in the request cookies. If such a token exists, it must be able to
+            be decrypted or parsed as a valid schema.AuthenticationToken; if no token
+            exists or the token isn't valid, a 401 will be returned if this argument is
+            True.
+
+        Returns
+        -------
+        Optional[schema.AuthenticationToken]
+            User authentication token (if present), else None
+        """
         if hasattr(request.state, "entity"):
             pass  # only authenticate once
         elif request.cookies.get(self.cookie_name):

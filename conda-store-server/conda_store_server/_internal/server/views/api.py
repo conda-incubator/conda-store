@@ -248,6 +248,10 @@ async def api_post_token(
             detail="Requested expiration of token is greater than current permissions",
         )
 
+
+    with conda_store.get_db() as db:
+
+
     return {
         "status": "ok",
         "data": {"token": auth.authentication.encrypt_token(new_entity)},
@@ -1486,14 +1490,3 @@ async def api_put_settings(
             "data": None,
             "message": f"global setting keys {list(data.keys())} updated",
         }
-
-
-@router_api.put(
-    "/user/",
-    response_model=schema.APIPutUser,
-)
-async def api_put_user(
-    request: Request,
-    auth: Authentication = Depends(dependencies.get_auth),
-):
-    auth.authenticate_request(request)
