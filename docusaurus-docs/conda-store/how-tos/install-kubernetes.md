@@ -51,6 +51,12 @@ kubectl port-forward service/conda-store-server 8080:8080
 
 Then visit via your web browser [http://localhost:8080](http://localhost:8080)
 
+To enable viewing logs, make sure to also port forward the minio service
+
+```shell
+kubectl port-forward  service/minio 30900:9000
+```
+
 For additional configuration options see the [reference guide](../references/configuration-options.md)
 
 A good test that conda-store is functioning properly is to apply the

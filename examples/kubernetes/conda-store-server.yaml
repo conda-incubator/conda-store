@@ -32,7 +32,7 @@ spec:
     spec:
       containers:
         - name: conda-store-server
-          image: quansight/conda-store-server:v0.4.5
+          image: quansight/conda-store-server:2024.10.1
           args:
             - "conda-store-server"
             - "--config"
