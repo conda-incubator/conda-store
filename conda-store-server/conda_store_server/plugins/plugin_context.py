@@ -15,7 +15,7 @@ class PluginContext:
         * the variables: conda_store, log, stdout, stderr
         * the functions: run_command, run
     """
-    def __init__(self, conda_store=None, stdout=None, stderr=None):
+    def __init__(self, conda_store=None, stdout=None, stderr=None, log_level=logging.INFO):
         if stdout is not None and stderr is None:
             stderr = stdout
 
@@ -25,8 +25,7 @@ class PluginContext:
         self.log = logging.getLogger(f"conda_store_server.plugins.plugin_context.{self.id}")
         self.log.propagate = False
         self.log.addHandler(logging.StreamHandler(stream=self.stdout))
-        # TODO: get log level from config
-        self.log.setLevel(logging.INFO)
+        self.log.setLevel(log_level)
         self.conda_store = conda_store
 
     def run_command(self, command, redirect_stderr=True, **kwargs):
