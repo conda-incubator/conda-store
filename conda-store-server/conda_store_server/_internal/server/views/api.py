@@ -11,22 +11,20 @@ from celery.result import AsyncResult
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request
 from fastapi.responses import PlainTextResponse, RedirectResponse
 
-from sqlalchemy.orm import Query as SqlQuery
-
 from conda_store_server import __version__, api, app
 from conda_store_server._internal import orm, schema, utils
 from conda_store_server._internal.environment import filter_environments
-from conda_store_server._internal.schema import AuthenticationToken, Permissions
+from conda_store_server._internal.schema import (
+    AuthenticationToken,
+    Permissions,
+)
 from conda_store_server._internal.server import dependencies
+from conda_store_server._internal.server.views.pagination import Cursor, paginate
 from conda_store_server.server.auth import Authentication
 
 
-def paginate(
-    query: SqlQuery,
-    next_token: str | None = None,
-    sort_by: List[str] | None = None,
-    order: str = 'asc',
-)
+def get_cursor(cursor: Optional[str] = None) -> Cursor:
+    return Cursor.load(cursor)
 
 
 class PaginatedArgs(TypedDict):
@@ -642,6 +640,7 @@ async def api_list_environments(
     conda_store: app.CondaStore = Depends(dependencies.get_conda_store),
     entity: AuthenticationToken = Depends(dependencies.get_entity),
     paginated_args: PaginatedArgs = Depends(get_paginated_args),
+    cursor: Cursor = Depends(get_cursor),
     artifact: Optional[schema.BuildArtifactType] = None,
     jwt: Optional[str] = None,
     name: Optional[str] = None,
@@ -699,7 +698,7 @@ async def api_list_environments(
         else:
             role_bindings = None
 
-        orm_environments = api.list_environments(
+        query = api.list_environments(
             db,
             search=search,
             namespace=namespace,
@@ -712,20 +711,52 @@ async def api_list_environments(
         )
 
         # Filter by environments that the user who made the query has access to
-        orm_environments = filter_environments(
-            query=orm_environments,
+        query = filter_environments(
+            query=query,
             role_bindings=auth.entity_bindings(entity),
         )
 
+        sorts = get_sorts(
+            order=paginated_args["order"],
+            sort_by=paginated_args["sort_by"],
+            allowed_sort_bys={
+                "namespace": orm.Namespace.name,
+                "name": orm.Environment.name,
+            },
+            default_sort_by=["namespace", "name"],
+            default_order="asc",
+        )
+
+        # query = (
+        #     query
+        #     .filter(
+        #         or_(
+        #             orm.Namespace.name > cursor.order_by['namespace'],
+        #             orm.Namespace.name == cursor.order_by['namespace']
+        #         )
+        #     )
+        #     .order_by(
+        #         *sorts,
+        #         orm.Environment.id.asc()
+        #     )
+        # )
+
+        return paginate(
+            query=query,
+            cursor=cursor,
+            sort_by=paginated_args["sort_by"],
+        )
+
         return paginated_api_response(
-            orm_environments,
+            query,
             paginated_args,
             schema.Environment,
             exclude={"current_build"},
             allowed_sort_bys={
-                "scheduled_on": orm.Environment.current_build.scheduled_on,
+                "namespace": orm.Namespace.name,
+                "name": orm.Environment.name,
             },
-            default_sort_by=["scheduled_on"],
+            default_sort_by=["namespace", "name"],
             default_order="asc",
         )
 
