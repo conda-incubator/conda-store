@@ -528,6 +528,7 @@ def test_create_specification_parallel_auth(testclient):
                 "specification": json.dumps(
                     {
                         "name": environment_name,
+                        # maybe needs to be conda-forge
                         "channels": ["main"],
                         "dependencies": [f"pytest={version}"],
                     }
