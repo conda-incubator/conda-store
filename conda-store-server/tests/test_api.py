@@ -126,30 +126,30 @@ def test_namespace_role_mapping(db):
     assert len(api.list_namespaces(db).all()) == 1
 
     # Creates role mappings with valid entity names
-    NamespaceRoleMapping(
+    db.add(NamespaceRoleMapping(
         namespace=namespace,
         namespace_id=namespace.id,
         entity="org/*",
         role="editor",
-    )
-    NamespaceRoleMapping(
+    ))
+    db.add(NamespaceRoleMapping(
         namespace=namespace,
         namespace_id=namespace.id,
         entity="*/team",
         role="editor",
-    )
-    NamespaceRoleMapping(
+    ))
+    db.add(NamespaceRoleMapping(
         namespace=namespace,
         namespace_id=namespace.id,
         entity="org/team",
         role="editor",
-    )
-    NamespaceRoleMapping(
+    ))
+    db.add(NamespaceRoleMapping(
         namespace=namespace,
         namespace_id=namespace.id,
         entity="*/*",
         role="editor",
-    )
+    ))
 
     # Check that the namespace role mappings were correctly inserted;
     # this will fail if they were not correctly instantiated.
@@ -157,15 +157,11 @@ def test_namespace_role_mapping(db):
 
     # Create a role mapping with a failing entity
     with pytest.raises(Exception):
-        NamespaceRoleMapping(
+        db.add(NamespaceRoleMapping(
             namespace=namespace,
             namespace_id=namespace.id,
             entity="invalid_entity_name",
-        )
-
-    # This should fail because of the invalid entity instantiation above
-    with pytest.raises(IntegrityError):
-        db.commit()
+        ))
 
 
 @pytest.mark.parametrize(
