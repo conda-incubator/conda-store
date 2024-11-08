@@ -6,6 +6,46 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 The project changed to `CalVer` in September 2023.
 
+## [2024.11.1] - 2024-11-08
+
+([full changelog](https://github.com/conda-incubator/conda-store/compare/2104c4581489474a6f6c6c6b5744c5eeb62b3d14...92a199b52ee4a91d931afcdfb46aca4663c07ebe))
+
+### Merged PRs
+
+- Bump k8 example version [#960](https://github.com/conda-incubator/conda-store/pull/960) ([@soapy1](https://github.com/soapy1))
+- [pre-commit.ci] pre-commit autoupdate [#959](https://github.com/conda-incubator/conda-store/pull/959) ([@pre-commit-ci](https://github.com/pre-commit-ci))
+- [DOC] Roadmap updates [#958](https://github.com/conda-incubator/conda-store/pull/958) ([@peytondmurray](https://github.com/peytondmurray))
+- Move build to worker [#945](https://github.com/conda-incubator/conda-store/pull/945) ([@soapy1](https://github.com/soapy1))
+- Fix link to GH issues for road map (operation) items [#943](https://github.com/conda-incubator/conda-store/pull/943) ([@soapy1](https://github.com/soapy1))
+- Make conda-store server launch uvicorn with log level [#940](https://github.com/conda-incubator/conda-store/pull/940) ([@soapy1](https://github.com/soapy1))
+- Add links to GH issues for roadmap items [#939](https://github.com/conda-incubator/conda-store/pull/939) ([@soapy1](https://github.com/soapy1))
+- Move dependencies module into conda store server module [#935](https://github.com/conda-incubator/conda-store/pull/935) ([@soapy1](https://github.com/soapy1))
+- [MAINT] Update lint tooling [#933](https://github.com/conda-incubator/conda-store/pull/933) ([@peytondmurray](https://github.com/peytondmurray))
+- Remove unused _internal/client module [#928](https://github.com/conda-incubator/conda-store/pull/928) ([@soapy1](https://github.com/soapy1))
+- [AUTO] Update openapi.json [#927](https://github.com/conda-incubator/conda-store/pull/927) ([@github-actions](https://github.com/github-actions))
+- Add tests - storage + worker [#926](https://github.com/conda-incubator/conda-store/pull/926) ([@soapy1](https://github.com/soapy1))
+- Move seeding tests functionality into test module [#925](https://github.com/conda-incubator/conda-store/pull/925) ([@soapy1](https://github.com/soapy1))
+- Add coverage report to unit tests [#923](https://github.com/conda-incubator/conda-store/pull/923) ([@soapy1](https://github.com/soapy1))
+- Update docs link [#922](https://github.com/conda-incubator/conda-store/pull/922) ([@pavithraes](https://github.com/pavithraes))
+- Test improvements - part 1 [#919](https://github.com/conda-incubator/conda-store/pull/919) ([@soapy1](https://github.com/soapy1))
+- Bump http-proxy-middleware from 2.0.6 to 2.0.7 in /docusaurus-docs [#917](https://github.com/conda-incubator/conda-store/pull/917) ([@dependabot](https://github.com/dependabot))
+- [BUG] Pin pyyaml dependency due to cython>=3 incompatibility [#916](https://github.com/conda-incubator/conda-store/pull/916) ([@peytondmurray](https://github.com/peytondmurray))
+- Wait for celery to return response to request to solve specification [#913](https://github.com/conda-incubator/conda-store/pull/913) ([@soapy1](https://github.com/soapy1))
+- [DOCS] Describe new config vars for React router [#912](https://github.com/conda-incubator/conda-store/pull/912) ([@gabalafou](https://github.com/gabalafou))
+- Bump version for dev [#910](https://github.com/conda-incubator/conda-store/pull/910) ([@soapy1](https://github.com/soapy1))
+- REL - 2024.10.1 [#909](https://github.com/conda-incubator/conda-store/pull/909) ([@soapy1](https://github.com/soapy1))
+- [DOCS] Update architecture diagram + fix docs links [#908](https://github.com/conda-incubator/conda-store/pull/908) ([@soapy1](https://github.com/soapy1))
+- [ENH] Add hot reloading for development [#907](https://github.com/conda-incubator/conda-store/pull/907) ([@peytondmurray](https://github.com/peytondmurray))
+- DEV - Extend compose to include target for local UI [#905](https://github.com/conda-incubator/conda-store/pull/905) ([@trallard](https://github.com/trallard))
+- Respect worker log level config setting [#903](https://github.com/conda-incubator/conda-store/pull/903) ([@soapy1](https://github.com/soapy1))
+- [DOC] Update contributing guidelines [#763](https://github.com/conda-incubator/conda-store/pull/763) ([@pavithraes](https://github.com/pavithraes))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/conda-incubator/conda-store/graphs/contributors?from=2024-10-22&to=2024-11-08&type=c))
+
+[@Adam-D-Lewis](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3AAdam-D-Lewis+updated%3A2024-10-22..2024-11-08&type=Issues) | [@costrouc](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Acostrouc+updated%3A2024-10-22..2024-11-08&type=Issues) | [@dependabot](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Adependabot+updated%3A2024-10-22..2024-11-08&type=Issues) | [@gabalafou](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Agabalafou+updated%3A2024-10-22..2024-11-08&type=Issues) | [@github-actions](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Agithub-actions+updated%3A2024-10-22..2024-11-08&type=Issues) | [@jaimergp](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Ajaimergp+updated%3A2024-10-22..2024-11-08&type=Issues) | [@kcpevey](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Akcpevey+updated%3A2024-10-22..2024-11-08&type=Issues) | [@krassowski](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Akrassowski+updated%3A2024-10-22..2024-11-08&type=Issues) | [@netlify](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Anetlify+updated%3A2024-10-22..2024-11-08&type=Issues) | [@pavithraes](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Apavithraes+updated%3A2024-10-22..2024-11-08&type=Issues) | [@peytondmurray](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Apeytondmurray+updated%3A2024-10-22..2024-11-08&type=Issues) | [@pre-commit-ci](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Apre-commit-ci+updated%3A2024-10-22..2024-11-08&type=Issues) | [@soapy1](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Asoapy1+updated%3A2024-10-22..2024-11-08&type=Issues) | [@trallard](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Atrallard+updated%3A2024-10-22..2024-11-08&type=Issues)
+
 
 ## [2024.10.1] - 2024-10-22
 
