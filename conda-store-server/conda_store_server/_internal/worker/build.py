@@ -17,8 +17,8 @@ from filelock import FileLock
 from sqlalchemy.orm import Session
 
 from conda_store_server import api
-from conda_store_server.plugins import plugin_context
 from conda_store_server._internal import action, conda_utils, orm, schema, utils
+from conda_store_server.plugins import plugin_context
 
 
 class LoggedStream:
@@ -233,11 +233,9 @@ def build_conda_environment(db: Session, conda_store, build):
                             conda_store=conda_store,
                             build=build,
                             prefix="hook-lock_environment: ",
-                        )
+                        ),
                     ),
-                    spec=schema.CondaSpecification.parse_obj(
-                        build.specification.spec
-                    ),
+                    spec=schema.CondaSpecification.parse_obj(build.specification.spec),
                     platforms=settings.conda_solve_platforms,
                 )
 

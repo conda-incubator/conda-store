@@ -8,7 +8,6 @@ import pathlib
 import typing
 
 import yaml
-
 from conda_lock.conda_lock import run_lock
 
 from conda_store_server._internal import conda_utils, schema
@@ -16,12 +15,14 @@ from conda_store_server.plugins import hookspec
 from conda_store_server.plugins.plugin_context import PluginContext
 
 
-class CondaLock():
+class CondaLock:
     @classmethod
     def name(cls):
         return "lock-conda_lock"
 
-    def __init__(self, conda_flags="--strict-channel-priority", conda_command="mamba", *kwargs):
+    def __init__(
+        self, conda_flags="--strict-channel-priority", conda_command="mamba", *kwargs
+    ):
         self.conda_command = conda_command
         self.conda_flags = conda_flags
 
@@ -29,7 +30,7 @@ class CondaLock():
     def lock_environment(
         self,
         context: PluginContext,
-        spec: schema.CondaSpecification, 
+        spec: schema.CondaSpecification,
         platforms: typing.List[str] = [conda_utils.conda_platform()],
     ) -> str:
         context.log.info("lock_environment entrypoint for conda-lock")

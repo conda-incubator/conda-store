@@ -2,11 +2,11 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
 
-from conda_store_server.plugins.plugin_registry import PluginRegistry
 from conda_store_server.plugins import BUILTIN_PLUGINS
+from conda_store_server.plugins.plugin_registry import PluginRegistry
 
 
-class TestPlugin():
+class TestPlugin:
     @classmethod
     def name(cls):
         return "test-plugin"

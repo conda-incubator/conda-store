@@ -5,7 +5,7 @@
 from conda_store_server.plugins import BUILTIN_PLUGINS
 
 
-class PluginRegistry():
+class PluginRegistry:
     _instance = None
 
     def __new__(cls):

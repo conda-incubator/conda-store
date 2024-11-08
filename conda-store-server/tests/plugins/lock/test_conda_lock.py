@@ -2,11 +2,11 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
 
+import os
+from unittest import mock
+
 import pytest
 import yaml
-import os
-
-from unittest import mock
 
 from conda_store_server._internal import conda_utils
 from conda_store_server.plugins import plugin_context
@@ -28,8 +28,7 @@ def test_solve_lockfile(
     tmp_path,
     request,
 ):
-    """Test that the call to conda_lock.run_lock is formed correctly.
-    """
+    """Test that the call to conda_lock.run_lock is formed correctly."""
     tmp_path.mkdir(exist_ok=True)
     os.chdir(tmp_path)
 
@@ -69,7 +68,7 @@ def test_solve_lockfile(
 def test_solve_lockfile_simple(tmp_path, simple_specification):
     tmp_path.mkdir(exist_ok=True)
     os.chdir(tmp_path)
-    
+
     locker = conda_lock.CondaLock(
         conda_command="mamba", conda_flags="--strict-channel-priority"
     )
@@ -104,6 +103,7 @@ def test_solve_lockfile_multiple_platforms(tmp_path, specification, request):
     )
     assert len(lock_result["package"]) != 0
 
+
 # Checks that conda_flags is used by conda-lock
 def test_solve_lockfile_invalid_conda_flags(tmp_path, simple_specification):
     tmp_path.mkdir(exist_ok=True)
@@ -116,7 +116,7 @@ def test_solve_lockfile_invalid_conda_flags(tmp_path, simple_specification):
     with pytest.raises(
         Exception, match=(r"Command.*--this-is-invalid.*returned non-zero exit status")
     ):
-         locker.lock_environment(
+        locker.lock_environment(
             context=plugin_context.PluginContext(),
             spec=simple_specification,
             platforms=[conda_utils.conda_platform()],

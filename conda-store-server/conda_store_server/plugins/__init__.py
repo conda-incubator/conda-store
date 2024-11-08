@@ -4,7 +4,4 @@
 
 from conda_store_server.plugins.lock import conda_lock
 
-
-BUILTIN_PLUGINS = [
-    conda_lock.CondaLock
-]
+BUILTIN_PLUGINS = [conda_lock.CondaLock]

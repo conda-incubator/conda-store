@@ -15,14 +15,19 @@ class PluginContext:
         * the variables: conda_store, log, stdout, stderr
         * the functions: run_command, run
     """
-    def __init__(self, conda_store=None, stdout=None, stderr=None, log_level=logging.INFO):
+
+    def __init__(
+        self, conda_store=None, stdout=None, stderr=None, log_level=logging.INFO
+    ):
         if stdout is not None and stderr is None:
             stderr = stdout
 
         self.id = str(uuid.uuid4())
         self.stdout = stdout if stdout is not None else io.StringIO()
         self.stderr = stderr if stderr is not None else io.StringIO()
-        self.log = logging.getLogger(f"conda_store_server.plugins.plugin_context.{self.id}")
+        self.log = logging.getLogger(
+            f"conda_store_server.plugins.plugin_context.{self.id}"
+        )
         self.log.propagate = False
         self.log.addHandler(logging.StreamHandler(stream=self.stdout))
         self.log.setLevel(log_level)
