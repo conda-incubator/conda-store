@@ -162,6 +162,7 @@ class AuthenticationToken(BaseModel):
     )
     primary_namespace: str = "default"
     role_bindings: RoleBindings = {}
+    user_name: str
 
 
 ##########################

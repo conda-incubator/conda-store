@@ -819,15 +819,6 @@ def new_session_factory(
     return session_factory
 
 
-class Role(Base):
-    """The role of a user for a namespace/environment."""
-
-    __tablename__ = "role"
-
-    id = Column(Integer, primary_key=True)
-    name = Column(Enum(schema.Role), default=schema.BuildStatus.QUEUED)
-
-
 class UserPermission(Base):
     """The permissions a User has for an namespace/environment.
 

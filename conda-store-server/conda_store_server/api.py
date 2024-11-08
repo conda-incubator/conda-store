@@ -5,9 +5,9 @@ from __future__ import annotations
 
 import re
 import uuid
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, Iterable, List, Optional, Union
 
-from sqlalchemy import distinct, func, null, or_
+from sqlalchemy import and_, distinct, func, null, or_
 from sqlalchemy.orm import Query, aliased, session
 
 from conda_store_server._internal import conda_utils, orm, schema, utils
@@ -826,29 +826,27 @@ def set_kvstore_key_values(db, prefix: str, d: Dict[str, Any], update: bool = Tr
             db.commit()
 
 
-def add_new_user(
+def add_user(
     db: session.Session,
-    token: schema.AuthenticationToken,
+    username: str,
     role_bindings: schema.RoleBindings,
-    username: Optional[str] = None,
 ):
-    # Parse the token into a set of namespace/environment roles.
-    # Only use the maximum role in the set of RoleBindings, since
-    # that's what determines the permissions for the namespace/
-    # environment.
-    all_envs = db.query(orm.Environment).join(orm.Namespace)
+    """Add a new user to the database.
 
-    user_permissions = []
-    for pattern, roles in role_bindings.items():
-        max_role = schema.Role.max_role(roles)
+    Parses the role_bindings to set the role bindings of the user in the database. Only
+    use the maximum role in the set of RoleBindings, since that's what determines the
+    permissions for the namespace/environment.
 
-        for environment in filter_environments(
-            query=all_envs,
-            role_bindings={pattern: roles},
-        ).all():
-            user_permissions.append(
-                orm.UserPermission(environment=environment, role=max_role)
-            )
+    Parameters
+    ----------
+    db : session.Session
+        Database to add the user to
+    username : str
+        Username of the new user
+    role_bindings : schema.RoleBindings
+        Role bindings to apply to the new user
+    """
+    add_user_permissions(db, role_bindings)
 
     # Add the user with the given permissions
     db.add(
@@ -858,3 +856,142 @@ def add_new_user(
         )
     )
     db.commit()
+
+
+def get_user(
+    db: session.Session, user_name: Optional[str] = None, user_id: Optional[int] = None
+) -> orm.User | None:
+    """Get a specific user from the database.
+
+    Parameters
+    ----------
+    db : session.Session
+        Database to search for the user
+    user_name : Optional[str]
+        Username of the user; if unspecified, use the user_id
+    user_id : Optional[int]
+        ID of the user; if unspecified, use the username
+
+    Returns
+    -------
+    orm.User | None
+        The user, if present in the database, else None
+    """
+    filters = []
+    if user_name:
+        filters.append(orm.User.name == user_name)
+    if user_id:
+        filters.append(orm.User.id == user_id)
+
+    return db.query(orm.User).filter(and_(*filters)).first()
+
+
+def update_user(
+    db: session.Session,
+    user_id: Optional[int] = None,
+    user_name: Optional[str] = None,
+    new_username: Optional[str] = None,
+    new_user_permissions: Optional[
+        Union[Iterable[orm.UserPermission], schema.RoleBindings]
+    ] = None,
+):
+    """Update a user's entry in the database.
+
+    Parameters
+    ----------
+    db : session.Session
+        Database where the user entry lives
+    user_id : Optional[int]
+        User ID to update; if unspecified, the user_name is used
+    user_name : Optional[str]
+        User name to update; if unspecified, the user_id is used
+    new_username : Optional[str]
+        New username to apply to the user
+    new_user_permissions : Optional[orm.UserPermission]
+        New user permissions to apply to the user
+    """
+    user = get_user(user_id, user_name)
+    if not user:
+        if user_id:
+            if user_name:
+                raise ValueError(
+                    f"No user with User.id == {user_id} and User.name == {user_name} found."
+                )
+            raise ValueError(f"No user with User.id == {user_id} found.")
+        raise ValueError(f"No user with User.name == {user_name} found.")
+
+    if new_username:
+        user.name = new_username
+
+    if new_user_permissions:
+        user.permissions.delete()
+        add_user_permissions(new_user_permissions)
+        user.permissions = new_user_permissions
+
+
+def add_user_permissions(
+    db: session.Session,
+    user_permissions: Union[Iterable[orm.UserPermission], schema.RoleBindings],
+) -> List[orm.UserPermission]:
+    """Add a set of role bindings to the database as UserPermission entries.
+
+    Parameters
+    ----------
+    db : session.Session
+        Database to add user permissions
+    user_permissions : Union[Iterable[orm.UserPermission], schema.RoleBindings]
+        Role bindings to add to the database
+
+    Returns
+    -------
+    List[orm.UserPermission]
+        A list of the UserPermissions added to the database
+    """
+    user_permissions = _role_bindings_to_user_permissions(db, user_permissions)
+    db.add_all(user_permissions)
+    db.commit()
+    return user_permissions
+
+
+def _role_bindings_to_user_permissions(
+    db: session.Session,
+    role_bindings: Union[Iterable[orm.UserPermission], schema.RoleBindings],
+) -> List[orm.UserPermission]:
+    """Given some RoleBindings, generate UserPermission objects for each related environment.
+
+    Parameters
+    ----------
+    db : session.Session
+        Database containing environments
+    role_bindings : Union[Iterable[orm.UserPermission], schema.RoleBindings]
+        Role bindings which may or may not have access to the environments
+
+        If this is a list of UserPermission objects, do nothing.
+
+    Returns
+    -------
+    List[orm.UserPermission]
+        A list containing a UserPermission for each environment that matches a role binding
+    """
+    all_envs = db.query(orm.Environment).join(orm.Namespace)
+
+    if isinstance(role_bindings, schema.RoleBindings):
+        user_permissions = []
+        for pattern, roles in role_bindings.items():
+            max_role = schema.Role.max_role(roles)
+
+            for environment in filter_environments(
+                query=all_envs,
+                role_bindings={pattern: roles},
+            ).all():
+                user_permissions.append(
+                    orm.UserPermission(
+                        environment=environment,
+                        role=max_role,
+                    )
+                )
+
+        return user_permissions
+
+    else:
+        return list(role_bindings)

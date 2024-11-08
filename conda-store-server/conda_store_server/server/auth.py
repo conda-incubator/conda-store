@@ -80,6 +80,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
         config=True,
     )
 
+    @utils.user_deprecation
     def _database_role_bindings_v1(
         self,
         entity: schema.AuthenticationToken,
@@ -104,6 +105,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
 
         return db_role_mappings
 
+    @utils.user_deprecation
     def _database_role_bindings_v2(
         self,
         entity: schema.AuthenticationToken,
@@ -283,6 +285,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
         )
         return (arn_1_matches_arn_2 and arn_2_matches_arn_1) or arn_2_matches_arn_1
 
+    @utils.user_deprecation
     def get_entity_bindings(
         self,
         entity: schema.AuthenticationToken,
@@ -304,6 +307,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
                 **entity_role_bindings,
             }
 
+    @utils.user_deprecation
     def convert_roles_to_permissions(
         self, roles: Iterable[str]
     ) -> Set[schema.Permissions]:
@@ -329,6 +333,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
             permissions = permissions | role_mappings
         return permissions
 
+    @utils.user_deprecation
     def get_entity_binding_permissions(self, entity: schema.AuthenticationToken):
         entity_bindings = self.get_entity_bindings(entity)
         return {
@@ -336,6 +341,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
             for entity_arn, entity_roles in entity_bindings.items()
         }
 
+    @utils.user_deprecation
     def get_entity_permissions(
         self,
         entity: schema.AuthenticationToken,
@@ -356,6 +362,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
                 permissions = permissions | set(entity_permissions)
         return permissions
 
+    @utils.user_deprecation
     def is_subset_entity_permissions(
         self,
         entity: schema.AuthenticationToken,
@@ -382,6 +389,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
                 return False
         return True
 
+    @utils.user_deprecation
     def authorize(
         self,
         entity: schema.AuthenticationToken,
@@ -392,6 +400,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
             entity=entity, arn=arn
         )
 
+    @utils.user_deprecation
     def database_role_bindings(
         self,
         entity: schema.AuthenticationToken,
@@ -562,12 +571,48 @@ form.addEventListener('submit', loginHandler);
         response: Response,
         next: Optional[str] = None,
         templates=Depends(dependencies.get_templates),
-    ):
+    ) -> Response:
+        """Handle post-login tasks.
+
+        After successful authentication:
+
+            - Check the database for a User entry; if it doesn't exist,
+              make one
+            - Redirect the user to display the environments
+            - Set the cookie with the encrypted token
+
+
+        Parameters
+        ----------
+        templates :
+
+        request : Request
+            POST request that was sent to `/login/` to log the user in
+        response : Response
+            Response to return to the requestor
+        next : Optional[str]
+            Next page to redirect the user to from the login screen
+
+        Returns
+        -------
+        Response
+            Response to return to the user. Contains the URL redirection and
+            the authenticated and encrypted token
+        """
         authentication_token = await self.authenticate(request)
         if authentication_token is None:
             raise HTTPException(
                 status_code=403, detail="Invalid authentication credentials"
             )
+
+        # After user logs in, ensure that they have an entry in the database
+        with self.authentication_db() as db:
+            if not api.get_user(authentication_token.username):
+                api.add_user(
+                    db=db,
+                    username=authentication_token.username,
+                    role_bindings=authentication_token.role_bindings,
+                )
 
         request.session["next"] = next or request.session.get("next")
         redirect_url = request.session.pop("next") or str(
@@ -642,6 +687,7 @@ form.addEventListener('submit', loginHandler);
             )
         return request.state.entity
 
+    @utils.user_deprecation
     def entity_bindings(
         self,
         entity: schema.AuthenticationToken,
@@ -665,6 +711,7 @@ form.addEventListener('submit', loginHandler);
 
         return request.state.authorized
 
+    @utils.user_deprecation
     def filter_builds(self, entity, query):
         cases = []
         for entity_arn, entity_roles in self.entity_bindings(entity).items():
@@ -687,6 +734,7 @@ form.addEventListener('submit', loginHandler);
             .filter(or_(*cases))
         )
 
+    @utils.user_deprecation
     def filter_environments(
         self, entity: schema.AuthenticationToken, query: Query
     ) -> Query:
@@ -695,6 +743,7 @@ form.addEventListener('submit', loginHandler);
             self.entity_bindings(entity),
         )
 
+    @utils.user_deprecation
     def filter_namespaces(self, entity, query):
         cases = []
         for entity_arn, entity_roles in self.entity_bindings(entity).items():
