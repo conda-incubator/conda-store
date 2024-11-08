@@ -25,13 +25,9 @@ from conda_store_server.plugins.lock import conda_lock
 def test_solve_lockfile(
     mock_run_lock,
     specification,
-    tmp_path,
     request,
 ):
     """Test that the call to conda_lock.run_lock is formed correctly."""
-    tmp_path.mkdir(exist_ok=True)
-    os.chdir(tmp_path)
-
     # Dump dummy data to the expected lockfile output location
     def run_lock_side_effect(lockfile_path, **kwargs):
         with open(lockfile_path, "w") as f:
@@ -65,10 +61,7 @@ def test_solve_lockfile(
     assert lock_result["foo"] == "bar"
 
 
-def test_solve_lockfile_simple(tmp_path, simple_specification):
-    tmp_path.mkdir(exist_ok=True)
-    os.chdir(tmp_path)
-
+def test_solve_lockfile_simple(simple_specification):
     locker = conda_lock.CondaLock(
         conda_command="mamba", conda_flags="--strict-channel-priority"
     )
@@ -88,10 +81,7 @@ def test_solve_lockfile_simple(tmp_path, simple_specification):
     ],
 )
 @pytest.mark.long_running_test
-def test_solve_lockfile_multiple_platforms(tmp_path, specification, request):
-    tmp_path.mkdir(exist_ok=True)
-    os.chdir(tmp_path)
-
+def test_solve_lockfile_multiple_platforms(specification, request):
     specification = request.getfixturevalue(specification)
     locker = conda_lock.CondaLock(
         conda_command="mamba", conda_flags="--strict-channel-priority"
@@ -105,10 +95,7 @@ def test_solve_lockfile_multiple_platforms(tmp_path, specification, request):
 
 
 # Checks that conda_flags is used by conda-lock
-def test_solve_lockfile_invalid_conda_flags(tmp_path, simple_specification):
-    tmp_path.mkdir(exist_ok=True)
-    os.chdir(tmp_path)
-
+def test_solve_lockfile_invalid_conda_flags(simple_specification):
     locker = conda_lock.CondaLock(
         conda_command="mamba", conda_flags="--this-is-invalid"
     )

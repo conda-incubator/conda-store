@@ -10,7 +10,7 @@ import typing
 import yaml
 from conda_lock.conda_lock import run_lock
 
-from conda_store_server._internal import conda_utils, schema
+from conda_store_server._internal import conda_utils, schema, utils
 from conda_store_server.plugins import hookspec
 from conda_store_server.plugins.plugin_context import PluginContext
 
@@ -26,6 +26,7 @@ class CondaLock:
         self.conda_command = conda_command
         self.conda_flags = conda_flags
 
+    @utils.run_in_tempdir
     @hookspec.hookimpl
     def lock_environment(
         self,
