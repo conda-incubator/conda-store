@@ -112,7 +112,7 @@ class Role(enum.Enum):
         return hash(self.value)
 
     @classmethod
-    def max_role(cls, objects: Iterable[Union[str, Tuple[int, str]]]) -> Role:
+    def max_role(cls, objects: Iterable[Union[Role, str, Tuple[int, str]]]) -> Role:
         """Return the highest role for an iterable of role values.
 
         Parameters
@@ -125,7 +125,13 @@ class Role(enum.Enum):
         Role
             Highest role of all the objects
         """
-        return cls(max(cls(obj).value for obj in objects))
+        roles = []
+        for obj in objects:
+            if isinstance(obj, cls):
+                roles.append(obj)
+            else:
+                roles.append(cls(obj))
+        return max(roles)
 
 
 class Permissions(enum.Enum):
