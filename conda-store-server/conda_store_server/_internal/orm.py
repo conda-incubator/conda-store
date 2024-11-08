@@ -840,9 +840,9 @@ class UserPermission(Base):
     __tablename__ = "userpermission"
 
     id = Column(Integer, primary_key=True)
-    namespace_id = Column(Integer, ForeignKey("namespace.id"))
-    role_id = Column(Integer, ForeignKey("role.id"))
-    role = relationship(Role)
+    environment = relationship(Environment)
+    environment_id = Column(Integer, ForeignKey("environment.id"))
+    role = Column(Enum(schema.Role), default=schema.Role.NONE)
 
 
 class User(Base):
@@ -852,5 +852,4 @@ class User(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(Unicode, unique=True)
-    permissions = relationship(UserPermission)
-    permissions_id = Column(Integer, ForeignKey('userpermission.id'))
+    permissions = relationship(UserPermission, back_populates="user")

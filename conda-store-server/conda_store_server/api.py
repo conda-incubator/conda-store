@@ -826,13 +826,29 @@ def set_kvstore_key_values(db, prefix: str, d: Dict[str, Any], update: bool = Tr
             db.commit()
 
 
-def set_new_user(
+def add_new_user(
     db: session.Session,
     token: schema.AuthenticationToken,
+    role_bindings: schema.RoleBindings,
     username: Optional[str] = None,
 ):
-    # Parse the token into a set of namespace/environment permissions
+    # Parse the token into a set of namespace/environment roles.
+    # Only use the maximum role in the set of RoleBindings, since
+    # that's what determines the permissions for the namespace/
+    # environment.
+    all_envs = db.query(orm.Environment).join(orm.Namespace)
+
     user_permissions = []
+    for pattern, roles in role_bindings.items():
+        max_role = schema.Role.max_role(roles)
+
+        for environment in filter_environments(
+            query=all_envs,
+            role_bindings={pattern: roles},
+        ).all():
+            user_permissions.append(
+                orm.UserPermission(environment=environment, role=max_role)
+            )
 
     # Add the user with the given permissions
     db.add(
@@ -841,3 +857,4 @@ def set_new_user(
             permissions=user_permissions,
         )
     )
+    db.commit()

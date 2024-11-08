@@ -221,7 +221,7 @@ async def api_post_token(
     conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
     entity=Depends(dependencies.get_entity),
-):
+) -> schema.APIPostToken:
     if entity is None:
         entity = schema.AuthenticationToken(
             exp=datetime.datetime.now(tz=datetime.timezone.utc)
@@ -248,9 +248,8 @@ async def api_post_token(
             detail="Requested expiration of token is greater than current permissions",
         )
 
-
     with conda_store.get_db() as db:
-
+        api.set_new_user(db=db, token=entity, permissions=auth.entity_bindings(entity))
 
     return {
         "status": "ok",

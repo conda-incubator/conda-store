@@ -10,7 +10,18 @@ import os
 import re
 import sys
 import warnings
-from typing import Any, Callable, Dict, List, Optional, Tuple, TypeAlias, Union
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Set,
+    Tuple,
+    TypeAlias,
+    Union,
+)
 
 from conda_lock.lockfile.v1.models import Lockfile
 from pydantic import BaseModel, Field, ValidationError, constr, validator
@@ -38,7 +49,7 @@ ARN_ALLOWED_REGEX = re.compile(ARN_ALLOWED)
 # Authentication Schema
 #########################
 
-RoleBindings: TypeAlias = Dict[constr(regex=ARN_ALLOWED), List[str]]
+RoleBindings: TypeAlias = Dict[constr(regex=ARN_ALLOWED), Set[str]]
 
 
 @functools.total_ordering
@@ -49,14 +60,15 @@ class Role(enum.Enum):
     tuples, e.g.
 
         >>> Role('admin')
-        <Role.ADMIN: (2, 'admin')>
-        >>> Role((2, 'admin'))
-        <Role.ADMIN: (2, 'admin')>
+        <Role.ADMIN: (3, 'admin')>
+        >>> Role((3, 'admin'))
+        <Role.ADMIN: (3, 'admin')>
     """
 
-    VIEWER = (0, "viewer")
-    EDITOR = (1, "editor")
-    ADMIN = (2, "admin")
+    NONE = (0, "none")
+    VIEWER = (1, "viewer")
+    EDITOR = (2, "editor")
+    ADMIN = (3, "admin")
 
     @classmethod
     def _missing_(cls, value: str | Tuple[int, str]):
@@ -98,6 +110,22 @@ class Role(enum.Enum):
         Enum column type with sqlalchemy.
         """
         return hash(self.value)
+
+    @classmethod
+    def max_role(cls, objects: Iterable[Union[str, Tuple[int, str]]]) -> Role:
+        """Return the highest role for an iterable of role values.
+
+        Parameters
+        ----------
+        objects : Iterable[Union[str, Tuple[int, str]]]
+            Objects to find the highest Role of
+
+        Returns
+        -------
+        Role
+            Highest role of all the objects
+        """
+        return cls(max(cls(obj).value for obj in objects))
 
 
 class Permissions(enum.Enum):

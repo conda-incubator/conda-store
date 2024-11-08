@@ -80,7 +80,10 @@ class RBACAuthorizationBackend(LoggingConfigurable):
         config=True,
     )
 
-    def _database_role_bindings_v1(self, entity: schema.AuthenticationToken):
+    def _database_role_bindings_v1(
+        self,
+        entity: schema.AuthenticationToken,
+    ) -> schema.RoleBindings:
         with self.authentication_db() as db:
             result = db.execute(
                 text(
@@ -101,7 +104,10 @@ class RBACAuthorizationBackend(LoggingConfigurable):
 
         return db_role_mappings
 
-    def _database_role_bindings_v2(self, entity: schema.AuthenticationToken):
+    def _database_role_bindings_v2(
+        self,
+        entity: schema.AuthenticationToken,
+    ) -> schema.RoleBindings:
         def _convert_namespace_to_entity_arn(namespace):
             return f"{namespace}/*"
 
@@ -278,8 +284,9 @@ class RBACAuthorizationBackend(LoggingConfigurable):
         return (arn_1_matches_arn_2 and arn_2_matches_arn_1) or arn_2_matches_arn_1
 
     def get_entity_bindings(
-        self, entity: schema.AuthenticationToken
-    ) -> Set[schema.Permissions]:
+        self,
+        entity: schema.AuthenticationToken,
+    ) -> schema.RoleBindings:
         authenticated = entity is not None
         entity_role_bindings = {} if entity is None else entity.role_bindings
 
@@ -329,7 +336,11 @@ class RBACAuthorizationBackend(LoggingConfigurable):
             for entity_arn, entity_roles in entity_bindings.items()
         }
 
-    def get_entity_permissions(self, entity: schema.AuthenticationToken, arn: str):
+    def get_entity_permissions(
+        self,
+        entity: schema.AuthenticationToken,
+        arn: str,
+    ) -> Set[schema.Permissions]:
         """Get set of permissions for given ARN given AUTHENTICATION
         state and entity_bindings
 
@@ -345,7 +356,11 @@ class RBACAuthorizationBackend(LoggingConfigurable):
                 permissions = permissions | set(entity_permissions)
         return permissions
 
-    def is_subset_entity_permissions(self, entity, new_entity):
+    def is_subset_entity_permissions(
+        self,
+        entity: schema.AuthenticationToken,
+        new_entity: schema.AuthenticationToken,
+    ) -> bool:
         """Determine if new_entity_bindings is a strict subset of entity_bindings
 
         This feature is required to allow authenticated entitys to
@@ -368,13 +383,19 @@ class RBACAuthorizationBackend(LoggingConfigurable):
         return True
 
     def authorize(
-        self, entity: schema.AuthenticationToken, arn: str, required_permissions
+        self,
+        entity: schema.AuthenticationToken,
+        arn: str,
+        required_permissions: Set[schema.Permissions],
     ):
         return required_permissions <= self.get_entity_permissions(
             entity=entity, arn=arn
         )
 
-    def database_role_bindings(self, entity: schema.AuthenticationToken):
+    def database_role_bindings(
+        self,
+        entity: schema.AuthenticationToken,
+    ) -> schema.RoleBindings:
         # This method can be reached from the router_ui via filter_environments.
         # Since the UI routes are not versioned, we don't know which API version
         # the client might be using. So we rely on the role_mappings_version
@@ -573,9 +594,7 @@ form.addEventListener('submit', loginHandler);
         return response
 
     def authenticate_request(
-        self,
-        request: Request,
-        require: bool = False
+        self, request: Request, require: bool = False
     ) -> Optional[schema.AuthenticationToken]:
         """Authenticate a request.
 
@@ -623,7 +642,10 @@ form.addEventListener('submit', loginHandler);
             )
         return request.state.entity
 
-    def entity_bindings(self, entity: schema.AuthenticationToken):
+    def entity_bindings(
+        self,
+        entity: schema.AuthenticationToken,
+    ) -> schema.RoleBindings:
         return self.authorization.get_entity_bindings(entity)
 
     def authorize_request(self, request: Request, arn, permissions, require=False):
