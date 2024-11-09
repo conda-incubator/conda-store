@@ -833,6 +833,8 @@ class UserPermission(Base):
     id = Column(Integer, primary_key=True)
     environment = relationship(Environment)
     environment_id = Column(Integer, ForeignKey("environment.id"))
+    user = relationship("User", back_populates="permissions")
+    user_id = Column(Integer, ForeignKey("user.id"))
     role = Column(Enum(schema.Role), default=schema.Role.NONE)
 
 
@@ -843,4 +845,4 @@ class User(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(Unicode, unique=True)
-    permissions = relationship(UserPermission, back_populates="user")
+    permissions = relationship("UserPermission", back_populates="user")

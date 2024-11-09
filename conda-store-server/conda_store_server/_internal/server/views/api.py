@@ -13,7 +13,6 @@ from fastapi.responses import PlainTextResponse, RedirectResponse
 
 from conda_store_server import __version__, api, app
 from conda_store_server._internal import orm, schema, utils
-from conda_store_server._internal.environment import filter_environments
 from conda_store_server._internal.schema import (
     AuthenticationToken,
     Permissions,
@@ -685,16 +684,19 @@ async def api_list_environments(
 
     """
     with conda_store.get_db() as db:
-        if jwt:
-            # Fetch the environments visible to the supplied token
-            role_bindings = auth.entity_bindings(
-                AuthenticationToken.parse_obj(auth.authentication.decrypt_token(jwt))
-            )
-        else:
-            role_bindings = None
+        # if jwt:
+        #     # Fetch the environments visible to the supplied token
+        #     role_bindings = auth.entity_bindings(
+        #         AuthenticationToken.parse_obj(auth.authentication.decrypt_token(jwt))
+        #     )
+        # else:
+        #     role_bindings = None
+
+        user = api.get_user(db, user_name=entity.user_name)
 
         orm_environments = api.list_environments(
             db,
+            user=user,
             search=search,
             namespace=namespace,
             name=name,
@@ -702,14 +704,13 @@ async def api_list_environments(
             packages=packages,
             artifact=artifact,
             show_soft_deleted=False,
-            role_bindings=role_bindings,
         )
 
         # Filter by environments that the user who made the query has access to
-        orm_environments = filter_environments(
-            query=orm_environments,
-            role_bindings=auth.entity_bindings(entity),
-        )
+        # orm_environments = filter_environments(
+        #     query=orm_environments,
+        #     role_bindings=auth.entity_bindings(entity),
+        # )
 
         return paginated_api_response(
             orm_environments,

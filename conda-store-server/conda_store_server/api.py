@@ -7,7 +7,7 @@ import re
 import uuid
 from typing import Any, Dict, Iterable, List, Optional, Union
 
-from sqlalchemy import and_, distinct, func, null, or_
+from sqlalchemy import and_, distinct, exists, func, null, or_
 from sqlalchemy.orm import Query, aliased, session
 
 from conda_store_server._internal import conda_utils, orm, schema, utils
@@ -278,6 +278,7 @@ def delete_namespace(db, name: str = None, id: int = None):
 
 def list_environments(
     db: session.Session,
+    user: orm.User,
     namespace: str = None,
     name: str = None,
     status: schema.BuildStatus = None,
@@ -285,7 +286,6 @@ def list_environments(
     artifact: schema.BuildArtifactType = None,
     search: str = None,
     show_soft_deleted: bool = False,
-    role_bindings: schema.RoleBindings | None = None,
 ) -> Query:
     """Retrieve all environments managed by conda-store.
 
@@ -309,15 +309,6 @@ def list_environments(
     show_soft_deleted : bool
         If specified, filter by environments which have a null value for the
         deleted_on attribute
-    role_bindings : schema.RoleBindings | None
-        If specified, filter by only the environments the given role_bindings
-        have read, write, or admin access to. This should be the same object as
-        the role bindings in conda_store_config.py, for example:
-
-            {
-                "*/*": ['admin'],
-                ...
-            }
 
     Returns
     -------
@@ -367,10 +358,26 @@ def list_environments(
             .having(func.count() == len(packages))
         )
 
-    if role_bindings:
-        # Any entity binding is sufficient permissions to view an environment;
-        # no entity binding will hide the environment
-        query = filter_environments(query, role_bindings)
+    if user:
+        breakpoint()
+        query = (
+            query.join(
+                orm.UserPermission,
+                orm.UserPermission.environment_id == orm.Environment.id,
+            )
+            .join(orm.User, orm.User == user)
+            .filter(
+                and_(
+                    orm.UserPermission.role > schema.Role.NONE,
+                    orm.UserPermission in user.permissions,
+                )
+            )
+        )
+
+    # if role_bindings:
+    #     # Any entity binding is sufficient permissions to view an environment;
+    #     # no entity binding will hide the environment
+    #     query = filter_environments(query, role_bindings)
 
     return query
 
@@ -828,7 +835,7 @@ def set_kvstore_key_values(db, prefix: str, d: Dict[str, Any], update: bool = Tr
 
 def add_user(
     db: session.Session,
-    username: str,
+    user_name: str,
     role_bindings: schema.RoleBindings,
 ):
     """Add a new user to the database.
@@ -841,17 +848,21 @@ def add_user(
     ----------
     db : session.Session
         Database to add the user to
-    username : str
+    user_name : str
         Username of the new user
     role_bindings : schema.RoleBindings
         Role bindings to apply to the new user
     """
-    add_user_permissions(db, role_bindings)
+    if db.query(exists().filter(orm.User.name == user_name)):
+        raise ValueError("Username '{user_name}' already exists in the database.")
+
+    user_permissions = create_user_permissions(db, role_bindings)
+    add_user_permissions(db, user_permissions)
 
     # Add the user with the given permissions
     db.add(
         orm.User(
-            name=username if username else uuid.uuid4(),
+            name=user_name if user_name else uuid.uuid4(),
             permissions=user_permissions,
         )
     )
@@ -925,13 +936,20 @@ def update_user(
 
     if new_user_permissions:
         user.permissions.delete()
-        add_user_permissions(new_user_permissions)
+
+        if isinstance(new_user_permissions, schema.RoleBindings):
+            new_user_permissions = create_user_permissions(db, new_user_permissions)
+
+        add_user_permissions(db, new_user_permissions)
+
         user.permissions = new_user_permissions
+
+    db.commit()
 
 
 def add_user_permissions(
     db: session.Session,
-    user_permissions: Union[Iterable[orm.UserPermission], schema.RoleBindings],
+    user_permissions: Iterable[orm.UserPermission],
 ) -> List[orm.UserPermission]:
     """Add a set of role bindings to the database as UserPermission entries.
 
@@ -939,34 +957,27 @@ def add_user_permissions(
     ----------
     db : session.Session
         Database to add user permissions
-    user_permissions : Union[Iterable[orm.UserPermission], schema.RoleBindings]
+    user_permissions : Iterable[orm.UserPermission]
         Role bindings to add to the database
-
-    Returns
-    -------
-    List[orm.UserPermission]
-        A list of the UserPermissions added to the database
     """
-    user_permissions = _role_bindings_to_user_permissions(db, user_permissions)
     db.add_all(user_permissions)
     db.commit()
-    return user_permissions
 
 
-def _role_bindings_to_user_permissions(
+def create_user_permissions(
     db: session.Session,
-    role_bindings: Union[Iterable[orm.UserPermission], schema.RoleBindings],
+    role_bindings: schema.RoleBindings,
 ) -> List[orm.UserPermission]:
-    """Given some RoleBindings, generate UserPermission objects for each related environment.
+    """Generate UserPermission objects for each environment targeted by a role binding.
+
+    These are not added to the database - see add_user_permissions.
 
     Parameters
     ----------
     db : session.Session
         Database containing environments
-    role_bindings : Union[Iterable[orm.UserPermission], schema.RoleBindings]
+    role_bindings : schema.RoleBindings
         Role bindings which may or may not have access to the environments
-
-        If this is a list of UserPermission objects, do nothing.
 
     Returns
     -------
@@ -974,24 +985,19 @@ def _role_bindings_to_user_permissions(
         A list containing a UserPermission for each environment that matches a role binding
     """
     all_envs = db.query(orm.Environment).join(orm.Namespace)
+    user_permissions = []
+    for pattern, roles in role_bindings.items():
+        max_role = schema.Role.max_role(roles)
 
-    if isinstance(role_bindings, schema.RoleBindings):
-        user_permissions = []
-        for pattern, roles in role_bindings.items():
-            max_role = schema.Role.max_role(roles)
-
-            for environment in filter_environments(
-                query=all_envs,
-                role_bindings={pattern: roles},
-            ).all():
-                user_permissions.append(
-                    orm.UserPermission(
-                        environment=environment,
-                        role=max_role,
-                    )
+        for environment in filter_environments(
+            query=all_envs,
+            role_bindings={pattern: roles},
+        ).all():
+            user_permissions.append(
+                orm.UserPermission(
+                    environment=environment,
+                    role=max_role,
                 )
+            )
 
-        return user_permissions
-
-    else:
-        return list(role_bindings)
+    return user_permissions

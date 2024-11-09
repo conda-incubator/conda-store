@@ -50,6 +50,7 @@ ARN_ALLOWED_REGEX = re.compile(ARN_ALLOWED)
 #########################
 
 RoleBindings: TypeAlias = Dict[constr(regex=ARN_ALLOWED), Set[str]]
+"""RoleBindings map env/namespace regexes to permissions for those envs/namespaces."""
 
 
 @functools.total_ordering
@@ -865,3 +866,9 @@ class APIPutSetting(APIResponse):
 # GET /api/v1/usage/
 class APIGetUsage(APIResponse):
     data: Dict[str, Dict[str, Any]]
+
+
+# POST /login/
+class APILoginRequest(BaseModel):
+    username: str
+    password: str

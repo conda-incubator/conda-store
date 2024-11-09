@@ -138,7 +138,6 @@ exclude = [
 [tool.ruff.lint]
 ignore = [
     "E501", # line-length
-
     "ANN001",	# missing-type-function-argument
     "ANN002",	# missing-type-args
     "ANN003",	# missing-type-kwargs

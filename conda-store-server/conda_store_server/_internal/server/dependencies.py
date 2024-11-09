@@ -31,9 +31,8 @@ async def get_entity(
 
     Returns
     -------
-    str
-        A string containing the encoded
-
+    Optional[schema.AuthenticationToken]
+        An authenticated token, if present; otherwise None
     """
     return auth.authenticate_request(request)
 

@@ -535,12 +535,16 @@ form.addEventListener('submit', loginHandler);
             ("/logout/", "post", self.post_logout_method),
         ]
 
-    async def authenticate(self, request: Request):
+    async def authenticate(
+        self,
+        request: schema.APILoginRequest,
+    ) -> schema.AuthenticationToken:
         return schema.AuthenticationToken(
             primary_namespace="default",
             role_bindings={
                 "*/*": ["admin"],
             },
+            user_name=request.username,
         )
 
     def get_login_method(
@@ -567,7 +571,7 @@ form.addEventListener('submit', loginHandler);
 
     async def post_login_method(
         self,
-        request: Request,
+        request: schema.APILoginRequest,
         response: Response,
         next: Optional[str] = None,
         templates=Depends(dependencies.get_templates),
@@ -586,7 +590,7 @@ form.addEventListener('submit', loginHandler);
         ----------
         templates :
 
-        request : Request
+        request : schema.APILoginRequest
             POST request that was sent to `/login/` to log the user in
         response : Response
             Response to return to the requestor
@@ -607,10 +611,10 @@ form.addEventListener('submit', loginHandler);
 
         # After user logs in, ensure that they have an entry in the database
         with self.authentication_db() as db:
-            if not api.get_user(authentication_token.username):
+            if not api.get_user(db, user_name=authentication_token.user_name):
                 api.add_user(
                     db=db,
-                    username=authentication_token.username,
+                    user_name=authentication_token.user_name,
                     role_bindings=authentication_token.role_bindings,
                 )
 
@@ -776,17 +780,17 @@ class DummyAuthentication(Authentication):
 
     # login_html = Unicode()
 
-    async def authenticate(self, request: Request):
+    async def authenticate(self, request: schema.APILoginRequest):
         """Checks against a global password if it's been set. If not, allow any user/pass combo"""
-        data = await request.json()
-        if self.password and data.get("password") != self.password:
+        if self.password and request.password != self.password:
             return None
 
         return schema.AuthenticationToken(
-            primary_namespace=data["username"],
+            primary_namespace=request.username,
             role_bindings={
                 "*/*": ["admin"],
             },
+            user_name=request.username,
         )
 
 
