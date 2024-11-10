@@ -2,29 +2,27 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
 
-"""add build hash
+"""add status_info
 
-Revision ID: e17b4cc6e086
-Revises: 03c839888c82
-Create Date: 2024-03-26 04:39:24.275214
+Revision ID: d78e9889566a
+Revises: b387747ca9b7
+Create Date: 2023-11-07 12:25:04.416192
 
 """
 
 import sqlalchemy as sa
-
 from alembic import op
 
-
 # revision identifiers, used by Alembic.
-revision = "e17b4cc6e086"
-down_revision = "03c839888c82"
+revision = "d78e9889566a"
+down_revision = "b387747ca9b7"
 branch_labels = None
 depends_on = None
 
 
 def upgrade():
-    op.add_column("build", sa.Column("hash", sa.Unicode(length=32), nullable=True))
+    op.add_column("build", sa.Column("status_info", sa.UnicodeText(), nullable=True))
 
 
 def downgrade():
-    op.drop_column("build", "hash")
+    op.drop_column("build", "status_info")

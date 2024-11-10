@@ -2,45 +2,41 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
 
-"""add v2 role mappings
+"""role mapping
 
-Revision ID: 771180018e1b
-Revises: 30b37e725c32
-Create Date: 2023-11-29 09:02:35.835664
+Revision ID: b387747ca9b7
+Revises: abd7248d5327
+Create Date: 2023-07-04 14:35:48.177574
 
 """
 
 import sqlalchemy as sa
-
 from alembic import op
 
-
 # revision identifiers, used by Alembic.
-revision = "771180018e1b"
-down_revision = "30b37e725c32"
+revision = "b387747ca9b7"
+down_revision = "abd7248d5327"
 branch_labels = None
 depends_on = None
 
 
 def upgrade():
     op.create_table(
-        "namespace_role_mapping_v2",
+        "namespace_role_mapping",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("namespace_id", sa.Integer(), nullable=False),
-        sa.Column("other_namespace_id", sa.Integer(), nullable=False),
+        sa.Column("entity", sa.Unicode(length=255), nullable=False),
         sa.Column("role", sa.Unicode(length=255), nullable=False),
         sa.ForeignKeyConstraint(
             ["namespace_id"],
             ["namespace.id"],
         ),
-        sa.ForeignKeyConstraint(
-            ["other_namespace_id"],
-            ["namespace.id"],
-        ),
         sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint("namespace_id", "other_namespace_id", name="_uc"),
     )
+
+    op.add_column("namespace", sa.Column("metadata_", sa.JSON(), nullable=True))
 
 
 def downgrade():
-    op.drop_table("namespace_role_mapping_v2")
+    op.drop_column("namespace", "metadata_")
+    op.drop_table("namespace_role_mapping")
