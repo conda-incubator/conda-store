@@ -7,8 +7,9 @@
 import json
 import time
 import uuid
+from collections.abc import Callable
 from enum import Enum
-from typing import Any, Callable, Dict, Optional, Union
+from typing import Any, Dict, Optional, Union
 
 import requests
 
@@ -251,7 +252,7 @@ class API:
         self,
         environment: Optional[str] = None,
         namespace: Optional[str] = None,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Get information about an environment.
 
         Parameters
@@ -263,7 +264,7 @@ class API:
 
         Returns
         -------
-        Dict[str, Any]
+        dict[str, Any]
             Dict of build properties; see API docs for
             api/v1/build/ for more information.
         """
@@ -278,7 +279,7 @@ class API:
             "data"
         ]
 
-    def get_environment(self, namespace: str, environment: str) -> Dict[str, Any]:
+    def get_environment(self, namespace: str, environment: str) -> dict[str, Any]:
         """Get information about an environment.
 
         Parameters
@@ -290,7 +291,7 @@ class API:
 
         Returns
         -------
-        Dict[str, Any]
+        dict[str, Any]
             Dict of environment properties; see API docs for
             api/v1/environment/{namespace}/{environment}/ for more information.
         """

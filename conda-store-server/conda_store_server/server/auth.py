@@ -7,7 +7,8 @@ import datetime
 import re
 import secrets
 from collections import defaultdict
-from typing import Iterable, Optional, Set, Tuple
+from collections.abc import Iterable
+from typing import Optional, Set
 
 import jwt
 import requests
@@ -228,7 +229,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
         return re.compile(regex_arn)
 
     @staticmethod
-    def compile_arn_sql_like(arn: str) -> Tuple[str, str]:
+    def compile_arn_sql_like(arn: str) -> tuple[str, str]:
         """Turn an arn into a string suitable for use in a SQL LIKE statement.
 
         The use of this function is discouraged; use
@@ -247,7 +248,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
 
         Returns
         -------
-        Tuple[str, str]
+        tuple[str, str]
             (namespace regex, environment regex) to match in a sql LIKE statement.
             See conda_store_server.server.auth.Authentication.filter_environments
             for usage.
