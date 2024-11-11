@@ -3,6 +3,7 @@
 # license that can be found in the LICENSE file.
 
 import contextlib
+import functools
 import hashlib
 import json
 import os
@@ -11,7 +12,6 @@ import re
 import subprocess
 import sys
 import time
-import functools
 from typing import AnyStr
 
 from filelock import FileLock
@@ -195,7 +195,7 @@ def retry_on_errors(allowed_retries=1, on_errors=(), logger=None):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             num_retries = 0
-            while num_retries <= allowed_retries:            
+            while num_retries <= allowed_retries:
                 try:
                     result = func(*args, **kwargs)
                 except on_errors as e:
@@ -207,5 +207,7 @@ def retry_on_errors(allowed_retries=1, on_errors=(), logger=None):
                 else:
                     return result
             return result
+
         return wrapper
+
     return decorator_retry

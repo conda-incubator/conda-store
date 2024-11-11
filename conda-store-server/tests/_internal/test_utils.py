@@ -3,6 +3,7 @@
 # license that can be found in the LICENSE file.
 
 import pytest
+
 from conda_store_server._internal.utils import disk_usage, du, retry_on_errors
 
 # TODO: Add tests for the other functions in utils.py
@@ -43,7 +44,7 @@ class MyTestError(Exception):
 
 
 def test_retry_on_error():
-    class MyTestClass():
+    class MyTestClass:
         def __init__(self):
             self.called = 0
 
@@ -51,9 +52,9 @@ def test_retry_on_error():
         def raise_my_test_exception(self):
             self.called += 1
             raise MyTestError
-    
+
     tc = MyTestClass()
-    
+
     with pytest.raises(MyTestError):
         tc.raise_my_test_exception()
 
@@ -61,7 +62,7 @@ def test_retry_on_error():
 
 
 def test_retry_on_not_covered_error():
-    class MyTestClass():
+    class MyTestClass:
         def __init__(self):
             self.called = 0
 
@@ -69,12 +70,12 @@ def test_retry_on_not_covered_error():
         def raise_my_test_exception(self):
             self.called += 1
             raise MyTestError
-    
+
     tc = MyTestClass()
-    
+
     with pytest.raises(MyTestError):
         tc.raise_my_test_exception()
-    
+
     assert tc.called == 1
 
 
@@ -82,6 +83,6 @@ def test_retry_no_error():
     @retry_on_errors(allowed_retries=1, on_errors=(MyTestError))
     def test_function():
         return 1
-    
+
     result = test_function()
     assert result == 1

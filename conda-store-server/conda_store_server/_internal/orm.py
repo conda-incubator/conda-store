@@ -467,11 +467,11 @@ class CondaChannel(Base):
     name = Column(Unicode(255), unique=True, nullable=False)
     last_update = Column(DateTime)
 
-    # The conda_package table also gets updated during an environment build. It is 
+    # The conda_package table also gets updated during an environment build. It is
     # possible for an entry to be inserted into the table between the step where
     # existing package keys are computed and the bulk insert is executed. This will
-    # cause the bulk update to fail with an IntegrityError (eg. in postrgres this is a 
-    # psycopg2.errors.UniqueViolation error). In this case, we'll want to retry updating 
+    # cause the bulk update to fail with an IntegrityError (eg. in postrgres this is a
+    # psycopg2.errors.UniqueViolation error). In this case, we'll want to retry updating
     # the conda packages
     @utils.retry_on_errors(allowed_retries=1, on_errors=(IntegrityError), logger=logger)
     def update_conda_packages(self, db, repodata, architecture):
@@ -529,7 +529,7 @@ class CondaChannel(Base):
         except Exception as e:
             db.rollback()
             raise e
-        
+
         logger.info("insert packages done")
 
     def update_conda_package_builds(self, db, repodata, architecture):
@@ -623,12 +623,8 @@ class CondaChannel(Base):
                         CondaPackage.version == p_version,
                     )
                 )
-            all_parent_packages = (
-                db.query(CondaPackage).filter(or_(*statements)).all()
-            )
-            all_parent_packages = {
-                (_.name, _.version): _ for _ in all_parent_packages
-            }
+            all_parent_packages = db.query(CondaPackage).filter(or_(*statements)).all()
+            all_parent_packages = {(_.name, _.version): _ for _ in all_parent_packages}
             logger.info(f"parent packages retrieved : {len(all_parent_packages)} ")
 
             for p_name, p_version in subset_keys:
