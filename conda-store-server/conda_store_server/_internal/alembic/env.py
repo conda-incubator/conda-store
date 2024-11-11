@@ -27,7 +27,7 @@ import pathlib  # noqa E402
 import sys  # noqa E402
 
 
-sys.path.append(str(pathlib.Path(__file__).parent.parent.parent))
+sys.path.append(str(pathlib.Path(__file__).parent.parent.parent.parent))
 
 from conda_store_server._internal.orm import Base  # noqa E402
 
