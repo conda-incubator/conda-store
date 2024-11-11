@@ -29,6 +29,7 @@ from sqlalchemy import (
     create_engine,
     or_,
 )
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import (
     backref,
@@ -466,6 +467,190 @@ class CondaChannel(Base):
     name = Column(Unicode(255), unique=True, nullable=False)
     last_update = Column(DateTime)
 
+    # The conda_package table also gets updated during an environment build. It is 
+    # possible for an entry to be inserted into the table between the step where
+    # existing package keys are computed and the bulk insert is executed. This will
+    # cause the bulk update to fail with an IntegrityError (eg. in postrgres this is a 
+    # psycopg2.errors.UniqueViolation error). In this case, we'll want to retry updating 
+    # the conda packages
+    @utils.retry_on_errors(allowed_retries=1, on_errors=(IntegrityError), logger=logger)
+    def update_conda_packages(self, db, repodata, architecture):
+        # the data of the conda_package
+        packages_data = list(
+            repodata["architectures"][architecture]["packages"].values()
+        )
+
+        # First, we retrieve all the pairs "package name - pacakge version"
+        # in the DB. This represents all the existing packages.
+        existing_packages_keys = [
+            f"{_[0]}-{_[1]}-{self.id}"
+            for _ in db.query(CondaPackage.name, CondaPackage.version)
+            .filter(CondaPackage.channel_id == self.id)
+            .all()
+        ]
+
+        # Then, we filter packages_data to keep only the new packages.
+
+        # `packages` associates a key representing the package like "{name}-{version}-{channel_id}"
+        # to a dict representing a new package to insert.
+        # By using a dict with such key, we avoid potential duplicates from within the repodata.
+        packages = {}
+
+        for p_build in packages_data:
+            package_key = f'{p_build["name"]}-{p_build["version"]}-{self.id}'
+
+            # Filtering out : if the key already exists in existing_packages_keys,
+            # then the package is already if DB, we don't add it.
+            if (
+                package_key not in packages
+                and package_key not in existing_packages_keys
+            ):
+                new_package_dict = {
+                    "channel_id": self.id,
+                    "license": p_build.get("license"),
+                    "license_family": p_build.get("license_family"),
+                    "name": p_build["name"],
+                    "version": p_build["version"],
+                    "summary": repodata.get("packages", {})
+                    .get(p_build["name"], {})
+                    .get("summary"),
+                    "description": repodata.get("packages", {})
+                    .get(p_build["name"], {})
+                    .get("description"),
+                }
+
+                packages[package_key] = new_package_dict
+
+        logger.info(f"packages to insert : {len(packages)} ")
+
+        try:
+            db.bulk_insert_mappings(CondaPackage, packages.values())
+            db.commit()
+        except Exception as e:
+            db.rollback()
+            raise e
+        
+        logger.info("insert packages done")
+
+    def update_conda_package_builds(self, db, repodata, architecture):
+        # the data of the conda_package
+        packages_data = list(
+            repodata["architectures"][architecture]["packages"].values()
+        )
+        logger.info("retrieving existing sha256  : ")
+        existing_sha256 = {
+            _[0]
+            for _ in db.query(CondaPackageBuild.sha256)
+            .join(CondaPackageBuild.package)
+            .filter(CondaPackage.channel_id == self.id)
+            .filter(CondaPackageBuild.subdir == architecture)
+            .all()
+        }
+        logger.info("retrieved existing sha256  : ")
+        logger.info(f"package data before filtering  : {len(packages_data)} ")
+
+        # We store the package builds in a dict indexed by their sha256
+        # Later, we keep only the values.
+        # That way, any duplicated sha256 from the repodata is erased
+        # Also, we exclude pacakge_builds for which the sha256 is already in the DB
+        packages_builds = {}
+        for pb in packages_data:
+            if pb["sha256"] not in existing_sha256:
+                packages_builds[pb["sha256"]] = pb
+
+        packages_builds = packages_builds.values()
+        logger.info(f"package builds after filtering : {len(packages_builds)} ")
+
+        # This associates a tuple like "(name,version)" representing a package
+        # to all its builds
+        package_builds = {}
+        logger.info("Creating CondaPackageBuild objects")
+        for p_build in packages_builds:
+            has_null = False
+            non_null_keys = [
+                "build",
+                "build_number",
+                "depends",
+                "md5",
+                "sha256",
+                "size",
+            ]
+            for k in non_null_keys:
+                if p_build[k] is None:
+                    has_null = True
+                    break
+            if has_null:
+                continue
+
+            if p_build["depends"] == []:
+                p_build["depends"] = ""
+
+            package_key = (p_build["name"], p_build["version"])
+
+            new_package_build_dict = {
+                "build": p_build["build"],
+                "build_number": p_build["build_number"],
+                "channel_id": self.id,
+                "constrains": p_build.get("constrains"),
+                "depends": p_build["depends"],
+                "md5": p_build["md5"],
+                "sha256": p_build["sha256"],
+                "size": p_build["size"],
+                "subdir": p_build.get("subdir"),
+                "timestamp": p_build.get("timestamp"),
+            }
+
+            if package_key not in package_builds:
+                package_builds[package_key] = []
+
+            package_builds[package_key].append(new_package_build_dict)
+        logger.info("CondaPackageBuild objects created")
+
+        # sqlite3 has a max expression depth of 1000
+        batch_size = 990
+        all_package_keys = list(package_builds.keys())
+        for i in range(0, len(all_package_keys), batch_size):
+            logger.info(f"handling subset at index {i} (batch size {batch_size})")
+            subset_keys = all_package_keys[i : i + batch_size]
+
+            # retrieve the parent packages for the subset
+            logger.info("retrieve the parent packages for the subset ")
+            statements = []
+            for p_name, p_version in subset_keys:
+                statements.append(
+                    and_(
+                        CondaPackage.name == p_name,
+                        CondaPackage.version == p_version,
+                    )
+                )
+            all_parent_packages = (
+                db.query(CondaPackage).filter(or_(*statements)).all()
+            )
+            all_parent_packages = {
+                (_.name, _.version): _ for _ in all_parent_packages
+            }
+            logger.info(f"parent packages retrieved : {len(all_parent_packages)} ")
+
+            for p_name, p_version in subset_keys:
+                for p_build_dict in package_builds[(p_name, p_version)]:
+                    p_build_dict["package_id"] = all_parent_packages[
+                        (p_name, p_version)
+                    ].id
+
+            logger.info("ready to bulk save")
+
+        try:
+            flatten = []
+            for p_name, p_version in package_builds:
+                flatten += package_builds[(p_name, p_version)]
+
+            db.bulk_insert_mappings(CondaPackageBuild, flatten)
+            db.commit()
+            logger.info("bulk saved")
+        except Exception as e:
+            logger.error(f"{e}")
+            raise e
+
     def update_packages(self, db, subdirs=None):
         logger.info(f"update packages {self.name} ")
 
@@ -483,207 +668,33 @@ class CondaChannel(Base):
             # nothing to update
             return
 
+        """
+        Context :
+            For each architecture, we need to add all the packages (`conda_package`),
+            and all their builds (`conda_package_build`), with their relationship.
+            As of May 2022, based on the default channels `main` and `conda-forge`,
+            there are 136K packages and 367K conda_package_build
+
+        Trick :
+            To insert these data fast, we need to get rid of the overhead induced
+            by the ORM layer, and use session.bulk_insert_mappings.
+
+        Caveat :
+            bulk insertion is handy, but we need to avoid breaking integrity constraint,
+            This implies that we need to bulk_insert only new data, filtering out
+            the data already in the DB
+
+        Algorithm :
+            First step :  we insert all the new conda_package rows
+            Second step : we insert all the new conda_package_builds rows
+
+            These steps are detailled below.
+        """
+
         for architecture in repodata["architectures"]:
             logger.info(f"architecture  : {architecture} ")
-
-            """
-            Context :
-               For each architecture, we need to add all the packages (`conda_package`),
-               and all their builds (`conda_package_build`), with their relationship.
-               As of May 2022, based on the default channels `main` and `conda-forge`,
-               there are 136K packages and 367K conda_package_build
-
-            Trick :
-               To insert these data fast, we need to get rid of the overhead induced
-               by the ORM layer, and use session.bulk_insert_mappings.
-
-            Caveat :
-               bulk insertion is handy, but we need to avoid breaking integrity constraint,
-               This implies that we need to bulk_insert only new data, filtering out
-               the data already in the DB
-
-            Algorithm :
-               First step :  we insert all the new conda_package rows
-               Second step : we insert all the new conda_package_builds rows
-
-               These steps are detailled below.
-            """
-
-            # package_data contains all the data for the iterated architecture.
-            # Each dict represents a conda_package_build and also contains
-            # thge data of the conda_package
-            packages_data = list(
-                repodata["architectures"][architecture]["packages"].values()
-            )
-
-            # First, we retrieve all the pairs "package name - pacakge version"
-            # in the DB. This represents all the existing packages.
-            existing_packages_keys = [
-                f"{_[0]}-{_[1]}-{self.id}"
-                for _ in db.query(CondaPackage.name, CondaPackage.version)
-                .filter(CondaPackage.channel_id == self.id)
-                .all()
-            ]
-
-            # Then, we filter packages_data to keep only the new packages.
-
-            # `packages` associates a key representing the package like "{name}-{version}-{channel_id}"
-            # to a dict representing a new package to insert.
-            # By using a dict with such key, we avoid potential duplicates from within the repodata.
-            packages = {}
-
-            for p_build in packages_data:
-                package_key = f'{p_build["name"]}-{p_build["version"]}-{self.id}'
-
-                # Filtering out : if the key already exists in existing_packages_keys,
-                # then the package is already if DB, we don't add it.
-                if (
-                    package_key not in packages
-                    and package_key not in existing_packages_keys
-                ):
-                    new_package_dict = {
-                        "channel_id": self.id,
-                        "license": p_build.get("license"),
-                        "license_family": p_build.get("license_family"),
-                        "name": p_build["name"],
-                        "version": p_build["version"],
-                        "summary": repodata.get("packages", {})
-                        .get(p_build["name"], {})
-                        .get("summary"),
-                        "description": repodata.get("packages", {})
-                        .get(p_build["name"], {})
-                        .get("description"),
-                    }
-
-                    packages[package_key] = new_package_dict
-
-            logger.info(f"packages to insert : {len(packages)} ")
-
-            try:
-                db.bulk_insert_mappings(CondaPackage, packages.values())
-                db.commit()
-            except Exception as e:
-                print(f"{e}")
-                db.rollback()
-                raise e
-
-            logger.info("insert packages done")
-
-            logger.info("retrieving existing sha256  : ")
-            existing_sha256 = {
-                _[0]
-                for _ in db.query(CondaPackageBuild.sha256)
-                .join(CondaPackageBuild.package)
-                .filter(CondaPackage.channel_id == self.id)
-                .filter(CondaPackageBuild.subdir == architecture)
-                .all()
-            }
-            logger.info("retrieved existing sha256  : ")
-            logger.info(f"package data before filtering  : {len(packages_data)} ")
-
-            # We store the package builds in a dict indexed by their sha256
-            # Later, we keep only the values.
-            # That way, any duplicated sha256 from the repodata is erased
-            # Also, we exclude pacakge_builds for which the sha256 is already in the DB
-            packages_builds = {}
-            for pb in packages_data:
-                if pb["sha256"] not in existing_sha256:
-                    packages_builds[pb["sha256"]] = pb
-
-            packages_builds = packages_builds.values()
-            logger.info(f"package builds after filtering : {len(packages_builds)} ")
-
-            # This associates a tuple like "(name,version)" representing a package
-            # to all its builds
-            package_builds = {}
-            logger.info("Creating CondaPackageBuild objects")
-            for p_build in packages_builds:
-                has_null = False
-                non_null_keys = [
-                    "build",
-                    "build_number",
-                    "depends",
-                    "md5",
-                    "sha256",
-                    "size",
-                ]
-                for k in non_null_keys:
-                    if p_build[k] is None:
-                        has_null = True
-                        break
-                if has_null:
-                    continue
-
-                if p_build["depends"] == []:
-                    p_build["depends"] = ""
-
-                package_key = (p_build["name"], p_build["version"])
-
-                new_package_build_dict = {
-                    "build": p_build["build"],
-                    "build_number": p_build["build_number"],
-                    "channel_id": self.id,
-                    "constrains": p_build.get("constrains"),
-                    "depends": p_build["depends"],
-                    "md5": p_build["md5"],
-                    "sha256": p_build["sha256"],
-                    "size": p_build["size"],
-                    "subdir": p_build.get("subdir"),
-                    "timestamp": p_build.get("timestamp"),
-                }
-
-                if package_key not in package_builds:
-                    package_builds[package_key] = []
-
-                package_builds[package_key].append(new_package_build_dict)
-            logger.info("CondaPackageBuild objects created")
-
-            # sqlite3 has a max expression depth of 1000
-            batch_size = 990
-            all_package_keys = list(package_builds.keys())
-            for i in range(0, len(all_package_keys), batch_size):
-                logger.info(f"handling subset at index {i} (batch size {batch_size})")
-                subset_keys = all_package_keys[i : i + batch_size]
-
-                # retrieve the parent packages for the subset
-                logger.info("retrieve the parent packages for the subset ")
-                statements = []
-                for p_name, p_version in subset_keys:
-                    statements.append(
-                        and_(
-                            CondaPackage.name == p_name,
-                            CondaPackage.version == p_version,
-                        )
-                    )
-                all_parent_packages = (
-                    db.query(CondaPackage).filter(or_(*statements)).all()
-                )
-                all_parent_packages = {
-                    (_.name, _.version): _ for _ in all_parent_packages
-                }
-                logger.info(f"parent packages retrieved : {len(all_parent_packages)} ")
-
-                for p_name, p_version in subset_keys:
-                    for p_build_dict in package_builds[(p_name, p_version)]:
-                        p_build_dict["package_id"] = all_parent_packages[
-                            (p_name, p_version)
-                        ].id
-
-                logger.info("ready to bulk save")
-
-            try:
-                flatten = []
-                for p_name, p_version in package_builds:
-                    flatten += package_builds[(p_name, p_version)]
-
-                db.bulk_insert_mappings(CondaPackageBuild, flatten)
-                db.commit()
-                logger.info("bulk saved")
-            except Exception as e:
-                logger.error(f"{e}")
-
-                raise e
-
+            self.update_conda_packages(db, repodata, architecture)
+            self.update_conda_package_builds(db, repodata, architecture)
             logger.info(f"DONE for architecture  : {architecture}")
 
         self.last_update = datetime.datetime.utcnow()

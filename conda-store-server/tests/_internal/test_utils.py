@@ -2,7 +2,8 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
 
-from conda_store_server._internal.utils import disk_usage, du
+import pytest
+from conda_store_server._internal.utils import disk_usage, du, retry_on_errors
 
 # TODO: Add tests for the other functions in utils.py
 
@@ -35,3 +36,52 @@ def test_disk_usage(tmp_path):
     assert isinstance(val, str)
     assert 2000 + dir_size <= int(val) <= 2700 + dir_size
     assert 2000 + dir_size <= du(test_dir) <= 2700 + dir_size
+
+
+class MyTestError(Exception):
+    pass
+
+
+def test_retry_on_error():
+    class MyTestClass():
+        def __init__(self):
+            self.called = 0
+
+        @retry_on_errors(allowed_retries=1, on_errors=(MyTestError))
+        def raise_my_test_exception(self):
+            self.called += 1
+            raise MyTestError
+    
+    tc = MyTestClass()
+    
+    with pytest.raises(MyTestError):
+        tc.raise_my_test_exception()
+
+    assert tc.called == 2
+
+
+def test_retry_on_not_covered_error():
+    class MyTestClass():
+        def __init__(self):
+            self.called = 0
+
+        @retry_on_errors(allowed_retries=1, on_errors=(IndexError))
+        def raise_my_test_exception(self):
+            self.called += 1
+            raise MyTestError
+    
+    tc = MyTestClass()
+    
+    with pytest.raises(MyTestError):
+        tc.raise_my_test_exception()
+    
+    assert tc.called == 1
+
+
+def test_retry_no_error():
+    @retry_on_errors(allowed_retries=1, on_errors=(MyTestError))
+    def test_function():
+        return 1
+    
+    result = test_function()
+    assert result == 1

@@ -11,6 +11,7 @@ import re
 import subprocess
 import sys
 import time
+import functools
 from typing import AnyStr
 
 from filelock import FileLock
@@ -187,3 +188,24 @@ def compile_arn_sql_like(
         re.sub(r"\*", "%", match.group(1)),
         re.sub(r"\*", "%", match.group(2)),
     )
+
+
+def retry_on_errors(allowed_retries=1, on_errors=(), logger=None):
+    def decorator_retry(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            num_retries = 0
+            while num_retries <= allowed_retries:            
+                try:
+                    result = func(*args, **kwargs)
+                except on_errors as e:
+                    if num_retries == allowed_retries:
+                        if logger:
+                            logger.error(f"{e}")
+                        raise e
+                    num_retries += 1
+                else:
+                    return result
+            return result
+        return wrapper
+    return decorator_retry
