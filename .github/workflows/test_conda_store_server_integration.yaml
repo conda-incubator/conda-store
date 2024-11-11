@@ -30,6 +30,7 @@ jobs:
     strategy:
       matrix:
         test-type: ["playwright", "integration", "user-journey"]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
     defaults:
       run:
         shell: bash -el {0}
@@ -38,10 +39,6 @@ jobs:
       - name: "Checkout Repository 🛎"
         uses: actions/checkout@v4
 
-      - name: "Get project's default Python version 🏷️"
-        run: |
-          echo "PYTHON_VERSION_DEFAULT=$(cat .python-version-default)" >> $GITHUB_ENV
-
       - name: "Set up conda env 🐍"
         uses: conda-incubator/setup-miniconda@v3
         with:
@@ -49,7 +46,7 @@ jobs:
             miniforge-version: latest
             auto-activate-base: false
             activate-environment: conda-store-server-dev
-            python-version: ${{ env.PYTHON_VERSION_DEFAULT }}
+            python-version: ${{ matrix.python-version }}
 
       - name: "Install dependencies 📦"
         run: |
@@ -78,7 +75,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: matrix.test-type == 'playwright'
         with:
-          name: playwright-tests
+          name: playwright-tests-${{ matrix.python-version }}
           path: conda-store-server/test-results
 
       - name: "Run integration tests ✅"
@@ -90,6 +87,14 @@ jobs:
         run: |
           python -m pytest -m "user_journey"
         if: matrix.test-type == 'user-journey'
+
+      # These mirror the tests run while building the conda package
+      # See https://github.com/conda-forge/conda-store-feedstock/ for details
+      - name: "Run basic import tests ✅"
+        run: |
+          python -c "import conda_store_server"
+          conda-store-server --help
+          conda-store-worker --help
 
       - name: "Get Docker logs 🔍"
         if: ${{ failure() }}

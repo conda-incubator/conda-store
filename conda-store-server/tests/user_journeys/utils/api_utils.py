@@ -251,7 +251,7 @@ class API:
         self,
         environment: Optional[str] = None,
         namespace: Optional[str] = None,
-    ) -> dict[str, Any]:
+    ) -> Dict[str, Any]:
         """Get information about an environment.
 
         Parameters
@@ -263,7 +263,7 @@ class API:
 
         Returns
         -------
-        dict[str, Any]
+        Dict[str, Any]
             Dict of build properties; see API docs for
             api/v1/build/ for more information.
         """
@@ -278,7 +278,7 @@ class API:
             "data"
         ]
 
-    def get_environment(self, namespace: str, environment: str) -> dict[str, Any]:
+    def get_environment(self, namespace: str, environment: str) -> Dict[str, Any]:
         """Get information about an environment.
 
         Parameters
@@ -290,7 +290,7 @@ class API:
 
         Returns
         -------
-        dict[str, Any]
+        Dict[str, Any]
             Dict of environment properties; see API docs for
             api/v1/environment/{namespace}/{environment}/ for more information.
         """

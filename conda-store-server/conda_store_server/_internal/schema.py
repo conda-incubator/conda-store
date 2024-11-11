@@ -8,7 +8,7 @@ import functools
 import os
 import re
 import sys
-from typing import Any, Callable, Dict, List, Optional, TypeAlias, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
 from conda_lock.lockfile.v1.models import Lockfile
 from pydantic import BaseModel, Field, ValidationError, constr, validator
@@ -36,7 +36,7 @@ ARN_ALLOWED_REGEX = re.compile(ARN_ALLOWED)
 # Authentication Schema
 #########################
 
-RoleBindings: TypeAlias = Dict[constr(regex=ARN_ALLOWED), List[str]]
+RoleBindings = Dict[constr(regex=ARN_ALLOWED), List[str]]
 
 
 class Permissions(enum.Enum):

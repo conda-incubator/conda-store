@@ -40,7 +40,7 @@ jobs:
       - name: "Set up Python 🐍"
         uses: actions/setup-python@v5
         with:
-          python-version-file: .python-version-default
+          python-version: ${{ matrix.python-version }}
           cache: "pip"
 
       - name: "Install Dependencies 📦"

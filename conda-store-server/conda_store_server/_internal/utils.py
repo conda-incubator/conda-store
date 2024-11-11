@@ -11,7 +11,7 @@ import re
 import subprocess
 import sys
 import time
-from typing import AnyStr
+from typing import Tuple
 
 from filelock import FileLock
 
@@ -154,9 +154,7 @@ def callable_or_value(v, *args, **kwargs):
     return v
 
 
-def compile_arn_sql_like(
-    arn: str, allowed_regex: re.Pattern[AnyStr]
-) -> tuple[str, str]:
+def compile_arn_sql_like(arn: str, allowed_regex: re.Pattern) -> Tuple[str, str]:
     """Turn an arn into a string suitable for use in a SQL LIKE statement.
 
     Parameters
@@ -172,7 +170,7 @@ def compile_arn_sql_like(
 
     Returns
     -------
-    tuple[str, str]
+    Tuple[str, str]
         (namespace regex, environment regex) to match in a sql LIKE statement.
         See conda_store_server.server.auth.Authentication.filter_environments
         for usage.
