@@ -4,9 +4,9 @@
 
 """add user table
 
-Revision ID: 98e16d86ffb0
+Revision ID: b3aa6f2abe04
 Revises: bf065abf375b
-Create Date: 2024-11-11 16:36:31.047525
+Create Date: 2024-11-11 19:05:34.416019
 
 """
 from alembic import op
@@ -14,7 +14,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '98e16d86ffb0'
+revision = 'b3aa6f2abe04'
 down_revision = 'bf065abf375b'
 branch_labels = None
 depends_on = None
@@ -29,17 +29,16 @@ def upgrade():
         sa.UniqueConstraint('name')
     )
     op.create_table(
-        'userpermission',
+        'rolebinding',
         sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('environment_id', sa.Integer(), nullable=True),
+        sa.Column('pattern', sa.Unicode(length=255), nullable=True),
         sa.Column('user_id', sa.Integer(), nullable=True),
         sa.Column('role', sa.Enum('NONE', 'VIEWER', 'EDITOR', 'ADMIN', name='role'), nullable=True),
-        sa.ForeignKeyConstraint(['environment_id'], ['environment.id'], ),
         sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
         sa.PrimaryKeyConstraint('id')
     )
 
 
 def downgrade():
-    op.drop_table('userpermission')
+    op.drop_table('rolebinding')
     op.drop_table('user')

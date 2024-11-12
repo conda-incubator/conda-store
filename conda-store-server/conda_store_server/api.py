@@ -308,13 +308,21 @@ def list_environments(
     show_soft_deleted : bool
         If specified, filter by environments which have a null value for the
         deleted_on attribute
+    user : orm.User
+        If specified, only the environments accessible to the user are queried;
+        if not, all environments are queried
 
     Returns
     -------
     Query
         Sqlalchemy query containing the requested environments
     """
-    query = db.query(orm.Environment).join(orm.Environment.namespace)
+    if user:
+        query = user.get_environments(db, min_role=schema.Role.VIEWER)
+    else:
+        query = db.query(orm.Environment)
+
+    query = query.join(orm.Environment.namespace)
 
     if namespace:
         query = query.filter(orm.Namespace.name == namespace)
@@ -356,26 +364,6 @@ def list_environments(
             .group_by(orm.Namespace.name, orm.Environment.name, orm.Environment.id)
             .having(func.count() == len(packages))
         )
-
-    if user:
-        query = (
-            query.join(
-                orm.UserPermission,
-                orm.UserPermission.environment_id == orm.Environment.id,
-            )
-            .join(orm.User, orm.User == user)
-            .filter(
-                and_(
-                    orm.UserPermission.role > schema.Role.NONE,
-                    orm.UserPermission in user.permissions,
-                )
-            )
-        )
-
-    # if role_bindings:
-    #     # Any entity binding is sufficient permissions to view an environment;
-    #     # no entity binding will hide the environment
-    #     query = filter_environments(query, role_bindings)
 
     return query
 
