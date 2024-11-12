@@ -38,7 +38,7 @@ Required values to include:
 ## Helm install 
 
 ```
-$ helm install conda-store ../../conda-store-server/install/conda-store/  --values values.yaml.env.local
+$ helm install conda-store ../../conda-store-server/install/conda-store/  --values values.local.yaml
 ```
 
 Expose the required ports

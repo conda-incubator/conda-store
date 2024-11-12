@@ -49,7 +49,7 @@ spec:
       volumes:
         - name: config
           configMap:
-            name: "{{ template "condaStore.fullname" . }}"
+            name: "{{ template "condaStore.fullname" . }}-worker"
         - name: secret
           secret:
             secretName: {{ .Values.global.condaStoreConfigSecretsName }}
