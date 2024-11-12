@@ -4,7 +4,7 @@ services:
       context: conda-store-server
       target: dev
       args:
-        python_version=$python_version
+        python_version: $python_version
     user: 1000:1000
     volumes:
       - ./tests/assets/environments:/opt/environments:ro
@@ -25,7 +25,7 @@ services:
       context: conda-store-server
       target: dev
       args:
-        python_version=$python_version
+        python_version: $python_version
     user: 1000:1000
     depends_on:
       postgres:
