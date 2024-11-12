@@ -42,7 +42,7 @@ uiServer:
     tag: 2024.6.1
 
 worker:
-  replicas: 1
+  replicas: 2
   image:
     repository: quansight/conda-store-server
     pullPolicy: IfNotPresent
