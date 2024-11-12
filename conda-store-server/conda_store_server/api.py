@@ -11,7 +11,6 @@ from sqlalchemy import and_, distinct, exists, func, null, or_
 from sqlalchemy.orm import Query, aliased, session
 
 from conda_store_server._internal import conda_utils, orm, schema, utils
-from conda_store_server._internal.environment import filter_environments
 
 
 def list_namespaces(db, show_soft_deleted: bool = False):
@@ -359,7 +358,6 @@ def list_environments(
         )
 
     if user:
-        breakpoint()
         query = (
             query.join(
                 orm.UserPermission,
@@ -842,7 +840,7 @@ def add_user(
 
     Parses the role_bindings to set the role bindings of the user in the database. Only
     use the maximum role in the set of RoleBindings, since that's what determines the
-    permissions for the namespace/environment.
+    level of access for the namespace/environment.
 
     Parameters
     ----------
@@ -854,16 +852,16 @@ def add_user(
         Role bindings to apply to the new user
     """
     if db.query(exists().filter(orm.User.name == user_name)):
-        raise ValueError("Username '{user_name}' already exists in the database.")
+        raise ValueError(f"Username '{user_name}' already exists in the database.")
 
-    user_permissions = create_user_permissions(db, role_bindings)
-    add_user_permissions(db, user_permissions)
+    user_bindings = create_user_bindings(db, role_bindings)
+    add_user_bindings(db, user_bindings)
 
     # Add the user with the given permissions
     db.add(
         orm.User(
             name=user_name if user_name else uuid.uuid4(),
-            permissions=user_permissions,
+            role_bindings=user_bindings,
         )
     )
     db.commit()
@@ -938,39 +936,39 @@ def update_user(
         user.permissions.delete()
 
         if isinstance(new_user_permissions, schema.RoleBindings):
-            new_user_permissions = create_user_permissions(db, new_user_permissions)
+            new_user_permissions = create_user_bindings(db, new_user_permissions)
 
-        add_user_permissions(db, new_user_permissions)
+        add_user_bindings(db, new_user_permissions)
 
         user.permissions = new_user_permissions
 
     db.commit()
 
 
-def add_user_permissions(
+def add_user_bindings(
     db: session.Session,
-    user_permissions: Iterable[orm.UserPermission],
-) -> List[orm.UserPermission]:
+    user_bindings: Iterable[orm.RoleBinding],
+) -> List[orm.RoleBinding]:
     """Add a set of role bindings to the database as UserPermission entries.
 
     Parameters
     ----------
     db : session.Session
         Database to add user permissions
-    user_permissions : Iterable[orm.UserPermission]
+    user_permissions : Iterable[orm.RoleBinding]
         Role bindings to add to the database
     """
-    db.add_all(user_permissions)
+    db.add_all(user_bindings)
     db.commit()
 
 
-def create_user_permissions(
+def create_user_bindings(
     db: session.Session,
     role_bindings: schema.RoleBindings,
-) -> List[orm.UserPermission]:
-    """Generate UserPermission objects for each environment targeted by a role binding.
+) -> List[orm.RoleBinding]:
+    """Generate RoleBinding objects for each of the role binding regexes.
 
-    These are not added to the database - see add_user_permissions.
+    These are not added to the database - see add_role_bindings.
 
     Parameters
     ----------
@@ -981,23 +979,16 @@ def create_user_permissions(
 
     Returns
     -------
-    List[orm.UserPermission]
-        A list containing a UserPermission for each environment that matches a role binding
+    List[orm.RoleBinding]
+        A list containing a RoleBinding for each role binding regex
     """
-    all_envs = db.query(orm.Environment).join(orm.Namespace)
-    user_permissions = []
+    user_bindings = []
     for pattern, roles in role_bindings.items():
-        max_role = schema.Role.max_role(roles)
-
-        for environment in filter_environments(
-            query=all_envs,
-            role_bindings={pattern: roles},
-        ).all():
-            user_permissions.append(
-                orm.UserPermission(
-                    environment=environment,
-                    role=max_role,
-                )
+        user_bindings.append(
+            orm.RoleBinding(
+                pattern=pattern,
+                role=schema.Role.max_role(roles),
             )
+        )
 
-    return user_permissions
+    return user_bindings
