@@ -163,7 +163,7 @@ class AuthenticationToken(BaseModel):
     )
     primary_namespace: str = "default"
     role_bindings: RoleBindings = {}
-    user_name: str
+    user_name: Optional[str] = None
 
 
 ##########################
@@ -779,6 +779,13 @@ class APIPostTokenData(BaseModel):
 
 class APIPostToken(APIResponse):
     data: APIPostTokenData
+
+
+class APIPostTokenRequest(BaseModel):
+    user_name: Optional[str]
+    primary_namespace: Optional[str]
+    expiration: Optional[datetime.datetime]
+    role_bindings: Optional[RoleBindings]
 
 
 # GET /api/v1/namespace

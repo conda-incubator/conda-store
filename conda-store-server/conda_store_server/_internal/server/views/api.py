@@ -213,26 +213,45 @@ async def api_get_usage(
     response_model=schema.APIPostToken,
 )
 async def api_post_token(
-    request: Request,
-    primary_namespace: Optional[str] = Body(None),
-    expiration: Optional[datetime.datetime] = Body(None),
-    role_bindings: Optional[Dict[str, List[str]]] = Body(None),
-    conda_store=Depends(dependencies.get_conda_store),
-    auth=Depends(dependencies.get_auth),
-    entity=Depends(dependencies.get_entity),
+    request: schema.APIPostTokenRequest,
+    conda_store: app.CondaStore = Depends(dependencies.get_conda_store),
+    auth: Authentication = Depends(dependencies.get_auth),
+    entity: AuthenticationToken = Depends(dependencies.get_entity),
 ) -> schema.APIPostToken:
+    """Get a token from the conda-store-server.
+
+    Parameters
+    ----------
+    request : schema.APIPostTokenRequest
+        Request to generate a new token
+    conda_store : app.CondaStore
+        The running conda store application
+    auth : Authentication
+        Authentication instance for the request
+    entity : AuthenticationToken
+        Authenticated token of the user making the request. If the user is not
+        authenticated, the default namespace and role bindings will be used.
+
+    Returns
+    -------
+    schema.APIPostToken
+        A newly minted token with the requested permissions
+    """
     if entity is None:
         entity = schema.AuthenticationToken(
             exp=datetime.datetime.now(tz=datetime.timezone.utc)
             + datetime.timedelta(days=1),
             primary_namespace=conda_store.default_namespace,
             role_bindings={},
+            user_name=None,
         )
 
     new_entity = schema.AuthenticationToken(
-        exp=expiration or entity.exp,
-        primary_namespace=primary_namespace or entity.primary_namespace,
-        role_bindings=role_bindings or auth.authorization.get_entity_bindings(entity),
+        exp=request.expiration or entity.exp,
+        primary_namespace=request.primary_namespace or entity.primary_namespace,
+        role_bindings=request.role_bindings
+        or auth.authorization.get_entity_bindings(entity),
+        user_name=request.user_name,
     )
 
     if not auth.authorization.is_subset_entity_permissions(entity, new_entity):

@@ -290,22 +290,29 @@ class RBACAuthorizationBackend(LoggingConfigurable):
         self,
         entity: schema.AuthenticationToken,
     ) -> schema.RoleBindings:
+        """Return the role bindings of the given token.
+
+        Parameters
+        ----------
+        entity : schema.AuthenticationToken
+            Token containing role bindings
+
+        Returns
+        -------
+        schema.RoleBindings
+            Role bindings of the token. Includes whatever role bindings are already
+            in the token plus the unauthenticated role bindings plus the
+            database role bindings.
+        """
         authenticated = entity is not None
-        entity_role_bindings = {} if entity is None else entity.role_bindings
-
         if authenticated:
-            db_role_bindings = self.database_role_bindings(entity)
-
             return {
                 **self.authenticated_role_bindings,
-                **entity_role_bindings,
-                **db_role_bindings,
+                **entity.role_bindings,
+                **self.database_role_bindings(entity),
             }
         else:
-            return {
-                **self.unauthenticated_role_bindings,
-                **entity_role_bindings,
-            }
+            return (self.unauthenticated_role_bindings,)
 
     @utils.user_deprecation
     def convert_roles_to_permissions(
