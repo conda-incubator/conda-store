@@ -88,14 +88,6 @@ jobs:
           python -m pytest -m "user_journey"
         if: matrix.test-type == 'user-journey'
 
-      # These mirror the tests run while building the conda package
-      # See https://github.com/conda-forge/conda-store-feedstock/ for details
-      - name: "Run basic import tests ✅"
-        run: |
-          python -c "import conda_store_server"
-          conda-store-server --help
-          conda-store-worker --help
-
       - name: "Get Docker logs 🔍"
         if: ${{ failure() }}
         run: |

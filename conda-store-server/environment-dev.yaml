@@ -14,7 +14,7 @@ channels:
   - nodefaults
 dependencies:
   # must be kept in sync with the min supported version in pyproject.toml
-  - python >=3.8
+  - python >=3.12
   # conda builds
   - conda
   # dev dependencies
