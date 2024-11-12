@@ -9,7 +9,7 @@ description: Local development setup for jupyterlab-conda-store
 
 - Local [clone of your fork](community/contribute/contribute-code#setup-for-local-development) of the [`jupyterlab-conda-store-ui` repository](https://github.com/conda-incubator/jupyterlab-conda-store)
 - [NodeJS `> 18`](https://nodejs.org/en/download/) installed on your local computer to build the extension package.
-- Python `>= 3.8` (and `pip`)
+- Python `>= 3.10` (and `pip`)
 
 ## Build and link the extension
 

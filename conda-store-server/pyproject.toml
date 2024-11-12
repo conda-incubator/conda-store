@@ -55,7 +55,6 @@ dependencies = [
   "flower",
   "itsdangerous",
   "jinja2",
-  "packaging>=24",
   "pyjwt",
   "psycopg2-binary",
   "pymysql",
@@ -66,7 +65,10 @@ dependencies = [
   "requests",
   "pydantic >=1.10.16,<2.0a0",
   "python-multipart",
-  "setuptools>74",
+  # setuptools>=70 uses local version of packaging (and other deps) without
+  # pinning them; conda-lock depends on this, but also doesn't pin the setuptools
+  # version. See https://github.com/pypa/setuptools/issues/4478 for details
+  "setuptools<70",
   "sqlalchemy<2.0a0",
   "traitlets",
   "uvicorn",
