@@ -7,9 +7,8 @@
 import json
 import time
 import uuid
-from collections.abc import Callable
 from enum import Enum
-from typing import Any, Dict, Optional, Union
+from typing import Any, Callable, Dict, Optional, Union
 
 import requests
 

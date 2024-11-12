@@ -7,8 +7,7 @@ import datetime
 import re
 import secrets
 from collections import defaultdict
-from collections.abc import Iterable
-from typing import Optional, Set
+from typing import Iterable, Optional, Set
 
 import jwt
 import requests
