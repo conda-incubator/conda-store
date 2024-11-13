@@ -50,6 +50,7 @@ jobs:
             auto-activate-base: false
             activate-environment: conda-store-server-dev
             python-version: ${{ env.PYTHON_VERSION_DEFAULT }}
+            conda-remove-defaults: "true"
 
       - name: "Install dependencies 📦"
         run: |
