@@ -25,7 +25,7 @@ concurrency:
 
 jobs:
   integration-test-conda-store-server:
-    name: "integration-test - ${{ matrix.test-type }}"
+    name: "integration-test - ${{ matrix.test-type }} (python ${{ matrix.python-version }})"
     runs-on: ubuntu-latest
     strategy:
       matrix:
