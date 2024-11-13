@@ -8,8 +8,8 @@ apiServer:
   replicas: 1
   image:
     repository: quansight/conda-store-server
-    pullPolicy: IfNotPresent
-    tag: 2024.6.1
+    pullPolicy: Never
+    tag: 2024.11.2.dev
   condaStoreConfig: |
       import json
       import logging
@@ -87,8 +87,8 @@ uiServer:
   replicas: 1
   image:
     repository: quansight/conda-store-server
-    pullPolicy: IfNotPresent
-    tag: 2024.6.1
+    pullPolicy: Never
+    tag: 2024.11.2.dev
   condaStoreConfig: |
       import json
       import logging
@@ -153,8 +153,8 @@ worker:
   replicas: 1
   image:
     repository: quansight/conda-store-server
-    pullPolicy: IfNotPresent
-    tag: 2024.6.1
+    pullPolicy: Never
+    tag: 2024.11.2.dev
   condaStoreConfig: |
       import json
       import logging
