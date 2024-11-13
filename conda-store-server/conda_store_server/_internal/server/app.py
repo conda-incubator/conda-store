@@ -104,7 +104,7 @@ class CondaStoreServer(Application):
     )
 
     url_prefix = Unicode(
-        "/",
+        "/conda-store",
         help="the prefix URL (subdirectory) for the entire application; "
         "it MUST start with a forward slash - tip: "
         "use this to run conda-store within an existing website.",
@@ -330,13 +330,16 @@ class CondaStoreServer(Application):
                 name="static",
             )
 
-            # convenience to redirect "/" to home page when using a prefix
-            # realistically this url will not be hit with a proxy + prefix
-            if self.url_prefix != "/":
-
-                @app.get("/")
-                def redirect_home(request: Request):
-                    return RedirectResponse(request.url_for("get_conda_store_ui"))
+            # Redirect both "/" and `url_prefix` to the conda-store-ui React app.
+            # Realistically the "/" will not be hit with a proxy + prefix.
+            @app.get(
+                # Yes if url_prefix is "/" then this decorator is redundant but FastAPI doesn't seem to be bothered.
+                "/"
+            )
+            @app.get(self.url_prefix)
+            # This function name may be used by url_for() so be careful renaming it
+            def redirect_root_to_ui(request: Request):
+                return RedirectResponse(request.url_for("get_conda_store_ui"))
 
             @app.get(
                 trim_slash(self.url_prefix) + "/favicon.ico", include_in_schema=False
