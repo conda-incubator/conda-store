@@ -27,10 +27,6 @@ async def get_conda_store_ui(
     templates=Depends(dependencies.get_templates),
     url_prefix=Depends(dependencies.get_url_prefix),
 ):
-    conda_store_ui_prefix = router_conda_store_ui.prefix
-    if url_prefix != "/":
-        conda_store_ui_prefix = url_prefix + conda_store_ui_prefix
-
     context = {
         "request": request,
         "url_prefix": url_prefix,
