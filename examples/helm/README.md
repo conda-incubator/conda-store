@@ -50,7 +50,7 @@ $ kubectl port-forward -n conda-store service/conda-store-ui-server 8080:8080
 $ kubectl port-forward -n conda-store service/conda-store-api-server 8081:8080  
 
 # minio
-$ kubectl port-forward -n conda-store service/minio 30900:9000
+$ kubectl port-forward -n conda-store service/minio 9000:9000
 ```
 
 ### Check services are up

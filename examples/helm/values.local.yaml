@@ -50,7 +50,7 @@ apiServer:
       # ==================================
       c.S3Storage.internal_endpoint = "minio:9000"
       c.S3Storage.internal_secure = False
-      c.S3Storage.external_endpoint = "localhost:30900"
+      c.S3Storage.external_endpoint = "localhost:9000"
       c.S3Storage.external_secure = False
       c.S3Storage.access_key = config["minio-username"]
       c.S3Storage.secret_key = config["minio-password"]
@@ -124,6 +124,18 @@ uiServer:
           "https://repo.anaconda.com/pkgs/main",
       ]
 
+      # ==================================
+      #      s3 settings
+      # ==================================
+      c.S3Storage.internal_endpoint = "minio:9000"
+      c.S3Storage.internal_secure = False
+      c.S3Storage.external_endpoint = "localhost:9000"
+      c.S3Storage.external_secure = False
+      c.S3Storage.access_key = config["minio-username"]
+      c.S3Storage.secret_key = config["minio-password"]
+      c.S3Storage.region = "us-east-1"  # minio region default
+      c.S3Storage.bucket_name = "conda-store"
+
       c.RBACAuthorizationBackend.role_mappings_version = 2
 
       # ==================================
@@ -195,7 +207,7 @@ worker:
       # ==================================
       c.S3Storage.internal_endpoint = "minio:9000"
       c.S3Storage.internal_secure = False
-      c.S3Storage.external_endpoint = "localhost:30900"
+      c.S3Storage.external_endpoint = "localhost:9000"
       c.S3Storage.external_secure = False
       c.S3Storage.access_key = config["minio-username"]
       c.S3Storage.secret_key = config["minio-password"]
