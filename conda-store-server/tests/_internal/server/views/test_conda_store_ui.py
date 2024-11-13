@@ -39,17 +39,17 @@ class TestUIRoutes:
         """Rather than return a 404, the server should return the client app
         and let it handle unknown routes
         """
-        response = testclient.get(self.full_route("/foo"))
+        response = testclient.get(self.full_route("/ui/foo"))
         assert_client_app(response)
 
-        response = testclient.get(self.full_route("/foo/bar"))
+        response = testclient.get(self.full_route("/ui/foo/bar"))
         assert_client_app(response)
 
     def test_not_found_route(self, testclient):
         """The /not-found route should also return the client app
         but with a 404 status code
         """
-        response = testclient.get(self.full_route("/not-found"))
+        response = testclient.get(self.full_route("/ui/not-found"))
         assert response.status_code == 404
         assert "text/html" in response.headers["content-type"]
         assert "condaStoreConfig" in response.text
@@ -58,7 +58,6 @@ class TestUIRoutes:
         """The server should not return the client app for a server-side
         route
         """
-        # Trailing slash needed on next line. Is this a problem?
         response = testclient.get(self.full_route("/admin/"))
         assert response.is_success
         assert "condaStoreConfig" not in response.text
@@ -80,7 +79,7 @@ class TestUIRoutesCustomPrefix(TestUIRoutes):
         """The server should return a 404 for an unknown route outside
         the url prefix and should not return the client app
         """
-        response = testclient.get("/foo/bar")
+        response = testclient.get("/ui/foo/bar")
         assert_not_found_not_client_app(response)
 
 
@@ -95,7 +94,7 @@ def test_ui_disabled(conda_store_server):
     response = testclient.get("/")
     assert_not_found_not_client_app(response)
 
-    response = testclient.get("/not-found")
+    response = testclient.get("/ui/not-found")
     assert_not_found_not_client_app(response)
 
     response = testclient.get("/admin/")
