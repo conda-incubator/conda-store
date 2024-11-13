@@ -28,13 +28,13 @@ async def get_conda_store_ui(
     url_prefix=Depends(dependencies.get_url_prefix),
 ):
     conda_store_ui_prefix = router_conda_store_ui.prefix
-    if (url_prefix != "/"):
+    if url_prefix != "/":
         conda_store_ui_prefix = url_prefix + conda_store_ui_prefix
 
     context = {
         "request": request,
         "url_prefix": url_prefix,
-        "ui_prefix": router_conda_store_ui.prefix
+        "ui_prefix": router_conda_store_ui.prefix,
     }
     response = templates.TemplateResponse("conda-store-ui.html", context)
     if path.endswith("not-found"):
