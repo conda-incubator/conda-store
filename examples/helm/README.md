@@ -31,6 +31,20 @@ View your new secrets:
 $ kubectl get secret -n conda-store
 ```
 
+## Generate vaules.local.yaml
+
+Use gomplate to generate the values.local.yaml file. 
+
+If you don't already have gomplate installed, follow [these install instructions](https://docs.gomplate.ca/installing/)
+
+Then, generate the file
+
+```
+$ cd tmpl
+
+$ gomplate -d api-server-config.py -d ui-server-config.py -d worker-config.py -d defaults.yaml -f values.local.yaml.tmpl -o ../values.local.yaml
+```
+
 ## Helm install 
 
 ```
