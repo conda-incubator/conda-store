@@ -9,3 +9,4 @@ resources:
   - minio.yaml
   - postgres.yaml
   - redis.yaml
+  - secrets.yaml

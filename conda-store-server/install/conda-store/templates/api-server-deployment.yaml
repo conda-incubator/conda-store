@@ -33,12 +33,35 @@ spec:
             - "/etc/conda-store/conda_store_config.py"
           ports:
             - containerPort: {{ .Values.apiServer.port }}
+          env:
+            - name: POSTGRES_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: conda-store-postgres-secret
+                  key: username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: conda-store-postgres-secret
+                  key: password
+            - name: MINIO_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: conda-store-minio-secret
+                  key: username
+            - name: MINIO_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: conda-store-minio-secret
+                  key: password
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: conda-store-redis-secret
+                  key: password
           volumeMounts:
             - name: config
               mountPath: "/etc/conda-store/"
-              readOnly: true
-            - name: secret
-              mountPath: "/var/lib/conda-store"
               readOnly: true
             - name: home
               mountPath: "/home/conda"
@@ -47,9 +70,6 @@ spec:
         - name: config
           configMap:
             name: "{{ template "condaStore.fullname" . }}-api-server"
-        - name: secret
-          secret:
-            secretName: {{ .Values.global.condaStoreConfigSecretsName }}
         - name: home
           emptyDir:
             sizeLimit: 1Mi
