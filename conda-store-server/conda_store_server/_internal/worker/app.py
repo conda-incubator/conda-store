@@ -6,10 +6,10 @@ import logging
 import os
 import sys
 
-from conda_store_server import __version__
 from traitlets import Integer, List, Unicode, validate
 from traitlets.config import Application, catch_config_error
 
+from conda_store_server import __version__
 from conda_store_server.app import CondaStore
 
 
