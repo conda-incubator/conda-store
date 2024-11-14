@@ -26,6 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       id-token: write # required for attest-build-provenance-github
+      attestations: write
     strategy:
       matrix:
         directory:
