@@ -25,11 +25,12 @@ concurrency:
 
 jobs:
   integration-test-conda-store-server:
-    name: "integration-test - ${{ matrix.test-type }}"
+    name: "integration-test - ${{ matrix.test-type }} (python ${{ matrix.python-version }})"
     runs-on: ubuntu-latest
     strategy:
       matrix:
         test-type: ["playwright", "integration", "user-journey"]
+        python-version: ["3.10", "3.11", "3.12"]
     defaults:
       run:
         shell: bash -el {0}
@@ -38,10 +39,6 @@ jobs:
       - name: "Checkout Repository 🛎"
         uses: actions/checkout@v4
 
-      - name: "Get project's default Python version 🏷️"
-        run: |
-          echo "PYTHON_VERSION_DEFAULT=$(cat .python-version-default)" >> $GITHUB_ENV
-
       - name: "Set up conda env 🐍"
         uses: conda-incubator/setup-miniconda@v3
         with:
@@ -49,7 +46,7 @@ jobs:
             miniforge-version: latest
             auto-activate-base: false
             activate-environment: conda-store-server-dev
-            python-version: ${{ env.PYTHON_VERSION_DEFAULT }}
+            python-version: ${{ matrix.python-version }}
             conda-remove-defaults: "true"
 
       - name: "Install dependencies 📦"
@@ -61,7 +58,7 @@ jobs:
 
       - name: "Deploy docker compose 🏗️"
         run: |
-          docker compose up -d
+          python_version=${{ matrix.python-version }} docker compose up --build -d
           docker ps
 
           wait-for-it localhost:5432 # postgresql
@@ -79,7 +76,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: matrix.test-type == 'playwright'
         with:
-          name: playwright-tests
+          name: playwright-tests-${{ matrix.python-version }}
           path: conda-store-server/test-results
 
       - name: "Run integration tests ✅"

@@ -12,8 +12,8 @@ name: conda-store-server-dev
 channels:
   - conda-forge
 dependencies:
-  # must be kept in sync with .python-version-default
-  - python=3.12
+  # must be kept in sync with the min supported version in pyproject.toml
+  - python >=3.10
   # conda builds
   - conda
   # dev dependencies
