@@ -13,8 +13,10 @@ from fastapi.responses import PlainTextResponse, RedirectResponse
 
 from conda_store_server import __version__, api, app
 from conda_store_server._internal import orm, schema, utils
-from conda_store_server._internal.environment import filter_environments
-from conda_store_server._internal.schema import AuthenticationToken, Permissions
+from conda_store_server._internal.schema import (
+    AuthenticationToken,
+    Permissions,
+)
 from conda_store_server._internal.server import dependencies
 from conda_store_server.server.auth import Authentication
 
@@ -211,26 +213,45 @@ async def api_get_usage(
     response_model=schema.APIPostToken,
 )
 async def api_post_token(
-    request: Request,
-    primary_namespace: Optional[str] = Body(None),
-    expiration: Optional[datetime.datetime] = Body(None),
-    role_bindings: Optional[Dict[str, List[str]]] = Body(None),
-    conda_store=Depends(dependencies.get_conda_store),
-    auth=Depends(dependencies.get_auth),
-    entity=Depends(dependencies.get_entity),
-):
+    request: schema.APIPostTokenRequest,
+    conda_store: app.CondaStore = Depends(dependencies.get_conda_store),
+    auth: Authentication = Depends(dependencies.get_auth),
+    entity: AuthenticationToken = Depends(dependencies.get_entity),
+) -> schema.APIPostToken:
+    """Get a token from the conda-store-server.
+
+    Parameters
+    ----------
+    request : schema.APIPostTokenRequest
+        Request to generate a new token
+    conda_store : app.CondaStore
+        The running conda store application
+    auth : Authentication
+        Authentication instance for the request
+    entity : AuthenticationToken
+        Authenticated token of the user making the request. If the user is not
+        authenticated, the default namespace and role bindings will be used.
+
+    Returns
+    -------
+    schema.APIPostToken
+        A newly minted token with the requested permissions
+    """
     if entity is None:
         entity = schema.AuthenticationToken(
             exp=datetime.datetime.now(tz=datetime.timezone.utc)
             + datetime.timedelta(days=1),
             primary_namespace=conda_store.default_namespace,
             role_bindings={},
+            user_name=None,
         )
 
     new_entity = schema.AuthenticationToken(
-        exp=expiration or entity.exp,
-        primary_namespace=primary_namespace or entity.primary_namespace,
-        role_bindings=role_bindings or auth.authorization.get_entity_bindings(entity),
+        exp=request.expiration or entity.exp,
+        primary_namespace=request.primary_namespace or entity.primary_namespace,
+        role_bindings=request.role_bindings
+        or auth.authorization.get_entity_bindings(entity),
+        user_name=request.user_name,
     )
 
     if not auth.authorization.is_subset_entity_permissions(entity, new_entity):
@@ -244,6 +265,9 @@ async def api_post_token(
             status_code=400,
             detail="Requested expiration of token is greater than current permissions",
         )
+
+    with conda_store.get_db() as db:
+        api.set_new_user(db=db, token=entity, permissions=auth.entity_bindings(entity))
 
     return {
         "status": "ok",
@@ -679,16 +703,19 @@ async def api_list_environments(
 
     """
     with conda_store.get_db() as db:
-        if jwt:
-            # Fetch the environments visible to the supplied token
-            role_bindings = auth.entity_bindings(
-                AuthenticationToken.parse_obj(auth.authentication.decrypt_token(jwt))
-            )
-        else:
-            role_bindings = None
+        # if jwt:
+        #     # Fetch the environments visible to the supplied token
+        #     role_bindings = auth.entity_bindings(
+        #         AuthenticationToken.parse_obj(auth.authentication.decrypt_token(jwt))
+        #     )
+        # else:
+        #     role_bindings = None
+
+        user = api.get_user(db, user_name=entity.user_name)
 
         orm_environments = api.list_environments(
             db,
+            user=user,
             search=search,
             namespace=namespace,
             name=name,
@@ -696,14 +723,13 @@ async def api_list_environments(
             packages=packages,
             artifact=artifact,
             show_soft_deleted=False,
-            role_bindings=role_bindings,
         )
 
         # Filter by environments that the user who made the query has access to
-        orm_environments = filter_environments(
-            query=orm_environments,
-            role_bindings=auth.entity_bindings(entity),
-        )
+        # orm_environments = filter_environments(
+        #     query=orm_environments,
+        #     role_bindings=auth.entity_bindings(entity),
+        # )
 
         return paginated_api_response(
             orm_environments,

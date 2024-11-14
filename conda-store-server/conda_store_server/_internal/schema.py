@@ -1,6 +1,7 @@
 # Copyright (c) conda-store development team. All rights reserved.
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
+from __future__ import annotations
 
 import datetime
 import enum
@@ -8,7 +9,19 @@ import functools
 import os
 import re
 import sys
-from typing import Any, Callable, Dict, List, Optional, TypeAlias, Union
+import warnings
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Set,
+    Tuple,
+    TypeAlias,
+    Union,
+)
 
 from conda_lock.lockfile.v1.models import Lockfile
 from pydantic import BaseModel, Field, ValidationError, constr, validator
@@ -36,7 +49,90 @@ ARN_ALLOWED_REGEX = re.compile(ARN_ALLOWED)
 # Authentication Schema
 #########################
 
-RoleBindings: TypeAlias = Dict[constr(regex=ARN_ALLOWED), List[str]]
+RoleBindings: TypeAlias = Dict[constr(regex=ARN_ALLOWED), Set[str]]
+"""RoleBindings map env/namespace regexes to permissions for those envs/namespaces."""
+
+
+@functools.total_ordering
+class Role(enum.Enum):
+    """The role determines the permissions of a user for a namespace/env.
+
+    Role members can be looked up by their name, or by their (rank, name)
+    tuples, e.g.
+
+        >>> Role('admin')
+        <Role.ADMIN: (3, 'admin')>
+        >>> Role((3, 'admin'))
+        <Role.ADMIN: (3, 'admin')>
+    """
+
+    NONE = (0, "none")
+    VIEWER = (1, "viewer")
+    EDITOR = (2, "editor")
+    ADMIN = (3, "admin")
+
+    @classmethod
+    def _missing_(cls, value: str | Tuple[int, str]):
+        if isinstance(value, str):
+            if value.lower() == "developer":
+                warnings.warn(
+                    (
+                        "'developer' is a deprecated alias for 'editor' and "
+                        "will be removed in a future verison."
+                    ),
+                    DeprecationWarning,
+                )
+                return cls.EDITOR
+
+            for member in Role:
+                if member.value[1] == value.lower():
+                    return member
+
+            return None
+
+        # If the value passed is a tuple, just search the list of members
+        for member in Role:
+            if member.value == value:
+                return member
+
+        return None
+
+    def __eq__(self, other: Role):
+        return self.value[0] == other.value[0]
+
+    def __ge__(self, other: Role):
+        return self.value[0] >= other.value[0]
+
+    def __hash__(self):
+        """Compute the hash of the Role.
+
+        Required because objects which define __eq__ do not automatically
+        define __hash__, which is required for this class to be used as an
+        Enum column type with sqlalchemy.
+        """
+        return hash(self.value)
+
+    @classmethod
+    def max_role(cls, objects: Iterable[Union[Role, str, Tuple[int, str]]]) -> Role:
+        """Return the highest role for an iterable of role values.
+
+        Parameters
+        ----------
+        objects : Iterable[Union[str, Tuple[int, str]]]
+            Objects to find the highest Role of
+
+        Returns
+        -------
+        Role
+            Highest role of all the objects
+        """
+        roles = []
+        for obj in objects:
+            if isinstance(obj, cls):
+                roles.append(obj)
+            else:
+                roles.append(cls(obj))
+        return max(roles)
 
 
 class Permissions(enum.Enum):
@@ -67,6 +163,7 @@ class AuthenticationToken(BaseModel):
     )
     primary_namespace: str = "default"
     role_bindings: RoleBindings = {}
+    user_name: Optional[str] = None
 
 
 ##########################
@@ -684,6 +781,13 @@ class APIPostToken(APIResponse):
     data: APIPostTokenData
 
 
+class APIPostTokenRequest(BaseModel):
+    user_name: Optional[str]
+    primary_namespace: Optional[str]
+    expiration: Optional[datetime.datetime]
+    role_bindings: Optional[RoleBindings]
+
+
 # GET /api/v1/namespace
 class APIListNamespace(APIPaginatedResponse):
     data: List[Namespace]
@@ -769,3 +873,9 @@ class APIPutSetting(APIResponse):
 # GET /api/v1/usage/
 class APIGetUsage(APIResponse):
     data: Dict[str, Dict[str, Any]]
+
+
+# POST /login/
+class APILoginRequest(BaseModel):
+    username: str
+    password: str

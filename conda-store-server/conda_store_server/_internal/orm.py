@@ -31,9 +31,11 @@ from sqlalchemy import (
 )
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import (
+    Query,
     backref,
     declarative_base,
     relationship,
+    session,
     sessionmaker,
     validates,
 )
@@ -817,3 +819,83 @@ def new_session_factory(
 
     session_factory = sessionmaker(bind=engine)
     return session_factory
+
+
+class RoleBinding(Base):
+    """The permissions a User has for an namespace/environment.
+
+    Maps a namespace/environment matching rule to a `Role` for the matching
+    namespaces/environments.
+
+    Intended to replace NamespaceRoleMapping and NamespaceRoleMappingV2.
+    """
+
+    __tablename__ = "rolebinding"
+
+    id = Column(Integer, primary_key=True)
+    pattern = Column(Unicode(255))
+    user = relationship("User", back_populates="rolebinding")
+    user_id = Column(Integer, ForeignKey("user.id"))
+    role = Column(Enum(schema.Role), default=schema.Role.NONE)
+
+    def get_matching_environments(self, db: session) -> Query:
+        """Get the environments which match the regex pattern.
+
+        Parameters
+        ----------
+        db : session
+            Database to query
+
+        Returns
+        -------
+        Query
+            The environments that match the regex of the RoleBinding
+        """
+        namespace, environment = utils.compile_arn_sql_like(
+            self.pattern,
+            schema.ARN_ALLOWED_REGEX,
+        )
+        return (
+            db.query(Environment)
+            .join(Namespace)
+            .filter(
+                and_(
+                    Namespace.name.like(namespace),
+                    Environment.name.like(environment),
+                )
+            )
+        )
+
+
+class User(Base):
+    """User which contains role bindings to environments."""
+
+    __tablename__ = "user"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(Unicode, unique=True)
+    role_bindings = relationship("RoleBinding", back_populates="user")
+
+    def get_environments(
+        self, db: session, min_role: schema.Role = schema.Role.VIEWER
+    ) -> Query:
+        """Get the environments a user has access to.
+
+        Parameters
+        ----------
+        db : session
+            Database to query
+        min_role : schema.Role
+            Minimum role the user must have for the returned environments
+
+        Returns
+        -------
+        Query
+            The environments for which the user has at least `min_role` for
+        """
+        queries = []
+        for role_binding in self.role_bindings:
+            if role_binding.role >= min_role:
+                queries.append(role_binding.get_matching_environments(db))
+
+        return db.query(*(query.subquery() for query in queries))

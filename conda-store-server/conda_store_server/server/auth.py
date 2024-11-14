@@ -80,7 +80,11 @@ class RBACAuthorizationBackend(LoggingConfigurable):
         config=True,
     )
 
-    def _database_role_bindings_v1(self, entity: schema.AuthenticationToken):
+    @utils.user_deprecation
+    def _database_role_bindings_v1(
+        self,
+        entity: schema.AuthenticationToken,
+    ) -> schema.RoleBindings:
         with self.authentication_db() as db:
             result = db.execute(
                 text(
@@ -101,7 +105,11 @@ class RBACAuthorizationBackend(LoggingConfigurable):
 
         return db_role_mappings
 
-    def _database_role_bindings_v2(self, entity: schema.AuthenticationToken):
+    @utils.user_deprecation
+    def _database_role_bindings_v2(
+        self,
+        entity: schema.AuthenticationToken,
+    ) -> schema.RoleBindings:
         def _convert_namespace_to_entity_arn(namespace):
             return f"{namespace}/*"
 
@@ -277,26 +285,36 @@ class RBACAuthorizationBackend(LoggingConfigurable):
         )
         return (arn_1_matches_arn_2 and arn_2_matches_arn_1) or arn_2_matches_arn_1
 
+    @utils.user_deprecation
     def get_entity_bindings(
-        self, entity: schema.AuthenticationToken
-    ) -> Set[schema.Permissions]:
+        self,
+        entity: schema.AuthenticationToken,
+    ) -> schema.RoleBindings:
+        """Return the role bindings of the given token.
+
+        Parameters
+        ----------
+        entity : schema.AuthenticationToken
+            Token containing role bindings
+
+        Returns
+        -------
+        schema.RoleBindings
+            Role bindings of the token. Includes whatever role bindings are already
+            in the token plus the unauthenticated role bindings plus the
+            database role bindings.
+        """
         authenticated = entity is not None
-        entity_role_bindings = {} if entity is None else entity.role_bindings
-
         if authenticated:
-            db_role_bindings = self.database_role_bindings(entity)
-
             return {
                 **self.authenticated_role_bindings,
-                **entity_role_bindings,
-                **db_role_bindings,
+                **entity.role_bindings,
+                **self.database_role_bindings(entity),
             }
         else:
-            return {
-                **self.unauthenticated_role_bindings,
-                **entity_role_bindings,
-            }
+            return (self.unauthenticated_role_bindings,)
 
+    @utils.user_deprecation
     def convert_roles_to_permissions(
         self, roles: Iterable[str]
     ) -> Set[schema.Permissions]:
@@ -322,6 +340,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
             permissions = permissions | role_mappings
         return permissions
 
+    @utils.user_deprecation
     def get_entity_binding_permissions(self, entity: schema.AuthenticationToken):
         entity_bindings = self.get_entity_bindings(entity)
         return {
@@ -329,7 +348,12 @@ class RBACAuthorizationBackend(LoggingConfigurable):
             for entity_arn, entity_roles in entity_bindings.items()
         }
 
-    def get_entity_permissions(self, entity: schema.AuthenticationToken, arn: str):
+    @utils.user_deprecation
+    def get_entity_permissions(
+        self,
+        entity: schema.AuthenticationToken,
+        arn: str,
+    ) -> Set[schema.Permissions]:
         """Get set of permissions for given ARN given AUTHENTICATION
         state and entity_bindings
 
@@ -345,7 +369,12 @@ class RBACAuthorizationBackend(LoggingConfigurable):
                 permissions = permissions | set(entity_permissions)
         return permissions
 
-    def is_subset_entity_permissions(self, entity, new_entity):
+    @utils.user_deprecation
+    def is_subset_entity_permissions(
+        self,
+        entity: schema.AuthenticationToken,
+        new_entity: schema.AuthenticationToken,
+    ) -> bool:
         """Determine if new_entity_bindings is a strict subset of entity_bindings
 
         This feature is required to allow authenticated entitys to
@@ -367,14 +396,22 @@ class RBACAuthorizationBackend(LoggingConfigurable):
                 return False
         return True
 
+    @utils.user_deprecation
     def authorize(
-        self, entity: schema.AuthenticationToken, arn: str, required_permissions
+        self,
+        entity: schema.AuthenticationToken,
+        arn: str,
+        required_permissions: Set[schema.Permissions],
     ):
         return required_permissions <= self.get_entity_permissions(
             entity=entity, arn=arn
         )
 
-    def database_role_bindings(self, entity: schema.AuthenticationToken):
+    @utils.user_deprecation
+    def database_role_bindings(
+        self,
+        entity: schema.AuthenticationToken,
+    ) -> schema.RoleBindings:
         # This method can be reached from the router_ui via filter_environments.
         # Since the UI routes are not versioned, we don't know which API version
         # the client might be using. So we rely on the role_mappings_version
@@ -505,12 +542,16 @@ form.addEventListener('submit', loginHandler);
             ("/logout/", "post", self.post_logout_method),
         ]
 
-    async def authenticate(self, request: Request):
+    async def authenticate(
+        self,
+        request: schema.APILoginRequest,
+    ) -> schema.AuthenticationToken:
         return schema.AuthenticationToken(
             primary_namespace="default",
             role_bindings={
                 "*/*": ["admin"],
             },
+            user_name=request.username,
         )
 
     def get_login_method(
@@ -537,16 +578,52 @@ form.addEventListener('submit', loginHandler);
 
     async def post_login_method(
         self,
-        request: Request,
+        request: schema.APILoginRequest,
         response: Response,
         next: Optional[str] = None,
         templates=Depends(dependencies.get_templates),
-    ):
+    ) -> Response:
+        """Handle post-login tasks.
+
+        After successful authentication:
+
+            - Check the database for a User entry; if it doesn't exist,
+              make one
+            - Redirect the user to display the environments
+            - Set the cookie with the encrypted token
+
+
+        Parameters
+        ----------
+        templates :
+
+        request : schema.APILoginRequest
+            POST request that was sent to `/login/` to log the user in
+        response : Response
+            Response to return to the requestor
+        next : Optional[str]
+            Next page to redirect the user to from the login screen
+
+        Returns
+        -------
+        Response
+            Response to return to the user. Contains the URL redirection and
+            the authenticated and encrypted token
+        """
         authentication_token = await self.authenticate(request)
         if authentication_token is None:
             raise HTTPException(
                 status_code=403, detail="Invalid authentication credentials"
             )
+
+        # After user logs in, ensure that they have an entry in the database
+        with self.authentication_db() as db:
+            if not api.get_user(db, user_name=authentication_token.user_name):
+                api.add_user(
+                    db=db,
+                    user_name=authentication_token.user_name,
+                    role_bindings=authentication_token.role_bindings,
+                )
 
         request.session["next"] = next or request.session.get("next")
         redirect_url = request.session.pop("next") or str(
@@ -572,7 +649,27 @@ form.addEventListener('submit', loginHandler);
         response.set_cookie(self.cookie_name, "", domain=self.cookie_domain, expires=0)
         return response
 
-    def authenticate_request(self, request: Request, require=False):
+    def authenticate_request(
+        self, request: Request, require: bool = False
+    ) -> Optional[schema.AuthenticationToken]:
+        """Authenticate a request.
+
+        Parameters
+        ----------
+        request : Request
+            Web request to authenticate
+        require : bool
+            Require that there be a token in either the request's 'Authorization'
+            header or in the request cookies. If such a token exists, it must be able to
+            be decrypted or parsed as a valid schema.AuthenticationToken; if no token
+            exists or the token isn't valid, a 401 will be returned if this argument is
+            True.
+
+        Returns
+        -------
+        Optional[schema.AuthenticationToken]
+            User authentication token (if present), else None
+        """
         if hasattr(request.state, "entity"):
             pass  # only authenticate once
         elif request.cookies.get(self.cookie_name):
@@ -601,7 +698,11 @@ form.addEventListener('submit', loginHandler);
             )
         return request.state.entity
 
-    def entity_bindings(self, entity: schema.AuthenticationToken):
+    @utils.user_deprecation
+    def entity_bindings(
+        self,
+        entity: schema.AuthenticationToken,
+    ) -> schema.RoleBindings:
         return self.authorization.get_entity_bindings(entity)
 
     def authorize_request(self, request: Request, arn, permissions, require=False):
@@ -621,6 +722,7 @@ form.addEventListener('submit', loginHandler);
 
         return request.state.authorized
 
+    @utils.user_deprecation
     def filter_builds(self, entity, query):
         cases = []
         for entity_arn, entity_roles in self.entity_bindings(entity).items():
@@ -643,6 +745,7 @@ form.addEventListener('submit', loginHandler);
             .filter(or_(*cases))
         )
 
+    @utils.user_deprecation
     def filter_environments(
         self, entity: schema.AuthenticationToken, query: Query
     ) -> Query:
@@ -651,6 +754,7 @@ form.addEventListener('submit', loginHandler);
             self.entity_bindings(entity),
         )
 
+    @utils.user_deprecation
     def filter_namespaces(self, entity, query):
         cases = []
         for entity_arn, entity_roles in self.entity_bindings(entity).items():
@@ -683,17 +787,17 @@ class DummyAuthentication(Authentication):
 
     # login_html = Unicode()
 
-    async def authenticate(self, request: Request):
+    async def authenticate(self, request: schema.APILoginRequest):
         """Checks against a global password if it's been set. If not, allow any user/pass combo"""
-        data = await request.json()
-        if self.password and data.get("password") != self.password:
+        if self.password and request.password != self.password:
             return None
 
         return schema.AuthenticationToken(
-            primary_namespace=data["username"],
+            primary_namespace=request.username,
             role_bindings={
                 "*/*": ["admin"],
             },
+            user_name=request.username,
         )
 
 

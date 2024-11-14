@@ -11,6 +11,8 @@ import re
 import subprocess
 import sys
 import time
+import warnings
+from functools import wraps
 from typing import AnyStr
 
 from filelock import FileLock
@@ -187,3 +189,21 @@ def compile_arn_sql_like(
         re.sub(r"\*", "%", match.group(1)),
         re.sub(r"\*", "%", match.group(2)),
     )
+
+
+def user_deprecation(f):
+    """Deprecation wrapper for functions that may be altered by adding Users to the database."""
+
+    @wraps(f)
+    def wrapped(*args, **kwargs):
+        warnings.warn(
+            (
+                "Possibly deprecated by addition of User to db; see"
+                " https://github.com/conda-incubator/conda-store/issues/930"
+            ),
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return f(*args, **kwargs)
+
+    return wrapped

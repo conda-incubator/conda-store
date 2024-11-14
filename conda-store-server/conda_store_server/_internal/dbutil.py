@@ -4,12 +4,15 @@
 
 import json
 import os
+import sys
+import textwrap
 from contextlib import contextmanager
 from functools import partial
 from tempfile import TemporaryDirectory
 
 from alembic import command
 from alembic.config import Config
+from alembic.script import Script
 from sqlalchemy import create_engine, inspect
 
 from conda_store_server._internal import utils
@@ -106,3 +109,56 @@ def upgrade(db_url, revision="head"):
 
         # run the upgrade.
         command.upgrade(config=alembic_cfg, revision=revision)
+
+
+def autogenerate_migrations(
+    message,
+    running_db: str = "postgresql+psycopg2://postgres:password@localhost:5432/conda-store",
+):
+    """Automatically generate new database migrations.
+
+    Make sure a postgres database is running with the previous version of the database at
+    the `running_db`.
+
+    Parameters
+    ----------
+    running_db : str
+        URI of a running (current) version of the database pre-migration. The state of
+        this database will be compared to what is in `orm.py` to automatically generate
+        migrations.
+    """
+    print(
+        f"Automatically generating migrations by comparing database at {running_db} to "
+        "this repository's table definitions in `orm.py`..."
+    )
+
+    with _temp_alembic_ini(db_url=running_db) as alembic_ini:
+        scripts = command.revision(
+            Config(alembic_ini),
+            autogenerate=True,
+            message=message,
+        )
+
+    if isinstance(scripts, Script):
+        scripts = [scripts]
+
+    if scripts:
+        print("Automatically generated migrations:")
+        print(
+            textwrap.indent(
+                "\n".join(script.path for script in list(scripts)),
+                prefix="  ",
+            )
+        )
+    else:
+        print("No migrations generated.")
+
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print(
+            "Usage: `python -m conda_store_server._internal.dbutil '<migration message here>'"
+        )
+        sys.exit(1)
+
+    autogenerate_migrations(message=sys.argv[1])
