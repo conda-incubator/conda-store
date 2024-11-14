@@ -46,6 +46,7 @@ class _Color(str, Enum):
 
 
 class CondaStoreServer(Application):
+    version = __version__
     aliases = {
         "config": "CondaStoreServer.config_file",
     }
