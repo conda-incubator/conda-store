@@ -24,6 +24,8 @@ jobs:
   build-package:
     name: "Build & verify package"
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write # required for attest-build-provenance-github
     strategy:
       matrix:
         directory:
