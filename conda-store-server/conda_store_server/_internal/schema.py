@@ -129,7 +129,7 @@ class NamespaceRoleMappingV2(BaseModel):
 
     @classmethod
     def from_list(cls, lst):
-        return cls(**{k: v for k, v in zip(cls.__fields__.keys(), lst)})
+        return cls(**{k: v for k, v in zip(cls.__fields__.keys(), lst, strict=False)})
 
 
 class Namespace(BaseModel):

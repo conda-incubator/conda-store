@@ -11,7 +11,7 @@ name = "conda-store-server"
 description = "Conda Environment Management, Builds, and Serve"
 readme = "README.md"
 license = "BSD-3-Clause"
-requires-python = ">=3.8"
+requires-python = ">=3.10,<3.13"
 keywords = ["conda"]
 authors = [
   { name = "Christopher Ostrouchov", email = "chris.ostrouchov@gmail.com" },
@@ -19,6 +19,7 @@ authors = [
 maintainers = [
   { name = "Tania Allard", email = "trallard@bitsandchips.me" },
   { name = "Pavithra Eswaramoorthy", email = "pavithraes@outlook.com" },
+  { name = "Peyton Murray", email = "peynmurray@gmail.com" },
 ]
 classifiers = [
   "Development Status :: 3 - Alpha",
@@ -26,8 +27,6 @@ classifiers = [
   "Topic :: Software Development :: Build Tools",
   "License :: OSI Approved :: BSD License",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.8",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
@@ -59,13 +58,17 @@ dependencies = [
   "pyjwt",
   "psycopg2-binary",
   "pymysql",
-  # pyyaml>5.3.1 is broken with cython>=3 transitive dependency
+  # pyyaml>5.3.1,<6.0.1 is broken with cython>=3 transitive dependency
   # See https://github.com/yaml/pyyaml/issues/724 for details
-  "pyyaml==5.3.1",
+  "pyyaml >=6.0.1",
   "redis",
   "requests",
   "pydantic >=1.10.16,<2.0a0",
   "python-multipart",
+  # setuptools>=70 uses local version of packaging (and other deps) without
+  # pinning them; conda-lock depends on this, but also doesn't pin the setuptools
+  # version. See https://github.com/pypa/setuptools/issues/4478 for details
+  "setuptools<70",
   "sqlalchemy<2.0a0",
   "traitlets",
   "uvicorn",
@@ -192,6 +195,8 @@ ignore = [
     "UP007", 	# non-pep604-annotation
     "UP030", 	# format-literals
     "UP031", 	# printf-string-formatting
+    "UP035", 	# deprecated-import
+    "UP038", 	# non-pep604-isinstance
 ]
 select = [
     "E",   # pycodestyle
