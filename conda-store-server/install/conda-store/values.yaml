@@ -3,7 +3,6 @@ podLabels: {}
 
 global:
   namespace: conda-store
-  condaStoreConfigSecretsName: conda-store-secret
 
 apiServer:
   nodePort: 30501

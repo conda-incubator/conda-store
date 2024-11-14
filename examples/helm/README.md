@@ -14,6 +14,7 @@ Install the dependencies including:
 * minio
 * postgres
 * redis
+* setup secrets
 
 ```
 $ kubectl create namespace conda-store
@@ -25,15 +26,10 @@ View your new service:
 $ kubectl get po -n conda-store
 ```
 
-### Setup secrets
-
+View your new secrets:
 ```
-$ kubectl create secret generic -n conda-store conda-store-secret --from-file config/config.json 
+$ kubectl get secret -n conda-store
 ```
-
-Required values to include:
-* `global.condaStoreConfig`
-* `global.condaStoreConfigSecretsName`
 
 ## Helm install 
 
