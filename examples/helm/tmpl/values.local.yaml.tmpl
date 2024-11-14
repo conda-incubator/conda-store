@@ -1,0 +1,34 @@
+global:
+  namespace: conda-store
+
+apiServer:
+  nodePort: 30501
+  port: 8080
+  replicas: 1
+  image:
+    repository: {{ (datasource "defaults").image.repository }}
+    pullPolicy: {{ (datasource "defaults").image.pullPolicy }}
+    tag: {{ (datasource "defaults").image.tag }}
+  condaStoreConfig: |
+{{ include "api-server-config" | indent 4 }}
+  
+uiServer:
+  nodePort: 30500
+  port: 8080
+  replicas: 1
+  image:
+    repository: {{ (datasource "defaults").image.repository }}
+    pullPolicy: {{ (datasource "defaults").image.pullPolicy }}
+    tag: {{ (datasource "defaults").image.tag }}
+  condaStoreConfig: |
+{{ include "ui-server-config" | indent 4 }}
+
+worker:
+  port: 8080
+  replicas: 1
+  image:
+    repository: {{ (datasource "defaults").image.repository }}
+    pullPolicy: {{ (datasource "defaults").image.pullPolicy }}
+    tag: {{ (datasource "defaults").image.tag }}
+  condaStoreConfig: |
+{{ include "worker-config" | indent 4 }}
