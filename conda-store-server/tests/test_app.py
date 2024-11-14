@@ -1,11 +1,17 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
 import sys
 
+import pytest
 from celery.result import AsyncResult
 
 from conda_store_server import api
 from conda_store_server._internal import action, conda_utils, schema
 
 
+@pytest.mark.long_running_test
 def test_conda_store_app_register_solve(
     db, conda_store, simple_specification, simple_conda_lock, celery_worker
 ):
@@ -37,6 +43,7 @@ def test_conda_store_app_register_solve(
     assert len(solve.package_builds) > 0
 
 
+@pytest.mark.long_running_test
 def test_conda_store_register_environment_workflow(
     db, simple_specification, conda_store, celery_worker
 ):

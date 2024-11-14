@@ -1,8 +1,12 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
 # conda-store-server Dockerfile
 # the generated Docker image is used with docker compose to run the conda-store
 # server and public conda-store Docker images
 
-FROM condaforge/miniforge3:24.3.0-0 AS base
+FROM condaforge/miniforge3:24.7.1-0 AS base
 
 LABEL org.opencontainers.image.authors="conda-store development team"
 
@@ -57,7 +61,10 @@ RUN mamba create --name ${conda_env_name} \
 COPY ./ /opt/conda-store-server/
 
 USER 0:0
-RUN chown -R ${user_no}:${user_no} /opt/conda-store-server/
+RUN chown -R ${user_no}:${user_no} /opt/conda-store-server/ && \
+ mkdir -p /.local/share/conda-store && \
+ chown -R ${user_no}:${user_no} /.local/share/conda-store
+
 USER ${user_no}:${user_no}
 
 # ---------------------------------------------------------------------------------
@@ -82,6 +89,24 @@ ARG PSEUDO_VERSION=1.0.0
 ENV SETUPTOOLS_SCM_PRETEND_VERSION=${PSEUDO_VERSION}
 
 WORKDIR /opt/conda-store-server
+RUN which python && \
+    python -m pip install -e . --no-cache-dir
+
+WORKDIR /var/lib/conda-store
+# ---------------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------------
+# sometimes we need to install the conda-store-server in editable mode with a
+# local bundle of the UI
+FROM base AS ui-dev
+
+ARG UI_PATH=./conda_store_server/_internal/server/static/conda-store-ui
+ENV LOCAL_UI=${UI_PATH}
+
+WORKDIR /opt/conda-store-server
+
+COPY ${UI_PATH}/ /opt/conda-store-server/conda_store_server/UI/dist
+
 RUN which python && \
     python -m pip install -e . --no-cache-dir
 

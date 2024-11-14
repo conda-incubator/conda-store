@@ -1,3 +1,7 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
 # only development dependencies should be added to this file
 # if you add a new dev dependency you must ensure to add it to the [tool.hatch.envs.dev]
 # section of the pyproject.toml file too
@@ -7,10 +11,9 @@
 name: conda-store-server-dev
 channels:
   - conda-forge
-  - nodefaults
 dependencies:
-  # must be kept in sync with .python-version-default
-  - python=3.12
+  # must be kept in sync with the min supported version in pyproject.toml
+  - python >=3.10
   # conda builds
   - conda
   # dev dependencies
@@ -18,11 +21,11 @@ dependencies:
   - pytest
   - pytest-celery
   - pytest-mock
+  - pytest-cov
   - docker-py<=7
   - docker-compose
   # build dependencies
   - hatch
-  - build
   - twine>=5.0.0
   - pkginfo>=1.10 # needed to support metadata 2.3
   # installer
@@ -32,4 +35,5 @@ dependencies:
   - pip
   - pip:
       - pytest-playwright
+      - build
       - setuptools-scm>=6.4.0

@@ -1,3 +1,6 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
 [build-system]
 # https://github.com/ofek/hatch-vcs
 requires = ["hatchling>=1.14.0", "hatch-vcs"]
@@ -8,7 +11,7 @@ name = "conda-store"
 description = "conda-store client"
 readme = "README.md"
 license = "BSD-3-Clause"
-requires-python = ">=3.8"
+requires-python = ">=3.10,<3.13"
 keywords = [
   "conda",
   "dependency management",
@@ -28,8 +31,6 @@ classifiers = [
   "Topic :: Software Development :: Build Tools",
   "License :: OSI Approved :: BSD License",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.8",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
@@ -92,9 +93,11 @@ conda-store = "conda_store.__main__:main"
 
 [tool.black]
 line-length = 88
-target-version = ['py38', 'py39', 'py310']
 
 [tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
 ignore = [
   "E501", # line-length
 
@@ -103,3 +106,8 @@ ignore = [
 [tool.isort]
 lines_between_types = 1
 lines_after_imports = 2
+
+[tool.check-wheel-contents]
+# ignore alembic migrations https://github.com/jwodder/check-wheel-contents?tab=readme-ov-file#w004--module-is-not-located-at-importable-path
+# ignore empty files w/license header
+ignore = ["W004", "W002"]

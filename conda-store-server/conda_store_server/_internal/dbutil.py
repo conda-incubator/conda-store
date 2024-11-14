@@ -1,6 +1,9 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
 import json
 import os
-
 from contextlib import contextmanager
 from functools import partial
 from tempfile import TemporaryDirectory
@@ -10,7 +13,6 @@ from alembic.config import Config
 from sqlalchemy import create_engine, inspect
 
 from conda_store_server._internal import utils
-
 
 _here = os.path.abspath(os.path.dirname(__file__))
 

@@ -1,14 +1,16 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
 import logging
 import os
 import posixpath
 import sys
 import time
-
 from enum import Enum
 from threading import Thread
 
 import uvicorn
-
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
@@ -30,7 +32,6 @@ from traitlets import (
 from traitlets.config import Application, catch_config_error
 
 import conda_store_server
-
 from conda_store_server import __version__, storage
 from conda_store_server._internal import dbutil, orm
 from conda_store_server._internal.server import views
@@ -163,9 +164,7 @@ class CondaStoreServer(Application):
     def _validate_config_file(self, proposal):
         if not os.path.isfile(proposal.value):
             print(
-                "ERROR: Failed to find specified config file: {}".format(
-                    proposal.value
-                ),
+                f"ERROR: Failed to find specified config file: {proposal.value}",
                 file=sys.stderr,
             )
             sys.exit(1)
@@ -202,9 +201,6 @@ class CondaStoreServer(Application):
         self.log.info(
             f"Running conda-store with store directory: {self.conda_store.store_directory}"
         )
-
-        if self.conda_store.upgrade_db:
-            dbutil.upgrade(self.conda_store.database_url)
 
         self.authentication = self.authentication_class(
             parent=self,
@@ -385,7 +381,9 @@ class CondaStoreServer(Application):
             )
 
     def start(self):
-        fastapi_app = self.init_fastapi_app()
+        """Start the CondaStoreServer application, and run a FastAPI-based webserver."""
+        if self.conda_store.upgrade_db:
+            dbutil.upgrade(self.conda_store.database_url)
 
         with self.conda_store.session_factory() as db:
             self.conda_store.ensure_settings(db)
@@ -427,6 +425,10 @@ class CondaStoreServer(Application):
             process = multiprocessing.Process(target=CondaStoreWorker.launch_instance)
             process.start()
 
+            # If running in standalone mode, also enable automatic reloading of the
+            # webserver
+            self.reload = True
+
         try:
             # Note: the logger needs to be defined here for the output to show
             # up, self.log doesn't work here either
@@ -436,7 +438,7 @@ class CondaStoreServer(Application):
             logger.info(f"Starting server on {self.address}:{self.port}")
 
             uvicorn.run(
-                fastapi_app,
+                "conda_store_server._internal.server.app:CondaStoreServer.create_webserver",
                 host=self.address,
                 port=self.port,
                 workers=1,
@@ -448,7 +450,10 @@ class CondaStoreServer(Application):
                     if self.reload
                     else []
                 ),
+                factory=True,
+                log_level=self.log_level,
             )
+
         except:
             import traceback
 
@@ -458,3 +463,17 @@ class CondaStoreServer(Application):
             if self.standalone:
                 process.join()
             worker_checker.join()
+
+    @classmethod
+    def create_webserver(cls: type) -> FastAPI:
+        """Create a CondaStoreServer instance to load the config, then return a FastAPI app.
+
+        Returns
+        -------
+        FastAPI
+            A FastAPI app configured using a fresh CondaStoreServer instance
+
+        """
+        app = cls()
+        app.initialize()
+        return app.init_fastapi_app()

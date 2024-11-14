@@ -1,10 +1,13 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
 import json
 import os
 import pathlib
 import typing
 
 import yaml
-
 from conda_lock.conda_lock import run_lock
 
 from conda_store_server._internal import action, conda_utils, schema, utils

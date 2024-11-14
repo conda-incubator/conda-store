@@ -1,3 +1,7 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
 import json
 import time
 
@@ -7,8 +11,7 @@ from fastapi.responses import RedirectResponse, Response
 from conda_store_server import api
 from conda_store_server._internal import orm, schema
 from conda_store_server._internal.schema import Permissions
-from conda_store_server.server import dependencies
-
+from conda_store_server._internal.server import dependencies
 
 router_registry = APIRouter(tags=["registry"])
 

@@ -1,3 +1,7 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
 import contextlib
 import hashlib
 import json
@@ -7,6 +11,7 @@ import re
 import subprocess
 import sys
 import time
+from typing import AnyStr
 
 from filelock import FileLock
 
@@ -147,3 +152,38 @@ def callable_or_value(v, *args, **kwargs):
     if callable(v):
         return v(*args, **kwargs)
     return v
+
+
+def compile_arn_sql_like(
+    arn: str, allowed_regex: re.Pattern[AnyStr]
+) -> tuple[str, str]:
+    """Turn an arn into a string suitable for use in a SQL LIKE statement.
+
+    Parameters
+    ----------
+    arn : str
+        String which matches namespaces and environments. For example:
+
+            */*          matches all environments
+            */team       matches all environments named 'team' in any namespace
+
+    allowed_regex : re.Pattern[AnyStr]
+        Regex to use to match the ARN.
+
+    Returns
+    -------
+    tuple[str, str]
+        (namespace regex, environment regex) to match in a sql LIKE statement.
+        See conda_store_server.server.auth.Authentication.filter_environments
+        for usage.
+    """
+    match = allowed_regex.match(arn)
+    if match is None:
+        raise ValueError(
+            "Could not find a match for the requested " f"namespace/environment={arn}"
+        )
+
+    return (
+        re.sub(r"\*", "%", match.group(1)),
+        re.sub(r"\*", "%", match.group(2)),
+    )

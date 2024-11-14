@@ -1,10 +1,13 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
 import io
 import os
 import posixpath
 import shutil
 
 import minio
-
 from minio.credentials.providers import Provider
 from traitlets import Bool, Dict, List, Type, Unicode
 from traitlets.config import LoggingConfigurable

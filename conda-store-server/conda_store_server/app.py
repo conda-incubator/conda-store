@@ -1,12 +1,14 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
 import datetime
 import os
 import sys
-
 from contextlib import contextmanager
 from typing import Any, Dict
 
 import pydantic
-
 from celery import Celery, group
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import QueuePool
@@ -620,7 +622,6 @@ class CondaStore(LoggingConfigurable):
         is_lockfile: bool = False,
     ):
         """Register a given specification to conda store with given namespace/name."""
-
         settings = self.get_settings(db)
 
         namespace = namespace or settings.default_namespace

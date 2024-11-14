@@ -1,53 +1,94 @@
-import pathlib
-import re
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
+# Custom hook to build conda-store-server with a local or released version of conda-store-ui.
+# To build with a released version of conda-store-ui: make sure to set the CONDA_STORE_UI_VERSION to a valid release
+# version in npm.
+# Then run `hatch build` to build conda-store-server with the specified version of conda-store-ui.
+# To build with a local version of conda-store-ui: set the LOCAL_UI environment variable to the path of the local conda-store-ui directory.
+# For example: export LOCAL_UI=<local path for conda-store-ui>  && hatch build --clean
+
+import os
 import shutil
 import tarfile
 import tempfile
 import urllib.request
-
 from pathlib import Path
 from typing import Any, Dict, List
 
 from hatchling.builders.hooks.plugin.interface import BuildHookInterface
 
-
-CONDA_STORE_UI_VERSION = "2024.6.1"
+CONDA_STORE_UI_VERSION = "2024.10.1"
 CONDA_STORE_UI_URL = f"https://registry.npmjs.org/@conda-store/conda-store-ui/-/conda-store-ui-{CONDA_STORE_UI_VERSION}.tgz"
-CONDA_STORE_UI_FILES = [
-    "main.js",
-    "main.css",
-    "main.css.map",
-    "main.js.map",
-    "index.html",
-]
+
+UI_FILES_EXTENSIONS = ["*.js", "*.css", "*.js.map", "*.css.map", "*.html"]
+
+SERVER_DIR = Path("conda_store_server/_internal/server")
+SERVER_UI_ASSETS = SERVER_DIR / "static/conda-store-ui"
+# FastAPI templates directory
+SERVER_UI_TEMPLATES = SERVER_DIR / "templates"
 
 
+# Note we do not modify the main.js file directly anymore. Instead we leverage
+# the use of runtime configuration through condaStoreConfig per
+# https://conda.store/conda-store-ui/how-tos/configure-ui
+# which is set up in conda-store-server/conda_store_server/_internal/server/templates/conda-store-ui.html
 class DownloadCondaStoreUIHook(BuildHookInterface):
     def clean(self, versions: List[str]) -> None:
-        """Quick utility method to remove any straggling ui files from previous versions
+        """Delete previously vendored UI files. This is called from:
+        `hatch clean` and `hatch build --clean`
 
         Args:
             versions (List[str]): a list of published versions in npm
         """
         super().clean(versions)
-        destination_directory = (
-            pathlib.Path(self.root)
-            / "conda_store_server/_internal/server/static/conda-store-ui"
-        )
-        shutil.rmtree(destination_directory, ignore_errors=True)
+        server_build_static_assets = Path(self.root) / SERVER_UI_ASSETS
+        shutil.rmtree(server_build_static_assets, ignore_errors=True)
 
     def initialize(self, version: str, build_data: Dict[str, Any]) -> None:
-        """UI vendoring within conda-store-server, right now it downloads the
-        published UI, copies the distributed html, js and css files and
-        does some on the fly env vars injection.
+        """UI vendoring within conda-store-server. This can be used to build conda-store-server with a local or
+        released version of conda-store-ui (should be available in npm).
+        This hook ensures we have the UI files in the correct location for the server to serve them and updates the
+        HTML templates to point to the right paths for the UI assets.
 
         Args:
             version (str): ui version to vendor
         """
         super().initialize(version, build_data)
 
+        if "LOCAL_UI" in os.environ:
+            print(
+                f"Building with a local version of conda-store-ui located in {os.getenv('LOCAL_UI')}"
+            )
+
+            if Path(os.getenv("LOCAL_UI")).exists():
+                local_ui_path = os.getenv("LOCAL_UI")
+                source_directory = Path(local_ui_path) / "dist"
+                if source_directory.exists():
+                    self.copy_ui_files(source_directory)
+                else:
+                    print(f"Directory does not exist: {source_directory}")
+
+            else:
+                raise FileNotFoundError(
+                    f"Local UI directory {os.getenv('LOCAL_UI')} does not exist"
+                )
+        # build with a released version of conda-store-ui - this is what we do for conda-store-server releases
+        else:
+            print(f"Building with conda-store-ui version {CONDA_STORE_UI_VERSION}")
+            self.get_ui_release(CONDA_STORE_UI_VERSION)
+
+    def get_ui_release(self, ui_version: str) -> None:
+        """Download a released version of conda-store-ui and add it to the
+        server's static assets directory.
+
+        Args:
+            ui_version (str): conda-store-ui version to download, must be a
+            valid npm release
+        """
         with tempfile.TemporaryDirectory() as tmp_dir:
-            tmp_dir = pathlib.Path(tmp_dir)
+            tmp_dir = Path(tmp_dir)
             tmp_filename = tmp_dir / "conda-store-ui.tgz"
 
             print(f"Downloading @conda-store/conda-store-ui={CONDA_STORE_UI_VERSION}")
@@ -60,65 +101,34 @@ class DownloadCondaStoreUIHook(BuildHookInterface):
                 tar.extractall(path=tmp_dir)
 
             source_directory = tmp_dir / "package/dist"
-            destination_directory = (
-                pathlib.Path(self.root)
-                / "conda_store_server/_internal/server/static/conda-store-ui"
-            )
-            destination_directory.mkdir(parents=True, exist_ok=True)
+
+            self.copy_ui_files(source_directory)
+
+    def copy_ui_files(self, source_directory: str) -> None:
+        """Copy conda-store-ui files to the conda-server static assets
+        directory (SERVER_UI_ASSETS).
+
+        Args:
+            source_directory (str): path to the directory containing the UI files
+        """
+        server_build_static_assets = Path(self.root) / SERVER_UI_ASSETS
+        server_build_static_assets.mkdir(parents=True, exist_ok=True)
+
+        print(f"Copying conda-store-ui files from {source_directory} \n")
+
+        try:
+            for extension in UI_FILES_EXTENSIONS:
+                for file_path in source_directory.glob(extension):
+                    target_path = server_build_static_assets / file_path.name
+                    # in case the file already exists, remove it
+                    if target_path.exists():
+                        target_path.unlink()
+                    shutil.copy(file_path, target_path)
 
             print(
-                f"Copying conda-store-ui {CONDA_STORE_UI_FILES} to {destination_directory}"
+                f"Copied files: {[p.name for p in server_build_static_assets.glob('*')]}"
             )
-            for filename in CONDA_STORE_UI_FILES:
-                shutil.copy(
-                    source_directory / filename,
-                    destination_directory / filename,
-                )
 
-            # dirty modifications (bound to break eventually!) to
-            # main.js to enable easy configuration see
-            # conda_store_server/_internal/server/templates/conda-store-ui.html
-            # for global variable set
-            with (source_directory / "main.js").open("r", encoding="utf-8") as source_f:
-                content = source_f.read()
-                content = re.sub(
-                    '"MISSING_ENV_VAR"', "GLOBAL_CONDA_STORE_STATE", content
-                )
-                with (destination_directory / "main.js").open(
-                    "w", encoding="utf-8"
-                ) as dest_f:
-                    dest_f.write(content)
-            # Add vendoring string to files
-            for filename in CONDA_STORE_UI_FILES:
-                annotate_vendored(destination_directory / filename)
-
-
-def annotate_vendored(file_path: str):
-    """Auxiliary method to add a vendoring string to the top of a file.
-    This helps with tracking the version of the vendored file and the conda-store
-    version for which we bundled the artefacts.
-
-    Args:
-        file_path (str): conda-store-ui file path
-    """
-    comment_string = {
-        ".js": ["//", ""],
-        ".map": ["//", ""],
-        ".css": ["/*", "*/"],
-        ".html": ["<!--", "-->"],
-    }
-
-    vendoring_string = (
-        f"{(comment_string.get(Path(file_path).suffix)[0])} "
-        f"conda-store-ui version: {CONDA_STORE_UI_VERSION} "
-        f"{(comment_string.get(Path(file_path).suffix)[1])} \n"
-    )
-
-    with open(file_path, "r") as file:
-        raw_content = file.read()
-
-    modified_content = vendoring_string + raw_content
-
-    # Write the modified content back to the file
-    with open(file_path, "w") as file:
-        file.write(modified_content)
+        except OSError as e:
+            print(f"Error copying files: {e}")
+            raise

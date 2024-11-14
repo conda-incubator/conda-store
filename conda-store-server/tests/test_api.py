@@ -1,8 +1,50 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
 import pytest
+from sqlalchemy.exc import IntegrityError
 
 from conda_store_server import api
 from conda_store_server._internal.orm import NamespaceRoleMapping
 from conda_store_server._internal.utils import BuildPathError
+
+
+@pytest.fixture
+def populated_db(db):
+    """A database fixture populated with 4 envs in 3 namespaces."""
+    description = "Hello World"
+    namespace1 = api.create_namespace(db, name="pytest1")
+    namespace2 = api.create_namespace(db, name="pytest2")
+    namespace3 = api.create_namespace(db, name="pytest3")
+    db.commit()
+
+    api.create_environment(
+        db,
+        namespace_id=namespace1.id,
+        name="env1",
+        description=description,
+    )
+    api.create_environment(
+        db,
+        namespace_id=namespace2.id,
+        name="env2",
+        description=description,
+    )
+    api.create_environment(
+        db,
+        namespace_id=namespace3.id,
+        name="env3",
+        description=description,
+    )
+    api.create_environment(
+        db,
+        namespace_id=namespace3.id,
+        name="foo",
+        description=description,
+    )
+    db.commit()
+    return db
 
 
 def test_namespace_crud(db):
@@ -39,6 +81,37 @@ def test_namespace_crud(db):
     assert len(api.list_namespaces(db).all()) == 1
 
 
+@pytest.mark.parametrize(
+    ("role_bindings", "expected_envs"),
+    [
+        ({"*/env1": ["viewer"]}, ["env1"]),
+        ({"pytest2/*": ["viewer"], "e*/e*": ["admin"]}, ["env2"]),
+        ({"pytest3/env3": ["viewer"]}, ["env3"]),
+        (
+            {
+                "pytest*/env*": ["viewer"],
+            },
+            ["env1", "env2", "env3"],
+        ),
+        (
+            {
+                "*/*": ["viewer"],
+            },
+            ["env1", "env2", "env3", "foo"],
+        ),
+    ],
+)
+def test_list_environments_role_bindings(populated_db, role_bindings, expected_envs):
+    """Test that environments can be listed and filtered by role mappings."""
+    assert len(api.list_namespaces(populated_db).all()) == 3
+    assert set(
+        obj.name
+        for obj in api.list_environments(
+            populated_db, role_bindings=role_bindings
+        ).all()
+    ) == set(expected_envs)
+
+
 def test_namespace_role_mapping(db):
     namespace_name = "pytest-namespace"
 
@@ -52,24 +125,47 @@ def test_namespace_role_mapping(db):
     # check that only one namespace exists
     assert len(api.list_namespaces(db).all()) == 1
 
-    # create a Role Mapping, with a failing entity
+    # Creates role mappings with valid entity names
+    NamespaceRoleMapping(
+        namespace=namespace,
+        namespace_id=namespace.id,
+        entity="org/*",
+        role="editor",
+    )
+    NamespaceRoleMapping(
+        namespace=namespace,
+        namespace_id=namespace.id,
+        entity="*/team",
+        role="editor",
+    )
+    NamespaceRoleMapping(
+        namespace=namespace,
+        namespace_id=namespace.id,
+        entity="org/team",
+        role="editor",
+    )
+    NamespaceRoleMapping(
+        namespace=namespace,
+        namespace_id=namespace.id,
+        entity="*/*",
+        role="editor",
+    )
+
+    # Check that the namespace role mappings were correctly inserted;
+    # this will fail if they were not correctly instantiated.
+    db.commit()
+
+    # Create a role mapping with a failing entity
     with pytest.raises(Exception):
         NamespaceRoleMapping(
-            namespace=namespace, namespace_id=namespace.id, entity="invalid_entity_name"
+            namespace=namespace,
+            namespace_id=namespace.id,
+            entity="invalid_entity_name",
         )
 
-    # Creates role mappings with valid entity names
-    NamespaceRoleMapping(namespace=namespace, namespace_id=namespace.id, entity="org/*")
-
-    NamespaceRoleMapping(
-        namespace=namespace, namespace_id=namespace.id, entity="*/team"
-    )
-
-    NamespaceRoleMapping(
-        namespace=namespace, namespace_id=namespace.id, entity="org/team"
-    )
-
-    NamespaceRoleMapping(namespace=namespace, namespace_id=namespace.id, entity="*/*")
+    # This should fail because of the invalid entity instantiation above
+    with pytest.raises(IntegrityError):
+        db.commit()
 
 
 @pytest.mark.parametrize(
@@ -255,11 +351,11 @@ def test_get_set_keyvaluestore(db):
 
     # test updating a prefix
     api.set_kvstore_key_values(db, "pytest", setting_2)
-    assert {**setting_1, **setting_2} == api.get_kvstore_key_values(db, "pytest")
+    assert api.get_kvstore_key_values(db, "pytest") == {**setting_1, **setting_2}
 
     # test updating a prefix
     api.set_kvstore_key_values(db, "pytest", {"c": 999, "d": 999}, update=False)
-    assert {**setting_1, **setting_2} == api.get_kvstore_key_values(db, "pytest")
+    assert api.get_kvstore_key_values(db, "pytest") == {**setting_1, **setting_2}
 
 
 def test_build_path_too_long(db, conda_store, simple_specification):

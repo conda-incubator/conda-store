@@ -1,15 +1,18 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
 """Helper functions for user journeys."""
 
 import json
 import time
 import uuid
-
 from enum import Enum
 from typing import Any, Callable, Dict, Optional, Union
 
 import requests
-import utils.time_utils as time_utils
 
+import utils.time_utils as time_utils
 
 TIMEOUT = 10
 
@@ -156,7 +159,7 @@ class API:
             Response from the conda-store server's api/v1/build/{build_id}/
             endpoint
         """
-        with open(specification_path, "r", encoding="utf-8") as file:
+        with open(specification_path, encoding="utf-8") as file:
             specification_content = file.read()
 
         response = self._make_request(

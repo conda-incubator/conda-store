@@ -1,16 +1,18 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
 import asyncio
 import datetime
 import pathlib
 import re
 import sys
 import tempfile
-
 from unittest import mock
 
 import pytest
 import yaml
 import yarl
-
 from celery.result import AsyncResult
 from conda.base.context import context as conda_base_context
 from constructor import construct
@@ -80,6 +82,7 @@ def test_action_decorator():
 @mock.patch.object(generate_lockfile, "yaml", wraps=yaml)
 @mock.patch("conda_store_server._internal.action.generate_lockfile.logged_command")
 @mock.patch("conda_store_server._internal.action.generate_lockfile.run_lock")
+@pytest.mark.long_running_test
 def test_solve_lockfile(
     mock_run_lock,
     mock_logged_command,
@@ -140,6 +143,7 @@ def test_solve_lockfile_valid_conda_flags(conda_store, simple_specification):
 
 
 # Checks that conda_flags is used by conda-lock
+@pytest.mark.long_running_test
 def test_solve_lockfile_invalid_conda_flags(conda_store, simple_specification):
     with pytest.raises(
         Exception, match=(r"Command.*--this-is-invalid.*returned non-zero exit status")
@@ -159,6 +163,7 @@ def test_solve_lockfile_invalid_conda_flags(conda_store, simple_specification):
         "simple_specification_with_pip",
     ],
 )
+@pytest.mark.long_running_test
 def test_solve_lockfile_multiple_platforms(conda_store, specification, request):
     specification = request.getfixturevalue(specification)
     context = action.action_solve_lockfile(
@@ -256,6 +261,7 @@ def test_fetch_and_extract_conda_packages(tmp_path, simple_conda_lock):
     assert context.stdout.getvalue()
 
 
+@pytest.mark.long_running_test
 def test_install_specification(tmp_path, conda_store, simple_specification):
     conda_prefix = tmp_path / "test"
 
@@ -278,6 +284,7 @@ def test_install_lockfile(tmp_path, conda_store, simple_conda_lock):
     assert conda_utils.is_conda_prefix(conda_prefix)
 
 
+@pytest.mark.long_running_test
 def test_generate_conda_export(conda_store, conda_prefix):
     context = action.action_generate_conda_export(
         conda_command=conda_store.conda_command, conda_prefix=conda_prefix
@@ -289,6 +296,7 @@ def test_generate_conda_export(conda_store, conda_prefix):
     schema.CondaSpecification.parse_obj(context.result)
 
 
+@pytest.mark.long_running_test
 def test_generate_conda_pack(tmp_path, conda_prefix):
     output_filename = tmp_path / "environment.tar.gz"
 
@@ -306,6 +314,7 @@ def test_generate_conda_pack(tmp_path, conda_prefix):
         "https://github.com/conda-incubator/conda-store/issues/666"
     )
 )
+@pytest.mark.long_running_test
 def test_generate_conda_docker(conda_store, conda_prefix):
     action.action_generate_conda_docker(
         conda_prefix=conda_prefix,
@@ -372,6 +381,7 @@ def test_get_conda_prefix_stats(tmp_path, conda_store, simple_conda_lock):
     assert context.result["disk_usage"] > 0
 
 
+@pytest.mark.long_running_test
 def test_add_conda_prefix_packages(db, conda_store, simple_specification, conda_prefix):
     build_id = conda_store.register_environment(
         db, specification=simple_specification, namespace="pytest"
@@ -387,6 +397,7 @@ def test_add_conda_prefix_packages(db, conda_store, simple_specification, conda_
     assert len(build.package_builds) > 0
 
 
+@pytest.mark.long_running_test
 def test_add_lockfile_packages(
     db,
     conda_store,
@@ -420,6 +431,7 @@ def test_add_lockfile_packages(
         (True, 1),  # build_key_version doesn't matter because there's no lockfile
     ],
 )
+@pytest.mark.long_running_test
 def test_api_get_build_lockfile(
     request,
     conda_store,
@@ -536,6 +548,7 @@ def test_api_get_build_lockfile(
         assert res.status_code == 307
 
 
+@pytest.mark.long_running_test
 def test_api_get_build_installer(
     request, conda_store, db, simple_specification_with_pip, conda_prefix
 ):

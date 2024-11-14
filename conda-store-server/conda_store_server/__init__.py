@@ -1,9 +1,16 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+from __future__ import annotations
+
 import datetime
 import hashlib
 import typing
-
 from pathlib import Path
 
+if typing.TYPE_CHECKING:
+    from ._internal.orm import Build
+    from .app import CondaStore
 
 # For runtime, we use platformdirs to get the user data directory and ensure
 # this is cross-platform
@@ -62,7 +69,7 @@ class BuildKey:
 
     _version3_experimental_hash_size = 32
 
-    def _version1_fmt(build: "Build") -> str:  # noqa: F821
+    def _version1_fmt(build: Build) -> str:  # noqa: F821
         datetime_format = "%Y%m%d-%H%M%S-%f"
         hash = build.specification.sha256
         timestamp = build.scheduled_on.strftime(datetime_format)
@@ -70,7 +77,7 @@ class BuildKey:
         name = build.specification.name
         return f"{hash}-{timestamp}-{id}-{name}"
 
-    def _version2_fmt(build: "Build") -> str:  # noqa: F821
+    def _version2_fmt(build: Build) -> str:  # noqa: F821
         tzinfo = datetime.timezone.utc
         hash = build.specification.sha256[: BuildKey._version2_hash_size]
         timestamp = int(build.scheduled_on.replace(tzinfo=tzinfo).timestamp())
@@ -79,7 +86,7 @@ class BuildKey:
         return f"{hash}-{timestamp}-{id}-{name}"
 
     # Warning: this is an experimental version and can be changed at any time
-    def _version3_experimental_fmt(build: "Build") -> str:  # noqa: F821
+    def _version3_experimental_fmt(build: Build) -> str:  # noqa: F821
         # Caches the hash value for faster lookup later
         if build.hash is not None:
             return build.hash
@@ -136,14 +143,16 @@ class BuildKey:
         return tuple(cls._fmt.keys())
 
     @classmethod
-    def get_build_key(cls, build: "Build") -> str:  # noqa: F821
+    def get_build_key(cls, build: Build) -> str:  # noqa: F821
         """Returns build key for this build"""
         cls._check_version(build.build_key_version)
         return cls._fmt.get(build.build_key_version)(build)
 
     @classmethod
     def parse_build_key(
-        cls, conda_store: "CondaStore", build_key: str  # noqa: F821
+        cls,
+        conda_store: CondaStore,
+        build_key: str,  # noqa: F821
     ) -> int:
         """Returns build id from build key"""
         # This import is here to avoid cyclic imports

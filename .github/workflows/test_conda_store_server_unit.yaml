@@ -75,6 +75,7 @@ jobs:
             auto-activate-base: false
             activate-environment: conda-store-server-dev
             python-version: ${{ env.PYTHON_VERSION_DEFAULT }}
+            conda-remove-defaults: "true"
 
       # This fixes a "DLL not found" issue importing ctypes from the hatch env
       - name: "Reinstall Python on Windows runner"
@@ -95,7 +96,11 @@ jobs:
 
       - name: "Unit tests ✅"
         run: |
-          python -m pytest -m "not extended_prefix and not user_journey" tests
+          python -m pytest -m "not extended_prefix and not user_journey" --cov=conda_store_server tests
+
+      - name: "Coverage report"
+        run: |
+          coverage report
 
       # https://github.com/actions/runner-images/issues/1052
       - name: "Windows extended prefix unit tests ✅"

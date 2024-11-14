@@ -1,17 +1,31 @@
-import datetime
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
 
-from typing import Any, Dict, List, Optional
+import datetime
+from typing import Any, Dict, List, Optional, TypedDict
 
 import pydantic
 import yaml
-
+from celery.result import AsyncResult
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request
 from fastapi.responses import PlainTextResponse, RedirectResponse
 
-from conda_store_server import __version__, api
+from conda_store_server import __version__, api, app
 from conda_store_server._internal import orm, schema, utils
-from conda_store_server._internal.schema import Permissions
-from conda_store_server.server import dependencies
+from conda_store_server._internal.environment import filter_environments
+from conda_store_server._internal.schema import AuthenticationToken, Permissions
+from conda_store_server._internal.server import dependencies
+from conda_store_server.server.auth import Authentication
+
+
+class PaginatedArgs(TypedDict):
+    """Dictionary type holding information about paginated requests."""
+
+    limit: int
+    offset: int
+    sort_by: List[str]
+    order: str
 
 
 router_api = APIRouter(
@@ -26,7 +40,7 @@ def get_paginated_args(
     size: Optional[int] = None,
     sort_by: List[str] = Query([]),
     server=Depends(dependencies.get_server),
-):
+) -> PaginatedArgs:
     if size is None:
         size = server.max_page_size
     size = min(size, server.max_page_size)
@@ -246,7 +260,7 @@ async def api_post_token(
 async def api_list_namespaces(
     auth=Depends(dependencies.get_auth),
     entity=Depends(dependencies.get_entity),
-    paginated_args: Dict = Depends(get_paginated_args),
+    paginated_args: PaginatedArgs = Depends(get_paginated_args),
     conda_store=Depends(dependencies.get_conda_store),
 ):
     with conda_store.get_db() as db:
@@ -614,31 +628,83 @@ async def api_delete_namespace(
     response_model=schema.APIListEnvironment,
 )
 async def api_list_environments(
-    search: Optional[str] = None,
-    namespace: Optional[str] = None,
-    name: Optional[str] = None,
-    status: Optional[schema.BuildStatus] = None,
-    packages: Optional[List[str]] = Query([]),
+    auth: Authentication = Depends(dependencies.get_auth),
+    conda_store: app.CondaStore = Depends(dependencies.get_conda_store),
+    entity: AuthenticationToken = Depends(dependencies.get_entity),
+    paginated_args: PaginatedArgs = Depends(get_paginated_args),
     artifact: Optional[schema.BuildArtifactType] = None,
-    auth=Depends(dependencies.get_auth),
-    entity=Depends(dependencies.get_entity),
-    paginated_args=Depends(get_paginated_args),
-    conda_store=Depends(dependencies.get_conda_store),
+    jwt: Optional[str] = None,
+    name: Optional[str] = None,
+    namespace: Optional[str] = None,
+    packages: Optional[List[str]] = Query([]),
+    search: Optional[str] = None,
+    status: Optional[schema.BuildStatus] = None,
 ):
+    """Retrieve a list of environments.
+
+    Parameters
+    ----------
+    auth : Authentication
+        Authentication instance for the request. Used to get role bindings
+        and filter environments returned to those visible by the user making
+        the request
+    entity : AuthenticationToken
+        Token of the user making the request
+    paginated_args : PaginatedArgs
+        Arguments for controlling pagination of the response
+    conda_store : app.CondaStore
+        The running conda store application
+    search : Optional[str]
+        If specified, filter by environment names or namespace names containing the
+        search term
+    namespace : Optional[str]
+        If specified, filter by environments in the given namespace
+    name : Optional[str]
+        If specified, filter by environments with the given name
+    status : Optional[schema.BuildStatus]
+        If specified, filter by environments with the given status
+    packages : Optional[List[str]]
+        If specified, filter by environments containing the given package name(s)
+    artifact : Optional[schema.BuildArtifactType]
+        If specified, filter by environments with the given BuildArtifactType
+    jwt : Optional[schema.AuthenticationToken]
+        If specified, retrieve only the environments accessible to this token; that is,
+        only return environments that the user has 'admin', 'editor', and 'viewer'
+        role bindings for.
+
+    Returns
+    -------
+    Dict
+        Paginated JSON response containing the requested environments
+
+    """
     with conda_store.get_db() as db:
-        orm_environments = auth.filter_environments(
-            entity,
-            api.list_environments(
-                db,
-                search=search,
-                namespace=namespace,
-                name=name,
-                status=status,
-                packages=packages,
-                artifact=artifact,
-                show_soft_deleted=False,
-            ),
+        if jwt:
+            # Fetch the environments visible to the supplied token
+            role_bindings = auth.entity_bindings(
+                AuthenticationToken.parse_obj(auth.authentication.decrypt_token(jwt))
+            )
+        else:
+            role_bindings = None
+
+        orm_environments = api.list_environments(
+            db,
+            search=search,
+            namespace=namespace,
+            name=name,
+            status=status,
+            packages=packages,
+            artifact=artifact,
+            show_soft_deleted=False,
+            role_bindings=role_bindings,
         )
+
+        # Filter by environments that the user who made the query has access to
+        orm_environments = filter_environments(
+            query=orm_environments,
+            role_bindings=auth.entity_bindings(entity),
+        )
+
         return paginated_api_response(
             orm_environments,
             paginated_args,
@@ -660,7 +726,7 @@ async def api_get_environment(
     namespace: str,
     environment_name: str,
     request: Request,
-    auth=Depends(dependencies.get_auth),
+    auth: Authentication = Depends(dependencies.get_auth),
     conda_store=Depends(dependencies.get_conda_store),
 ):
     with conda_store.get_db() as db:
@@ -777,13 +843,13 @@ async def api_get_specification(
 
         try:
             task, solve_id = conda_store.register_solve(db, specification)
-            task.wait()
+            AsyncResult(task).wait()
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e.args[0]))
 
         solve = api.get_solve(db, solve_id)
 
-        return {"solve": solve.packages}
+        return {"solve": solve.package_builds}
 
 
 @router_api.post(

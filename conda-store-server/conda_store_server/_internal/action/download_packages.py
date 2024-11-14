@@ -1,3 +1,7 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
 import os
 import pathlib
 import shutil
@@ -10,7 +14,6 @@ import conda.gateways.logging  # noqa
 import conda_package_handling.api
 import conda_package_streaming.url
 import filelock
-
 from conda.base.constants import PACKAGE_CACHE_MAGIC_FILE
 from conda.common.path import expand, strip_pkg_extension
 from conda.core.package_cache_data import (

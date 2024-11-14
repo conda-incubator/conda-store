@@ -1,10 +1,14 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
 # conda-store (core) Dockerfile
 # the generated Docker image is used with docker compose to run the conda-store
 # worker and public conda-store Docker images
 # To build locally, run:
 # docker build --rm -f "conda-store/Dockerfile" -t conda-store:latest "conda-store"  --platform=linux/arm64 .
 
-FROM condaforge/miniforge3:24.3.0-0 AS base
+FROM condaforge/miniforge3:24.7.1-0 AS base
 
 LABEL org.opencontainers.image.authors="conda-store development team"
 

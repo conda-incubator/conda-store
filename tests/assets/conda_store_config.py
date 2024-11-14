@@ -1,3 +1,7 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
 import logging
 
 from conda_store_server.server.auth import DummyAuthentication
@@ -42,6 +46,7 @@ c.CondaStoreServer.log_level = logging.INFO
 c.CondaStoreServer.enable_ui = True
 c.CondaStoreServer.enable_api = True
 c.CondaStoreServer.enable_registry = True
+c.CondaStoreServer.reload = True
 c.CondaStoreServer.enable_metrics = True
 c.CondaStoreServer.address = "0.0.0.0"
 c.CondaStoreServer.port = 8080
@@ -55,7 +60,7 @@ c.CondaStoreServer.url_prefix = "/conda-store"
 c.CondaStoreServer.authentication_class = DummyAuthentication
 c.CondaStoreServer.template_vars = {
     "banner": '<div class="alert alert-danger" role="alert">This is a localhost server</div>',
-    "logo": "https://quansight.com/_next/image?url=https%3A%2F%2Fa.storyblok.com%2Ff%2F147759%2F1076x520%2Fe6cd6af012%2Fquansight-logo-no-tagline.png&w=3840&q=75",
+    "logo": "https://raw.githubusercontent.com/conda-incubator/conda-store/main/docusaurus-docs/community/assets/logos/conda-store-logo-horizontal-lockup.svg",
 }
 
 # ==================================

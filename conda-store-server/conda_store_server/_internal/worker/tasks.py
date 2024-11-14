@@ -1,3 +1,7 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
 import datetime
 import os
 import shutil
@@ -5,7 +9,6 @@ import sys
 import typing
 
 import yaml
-
 from celery import Task, platforms, shared_task
 from celery.execute import send_task
 from celery.signals import worker_ready
@@ -14,7 +17,8 @@ from sqlalchemy.orm import Session
 
 from conda_store_server import api
 from conda_store_server._internal import environment, schema, utils
-from conda_store_server._internal.build import (
+from conda_store_server._internal.worker.app import CondaStoreWorker
+from conda_store_server._internal.worker.build import (
     build_cleanup,
     build_conda_docker,
     build_conda_env_export,
@@ -23,7 +27,6 @@ from conda_store_server._internal.build import (
     build_constructor_installer,
     solve_conda_environment,
 )
-from conda_store_server._internal.worker.app import CondaStoreWorker
 
 
 @worker_ready.connect

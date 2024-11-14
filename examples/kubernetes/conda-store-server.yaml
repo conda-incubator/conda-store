@@ -1,3 +1,7 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
 apiVersion: v1
 kind: Service
 metadata:
@@ -28,7 +32,7 @@ spec:
     spec:
       containers:
         - name: conda-store-server
-          image: quansight/conda-store-server:v0.4.5
+          image: quansight/conda-store-server:2024.10.1
           args:
             - "conda-store-server"
             - "--config"

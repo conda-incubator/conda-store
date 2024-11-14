@@ -1,11 +1,14 @@
+# Copyright (c) conda-store development team. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
 import datetime
 import enum
 import functools
 import os
 import re
 import sys
-
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, TypeAlias, Union
 
 from conda_lock.lockfile.v1.models import Lockfile
 from pydantic import BaseModel, Field, ValidationError, constr, validator
@@ -15,23 +18,30 @@ from conda_store_server._internal import conda_utils, utils
 
 
 def _datetime_factory(offset: datetime.timedelta):
-    """utcnow datetime + timezone as string"""
+    """Utcnow datetime + timezone as string"""
     return datetime.datetime.utcnow() + offset
 
 
-# namespace and name cannot contain "*" ":" "#" " " "/"
-# this is a more restrictive list
+# An ARN is a string which matches namespaces and environments. For example:
+#     */*          matches all environments
+#     */team       matches all environments named 'team' in any namespace
+#
+# Namespaces and environment names cannot contain "*" ":" "#" " " "/"
 ALLOWED_CHARACTERS = "A-Za-z0-9-+_@$&?^~.="
 ARN_ALLOWED = f"^([{ALLOWED_CHARACTERS}*]+)/([{ALLOWED_CHARACTERS}*]+)$"
+ARN_ALLOWED_REGEX = re.compile(ARN_ALLOWED)
 
 
 #########################
 # Authentication Schema
 #########################
 
+RoleBindings: TypeAlias = Dict[constr(regex=ARN_ALLOWED), List[str]]
+
 
 class Permissions(enum.Enum):
-    "Permissions map to conda-store actions"
+    """Permissions map to conda-store actions"""
+
     ENVIRONMENT_CREATE = "environment:create"
     ENVIRONMENT_READ = "environment::read"
     ENVIRONMENT_UPDATE = "environment::update"
@@ -56,7 +66,7 @@ class AuthenticationToken(BaseModel):
         default_factory=functools.partial(_datetime_factory, datetime.timedelta(days=1))
     )
     primary_namespace: str = "default"
-    role_bindings: Dict[constr(regex=ARN_ALLOWED), List[str]] = {}
+    role_bindings: RoleBindings = {}
 
 
 ##########################
@@ -119,7 +129,7 @@ class NamespaceRoleMappingV2(BaseModel):
 
     @classmethod
     def from_list(cls, lst):
-        return cls(**{k: v for k, v in zip(cls.__fields__.keys(), lst)})
+        return cls(**{k: v for k, v in zip(cls.__fields__.keys(), lst, strict=False)})
 
 
 class Namespace(BaseModel):
@@ -518,7 +528,7 @@ class LockfileSpecification(BaseModel):
 
 
 def _docker_datetime_factory():
-    """utcnow datetime + timezone as string"""
+    """Utcnow datetime + timezone as string"""
     return datetime.datetime.utcnow().astimezone().isoformat()
 
 
