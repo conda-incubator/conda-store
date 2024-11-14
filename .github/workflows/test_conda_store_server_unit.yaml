@@ -73,6 +73,7 @@ jobs:
             auto-activate-base: false
             activate-environment: conda-store-server-dev
             python-version: ${{ env.PYTHON_VERSION_DEFAULT }}
+            conda-remove-defaults: "true"
 
       # This fixes a "DLL not found" issue importing ctypes from the hatch env
       - name: "Reinstall Python on Windows runner"

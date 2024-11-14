@@ -16,6 +16,8 @@ env:
 
 permissions:
   contents: read # This is required for actions/checkout
+  attestations: write
+  id-token: write # Needed for attestations
 
 jobs:
   # Always build & verify package.
@@ -44,6 +46,7 @@ jobs:
         with:
           path: ${{ matrix.directory }}
           upload-name-suffix: "-${{ matrix.directory }}"
+          attest-build-provenance-github: "true"
 
       - run: echo Packages can be found at ${{ steps.baipp.outputs.dist }} and in artifact ${{ steps.baipp.outputs.artifact-name }}
 
