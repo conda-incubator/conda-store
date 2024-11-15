@@ -19,12 +19,30 @@ from conda_store_server._internal.schema import (
     Permissions,
 )
 from conda_store_server._internal.server import dependencies
-from conda_store_server._internal.server.views.pagination import Cursor, paginate
+from conda_store_server._internal.server.views.pagination import (
+    Cursor,
+    CursorPaginatedArgs,
+    OrderingMetadata,
+    paginate,
+)
 from conda_store_server.server.auth import Authentication
 
 
 def get_cursor(encoded_cursor: Optional[str] = None) -> Cursor:
     return Cursor.load(encoded_cursor)
+
+
+def get_cursor_paginated_args(
+    order: Optional[str] = None,
+    limit: Optional[int] = None,
+    sort_by: List[str] = Query([]),
+    server=Depends(dependencies.get_server),
+) -> CursorPaginatedArgs:
+    return CursorPaginatedArgs(
+        limit=server.max_page_size if limit is None else limit,
+        order=order,
+        sort_by=sort_by,
+    )
 
 
 class PaginatedArgs(TypedDict):
@@ -639,7 +657,7 @@ async def api_list_environments(
     auth: Authentication = Depends(dependencies.get_auth),
     conda_store: app.CondaStore = Depends(dependencies.get_conda_store),
     entity: AuthenticationToken = Depends(dependencies.get_entity),
-    paginated_args: PaginatedArgs = Depends(get_paginated_args),
+    paginated_args: CursorPaginatedArgs = Depends(get_cursor_paginated_args),
     cursor: Cursor = Depends(get_cursor),
     artifact: Optional[schema.BuildArtifactType] = None,
     jwt: Optional[str] = None,
@@ -648,7 +666,7 @@ async def api_list_environments(
     packages: Optional[List[str]] = Query([]),
     search: Optional[str] = None,
     status: Optional[schema.BuildStatus] = None,
-):
+) -> schema.APIListEnvironment:
     """Retrieve a list of environments.
 
     Parameters
@@ -659,7 +677,7 @@ async def api_list_environments(
         the request
     entity : AuthenticationToken
         Token of the user making the request
-    paginated_args : PaginatedArgs
+    paginated_args : CursorPaginatedArgs
         Arguments for controlling pagination of the response
     conda_store : app.CondaStore
         The running conda store application
@@ -683,7 +701,7 @@ async def api_list_environments(
 
     Returns
     -------
-    Dict
+    schema.APIListEnvironment
         Paginated JSON response containing the requested environments. Results are sorted by each
         envrionment's build's scheduled_on time to ensure all results are returned when iterating
         over pages in systems where the number of environments is changing while results are being
@@ -716,51 +734,22 @@ async def api_list_environments(
             role_bindings=auth.entity_bindings(entity),
         )
 
-        valid_sort_by = {
-            "namespace": orm.Namespace.name,
-            "name": orm.Environment.name,
-        }
-
-        # sorts = get_sorts(
-        #     order=paginated_args["order"],
-        #     sort_by=paginated_args["sort_by"],
-        #     allowed_sort_bys=valid_sort_by,
-        #     default_sort_by=["namespace", "name"],
-        #     default_order="asc",
-        # )
-
-        # query = (
-        #     query
-        #     .filter(
-        #         or_(
-        #             orm.Namespace.name > cursor.order_by['namespace'],
-        #             orm.Namespace.name == cursor.order_by['namespace']
-        #         )
-        #     )
-        #     .order_by(
-        #         *sorts,
-        #         orm.Environment.id.asc()
-        #     )
-        # )
-
-        return paginate(
+        paginated, next_cursor = paginate(
             query=query,
+            ordering_metadata=OrderingMetadata(
+                order_names=["namespace", "name"],
+                column_names=["namespace.name", "name"],
+            ),
             cursor=cursor,
-            sort_by=paginated_args["sort_by"],
-            valid_sort_by=valid_sort_by,
+            order_by=paginated_args["sort_by"],
+            limit=paginated_args["limit"],
         )
 
-        return paginated_api_response(
-            query,
-            paginated_args,
-            schema.Environment,
-            exclude={"current_build"},
-            allowed_sort_bys={
-                "namespace": orm.Namespace.name,
-                "name": orm.Environment.name,
-            },
-            default_sort_by=["namespace", "name"],
-            default_order="asc",
+        return schema.APIListEnvironment(
+            data=paginated,
+            status="ok",
+            cursor=None if next_cursor is None else next_cursor.dump(),
+            count=1000,
         )
 
 
