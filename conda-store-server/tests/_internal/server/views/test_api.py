@@ -1070,3 +1070,18 @@ def test_default_conda_store_dir():
         assert dir == rf"C:\Users\{user}\AppData\Local\conda-store\conda-store"
     else:
         assert dir == f"/home/{user}/.local/share/conda-store"
+
+
+def test_api_list_environments(
+    conda_store_server,
+    testclient,
+    seed_conda_store,
+    authenticate,
+):
+    """Test that the REST API lists the expected paginated environments."""
+    response = testclient.get("api/v1/environment/?sort_by=name")
+    response.raise_for_status()
+
+    r = schema.APIListEnvironment.parse_obj(response.json())
+
+    assert r.status == schema.APIStatus.OK
