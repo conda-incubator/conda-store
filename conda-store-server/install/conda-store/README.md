@@ -46,3 +46,33 @@ metadata:
 type: Opaque
 ```
 
+## Volumes
+
+Conda store requires a persistent volume for installing conda environments into. Users should provide a PersistentVolume that binds to the conda-store-worker PVC. For example:
+
+```
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: conda-store-environments
+spec:
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteMany
+  volumeMode: Filesystem
+  storageClassName: local-storage
+  local:  # required for local-storage
+    path: /tmp/mnt-vol-kub
+  claimRef:
+    namespace: conda-store
+    name: conda-store-worker-claim
+  nodeAffinity:  # required for local-storage
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - mynode
+```
