@@ -63,13 +63,8 @@ spec:
             - name: config
               mountPath: "/etc/conda-store/"
               readOnly: true
-            - name: home
-              mountPath: "/home/conda"
       restartPolicy: Always
       volumes:
         - name: config
           configMap:
             name: "{{ template "condaStore.fullname" . }}-ui-server"
-        - name: home
-          emptyDir:
-            sizeLimit: 1Mi
