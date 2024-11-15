@@ -23,8 +23,8 @@ from conda_store_server._internal.server.views.pagination import Cursor, paginat
 from conda_store_server.server.auth import Authentication
 
 
-def get_cursor(cursor: Optional[str] = None) -> Cursor:
-    return Cursor.load(cursor)
+def get_cursor(encoded_cursor: Optional[str] = None) -> Cursor:
+    return Cursor.load(encoded_cursor)
 
 
 class PaginatedArgs(TypedDict):
@@ -716,16 +716,18 @@ async def api_list_environments(
             role_bindings=auth.entity_bindings(entity),
         )
 
-        sorts = get_sorts(
-            order=paginated_args["order"],
-            sort_by=paginated_args["sort_by"],
-            allowed_sort_bys={
-                "namespace": orm.Namespace.name,
-                "name": orm.Environment.name,
-            },
-            default_sort_by=["namespace", "name"],
-            default_order="asc",
-        )
+        valid_sort_by = {
+            "namespace": orm.Namespace.name,
+            "name": orm.Environment.name,
+        }
+
+        # sorts = get_sorts(
+        #     order=paginated_args["order"],
+        #     sort_by=paginated_args["sort_by"],
+        #     allowed_sort_bys=valid_sort_by,
+        #     default_sort_by=["namespace", "name"],
+        #     default_order="asc",
+        # )
 
         # query = (
         #     query
@@ -745,6 +747,7 @@ async def api_list_environments(
             query=query,
             cursor=cursor,
             sort_by=paginated_args["sort_by"],
+            valid_sort_by=valid_sort_by,
         )
 
         return paginated_api_response(

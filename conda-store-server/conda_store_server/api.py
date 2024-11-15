@@ -323,11 +323,7 @@ def list_environments(
     Query
         Sqlalchemy query containing the requested environments
     """
-    query = (
-        db.query(orm.Environment)
-        .join(orm.Environment.namespace)
-        .join(orm.Environment.current_build)
-    )
+    query = db.query(orm.Environment).join(orm.Environment.namespace)
 
     if namespace:
         query = query.filter(orm.Namespace.name == namespace)
@@ -345,6 +341,9 @@ def list_environments(
 
     if not show_soft_deleted:
         query = query.filter(orm.Environment.deleted_on == null())
+
+    if status or artifact or packages:
+        query = query.join(orm.Environment.current_build)
 
     if status:
         query = query.filter(orm.Build.status == status)
