@@ -9,8 +9,10 @@ metadata:
   name: "{{ template "condaStore.fullname" . }}-worker-claim"
   namespace: {{ .Values.global.namespace }}
 spec:
-  accessModes:
-    - ReadWriteMany
   resources:
     requests:
-      storage: 2Gi
+      storage: {{ .Values.worker.environmentsVolumeSize }}
+  accessModes:
+    - ReadWriteMany
+  storageClassName: ""
+  volumeName: {{ .Values.worker.environmentsVolume }}
