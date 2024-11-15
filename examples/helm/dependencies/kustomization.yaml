@@ -10,3 +10,4 @@ resources:
   - postgres.yaml
   - redis.yaml
   - secrets.yaml
+  - volume-local.yaml

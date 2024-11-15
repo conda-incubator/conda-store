@@ -30,5 +30,7 @@ worker:
     repository: {{ (datasource "defaults").image.repository }}
     pullPolicy: {{ (datasource "defaults").image.pullPolicy }}
     tag: {{ (datasource "defaults").image.tag }}
+  environmentsVolume: conda-store-environments
+  environmentsVolumeSize: 2Gi
   condaStoreConfig: |
 {{ include "worker-config" | indent 4 }}

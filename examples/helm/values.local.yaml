@@ -155,6 +155,8 @@ worker:
     repository: quansight/conda-store-server
     pullPolicy: IfNotPresent
     tag: 2024.11.1
+  environmentsVolume: conda-store-environments
+  environmentsVolumeSize: 2Gi
   condaStoreConfig: |
     import logging
     import os

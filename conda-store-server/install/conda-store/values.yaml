@@ -2,7 +2,8 @@ podAnnotations: {}
 podLabels: {}
 
 global:
-  namespace: conda-store
+  # The namespace to deploy to. Defaults to the `helm` installation namespace.
+  namespace: ""
 
 apiServer:
   nodePort: 30501
@@ -55,11 +56,33 @@ uiServer:
     c.CondaStoreServer.authentication_class = DummyAuthentication
 
 worker:
+  # Number of workers that are to be in the worker deployment
   replicas: 2
+  
+  # Image for the worker container
   image:
     repository: quansight/conda-store-server
     pullPolicy: IfNotPresent
     tag: 2024.6.1
+  
+  # Volume attached to the worker volumes that contains conda environments 
+  # and packages. This will bind to the worker with a PVC. To bind your 
+  # PV to the PVC ensure to set the claim ref on your volume. For example
+  # ```
+  #   spec:
+  #     accessModes:
+  #       - ReadWriteMany
+  #     storageClassName: ""
+  #     claimRef:
+  #       name: conda-store-worker-claim
+  # ```
+  environmentsVolume: ""
+
+  # Size of the environmentsVolume
+  environmentsVolumeSize: 2Gi
+
+  # Conda store config as a string. This is mounted into the container as a 
+  # config map to /etc/conda-store/
   condaStoreConfig: |
     from conda_store_server.storage import S3Storage
 
