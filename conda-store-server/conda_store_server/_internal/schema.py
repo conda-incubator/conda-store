@@ -8,11 +8,17 @@ import functools
 import os
 import re
 import sys
-from typing import Any, Callable, Dict, List, Optional, TypeAlias, Union
+from typing import Annotated, Any, Callable, Dict, List, Optional, TypeAlias, Union
 
 from conda_lock.lockfile.v1.models import Lockfile
-from pydantic import BaseModel, Field, ValidationError, constr, validator
-from pydantic.error_wrappers import ErrorWrapper
+from pydantic import (
+    AfterValidator,
+    BaseModel,
+    ConfigDict,
+    Field,
+    StringConstraints,
+    ValidationError,
+)
 
 from conda_store_server._internal import conda_utils, utils
 
@@ -36,7 +42,9 @@ ARN_ALLOWED_REGEX = re.compile(ARN_ALLOWED)
 # Authentication Schema
 #########################
 
-RoleBindings: TypeAlias = Dict[constr(regex=ARN_ALLOWED), List[str]]
+RoleBindings: TypeAlias = Dict[
+    Annotated[str, StringConstraints(pattern=ARN_ALLOWED)], List[str]
+]
 
 
 class Permissions(enum.Enum):
@@ -82,40 +90,32 @@ class StorageBackend(enum.Enum):
 class CondaChannel(BaseModel):
     id: int
     name: str
-    last_update: Optional[datetime.datetime]
-
-    class Config:
-        orm_mode = True
+    last_update: Optional[datetime.datetime] = None
+    model_config = ConfigDict(from_attributes=True)
 
 
 class CondaPackageBuild(BaseModel):
     id: int
     build: str
     sha256: str
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class CondaPackage(BaseModel):
     id: int
     channel: CondaChannel
-    license: Optional[str]
+    license: Optional[str] = None
     name: str
     version: str
-    summary: Optional[str]
-
-    class Config:
-        orm_mode = True
+    summary: Optional[str] = None
+    model_config = ConfigDict(from_attributes=True)
 
 
 class NamespaceRoleMapping(BaseModel):
     id: int
     entity: str
     role: str
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class NamespaceRoleMappingV2(BaseModel):
@@ -123,9 +123,7 @@ class NamespaceRoleMappingV2(BaseModel):
     namespace: str
     other_namespace: str
     role: str
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
     @classmethod
     def from_list(cls, lst):
@@ -134,12 +132,10 @@ class NamespaceRoleMappingV2(BaseModel):
 
 class Namespace(BaseModel):
     id: int
-    name: constr(regex=f"^[{ALLOWED_CHARACTERS}]+$")  # noqa: F722
+    name: Annotated[str, StringConstraints(pattern=f"^[{ALLOWED_CHARACTERS}]+$")]  # noqa: F722
     metadata_: Dict[str, Any] = None
     role_mappings: List[NamespaceRoleMapping] = []
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class Specification(BaseModel):
@@ -148,9 +144,7 @@ class Specification(BaseModel):
     spec: dict
     sha256: str
     created_on: datetime.datetime
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class BuildArtifactType(enum.Enum):
@@ -177,28 +171,22 @@ class BuildArtifact(BaseModel):
     id: int
     artifact_type: BuildArtifactType
     key: str
-
-    class Config:
-        orm_mode = True
-        use_enum_values = True
+    model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
 
 class Build(BaseModel):
     id: int
     environment_id: int
-    specification: Optional[Specification]
-    packages: Optional[List[CondaPackage]]
+    specification: Optional[Specification] = None
+    packages: Optional[List[CondaPackage]] = None
     status: BuildStatus
-    status_info: Optional[str]
+    status_info: Optional[str] = None
     size: int
     scheduled_on: datetime.datetime
-    started_on: Optional[datetime.datetime]
-    ended_on: Optional[datetime.datetime]
-    build_artifacts: Optional[List[BuildArtifact]]
-
-    class Config:
-        orm_mode = True
-        use_enum_values = True
+    started_on: Optional[datetime.datetime] = None
+    ended_on: Optional[datetime.datetime] = None
+    build_artifacts: Optional[List[BuildArtifact]] = None
+    model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
 
 class Environment(BaseModel):
@@ -206,12 +194,10 @@ class Environment(BaseModel):
     namespace: Namespace
     name: str
     current_build_id: int
-    current_build: Optional[Build]
+    current_build: Optional[Build] = None
 
-    description: Optional[str]
-
-    class Config:
-        orm_mode = True
+    description: Optional[str] = None
+    model_config = ConfigDict(from_attributes=True)
 
 
 class Settings(BaseModel):
@@ -378,67 +364,27 @@ class Settings(BaseModel):
         metadata={"global": False},
     )
 
-    @validator("build_artifacts", each_item=True)
-    def check_build_artifacts(cls, v):
-        return BuildArtifactType(v)
+    model_config = ConfigDict(use_enum_values=True)
 
-    @validator("build_artifacts_kept_on_deletion", each_item=True)
-    def check_build_artifacts_kept_on_deletion(cls, v):
-        return BuildArtifactType(v)
 
-    class Config:
-        use_enum_values = True
+PipArg = Annotated[str, AfterValidator(lambda v: check_pip(v))]
 
 
 # Conda Environment
 class CondaSpecificationPip(BaseModel):
-    pip: List[str] = []
+    pip: List[PipArg] = []
 
-    @validator("pip", each_item=True)
-    def check_pip(cls, v):
-        from pkg_resources import Requirement
 
-        allowed_pip_params = ["--index-url", "--extra-index-url", "--trusted-host"]
-
-        if v.startswith("--"):
-            match = re.fullmatch("(.+?)[ =](.*)", v)
-            if match is None or match.group(1) not in allowed_pip_params:
-                raise ValueError(
-                    f"Invalid pip option '{v}' supported options are {allowed_pip_params}"
-                )
-        else:
-            try:
-                Requirement.parse(v)
-            except Exception:
-                raise ValueError(
-                    f'Invalid pypi package dependency "{v}" ensure it follows peps https://peps.python.org/pep-0508/ and https://peps.python.org/pep-0440/'
-                )
-
-        return v
+CondaDep = Annotated[str, AfterValidator(lambda v: check_dependencies(v))]
 
 
 class CondaSpecification(BaseModel):
-    name: constr(regex=f"^[{ALLOWED_CHARACTERS}]+$")  # noqa: F722
+    name: Annotated[str, StringConstraints(pattern=f"^[{ALLOWED_CHARACTERS}]+$")]  # noqa: F722
     channels: List[str] = []
-    dependencies: List[Union[str, CondaSpecificationPip]] = []
-    variables: Optional[Dict[str, Union[str, int]]]
-    prefix: Optional[str]
+    dependencies: List[PipArg | CondaSpecificationPip] = []
+    variables: Optional[Dict[str, Union[str, int]]] = None
+    prefix: Optional[str] = None
     description: Optional[str] = ""
-
-    @validator("dependencies", each_item=True)
-    def check_dependencies(cls, v):
-        from conda.models.match_spec import MatchSpec
-
-        if not isinstance(v, str):
-            return v  # ignore pip field
-
-        try:
-            MatchSpec(v)
-        except Exception as e:
-            print(e)
-            raise ValueError(f"Invalid conda package dependency specification {v}")
-
-        return v
 
     @classmethod
     def parse_obj(cls, specification):
@@ -478,7 +424,7 @@ class CondaSpecification(BaseModel):
 
 
 class LockfileSpecification(BaseModel):
-    name: constr(regex=f"^[{ALLOWED_CHARACTERS}]+$")  # noqa: F722
+    name: Annotated[str, StringConstraints(pattern=f"^[{ALLOWED_CHARACTERS}]+$")]  # noqa: F722
     description: Optional[str] = ""
     lockfile: Lockfile
 
@@ -494,15 +440,8 @@ class LockfileSpecification(BaseModel):
         lockfile = specification.get("lockfile")
         version = lockfile and lockfile.pop("version", None)
         if version not in (None, 1):
-            # https://stackoverflow.com/questions/73968566/with-pydantic-how-can-i-create-my-own-validationerror-reason
             raise ValidationError(
-                [
-                    ErrorWrapper(
-                        ValueError("expected no version field or version equal to 1"),
-                        "lockfile -> version",
-                    )
-                ],
-                LockfileSpecification,
+                "Expected lockfile to have no version field, or version=1",
             )
 
         return super().parse_obj(specification)
@@ -567,7 +506,7 @@ class DockerConfigConfig(BaseModel):
     Cmd: List[str] = ["/bin/sh"]
     ArgsEscaped: bool = True
     Image: Optional[str] = None
-    Volumes: Optional[List[str]]
+    Volumes: Optional[List[str]] = None
     WorkingDir: str = ""
     Entrypoint: Optional[str] = None
     OnBuild: Optional[str] = None
@@ -638,8 +577,8 @@ class APIStatus(enum.Enum):
 
 class APIResponse(BaseModel):
     status: APIStatus
-    data: Optional[Any]
-    message: Optional[str]
+    data: Optional[Any] = None
+    message: Optional[str] = None
 
 
 class APIPaginatedResponse(APIResponse):
@@ -650,7 +589,7 @@ class APIPaginatedResponse(APIResponse):
 
 class APIAckResponse(BaseModel):
     status: APIStatus
-    message: Optional[str]
+    message: Optional[str] = None
 
 
 # GET /api/v1
@@ -668,7 +607,7 @@ class APIGetPermissionData(BaseModel):
     primary_namespace: str
     entity_permissions: Dict[str, List[str]]
     entity_roles: Dict[str, List[str]]
-    expiration: Optional[datetime.datetime]
+    expiration: Optional[datetime.datetime] = None
 
 
 class APIGetPermission(APIResponse):
@@ -769,3 +708,64 @@ class APIPutSetting(APIResponse):
 # GET /api/v1/usage/
 class APIGetUsage(APIResponse):
     data: Dict[str, Dict[str, Any]]
+
+
+def check_pip(v: str) -> str:
+    """Check that pip options and dependencies are valid.
+
+    Parameters
+    ----------
+    v : str
+        Pip package name or CLI arg to validate
+
+    Returns
+    -------
+    str
+        Validated pip package name or CLI arg
+    """
+    from pkg_resources import Requirement
+
+    allowed_pip_params = ["--index-url", "--extra-index-url", "--trusted-host"]
+
+    if v.startswith("--"):
+        match = re.fullmatch("(.+?)[ =](.*)", v)
+        if match is None or match.group(1) not in allowed_pip_params:
+            raise ValueError(
+                f"Invalid pip option '{v}' supported options are {allowed_pip_params}"
+            )
+    else:
+        try:
+            Requirement.parse(v)
+        except Exception:
+            raise ValueError(
+                f'Invalid pypi package dependency "{v}" ensure it follows peps https://peps.python.org/pep-0508/ and https://peps.python.org/pep-0440/'
+            )
+
+    return v
+
+
+def check_dependencies(v: str | CondaSpecificationPip) -> str | CondaSpecificationPip:
+    """Check that the dependency is either a list of pip args or a conda MatchSpec.
+
+    Parameters
+    ----------
+    v : str | CondaSpecificationPip
+        A list of pip args or a valid conda MatchSpec object
+
+    Returns
+    -------
+    str | CondaSpecificationPip
+        The validated dependency
+    """
+    from conda.models.match_spec import MatchSpec
+
+    if not isinstance(v, str):
+        return v  # ignore pip field
+
+    try:
+        MatchSpec(v)
+    except Exception as e:
+        print(e)
+        raise ValueError(f"Invalid conda package dependency specification {v}")
+
+    return v
