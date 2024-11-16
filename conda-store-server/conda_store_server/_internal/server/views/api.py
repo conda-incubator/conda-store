@@ -300,7 +300,7 @@ async def api_get_namespace(
 
         return {
             "status": "ok",
-            "data": schema.Namespace.from_orm(namespace).dict(),
+            "data": schema.Namespace.from_orm(namespace).model_dump(),
         }
 
 
@@ -426,7 +426,7 @@ async def api_get_namespace_roles(
         db.commit()
         return {
             "status": "ok",
-            "data": [x.dict() for x in data],
+            "data": [x.model_dump() for x in data],
         }
 
 
@@ -492,7 +492,7 @@ async def api_get_namespace_role(
             raise HTTPException(status_code=404, detail="failed to find role")
         return {
             "status": "ok",
-            "data": data.dict(),
+            "data": data.model_dump(),
         }
 
 
@@ -1433,7 +1433,9 @@ async def api_get_settings(
 
         return {
             "status": "ok",
-            "data": conda_store.get_settings(db, namespace, environment_name).dict(),
+            "data": conda_store.get_settings(
+                db, namespace, environment_name
+            ).model_dump(),
             "message": None,
         }
 

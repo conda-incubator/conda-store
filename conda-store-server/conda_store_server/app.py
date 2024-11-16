@@ -498,7 +498,7 @@ class CondaStore(LoggingConfigurable):
             build_artifacts=self.build_artifacts,
             # default_docker_base_image=self.default_docker_base_image,
         )
-        api.set_kvstore_key_values(db, "setting", settings.dict(), update=False)
+        api.set_kvstore_key_values(db, "setting", settings.model_dump(), update=False)
 
     def ensure_namespace(self, db: Session):
         """Ensure that conda-store default namespaces exists"""
@@ -648,7 +648,7 @@ class CondaStore(LoggingConfigurable):
                 specification=schema.CondaSpecification.parse_obj(specification),
             )
 
-        spec_sha256 = utils.datastructure_hash(specification_model.dict())
+        spec_sha256 = utils.datastructure_hash(specification_model.model_dump())
         matching_specification = api.get_specification(db, sha256=spec_sha256)
         if (
             matching_specification is not None

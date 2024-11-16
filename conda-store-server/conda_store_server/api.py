@@ -110,7 +110,7 @@ def update_namespace_metadata(
 def get_namespace_roles(
     db,
     name: str,
-):
+) -> list[schema.NamespaceRoleMappingV2]:
     """Which namespaces can access namespace 'name'?"""
     namespace = get_namespace(db, name)
     if namespace is None:
@@ -170,7 +170,7 @@ def get_namespace_role(
     db,
     name: str,
     other: str,
-):
+) -> schema.NamespaceRoleMappingV2 | None:
     namespace = get_namespace(db, name)
     if namespace is None:
         raise ValueError(f"Namespace='{name}' not found")
@@ -433,7 +433,7 @@ def ensure_specification(
     specification: Union[schema.CondaSpecification, schema.LockfileSpecification],
     is_lockfile: bool = False,
 ):
-    specification_sha256 = utils.datastructure_hash(specification.dict())
+    specification_sha256 = utils.datastructure_hash(specification.model_dump())
     specification_orm = get_specification(db, sha256=specification_sha256)
 
     if specification_orm is None:
@@ -450,7 +450,9 @@ def create_speficication(
     specification: Union[schema.CondaSpecification, schema.LockfileSpecification],
     is_lockfile: bool = False,
 ):
-    specification_orm = orm.Specification(specification.dict(), is_lockfile=is_lockfile)
+    specification_orm = orm.Specification(
+        specification.model_dump(), is_lockfile=is_lockfile
+    )
     db.add(specification_orm)
     return specification_orm
 

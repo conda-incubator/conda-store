@@ -127,7 +127,7 @@ class NamespaceRoleMappingV2(BaseModel):
 
     @classmethod
     def from_list(cls, lst):
-        return cls(**{k: v for k, v in zip(cls.__fields__.keys(), lst, strict=False)})
+        return cls(**{k: v for k, v in zip(cls.model_fields.keys(), lst, strict=False)})
 
 
 class Namespace(BaseModel):
@@ -447,7 +447,7 @@ class LockfileSpecification(BaseModel):
         return super().parse_obj(specification)
 
     def dict(self):
-        res = super().dict()
+        res = super().model_dump()
         # The dict_for_output method includes the version field into the output
         # and excludes unset fields. Without the version field present,
         # conda-lock would reject a lockfile during parsing, so it wouldn't be

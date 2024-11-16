@@ -17,7 +17,7 @@ def action_install_specification(
 ):
     environment_filename = pathlib.Path.cwd() / "environment.yaml"
     with environment_filename.open("w") as f:
-        json.dump(specification.dict(), f)
+        json.dump(specification.model_dump(), f)
 
     command = [
         conda_command,
