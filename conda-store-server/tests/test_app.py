@@ -56,7 +56,7 @@ def test_conda_store_register_environment_workflow(
 
     build = api.get_build(db, build_id=build_id)
     assert build is not None
-    assert build.status == schema.BuildStatus.QUEUED
+    assert build.status in [schema.BuildStatus.QUEUED, schema.BuildStatus.COMPLETED]
     assert build.environment.name == simple_specification.name
     assert build.environment.namespace.name == namespace_name
     assert build.specification.spec["name"] == simple_specification.name

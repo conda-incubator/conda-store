@@ -147,7 +147,8 @@ class Specification(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class BuildArtifactType(enum.Enum):
+# Use str mixin to allow pydantic to serialize Settings models
+class BuildArtifactType(str, enum.Enum):
     DIRECTORY = "DIRECTORY"
     LOCKFILE = "LOCKFILE"
     LOGS = "LOGS"
@@ -363,8 +364,6 @@ class Settings(BaseModel):
         description="default base image used for the Dockerized environments. Make sure to have a proper glibc within image (highly discourage alpine/musl based images). Can also be callable function which takes the `orm.Build` object as input which has access to all attributes about the build such as install packages, requested packages, name, namespace, etc",
         metadata={"global": False},
     )
-
-    model_config = ConfigDict(use_enum_values=True)
 
 
 PipArg = Annotated[str, AfterValidator(lambda v: check_pip(v))]
