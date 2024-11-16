@@ -527,14 +527,14 @@ class CondaStore(LoggingConfigurable):
         environment_name: str = None,
         data: Dict[str, Any] = {},
     ):
-        setting_keys = schema.Settings.__fields__.keys()
+        setting_keys = schema.Settings.model_fields.keys()
         if not data.keys() <= setting_keys:
             invalid_keys = data.keys() - setting_keys
             raise ValueError(f"Invalid setting keys {invalid_keys}")
 
         for key, value in data.items():
-            field = schema.Settings.__fields__[key]
-            global_setting = field.field_info.extra["metadata"]["global"]
+            field = schema.Settings.model_fields[key]
+            global_setting = field.json_schema_extra["metadata"]["global"]
             if global_setting and (
                 namespace is not None or environment_name is not None
             ):
@@ -543,10 +543,11 @@ class CondaStore(LoggingConfigurable):
                 )
 
             try:
-                pydantic.parse_obj_as(field.outer_type_, value)
+                validator = pydantic.TypeAdapter(field.annotation)
+                validator.validate_python(value)
             except Exception as e:
                 raise ValueError(
-                    f"Invalid parsing of setting {key} expected type {field.outer_type_} ran into error {e}"
+                    f"Invalid parsing of setting {key} expected type {field.annotation} ran into error {e}"
                 )
 
         if namespace is not None and environment_name is not None:

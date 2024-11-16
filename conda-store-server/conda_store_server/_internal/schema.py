@@ -379,12 +379,12 @@ CondaDep = Annotated[str, AfterValidator(lambda v: check_dependencies(v))]
 
 
 class CondaSpecification(BaseModel):
-    name: Annotated[str, StringConstraints(pattern=f"^[{ALLOWED_CHARACTERS}]+$")]  # noqa: F722
     channels: List[str] = []
-    dependencies: List[PipArg | CondaSpecificationPip] = []
-    variables: Optional[Dict[str, Union[str, int]]] = None
-    prefix: Optional[str] = None
+    dependencies: List[CondaDep | CondaSpecificationPip] = []
     description: Optional[str] = ""
+    name: Annotated[str, StringConstraints(pattern=f"^[{ALLOWED_CHARACTERS}]+$")]
+    prefix: Optional[str] = None
+    variables: Optional[Dict[str, Union[str, int]]] = None
 
     @classmethod
     def parse_obj(cls, specification):
