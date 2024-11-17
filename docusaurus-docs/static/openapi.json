@@ -1015,7 +1015,7 @@
   },
   "info": {
     "title": "conda-store",
-    "version": "2024.11.1"
+    "version": "2024.11.2-dev"
   },
   "openapi": "3.1.0",
   "paths": {
