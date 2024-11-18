@@ -11,11 +11,11 @@ import yaml
 from conda_lock.conda_lock import run_lock
 
 from conda_store_server._internal import conda_utils, schema, utils
-from conda_store_server.plugins import hookspec
 from conda_store_server.plugins.plugin_context import PluginContext
+from conda_store_server.plugins.types.lock import LockPlugin
 
 
-class CondaLock:
+class CondaLock(LockPlugin):
     @classmethod
     def name(cls):
         return "lock-conda_lock"
@@ -26,8 +26,10 @@ class CondaLock:
         self.conda_command = conda_command
         self.conda_flags = conda_flags
 
+    def synopsis(self) -> str:
+        return "Generate a lockfile using conda-lock"
+
     @utils.run_in_tempdir
-    @hookspec.hookimpl
     def lock_environment(
         self,
         context: PluginContext,
