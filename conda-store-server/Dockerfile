@@ -15,7 +15,7 @@ ENV PATH=/opt/conda/condabin:/opt/conda/envs/conda-store-server/bin:/opt/conda/b
 ENV TZ=Etc/UTC
 
 # must be passed at build environment (should use .python-version-default)
-ARG python_version
+ARG python_version="3.12"
 ARG conda_env_name="conda-store-server"
 ARG user_no=1000
 

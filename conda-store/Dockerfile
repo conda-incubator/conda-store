@@ -13,7 +13,7 @@ FROM condaforge/miniforge3:24.7.1-0 AS base
 LABEL org.opencontainers.image.authors="conda-store development team"
 
 # must be passed at build environment (should use .python-version-default)
-ARG python_version
+ARG python_version="3.12"
 ARG conda_env_name="conda-store"
 ARG user_no=1000
 
@@ -49,17 +49,17 @@ RUN PSEUDO_VERSION=$(git describe --tags) && \
 
 # ---------------------------------------------------------------------------------
 # for production-ready images we install a specific version of conda-store
-# FROM base AS prod
+FROM base AS prod
 
-# ARG RELEASE_VERSION
+ARG RELEASE_VERSION
 
-# WORKDIR /opt/conda-store
+WORKDIR /opt/conda-store
 
-# RUN which python && \
-#     python -m pip install conda-store==${RELEASE_VERSION} --no-cache-dir
+RUN which python && \
+    python -m pip install conda-store==${RELEASE_VERSION} --no-cache-dir
 
-# USER conda-store
-# WORKDIR /opt/jupyterhub
+USER conda-store
+WORKDIR /opt/jupyterhub
 # ---------------------------------------------------------------------------------
 
 # ---------------------------------------------------------------------------------
