@@ -35,7 +35,7 @@ class PluginContext:
 
     def run_command(self, command, redirect_stderr=True, **kwargs):
         """Runs command and immediately writes to logs"""
-        self.log.info(f"Running command: {' '.join(command)}")
+        self.log.info("Running command: %s", command)
 
         # Unlike subprocess.run, Popen doesn't support the check argument, so
         # ignore it. The code below always checks the return code
@@ -58,17 +58,3 @@ class PluginContext:
 
         if p.returncode != 0:
             raise subprocess.CalledProcessError(p.returncode, p.args)
-
-    def run(self, *args, redirect_stderr=True, **kwargs):
-        """Runs command waiting for it to succeed before writing to logs"""
-        result = subprocess.run(
-            *args,
-            **kwargs,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT if redirect_stderr else subprocess.PIPE,
-            encoding="utf-8",
-        )
-        self.stdout.write(result.stdout)
-        if not redirect_stderr:
-            self.stderr.write(result.stderr)
-        return result

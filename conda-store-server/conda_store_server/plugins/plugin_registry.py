@@ -37,5 +37,6 @@ class PluginRegistry:
 
     def collect_plugins(self):
         """Registers all availble plugins with the plugin registry"""
+        # TODO: support loading user defined plugins (eg. https://github.com/conda/conda/blob/cf3a0fa9ce01ada7a4a0c934e17be44b94d4eb91/conda/plugins/manager.py#L131)
         for plugin in BUILTIN_PLUGINS:
             self.register_plugin(plugin)
