@@ -10,7 +10,6 @@ import pathlib
 import shutil
 import sys
 from functools import partial
-
 from typing import List, Optional
 
 from sqlalchemy import (
@@ -19,9 +18,7 @@ from sqlalchemy import (
     Boolean,
     Column,
     DateTime,
-    Enum,
     ForeignKey,
-    Integer,
     Table,
     Text,
     Unicode,
@@ -33,9 +30,9 @@ from sqlalchemy import (
 )
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import (
-    backref,
     DeclarativeBase,
     Mapped,
+    backref,
     mapped_column,
     relationship,
     sessionmaker,
@@ -69,7 +66,7 @@ class Namespace(Base):
     __tablename__ = "namespace"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    
+
     name: Mapped[str] = mapped_column(Unicode(255), unique=True)
 
     environments: Mapped[List["Environment"]] = relationship(back_populates="namespace")
@@ -78,7 +75,9 @@ class Namespace(Base):
 
     metadata_: Mapped[Optional[dict]] = mapped_column(JSON, default=dict, nullable=True)
 
-    role_mappings: Mapped[List["NamespaceRoleMapping"]] = relationship("NamespaceRoleMapping", back_populates="namespace")
+    role_mappings: Mapped[List["NamespaceRoleMapping"]] = relationship(
+        "NamespaceRoleMapping", back_populates="namespace"
+    )
 
 
 class NamespaceRoleMapping(Base):
@@ -87,7 +86,9 @@ class NamespaceRoleMapping(Base):
     __tablename__ = "namespace_role_mapping"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    namespace_id: Mapped[int] = mapped_column(ForeignKey("namespace.id"), nullable=False)
+    namespace_id: Mapped[int] = mapped_column(
+        ForeignKey("namespace.id"), nullable=False
+    )
     namespace: Mapped["Namespace"] = relationship(back_populates="role_mappings")
 
     # arn e.g. <namespace>/<name> like `quansight-*/*` or `quansight-devops/*`
@@ -121,12 +122,18 @@ class NamespaceRoleMappingV2(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     # Provides access to this namespace
-    namespace_id: Mapped[int] = mapped_column(ForeignKey("namespace.id"), nullable=False)
+    namespace_id: Mapped[int] = mapped_column(
+        ForeignKey("namespace.id"), nullable=False
+    )
     namespace: Mapped["Namespace"] = relationship(foreign_keys=[namespace_id])
 
     # ... for other namespace
-    other_namespace_id: Mapped[int] = mapped_column(ForeignKey("namespace.id"), nullable=False)
-    other_namespace: Mapped["Namespace"] = relationship(foreign_keys=[other_namespace_id])
+    other_namespace_id: Mapped[int] = mapped_column(
+        ForeignKey("namespace.id"), nullable=False
+    )
+    other_namespace: Mapped["Namespace"] = relationship(
+        foreign_keys=[other_namespace_id]
+    )
 
     # ... with this role, like 'viewer'
     role: Mapped[str] = mapped_column(Unicode(255), nullable=False)
@@ -166,11 +173,13 @@ class Specification(Base):
     name: Mapped[str] = mapped_column(Unicode(255), nullable=False)
     spec: Mapped[dict] = mapped_column(JSON, nullable=False)
     sha256: Mapped[str] = mapped_column(Unicode(255), unique=True, nullable=False)
-    created_on: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow)
+    created_on: Mapped[datetime.datetime] = mapped_column(
+        DateTime, default=datetime.datetime.utcnow
+    )
     is_lockfile: Mapped[bool]
 
     builds: Mapped[List["Build"]] = relationship(back_populates="specification")
-    solves: Mapped[List["Solve"]]  = relationship(back_populates="specification")
+    solves: Mapped[List["Solve"]] = relationship(back_populates="specification")
 
 
 solve_conda_package_build = Table(
@@ -191,14 +200,20 @@ class Solve(Base):
     __tablename__ = "solve"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    specification_id: Mapped[str] = mapped_column(ForeignKey("specification.id"), nullable=False)
+    specification_id: Mapped[str] = mapped_column(
+        ForeignKey("specification.id"), nullable=False
+    )
     specification: Mapped["Specification"] = relationship(back_populates="solves")
 
-    scheduled_on: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow)
+    scheduled_on: Mapped[datetime.datetime] = mapped_column(
+        DateTime, default=datetime.datetime.utcnow
+    )
     started_on: Mapped[datetime.datetime] = mapped_column(DateTime, default=None)
     ended_on: Mapped[datetime.datetime] = mapped_column(DateTime, default=None)
 
-    package_builds: Mapped[List["CondaPackageBuild"]] = relationship(secondary=solve_conda_package_build)
+    package_builds: Mapped[List["CondaPackageBuild"]] = relationship(
+        secondary=solve_conda_package_build
+    )
 
 
 build_conda_package = Table(
@@ -219,23 +234,33 @@ class Build(Base):
     __tablename__ = "build"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    specification_id: Mapped[int] = mapped_column(ForeignKey("specification.id"), nullable=False)
-    specification: Mapped["Specification"]  = relationship(back_populates="builds")
+    specification_id: Mapped[int] = mapped_column(
+        ForeignKey("specification.id"), nullable=False
+    )
+    specification: Mapped["Specification"] = relationship(back_populates="builds")
 
-    environment_id: Mapped[int] = mapped_column(ForeignKey("environment.id"), nullable=False)
+    environment_id: Mapped[int] = mapped_column(
+        ForeignKey("environment.id"), nullable=False
+    )
     environment: Mapped["Environment"] = relationship(
         backref=backref("builds", cascade="all, delete-orphan"),
         foreign_keys=[environment_id],
     )
 
-    package_builds: Mapped[List["CondaPackageBuild"]] = relationship(secondary=build_conda_package)
+    package_builds: Mapped[List["CondaPackageBuild"]] = relationship(
+        secondary=build_conda_package
+    )
 
-    status: Mapped[schema.BuildStatus] = mapped_column(default=schema.BuildStatus.QUEUED)
+    status: Mapped[schema.BuildStatus] = mapped_column(
+        default=schema.BuildStatus.QUEUED
+    )
     # Additional status info that will be provided to the user. DO NOT put
     # sensitive data here
     status_info: Mapped[str] = mapped_column(UnicodeText, default=None)
     size: Mapped[int] = mapped_column(BigInteger, default=0)
-    scheduled_on: Mapped[datetime.datetime] = mapped_column(DateTime, default=datetime.datetime.utcnow)
+    scheduled_on: Mapped[datetime.datetime] = mapped_column(
+        DateTime, default=datetime.datetime.utcnow
+    )
     started_on: Mapped[datetime.datetime] = mapped_column(DateTime, default=None)
     ended_on: Mapped[datetime.datetime] = mapped_column(DateTime, default=None)
     deleted_on: Mapped[datetime.datetime] = mapped_column(DateTime, default=None)
@@ -250,7 +275,9 @@ class Build(Base):
 
         return BuildKey.current_version()
 
-    build_key_version: Mapped[int] = mapped_column(default=_get_build_key_version, nullable=False)
+    build_key_version: Mapped[int] = mapped_column(
+        default=_get_build_key_version, nullable=False
+    )
 
     @validates("build_key_version")
     def validate_build_key_version(self, key, build_key_version):
@@ -449,7 +476,9 @@ class Environment(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    namespace_id: Mapped[int] = mapped_column(ForeignKey("namespace.id"), nullable=False)
+    namespace_id: Mapped[int] = mapped_column(
+        ForeignKey("namespace.id"), nullable=False
+    )
     namespace: Mapped["Namespace"] = relationship(Namespace)
 
     name: Mapped[str] = mapped_column(Unicode(255), nullable=False)

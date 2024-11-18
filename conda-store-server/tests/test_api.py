@@ -3,7 +3,6 @@
 # license that can be found in the LICENSE file.
 
 import pytest
-from sqlalchemy.exc import IntegrityError
 
 from conda_store_server import api
 from conda_store_server._internal.orm import NamespaceRoleMapping
@@ -126,30 +125,38 @@ def test_namespace_role_mapping(db):
     assert len(api.list_namespaces(db).all()) == 1
 
     # Creates role mappings with valid entity names
-    db.add(NamespaceRoleMapping(
-        namespace=namespace,
-        namespace_id=namespace.id,
-        entity="org/*",
-        role="editor",
-    ))
-    db.add(NamespaceRoleMapping(
-        namespace=namespace,
-        namespace_id=namespace.id,
-        entity="*/team",
-        role="editor",
-    ))
-    db.add(NamespaceRoleMapping(
-        namespace=namespace,
-        namespace_id=namespace.id,
-        entity="org/team",
-        role="editor",
-    ))
-    db.add(NamespaceRoleMapping(
-        namespace=namespace,
-        namespace_id=namespace.id,
-        entity="*/*",
-        role="editor",
-    ))
+    db.add(
+        NamespaceRoleMapping(
+            namespace=namespace,
+            namespace_id=namespace.id,
+            entity="org/*",
+            role="editor",
+        )
+    )
+    db.add(
+        NamespaceRoleMapping(
+            namespace=namespace,
+            namespace_id=namespace.id,
+            entity="*/team",
+            role="editor",
+        )
+    )
+    db.add(
+        NamespaceRoleMapping(
+            namespace=namespace,
+            namespace_id=namespace.id,
+            entity="org/team",
+            role="editor",
+        )
+    )
+    db.add(
+        NamespaceRoleMapping(
+            namespace=namespace,
+            namespace_id=namespace.id,
+            entity="*/*",
+            role="editor",
+        )
+    )
 
     # Check that the namespace role mappings were correctly inserted;
     # this will fail if they were not correctly instantiated.
@@ -157,11 +164,13 @@ def test_namespace_role_mapping(db):
 
     # Create a role mapping with a failing entity
     with pytest.raises(Exception):
-        db.add(NamespaceRoleMapping(
-            namespace=namespace,
-            namespace_id=namespace.id,
-            entity="invalid_entity_name",
-        ))
+        db.add(
+            NamespaceRoleMapping(
+                namespace=namespace,
+                namespace_id=namespace.id,
+                entity="invalid_entity_name",
+            )
+        )
 
 
 @pytest.mark.parametrize(
