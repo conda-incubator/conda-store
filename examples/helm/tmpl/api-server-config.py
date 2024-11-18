@@ -7,6 +7,7 @@ from conda_store_server.storage import S3Storage
 # ==================================
 #      conda-store settings
 # ==================================
+c.CondaStore.storage_threshold = 1024
 c.CondaStore.storage_class = S3Storage
 c.CondaStore.store_directory = "/opt/conda-store/conda-store/"
 c.CondaStore.database_url = f"postgresql+psycopg2://{os.environ.get('POSTGRES_USERNAME')}:{os.environ.get('POSTGRES_PASSWORD')}@postgres/conda-store"

@@ -3,4 +3,4 @@ name: conda-store
 description: A Helm chart for deploying conda-store to kubernetes
 type: application
 version: 0.1.0
-appVersion: "2024.6.1"
+appVersion: "2024.11.1"

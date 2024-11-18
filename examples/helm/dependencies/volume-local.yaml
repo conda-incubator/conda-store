@@ -7,18 +7,10 @@ spec:
     storage: 2Gi
   accessModes:
     - ReadWriteMany
-  volumeMode: Filesystem
-  storageClassName: local-storage
-  local:
-    path: /tmp/mnt-vol-kub
+  hostPath:
+    path: /tmp/hostpath-provisioner/conda-store/conda-store-worker-environments
+  persistentVolumeReclaimPolicy: Delete
+  storageClassName: standard
   claimRef:
     namespace: conda-store
     name: conda-store-worker-claim
-  nodeAffinity:
-    required:
-      nodeSelectorTerms:
-        - matchExpressions:
-            - key: kubernetes.io/hostname
-              operator: In
-              values:
-                - minikube
