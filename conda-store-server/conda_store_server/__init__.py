@@ -6,18 +6,43 @@ from __future__ import annotations
 import datetime
 import hashlib
 import typing
-
-import platformdirs
+from pathlib import Path
 
 if typing.TYPE_CHECKING:
     from ._internal.orm import Build
     from .app import CondaStore
 
+# For runtime, we use platformdirs to get the user data directory and ensure
+# this is cross-platform
+try:
+    import platformdirs
 
-__version__ = "2024.11.2-dev"
+    CONDA_STORE_DIR = platformdirs.user_data_path(appname="conda-store")
+# at build time, we use Path.home() to default to the user's home directory
+# this is a workaround as we cannot import platformdirs at build time
+except ImportError:
+    CONDA_STORE_DIR = Path.home() / ".conda-store"
 
+# Since we are now using vcs we need to define the variable '__version__':
+try:
+    # If setuptools_scm is installed (e.g. in a development environment with
+    # an editable install), then use it to determine the version dynamically.
+    from setuptools_scm import get_version
 
-CONDA_STORE_DIR = platformdirs.user_data_path(appname="conda-store")
+    # This will fail with LookupError if the package is not installed in
+    # editable mode or if Git is not installed.
+    __version__ = get_version(root="../..", relative_to=__file__)
+except (ImportError, LookupError):
+    # As a fallback, use the version that is hard-coded in the file.
+    try:
+        from conda_store_server._version import __version__  # noqa: F401
+    except ModuleNotFoundError:
+        # The user is probably trying to run this without having installed
+        # the package, so complain.
+        raise RuntimeError(
+            "conda-store-server is not correctly installed. "
+            "Please install it with pip."
+        )
 
 
 class BuildKey:

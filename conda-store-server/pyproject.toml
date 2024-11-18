@@ -3,7 +3,7 @@
 # license that can be found in the LICENSE file.
 [build-system]
 # https://github.com/ofek/hatch-vcs
-requires = ["hatchling>=1.14.0", "hatch-vcs"]
+requires = ["hatchling>=1.14.0", "hatch-vcs", "hatch-fancy-pypi-readme"]
 build-backend = "hatchling.build"
 
 [project]
@@ -81,11 +81,16 @@ dynamic = ["version"]
 
 [project.urls]
 Homepage = "https://conda.store/"
-Source = "https://github.com/conda-incubator/conda-store"
+Source = "https://github.com/conda-incubator/conda-store/conda-store-server"
 Issues = "https://github.com/conda-incubator/conda-store/issues"
 
 [tool.hatch.version]
-path = "conda_store_server/__init__.py"
+source = "vcs"
+# need to specify root as .git is one level up
+raw-options = { root = "../", relative_to = "pyproject.toml", local_scheme = "node-and-date" }
+
+[tool.hatch.build.hooks.vcs]
+version-file = "conda_store_server/_version.py"
 
 [tool.hatch.envs.dev]
 dependencies = [
@@ -100,6 +105,7 @@ dependencies = [
   "twine>=5.0.0",
   "pkginfo>=1.10", # Needed to support metadata 2.3
   "pytest-cov",
+  "setuptools-scm>=6.4.0"
 ]
 
 [tool.hatch.envs.lint]
@@ -107,6 +113,8 @@ dependencies = ["pre-commit"]
 
 [tool.hatch.envs.lint.scripts]
 lint = ["pre-commit run --all"]
+
+[tool.hatch.envs.test.scripts]
 unit-test = "pytest -m 'not extended_prefix and not user_journey' tests"
 playwright-test = [
   "playwright install",

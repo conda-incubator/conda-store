@@ -5,13 +5,15 @@
 # conda-store (core) Dockerfile
 # the generated Docker image is used with docker compose to run the conda-store
 # worker and public conda-store Docker images
+# To build locally, run:
+# docker build --rm -f "conda-store/Dockerfile" -t conda-store:latest "conda-store"  --platform=linux/arm64 .
 
 FROM condaforge/miniforge3:24.7.1-0 AS base
 
 LABEL org.opencontainers.image.authors="conda-store development team"
 
 # must be passed at build environment (should use .python-version-default)
-ARG python_version
+ARG python_version="3.12"
 ARG conda_env_name="conda-store"
 ARG user_no=1000
 
@@ -37,6 +39,13 @@ RUN mamba create --name ${conda_env_name} \
     conda clean --force-pkgs-dirs
 
 COPY ./ /opt/conda-store/
+COPY --from=repo_root .git/ /opt/conda-store/.git/
+
+# needed to get the dynamic version for the project
+WORKDIR /opt/conda-store
+RUN PSEUDO_VERSION=$(git describe --tags) && \
+    echo "PSEUDO_VERSION=${PSEUDO_VERSION}" > /etc/environment && \
+    echo ${PSEUDO_VERSION}
 
 # ---------------------------------------------------------------------------------
 # for production-ready images we install a specific version of conda-store
@@ -45,7 +54,6 @@ FROM base AS prod
 ARG RELEASE_VERSION
 
 WORKDIR /opt/conda-store
-
 
 RUN which python && \
     python -m pip install conda-store==${RELEASE_VERSION} --no-cache-dir
@@ -58,12 +66,16 @@ WORKDIR /opt/jupyterhub
 # for development images we install conda-store-server in editable mode
 FROM base AS dev
 
+# we need to set the environment variable for setuptools_scm to work
+ENV SETUPTOOLS_SCM_PRETEND_VERSION_FOR_CONDA_STORE=${PSEUDO_VERSION}
 
 RUN --mount=type=cache,target=/root/.cache/pip
 WORKDIR /opt/conda-store
 
 RUN which python && \
-    python -m pip install -e . --no-cache-dir
+    echo ${PSEUDO_VERSION} && \
+    echo ${SETUPTOOLS_SCM_PRETEND_VERSION_FOR_CONDA_STORE}
+# pip install -e . --no-cache-dir
 
 USER conda-store
 WORKDIR /opt/jupyterhub

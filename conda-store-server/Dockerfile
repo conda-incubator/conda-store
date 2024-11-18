@@ -15,7 +15,7 @@ ENV PATH=/opt/conda/condabin:/opt/conda/envs/conda-store-server/bin:/opt/conda/b
 ENV TZ=Etc/UTC
 
 # must be passed at build environment (should use .python-version-default)
-ARG python_version
+ARG python_version="3.12"
 ARG conda_env_name="conda-store-server"
 ARG user_no=1000
 
@@ -62,8 +62,8 @@ COPY ./ /opt/conda-store-server/
 
 USER 0:0
 RUN chown -R ${user_no}:${user_no} /opt/conda-store-server/ && \
- mkdir -p /.local/share/conda-store && \
- chown -R ${user_no}:${user_no} /.local/share/conda-store
+    mkdir -p /.local/share/conda-store && \
+    chown -R ${user_no}:${user_no} /.local/share/conda-store
 
 USER ${user_no}:${user_no}
 
@@ -84,6 +84,9 @@ WORKDIR /var/lib/conda-store
 # ---------------------------------------------------------------------------------
 # for development images we install conda-store-server in editable mode
 FROM base AS dev
+ARG PSEUDO_VERSION=1.0.0
+# we need to set the environment variable for setuptools_scm to work
+ENV SETUPTOOLS_SCM_PRETEND_VERSION=${PSEUDO_VERSION}
 
 WORKDIR /opt/conda-store-server
 RUN which python && \

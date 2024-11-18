@@ -17,7 +17,6 @@ on:
     branches:
       - main
 
-
 # ensuring only one instance is running at a given time
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
@@ -38,25 +37,14 @@ jobs:
     steps:
       - name: "Checkout Repository 🛎"
         uses: actions/checkout@v4
-
-      - name: "Get project's default Python version 🏷️"
-        run: |
-          echo "PYTHON_VERSION_DEFAULT=$(cat .python-version-default)" >> $GITHUB_ENV
-
-      - name: "Set up Docker Buildx 🏗"
-        uses: docker/setup-buildx-action@v3
-
-      - name: "Lint Dockerfiles 🔍"
-        uses: jbergstroem/hadolint-gh-action@v1
         with:
-          dockerfile: ${{ matrix.docker-image }}/Dockerfile
-          output_format: tty
-          error_level: 0
+          fetch-depth: 0
 
-      - name: "Copy .dockerignore"
-        run: |
-          cp .dockerignore ${{ matrix.docker-image }}/.dockerignore
-        shell: bash
+      - name: "Setup CI environment - Docker 🛠"
+        uses: ./.github/actions/docker-setup
+        id: setup-ci-docker
+        with:
+          docker-image: ${{ matrix.docker-image }}
 
       - name: "Add Docker metadata 📝"
         id: meta
@@ -66,6 +54,15 @@ jobs:
             quansight/${{ matrix.docker-image }}
           tags: |
             type=sha
+
+      - name: "Get project's default Python version 🏷️"
+        run: |
+          echo "PYTHON_VERSION_DEFAULT=$(cat .python-version-default)" >> $GITHUB_ENV
+
+      - name: "Copy .dockerignore 📄"
+        run: |
+          cp .dockerignore ${{ matrix.docker-image }}/.dockerignore
+        shell: bash
 
       - name: "Build Docker images 🐳"
         uses: docker/build-push-action@v5
@@ -81,4 +78,5 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             python_version=${{ env.PYTHON_VERSION_DEFAULT }}
+            PSEUDO_VERSION=${{ steps.setup-ci-docker.outputs.cs-version }}
           platforms: ${{ matrix.platform }}
