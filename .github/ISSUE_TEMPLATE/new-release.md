@@ -24,8 +24,6 @@ Release captain responsible - <@gh_username>
 
 - [ ] Create a new git branch for the release `git checkout -b release-2024.9.1`
   - [ ] Prepare the branch just in case `git clean -fxdq`
-- [ ] Bump `conda-store` version in [`conda-store/conda-store/__init__.py`](https://github.com/conda-incubator/conda-store/blob/main/conda-store/conda_store/__init__.py)
-- [ ] Bump `conda-store-server` version in [`conda-store-server/conda-store-server/__init__.py`](https://github.com/conda-incubator/conda-store/blob/main/conda-store/conda_store/__init__.py)
 - [ ] Update the `conda-store-ui` version used in `conda-store-server` [`conda-store-server/hatch_build.py`](https://github.com/conda-incubator/conda-store/blob/main/conda-store-server/hatch_build.py)
 - [ ] Update the [CHANGELOG.md](./CHANGELOG.md) file with the new version, release date, and relevant changes[^github-activity].
 - [ ] Check the version locally with `hatch version`
@@ -67,7 +65,6 @@ Release captain responsible - <@gh_username>
   - [The Docker images have been published](https://github.com/conda-incubator/conda-store/blob/main/.github/workflows/build_docker_image.yaml)
 - [ ] Update the [conda-forge feedstock version](https://github.com/conda-forge/conda-store-feedstock) through a PR or review and merge the regro-bot PR.
   - [ ] If needed - update `meta.yaml` or `recipe.yaml` and re-render the feedstock.
-- [ ] Open a follow-up PR to bump `conda-store` and `conda-store-server` versions to the next dev-release number (for example `2024.10.1`).
 - [ ] Open a follow-up PR to bump the `conda-store-server` version in the [`conda-store-ui` compose file](https://github.com/conda-incubator/conda-store-ui/blob/main/docker-compose.yml).
 - [ ] Celebrate, you're done! 🎉
 
