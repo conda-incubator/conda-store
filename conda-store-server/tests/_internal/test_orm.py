@@ -12,10 +12,10 @@ from conda_store_server._internal import orm
 
 @pytest.fixture
 def populated_db(db):
-    """A database fixture populated with 
-        * 2 channels
-        * 2 conda packages
-        * 3 conda package builds
+    """A database fixture populated with
+    * 2 channels
+    * 2 conda packages
+    * 3 conda package builds
     """
     # create test channels
     api.create_conda_channel(db, "test-channel-1")
@@ -105,6 +105,7 @@ def populated_db(db):
 
     return db
 
+
 @pytest.fixture
 def test_repodata():
     """Basic repodata for linux-64 subdir with 1 package"""
@@ -129,6 +130,7 @@ def test_repodata():
             },
         }
     }
+
 
 @pytest.fixture
 def test_repodata_multiple_packages():
@@ -188,7 +190,9 @@ def test_update_packages_first_time(mock_repdata, db, test_repodata):
 
 
 @mock.patch("conda_store_server._internal.conda_utils.download_repodata")
-def test_update_packages_add_existing_pkg_new_version(mock_repdata, populated_db, test_repodata):
+def test_update_packages_add_existing_pkg_new_version(
+    mock_repdata, populated_db, test_repodata
+):
     # mock download_repodata to return static test repodata
     mock_repdata.return_value = test_repodata
 
@@ -380,7 +384,9 @@ def test_update_packages_new_package_channel(mock_repdata, populated_db, test_re
 
 
 @mock.patch("conda_store_server._internal.conda_utils.download_repodata")
-def test_update_packages_multiple_builds(mock_repdata, populated_db, test_repodata_multiple_packages):
+def test_update_packages_multiple_builds(
+    mock_repdata, populated_db, test_repodata_multiple_packages
+):
     # mock download_repodata to return static test repodata
     mock_repdata.return_value = test_repodata_multiple_packages
 
@@ -410,7 +416,9 @@ def test_update_packages_multiple_builds(mock_repdata, populated_db, test_repoda
 
 
 @mock.patch("conda_store_server._internal.conda_utils.download_repodata")
-def test_update_packages_channel_consistency(mock_repdata, populated_db, test_repodata_multiple_packages):
+def test_update_packages_channel_consistency(
+    mock_repdata, populated_db, test_repodata_multiple_packages
+):
     mock_repdata.return_value = test_repodata_multiple_packages
 
     channel = (
