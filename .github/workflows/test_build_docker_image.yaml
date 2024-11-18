@@ -55,6 +55,15 @@ jobs:
           tags: |
             type=sha
 
+      - name: "Get project's default Python version 🏷️"
+        run: |
+          echo "PYTHON_VERSION_DEFAULT=$(cat .python-version-default)" >> $GITHUB_ENV
+
+      - name: "Copy .dockerignore 📄"
+        run: |
+          cp .dockerignore ${{ matrix.docker-image }}/.dockerignore
+        shell: bash
+
       - name: "Build Docker images 🐳"
         uses: docker/build-push-action@v5
         with:
