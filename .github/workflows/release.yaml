@@ -5,6 +5,9 @@ on:
     types: [published]
   push:
     tags: ["*"]
+    # needed to publish to test PyPI when merging to main
+    branches:
+      - main
   workflow_dispatch:
 
 env:
