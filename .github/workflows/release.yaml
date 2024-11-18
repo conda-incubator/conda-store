@@ -1,14 +1,10 @@
-name: "Build and maybe upload PyPI package"
+name: "Build and upload PyPI package"
 
 on:
   release:
     types: [published]
   push:
-    branches: [main]
     tags: ["*"]
-  pull_request:
-    branches:
-      - main
   workflow_dispatch:
 
 env:
