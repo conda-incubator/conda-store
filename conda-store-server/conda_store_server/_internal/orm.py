@@ -32,7 +32,7 @@ from sqlalchemy import (
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import (
     backref,
-    declarative_base,
+    DeclarativeBase,
     relationship,
     sessionmaker,
     validates,
@@ -43,7 +43,9 @@ from conda_store_server._internal.environment import validate_environment
 
 logger = logging.getLogger("orm")
 
-Base = declarative_base()
+
+class Base(DeclarativeBase):
+    pass
 
 
 class Worker(Base):
