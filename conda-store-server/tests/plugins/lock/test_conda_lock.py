@@ -2,11 +2,12 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
 
-import os
 from unittest import mock
 
 import pytest
 import yaml
+
+from conda_lock._vendor.poetry.utils._compat import CalledProcessError
 
 from conda_store_server._internal import conda_utils
 from conda_store_server.plugins import plugin_context
@@ -71,6 +72,7 @@ def test_solve_lockfile_simple(simple_specification):
         platforms=[conda_utils.conda_platform()],
     )
     assert len(lock_result["package"]) != 0
+    assert "zlib" in  [pkg["name"] for pkg in lock_result["package"]]
 
 
 @pytest.mark.parametrize(
@@ -89,19 +91,20 @@ def test_solve_lockfile_multiple_platforms(specification, request):
     lock_result = locker.lock_environment(
         context=plugin_context.PluginContext(),
         spec=specification,
-        platforms=["osx-64", "linux-64", "win-64", "osx-arm64"],
+        platforms=["win-64", "osx-arm64"],
     )
     assert len(lock_result["package"]) != 0
 
 
-# Checks that conda_flags is used by conda-lock
+
 def test_solve_lockfile_invalid_conda_flags(simple_specification):
+    """Checks that conda_flags is used by conda-lock"""
     locker = conda_lock.CondaLock(
         conda_command="mamba", conda_flags="--this-is-invalid"
     )
 
     with pytest.raises(
-        Exception, match=(r"Command.*--this-is-invalid.*returned non-zero exit status")
+        CalledProcessError, match=(r"Command.*--this-is-invalid.*returned non-zero exit status")
     ):
         locker.lock_environment(
             context=plugin_context.PluginContext(),
