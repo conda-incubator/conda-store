@@ -1,0 +1,48 @@
+name: "Build PyPI package"
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/**"
+      - "conda-store/**"
+      - "conda-store-server/**"
+      - "tests/**"
+  push:
+    branches:
+      - main
+
+env:
+  FORCE_COLOR: "1" # Make tools pretty.
+
+permissions:
+  contents: read # This is required for actions/checkout
+
+jobs:
+  # Always build & verify package.
+  build-package:
+    name: "Build & verify package"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        directory:
+          - "conda-store"
+          - "conda-store-server"
+    defaults:
+      run:
+        working-directory: ${{ matrix.directory }}
+    steps:
+      - name: "Checkout Repository 🛎"
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - run: echo "Running on ${{ matrix.directory }}"
+
+      - name: "Build and check package - ${{ matrix.directory }} 📦"
+        uses: hynek/build-and-inspect-python-package@v2
+        id: baipp
+        with:
+          path: ${{ matrix.directory }}
+          upload-name-suffix: "-${{ matrix.directory }}"
+
+      - run: echo Packages can be found at ${{ steps.baipp.outputs.dist }} and in artifact ${{ steps.baipp.outputs.artifact-name }}
