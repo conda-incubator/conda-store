@@ -17,3 +17,14 @@ class CondaStorePluginNotFoundError(CondaStoreError):
     def __init__(self, plugin, available_plugins):
         self.message = f"Plugin {plugin} was requested but not found! The following plugins are available {','.join(available_plugins)}"
         super().__init__(self.message)
+
+
+class CondaStorePluginAlreadyExistsError(CondaStoreError):
+    """Exception raised by conda store when a plugin with a duplicate name is registered
+    Attributes:
+        plugin_name -- name of the plugin attempted to be registered
+    """
+
+    def __init__(self, plugin_name):
+        self.message = f"Plugin {plugin_name} was requested to be registered. However, a different plugin with that name already exists!"
+        super().__init__(self.message)

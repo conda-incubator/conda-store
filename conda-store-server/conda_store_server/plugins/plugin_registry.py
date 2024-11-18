@@ -3,6 +3,7 @@
 # license that can be found in the LICENSE file.
 
 from conda_store_server.plugins import BUILTIN_PLUGINS
+from conda_store_server import exception
 
 
 class PluginRegistry:
@@ -27,7 +28,11 @@ class PluginRegistry:
     def register_plugin(self, p):
         """Adds plugin to the list of registered plugins"""
         plugin_name = p.name()
-        if plugin_name not in self.registered:
+        if plugin_name in self.registered:
+            # check that no different plugin with the same name is already registered
+            if p is not self.registered[plugin_name]:
+                raise exception.CondaStorePluginAlreadyExistsError(plugin_name)
+        else:
             self.registered[plugin_name] = p
 
     def collect_plugins(self):
