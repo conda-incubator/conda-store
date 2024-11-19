@@ -23,6 +23,7 @@ REACT_APP_AUTH_TOKEN=
 REACT_APP_STYLE_TYPE=green-accent
 REACT_APP_SHOW_AUTH_BUTTON=true
 REACT_APP_LOGOUT_PAGE_URL=http://localhost:8080/conda-store/logout?next=/
+REACT_APP_URL_BASENAME="/conda-store/ui"
 ```
 
 ### At runtime, using `condaStoreConfig`
@@ -40,6 +41,7 @@ In your HTML file, add the following **before** loading the react app :
         REACT_APP_API_URL: "http://localhost:8080/conda-store",
         REACT_APP_LOGIN_PAGE_URL: "http://localhost:8080/conda-store/login?next=",
         REACT_APP_LOGOUT_PAGE_URL: "http://localhost:8080/conda-store/logout?next=/",
+        REACT_APP_URL_BASENAME="/conda-store/ui",
     };
 </script>
 ```

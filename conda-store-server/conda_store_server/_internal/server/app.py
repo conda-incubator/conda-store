@@ -289,49 +289,6 @@ class CondaStoreServer(Application):
             # docker registry api specification does not support a url_prefix
             app.include_router(views.router_registry)
 
-        if self.enable_ui:
-            app.include_router(
-                views.router_ui,
-                prefix=trim_slash(self.url_prefix) + "/admin",
-            )
-
-            app.include_router(
-                views.router_conda_store_ui,
-                prefix=trim_slash(self.url_prefix),
-            )
-
-            # serving static files
-            from conda_store_server._internal import server
-
-            app.mount(
-                trim_slash(self.url_prefix) + "/static/",
-                StaticFiles(
-                    directory=os.path.join(
-                        os.path.dirname(server.__file__),
-                        "static",
-                    ),
-                ),
-                name="static",
-            )
-
-            # convenience to redirect "/" to home page when using a prefix
-            # realistically this url will not be hit with a proxy + prefix
-            if self.url_prefix != "/":
-
-                @app.get("/")
-                def redirect_home(request: Request):
-                    return RedirectResponse(request.url_for("get_conda_store_ui"))
-
-            @app.get("/favicon.ico", include_in_schema=False)
-            async def favicon():
-                return FileResponse(
-                    os.path.join(
-                        os.path.dirname(server.__file__),
-                        "static",
-                        "favicon.ico",
-                    )
-                )
-
         if self.enable_metrics:
             app.include_router(
                 views.router_metrics,
@@ -350,6 +307,57 @@ class CondaStoreServer(Application):
                 self.conda_store.storage.storage_url,
                 StaticFiles(directory=self.conda_store.storage.storage_path),
                 name="static-storage",
+            )
+
+        # This needs to come at the end because if the UI is enabled,
+        # it becomes the catch all route
+        if self.enable_ui:
+            app.include_router(
+                views.router_ui,
+                prefix=trim_slash(self.url_prefix) + "/admin",
+            )
+
+            # serving static files
+            from conda_store_server._internal import server
+
+            app.mount(
+                trim_slash(self.url_prefix) + "/static/",
+                StaticFiles(
+                    directory=os.path.join(
+                        os.path.dirname(server.__file__),
+                        "static",
+                    ),
+                ),
+                name="static",
+            )
+
+            # Redirect both "/" and `url_prefix` to the conda-store-ui React app.
+            # Realistically the "/" will not be hit with a proxy + prefix.
+            @app.get(
+                # Yes if url_prefix is "/" then this decorator is redundant but FastAPI doesn't seem to be bothered.
+                "/"
+            )
+            @app.get(self.url_prefix)
+            # This function name may be used by url_for() so be careful renaming it
+            def redirect_root_to_ui(request: Request):
+                return RedirectResponse(request.url_for("get_conda_store_ui"))
+
+            @app.get(
+                trim_slash(self.url_prefix) + "/favicon.ico", include_in_schema=False
+            )
+            async def favicon():
+                return FileResponse(
+                    os.path.join(
+                        os.path.dirname(server.__file__),
+                        "static",
+                        "favicon.ico",
+                    )
+                )
+
+            # Put this at the very end
+            app.include_router(
+                views.router_conda_store_ui,
+                prefix=trim_slash(self.url_prefix),
             )
 
         return app
