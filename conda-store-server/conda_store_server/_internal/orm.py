@@ -687,6 +687,7 @@ class CondaChannel(Base):
                         and_(
                             CondaPackage.name == p_name,
                             CondaPackage.version == p_version,
+                            CondaPackage.channel_id == self.id,
                         )
                     )
                 all_parent_packages = (
@@ -754,7 +755,7 @@ class CondaPackage(Base):
     description: Mapped[str] = mapped_column(Text, nullable=True)
 
     def __repr__(self):
-        return f"<CondaPackage (channel={self.channel} name={self.name} version={self.version})>"
+        return f"<CondaPackage (channel={self.channel_id} name={self.name} version={self.version})>"
 
 
 class CondaPackageBuild(Base):
