@@ -67,7 +67,7 @@ def test_conda_store_server_url_prefix(conda_store_server):
     assert response.status_code == 307
 
     response = client.get("/a/test/prefix/", follow_redirects=False)
-    assert response.status_code == 200
+    assert response.status_code == 307
 
     conda_store_server.url_prefix = "/"
     client = TestClient(conda_store_server.init_fastapi_app())
