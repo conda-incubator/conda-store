@@ -65,14 +65,17 @@ def test_conda_store_server_url_prefix(conda_store_server):
     client = TestClient(conda_store_server.init_fastapi_app())
     response = client.get("/", follow_redirects=False)
     assert response.status_code == 307
+    assert response.headers.get("location").endswith("/a/test/prefix/ui/")
 
     response = client.get("/a/test/prefix/", follow_redirects=False)
-    assert response.status_code == 200
+    assert response.status_code == 307
+    assert response.headers.get("location").endswith("/a/test/prefix/ui/")
 
     conda_store_server.url_prefix = "/"
     client = TestClient(conda_store_server.init_fastapi_app())
     response = client.get("/", follow_redirects=False)
-    assert response.status_code == 200
+    assert response.status_code == 307
+    assert response.headers.get("location") == "http://testserver/ui/"
 
 
 def test_conda_store_server_templates(conda_store_server):
