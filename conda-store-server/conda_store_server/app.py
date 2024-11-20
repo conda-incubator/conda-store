@@ -494,13 +494,7 @@ class CondaStore(LoggingConfigurable):
     
     def lock_plugin(self) -> tuple[str, lock.LockPlugin]:
         """Returns the configured lock plugin"""
-        # Get settings - required to configure the lock plugin with the
-        # correct conda command
-        # with self.session_factory() as db:
-        #     settings = self.get_settings(db)
-        
         lock_plugin = self.plugin_manager.lock_plugin(name=self.lock_plugin_name)
-        # TODO: configure plugin
         locker = lock_plugin.backend()
         return lock_plugin.name, locker
 

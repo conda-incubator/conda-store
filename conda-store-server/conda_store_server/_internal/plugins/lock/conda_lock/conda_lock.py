@@ -18,11 +18,13 @@ from conda_store_server.plugins.hookspec import hookimpl
 
 
 class CondaLock(lock.LockPlugin):
-    def __init__(
-        self, conda_flags="--strict-channel-priority", conda_command="mamba", *kwargs
-    ):
-        self.conda_command = conda_command
-        self.conda_flags = conda_flags
+    def _conda_command(self, conda_store) -> str:
+        with conda_store.session_factory() as db:
+            settings = conda_store.get_settings(db=db)
+        return settings.conda_command
+
+    def _conda_flags(self, conda_store) -> str:
+        return conda_store.conda_flags
 
     @utils.run_in_tempdir
     def lock_environment(
@@ -32,6 +34,8 @@ class CondaLock(lock.LockPlugin):
         platforms: typing.List[str] = [conda_utils.conda_platform()],
     ) -> str:
         context.log.info("lock_environment entrypoint for conda-lock")
+        conda_command = self._conda_command(context.conda_store)
+        conda_flags = self._conda_flags(context.conda_store)
 
         environment_filename = pathlib.Path.cwd() / "environment.yaml"
         lockfile_filename = pathlib.Path.cwd() / "conda-lock.yaml"
@@ -43,11 +47,11 @@ class CondaLock(lock.LockPlugin):
             "Note that the output of `conda config --show` displayed below only reflects "
             "settings in the conda configuration file, which might be overridden by "
             "variables required to be set by conda-store via the environment. Overridden "
-            f"settings: CONDA_FLAGS={self.conda_flags}"
+            f"settings: CONDA_FLAGS={conda_flags}"
         )
 
         # The info command can be used with either mamba or conda
-        context.run_command([self.conda_command, "info"])
+        context.run_command([conda_command, "info"])
         # The config command is not supported by mamba
         context.run_command(["conda", "config", "--show"])
         context.run_command(["conda", "config", "--show-sources"])
@@ -67,14 +71,14 @@ class CondaLock(lock.LockPlugin):
         # CONDA_FLAGS is used by conda-lock in conda_solver.solve_specs_for_arch
         try:
             conda_flags_name = "CONDA_FLAGS"
-            print(f"{conda_flags_name}={self.conda_flags}")
-            os.environ[conda_flags_name] = self.conda_flags
+            print(f"{conda_flags_name}={conda_flags}")
+            os.environ[conda_flags_name] = conda_flags
 
             run_lock(
                 environment_files=[environment_filename],
                 platforms=platforms,
                 lockfile_path=lockfile_filename,
-                conda_exe=self.conda_command,
+                conda_exe=conda_command,
                 with_cuda=cuda_version,
             )
         finally:
