@@ -22,7 +22,7 @@ class PluginManager(pluggy.PluginManager):
         """Returns a lock plugin by name"""
         lockers = self.get_lock_plugins()
 
-        if name not in lockers.keys():
+        if name not in lockers:
             raise CondaStorePluginNotFoundError(
                 plugin=name,
                 available_plugins=lockers.keys()

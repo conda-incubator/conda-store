@@ -10,8 +10,9 @@ import yaml
 from conda_lock._vendor.poetry.utils._compat import CalledProcessError
 
 from conda_store_server._internal import conda_utils
+from conda_store_server._internal.plugins.lock.conda_lock import conda_lock
+
 from conda_store_server.plugins import plugin_context
-from conda_store_server.plugins.lock import conda_lock
 
 
 @pytest.mark.parametrize(
@@ -21,10 +22,11 @@ from conda_store_server.plugins.lock import conda_lock
         "simple_specification_with_pip",
     ],
 )
-@mock.patch("conda_store_server.plugins.lock.conda_lock.run_lock")
+@mock.patch("conda_store_server._internal.plugins.lock.conda_lock.conda_lock.run_lock")
 @pytest.mark.long_running_test
 def test_solve_lockfile(
     mock_run_lock,
+    conda_store,
     specification,
     request,
 ):
@@ -43,9 +45,9 @@ def test_solve_lockfile(
     else:
         cuda_version = specification.variables.get("CONDA_OVERRIDE_CUDA")
 
-    locker = conda_lock.CondaLock(conda_command="mamba")
+    locker = conda_lock.CondaLock()
     lock_result = locker.lock_environment(
-        context=plugin_context.PluginContext(),
+        context=plugin_context.PluginContext(conda_store),
         spec=specification,
         platforms=platforms,
     )
@@ -62,12 +64,10 @@ def test_solve_lockfile(
     assert lock_result["foo"] == "bar"
 
 
-def test_solve_lockfile_simple(simple_specification):
-    locker = conda_lock.CondaLock(
-        conda_command="mamba", conda_flags="--strict-channel-priority"
-    )
+def test_solve_lockfile_simple(conda_store, simple_specification):
+    locker = conda_lock.CondaLock()
     lock_result = locker.lock_environment(
-        context=plugin_context.PluginContext(),
+        context=plugin_context.PluginContext(conda_store),
         spec=simple_specification,
         platforms=[conda_utils.conda_platform()],
     )
@@ -83,31 +83,29 @@ def test_solve_lockfile_simple(simple_specification):
     ],
 )
 @pytest.mark.long_running_test
-def test_solve_lockfile_multiple_platforms(specification, request):
+def test_solve_lockfile_multiple_platforms(conda_store, specification, request):
     specification = request.getfixturevalue(specification)
-    locker = conda_lock.CondaLock(
-        conda_command="mamba", conda_flags="--strict-channel-priority"
-    )
+    locker = conda_lock.CondaLock()
     lock_result = locker.lock_environment(
-        context=plugin_context.PluginContext(),
+        context=plugin_context.PluginContext(conda_store),
         spec=specification,
         platforms=["win-64", "osx-arm64"],
     )
     assert len(lock_result["package"]) != 0
 
 
-
-def test_solve_lockfile_invalid_conda_flags(simple_specification):
+def test_solve_lockfile_invalid_conda_flags(conda_store, simple_specification):
     """Checks that conda_flags is used by conda-lock"""
-    locker = conda_lock.CondaLock(
-        conda_command="mamba", conda_flags="--this-is-invalid"
-    )
+    locker = conda_lock.CondaLock()
+
+    # Set invalid conda flags
+    conda_store.conda_flags = "--this-is-invalid"
 
     with pytest.raises(
         CalledProcessError, match=(r"Command.*--this-is-invalid.*returned non-zero exit status")
     ):
         locker.lock_environment(
-            context=plugin_context.PluginContext(),
+            context=plugin_context.PluginContext(conda_store),
             spec=simple_specification,
             platforms=[conda_utils.conda_platform()],
         )

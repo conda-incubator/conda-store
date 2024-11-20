@@ -340,7 +340,7 @@ def solve_conda_environment(db: Session, conda_store, solve: orm.Solve):
 
     _, locker = conda_store.lock_plugin()
     conda_lock_spec = locker.lock_environment(
-        context=plugin_context.PluginContext(),
+        context=plugin_context.PluginContext(conda_store=conda_store),
         spec=schema.CondaSpecification.parse_obj(solve.specification.spec),
         platforms=[conda_utils.conda_platform()],
     )
