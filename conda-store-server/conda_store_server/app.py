@@ -29,6 +29,7 @@ from traitlets.config import LoggingConfigurable
 from conda_store_server import CONDA_STORE_DIR, BuildKey, api, registry, storage
 from conda_store_server._internal import conda_utils, environment, orm, schema, utils
 from conda_store_server.plugins import plugin_manager, hookspec
+from conda_store_server.plugins.v1 import lock
 
 
 def conda_store_validate_specification(
@@ -190,6 +191,12 @@ class CondaStore(LoggingConfigurable):
     conda_included_packages = List(
         [],
         help="Conda packages that auto included within environment specification. Will not raise a validation error if package not in specification and will be auto added",
+        config=True,
+    )
+
+    lock_plugin_name = Unicode(
+        default_value="lock-conda_lock",
+        allow_none=False,
         config=True,
     )
 
@@ -485,9 +492,17 @@ class CondaStore(LoggingConfigurable):
 
         return self._plugin_manager
     
-    def lock_plugin(self):
+    def lock_plugin(self) -> tuple[str, lock.LockPlugin]:
         """Returns the configured lock plugin"""
-        return self.plugin_manager.lock_plugin()
+        # Get settings - required to configure the lock plugin with the
+        # correct conda command
+        # with self.session_factory() as db:
+        #     settings = self.get_settings(db)
+        
+        lock_plugin = self.plugin_manager.lock_plugin(name=self.lock_plugin_name)
+        # TODO: configure plugin
+        locker = lock_plugin.backend()
+        return lock_plugin.name, locker
 
     def ensure_settings(self, db: Session):
         """Ensure that conda-store traitlets settings are applied"""

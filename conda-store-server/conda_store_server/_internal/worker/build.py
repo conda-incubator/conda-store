@@ -225,15 +225,15 @@ def build_conda_environment(db: Session, conda_store, build):
                 )
                 conda_lock_spec = context.result
             else:
-                # TODO: get plugin name to set prefix
-                conda_lock_spec = conda_store.lock_plugin().lock_environment(
+                lock_plugin_name, locker = conda_store.lock_plugin()
+                conda_lock_spec = locker.lock_environment(
                     context=plugin_context.PluginContext(
                         conda_store=conda_store,
                         stdout=LoggedStream(
                             db=db,
                             conda_store=conda_store,
                             build=build,
-                            prefix="hook-lock_environment: ",
+                            prefix=f"plugin-{lock_plugin_name}: ",
                         ),
                     ),
                     spec=schema.CondaSpecification.parse_obj(build.specification.spec),
@@ -338,7 +338,8 @@ def solve_conda_environment(db: Session, conda_store, solve: orm.Solve):
     solve.started_on = datetime.datetime.utcnow()
     db.commit()
 
-    conda_lock_spec = conda_store.lock_plugin().lock_environment(
+    _, locker = conda_store.lock_plugin()
+    conda_lock_spec = locker.lock_environment(
         context=plugin_context.PluginContext(),
         spec=schema.CondaSpecification.parse_obj(solve.specification.spec),
         platforms=[conda_utils.conda_platform()],
