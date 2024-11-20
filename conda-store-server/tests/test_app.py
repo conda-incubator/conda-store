@@ -178,3 +178,7 @@ def test_conda_store_register_environment_duplicate_force_true(db, conda_store):
 
     assert first_build_id == 1
     assert second_build_id == 2
+
+
+def test_conda_store_get_lock_plugin(conda_store):
+    assert conda_store.lock_plugin() is not None

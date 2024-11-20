@@ -8,7 +8,6 @@ import sys
 from contextlib import contextmanager
 from typing import Any, Dict
 
-import pluggy
 import pydantic
 from celery import Celery, group
 from sqlalchemy.orm import Session, sessionmaker
@@ -29,8 +28,7 @@ from traitlets.config import LoggingConfigurable
 
 from conda_store_server import CONDA_STORE_DIR, BuildKey, api, registry, storage
 from conda_store_server._internal import conda_utils, environment, orm, schema, utils
-from conda_store_server.exception import CondaStorePluginNotFoundError
-from conda_store_server.plugins import hookspec, plugin_registry
+from conda_store_server.plugins import plugin_manager, hookspec
 
 
 def conda_store_validate_specification(
@@ -475,44 +473,21 @@ class CondaStore(LoggingConfigurable):
         return self._celery_app
 
     @property
-    def plugin_registry(self):
-        if hasattr(self, "_plugin_registry"):
-            return self._plugin_registry
-
-        self._plugin_registry = plugin_registry.PluginRegistry()
-        self._plugin_registry.collect_plugins()
-        return self._plugin_registry
-
-    @property
     def plugin_manager(self):
         if hasattr(self, "_plugin_manager"):
             return self._plugin_manager
 
-        self._plugin_manager = pluggy.PluginManager(hookspec.spec_name)
+        self._plugin_manager = plugin_manager.PluginManager(hookspec.spec_name)
         self._plugin_manager.add_hookspecs(hookspec.CondaStoreSpecs)
 
-        # Get settings - required to configure the lock plugin with the
-        # correct conda command
-        with self.session_factory() as db:
-            settings = self.get_settings(db)
-
-        # Load lock plugin
-        self.load_plugin_by_name(
-            "lock-conda_lock",
-            conda_command=settings.conda_command,
-            conda_flags=self.conda_flags,
-        )
+        # Register all available plugins
+        self._plugin_manager.collect_plugins()
 
         return self._plugin_manager
-
-    def load_plugin_by_name(self, name, *args, **kwargs):
-        """Loads a plugin from the plugin registry into the plugin manager"""
-        target_plugin = self.plugin_registry.get_plugin(name)
-        if target_plugin is None:
-            raise CondaStorePluginNotFoundError(
-                name, self.plugin_registry.list_plugin_names()
-            )
-        self.plugin_manager.register(target_plugin(*args, **kwargs))
+    
+    def lock_plugin(self):
+        """Returns the configured lock plugin"""
+        return self.plugin_manager.lock_plugin()
 
     def ensure_settings(self, db: Session):
         """Ensure that conda-store traitlets settings are applied"""

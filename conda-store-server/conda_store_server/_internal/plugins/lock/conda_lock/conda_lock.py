@@ -12,22 +12,17 @@ from conda_lock.conda_lock import run_lock
 
 from conda_store_server._internal import conda_utils, schema, utils
 from conda_store_server.plugins.plugin_context import PluginContext
-from conda_store_server.plugins.types.lock import LockPlugin
+from conda_store_server.plugins import types
+from conda_store_server.plugins.v1 import lock
+from conda_store_server.plugins.hookspec import hookimpl
 
 
-class CondaLock(LockPlugin):
-    @classmethod
-    def name(cls):
-        return "lock-conda_lock"
-
+class CondaLock(lock.LockPlugin):
     def __init__(
         self, conda_flags="--strict-channel-priority", conda_command="mamba", *kwargs
     ):
         self.conda_command = conda_command
         self.conda_flags = conda_flags
-
-    def synopsis(self) -> str:
-        return "Generate a lockfile using conda-lock"
 
     @utils.run_in_tempdir
     def lock_environment(
@@ -87,3 +82,14 @@ class CondaLock(LockPlugin):
 
         with lockfile_filename.open() as f:
             return yaml.safe_load(f)
+
+
+@hookimpl
+def lock_plugins():
+    """conda-lock locking plugin"""
+
+    yield types.LockPlugin(
+        name="lock-conda_lock",
+        synopsis="Generate a lockfile using conda-lock",
+        backend=CondaLock,
+    )
