@@ -23,3 +23,7 @@ async def get_entity(request: Request, auth=Depends(get_auth)):
 
 async def get_templates(request: Request):
     return request.state.templates
+
+
+async def get_url_prefix(request: Request, server=Depends(get_server)):
+    return server.url_prefix

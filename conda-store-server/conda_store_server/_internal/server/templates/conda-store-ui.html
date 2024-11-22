@@ -22,14 +22,15 @@ https://conda.store/conda-store-ui/how-tos/configure-ui -->
              REACT_APP_AUTH_TOKEN: "",
              REACT_APP_STYLE_TYPE: "green-accent",
              REACT_APP_SHOW_LOGIN_ICON: "true",
-             REACT_APP_API_URL: "{{ url_for('get_conda_store_ui') }}",
+             REACT_APP_API_URL: "{{ url_for('redirect_root_to_ui') }}",
              REACT_APP_LOGIN_PAGE_URL: "{{ url_for('get_login_method') }}?next=",
              REACT_APP_LOGOUT_PAGE_URL: "{{ url_for('post_logout_method') }}?next=/",
-             REACT_APP_URL_BASENAME: new URL("{{ url_for('get_conda_store_ui') }}").pathname
+             REACT_APP_URL_BASENAME: "{{ url_prefix.rstrip('/') }}{{ ui_prefix }}"
          };
         </script>
-        <script defer src="static/conda-store-ui/main.js"></script>
-        <link href="static/conda-store-ui/main.css" rel="stylesheet">
+        <script defer src="{{ url_prefix.rstrip("/") }}/static/conda-store-ui/main.js"></script>
+        <link href="{{ url_prefix.rstrip("/") }}/static/conda-store-ui/main.css" rel="stylesheet">
+        <link href="{{ url_prefix.rstrip("/") }}/favicon.ico" rel="icon">
     </head>
     <body>
     </body>

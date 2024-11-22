@@ -6,7 +6,7 @@
 # the generated Docker image is used with docker compose to run the conda-store
 # worker and public conda-store Docker images
 
-FROM condaforge/miniforge3:24.7.1-0 AS base
+FROM condaforge/miniforge3:24.9.2-0 AS base
 
 LABEL org.opencontainers.image.authors="conda-store development team"
 
@@ -57,7 +57,6 @@ WORKDIR /opt/jupyterhub
 # ---------------------------------------------------------------------------------
 # for development images we install conda-store-server in editable mode
 FROM base AS dev
-
 
 RUN --mount=type=cache,target=/root/.cache/pip
 WORKDIR /opt/conda-store

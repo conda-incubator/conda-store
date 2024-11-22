@@ -69,7 +69,7 @@ dependencies = [
   # pinning them; conda-lock depends on this, but also doesn't pin the setuptools
   # version. See https://github.com/pypa/setuptools/issues/4478 for details
   "setuptools<70",
-  "sqlalchemy<2.0a0",
+  "sqlalchemy>=2.0,<2.1",
   "traitlets",
   "uvicorn",
   "yarl",

@@ -6,7 +6,7 @@
 # the generated Docker image is used with docker compose to run the conda-store
 # server and public conda-store Docker images
 
-FROM condaforge/miniforge3:24.7.1-0 AS base
+FROM condaforge/miniforge3:24.9.2-0 AS base
 
 LABEL org.opencontainers.image.authors="conda-store development team"
 
@@ -62,8 +62,8 @@ COPY ./ /opt/conda-store-server/
 
 USER 0:0
 RUN chown -R ${user_no}:${user_no} /opt/conda-store-server/ && \
- mkdir -p /.local/share/conda-store && \
- chown -R ${user_no}:${user_no} /.local/share/conda-store
+    mkdir -p /.local/share/conda-store && \
+    chown -R ${user_no}:${user_no} /.local/share/conda-store
 
 USER ${user_no}:${user_no}
 

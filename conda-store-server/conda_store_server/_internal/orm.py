@@ -10,6 +10,7 @@ import pathlib
 import shutil
 import sys
 from functools import partial
+from typing import List, Optional
 
 from sqlalchemy import (
     JSON,
@@ -17,9 +18,7 @@ from sqlalchemy import (
     Boolean,
     Column,
     DateTime,
-    Enum,
     ForeignKey,
-    Integer,
     Table,
     Text,
     Unicode,
@@ -31,8 +30,10 @@ from sqlalchemy import (
 )
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import (
+    DeclarativeBase,
+    Mapped,
     backref,
-    declarative_base,
+    mapped_column,
     relationship,
     sessionmaker,
     validates,
@@ -43,7 +44,9 @@ from conda_store_server._internal.environment import validate_environment
 
 logger = logging.getLogger("orm")
 
-Base = declarative_base()
+
+class Base(DeclarativeBase):
+    pass
 
 
 class Worker(Base):
@@ -51,10 +54,10 @@ class Worker(Base):
 
     __tablename__ = "worker"
 
-    id = Column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
 
     # For checking whether the worker is initialized
-    initialized = Column(Boolean, default=False)
+    initialized: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
 class Namespace(Base):
@@ -62,16 +65,19 @@ class Namespace(Base):
 
     __tablename__ = "namespace"
 
-    id = Column(Integer, primary_key=True)
-    name = Column(Unicode(255), unique=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
 
-    environments = relationship("Environment", back_populates="namespace")
+    name: Mapped[str] = mapped_column(Unicode(255), unique=True)
 
-    deleted_on = Column(DateTime, default=None)
+    environments: Mapped[List["Environment"]] = relationship(back_populates="namespace")
 
-    metadata_ = Column(JSON, default=dict, nullable=True)
+    deleted_on: Mapped[datetime.datetime] = mapped_column(DateTime, default=None)
 
-    role_mappings = relationship("NamespaceRoleMapping", back_populates="namespace")
+    metadata_: Mapped[Optional[dict]] = mapped_column(JSON, default=dict, nullable=True)
+
+    role_mappings: Mapped[List["NamespaceRoleMapping"]] = relationship(
+        "NamespaceRoleMapping", back_populates="namespace"
+    )
 
 
 class NamespaceRoleMapping(Base):
@@ -79,16 +85,18 @@ class NamespaceRoleMapping(Base):
 
     __tablename__ = "namespace_role_mapping"
 
-    id = Column(Integer, primary_key=True)
-    namespace_id = Column(Integer, ForeignKey("namespace.id"), nullable=False)
-    namespace = relationship(Namespace, back_populates="role_mappings")
+    id: Mapped[int] = mapped_column(primary_key=True)
+    namespace_id: Mapped[int] = mapped_column(
+        ForeignKey("namespace.id"), nullable=False
+    )
+    namespace: Mapped["Namespace"] = relationship(back_populates="role_mappings")
 
     # arn e.g. <namespace>/<name> like `quansight-*/*` or `quansight-devops/*`
     # The entity must match with ARN_ALLOWED defined in schema.py
-    entity = Column(Unicode(255), nullable=False)
+    entity: Mapped[str] = mapped_column(Unicode(255), nullable=False)
 
     # e.g. viewer
-    role = Column(Unicode(255), nullable=False)
+    role: Mapped[str] = mapped_column(Unicode(255), nullable=False)
 
     @validates("entity")
     def validate_entity(self, key, entity):
@@ -112,17 +120,23 @@ class NamespaceRoleMappingV2(Base):
 
     __tablename__ = "namespace_role_mapping_v2"
 
-    id = Column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
     # Provides access to this namespace
-    namespace_id = Column(Integer, ForeignKey("namespace.id"), nullable=False)
-    namespace = relationship(Namespace, foreign_keys=[namespace_id])
+    namespace_id: Mapped[int] = mapped_column(
+        ForeignKey("namespace.id"), nullable=False
+    )
+    namespace: Mapped["Namespace"] = relationship(foreign_keys=[namespace_id])
 
     # ... for other namespace
-    other_namespace_id = Column(Integer, ForeignKey("namespace.id"), nullable=False)
-    other_namespace = relationship(Namespace, foreign_keys=[other_namespace_id])
+    other_namespace_id: Mapped[int] = mapped_column(
+        ForeignKey("namespace.id"), nullable=False
+    )
+    other_namespace: Mapped["Namespace"] = relationship(
+        foreign_keys=[other_namespace_id]
+    )
 
     # ... with this role, like 'viewer'
-    role = Column(Unicode(255), nullable=False)
+    role: Mapped[str] = mapped_column(Unicode(255), nullable=False)
 
     @validates("role")
     def validate_role(self, key, role):
@@ -155,15 +169,17 @@ class Specification(Base):
         self.sha256 = utils.datastructure_hash(self.spec)
         self.is_lockfile = is_lockfile
 
-    id = Column(Integer, primary_key=True)
-    name = Column(Unicode(255), nullable=False)
-    spec = Column(JSON, nullable=False)
-    sha256 = Column(Unicode(255), unique=True, nullable=False)
-    created_on = Column(DateTime, default=datetime.datetime.utcnow)
-    is_lockfile = Column(Boolean, nullable=False)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(Unicode(255), nullable=False)
+    spec: Mapped[dict] = mapped_column(JSON, nullable=False)
+    sha256: Mapped[str] = mapped_column(Unicode(255), unique=True, nullable=False)
+    created_on: Mapped[datetime.datetime] = mapped_column(
+        DateTime, default=datetime.datetime.utcnow
+    )
+    is_lockfile: Mapped[bool]
 
-    builds = relationship("Build", back_populates="specification")
-    solves = relationship("Solve", back_populates="specification")
+    builds: Mapped[List["Build"]] = relationship(back_populates="specification")
+    solves: Mapped[List["Solve"]] = relationship(back_populates="specification")
 
 
 solve_conda_package_build = Table(
@@ -183,16 +199,20 @@ class Solve(Base):
 
     __tablename__ = "solve"
 
-    id = Column(Integer, primary_key=True)
-    specification_id = Column(Integer, ForeignKey("specification.id"), nullable=False)
-    specification = relationship(Specification, back_populates="solves")
+    id: Mapped[int] = mapped_column(primary_key=True)
+    specification_id: Mapped[str] = mapped_column(
+        ForeignKey("specification.id"), nullable=False
+    )
+    specification: Mapped["Specification"] = relationship(back_populates="solves")
 
-    scheduled_on = Column(DateTime, default=datetime.datetime.utcnow)
-    started_on = Column(DateTime, default=None)
-    ended_on = Column(DateTime, default=None)
+    scheduled_on: Mapped[datetime.datetime] = mapped_column(
+        DateTime, default=datetime.datetime.utcnow
+    )
+    started_on: Mapped[datetime.datetime] = mapped_column(DateTime, default=None)
+    ended_on: Mapped[datetime.datetime] = mapped_column(DateTime, default=None)
 
-    package_builds = relationship(
-        "CondaPackageBuild", secondary=solve_conda_package_build
+    package_builds: Mapped[List["CondaPackageBuild"]] = relationship(
+        secondary=solve_conda_package_build
     )
 
 
@@ -213,31 +233,40 @@ class Build(Base):
 
     __tablename__ = "build"
 
-    id = Column(Integer, primary_key=True)
-    specification_id = Column(Integer, ForeignKey("specification.id"), nullable=False)
-    specification = relationship(Specification, back_populates="builds")
+    id: Mapped[int] = mapped_column(primary_key=True)
+    specification_id: Mapped[int] = mapped_column(
+        ForeignKey("specification.id"), nullable=False
+    )
+    specification: Mapped["Specification"] = relationship(back_populates="builds")
 
-    environment_id = Column(Integer, ForeignKey("environment.id"), nullable=False)
-    environment = relationship(
-        "Environment",
+    environment_id: Mapped[int] = mapped_column(
+        ForeignKey("environment.id"), nullable=False
+    )
+    environment: Mapped["Environment"] = relationship(
         backref=backref("builds", cascade="all, delete-orphan"),
         foreign_keys=[environment_id],
     )
 
-    package_builds = relationship("CondaPackageBuild", secondary=build_conda_package)
+    package_builds: Mapped[List["CondaPackageBuild"]] = relationship(
+        secondary=build_conda_package
+    )
 
-    status = Column(Enum(schema.BuildStatus), default=schema.BuildStatus.QUEUED)
+    status: Mapped[schema.BuildStatus] = mapped_column(
+        default=schema.BuildStatus.QUEUED
+    )
     # Additional status info that will be provided to the user. DO NOT put
     # sensitive data here
-    status_info = Column(UnicodeText, default=None)
-    size = Column(BigInteger, default=0)
-    scheduled_on = Column(DateTime, default=datetime.datetime.utcnow)
-    started_on = Column(DateTime, default=None)
-    ended_on = Column(DateTime, default=None)
-    deleted_on = Column(DateTime, default=None)
+    status_info: Mapped[str] = mapped_column(UnicodeText, default=None)
+    size: Mapped[int] = mapped_column(BigInteger, default=0)
+    scheduled_on: Mapped[datetime.datetime] = mapped_column(
+        DateTime, default=datetime.datetime.utcnow
+    )
+    started_on: Mapped[datetime.datetime] = mapped_column(DateTime, default=None)
+    ended_on: Mapped[datetime.datetime] = mapped_column(DateTime, default=None)
+    deleted_on: Mapped[datetime.datetime] = mapped_column(DateTime, default=None)
 
     # Only used by build_key_version 3, not necessary for earlier versions
-    hash = Column(Unicode(32), default=None)
+    hash: Mapped[str] = mapped_column(Unicode(32), default=None)
 
     @staticmethod
     def _get_build_key_version():
@@ -246,7 +275,9 @@ class Build(Base):
 
         return BuildKey.current_version()
 
-    build_key_version = Column(Integer, default=_get_build_key_version, nullable=False)
+    build_key_version: Mapped[int] = mapped_column(
+        default=_get_build_key_version, nullable=False
+    )
 
     @validates("build_key_version")
     def validate_build_key_version(self, key, build_key_version):
@@ -255,8 +286,8 @@ class Build(Base):
 
         return BuildKey.set_current_version(build_key_version)
 
-    build_artifacts = relationship(
-        "BuildArtifact", back_populates="build", cascade="all, delete-orphan"
+    build_artifacts: Mapped[List["BuildArtifact"]] = relationship(
+        back_populates="build", cascade="all, delete-orphan"
     )
 
     def build_path(self, conda_store):
@@ -420,14 +451,15 @@ class BuildArtifact(Base):
 
     __tablename__ = "build_artifact"
 
-    id = Column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
 
-    build_id = Column(Integer, ForeignKey("build.id"))
-    build = relationship(Build, back_populates="build_artifacts")
+    build_id: Mapped[int] = mapped_column(ForeignKey("build.id"))
 
-    artifact_type = Column(Enum(schema.BuildArtifactType), nullable=False)
+    build: Mapped["Build"] = relationship(back_populates="build_artifacts")
 
-    key = Column(Unicode(255))
+    artifact_type: Mapped[schema.BuildArtifactType]
+
+    key: Mapped[str] = mapped_column(Unicode(255))
 
 
 class Environment(Base):
@@ -442,29 +474,31 @@ class Environment(Base):
         UniqueConstraint("namespace_id", "name", name="_namespace_name_uc"),
     )
 
-    id = Column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
 
-    namespace_id = Column(Integer, ForeignKey("namespace.id"), nullable=False)
-    namespace = relationship(Namespace)
+    namespace_id: Mapped[int] = mapped_column(
+        ForeignKey("namespace.id"), nullable=False
+    )
+    namespace: Mapped["Namespace"] = relationship(Namespace)
 
-    name = Column(Unicode(255), nullable=False)
+    name: Mapped[str] = mapped_column(Unicode(255), nullable=False)
 
-    current_build_id = Column(Integer, ForeignKey("build.id"))
-    current_build = relationship(
-        Build, foreign_keys=[current_build_id], post_update=True
+    current_build_id: Mapped[int] = mapped_column(ForeignKey("build.id"))
+    current_build: Mapped["Build"] = relationship(
+        foreign_keys=[current_build_id], post_update=True
     )
 
-    deleted_on = Column(DateTime, default=None)
+    deleted_on: Mapped[datetime.datetime] = mapped_column(DateTime, default=None)
 
-    description = Column(UnicodeText, default=None)
+    description: Mapped[str] = mapped_column(UnicodeText, default=None)
 
 
 class CondaChannel(Base):
     __tablename__ = "conda_channel"
 
-    id = Column(Integer, primary_key=True)
-    name = Column(Unicode(255), unique=True, nullable=False)
-    last_update = Column(DateTime)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(Unicode(255), unique=True, nullable=False)
+    last_update: Mapped[datetime.datetime] = mapped_column(DateTime)
 
     def update_packages(self, db, subdirs=None):
         logger.info(f"update packages {self.name} ")
@@ -653,6 +687,7 @@ class CondaChannel(Base):
                         and_(
                             CondaPackage.name == p_name,
                             CondaPackage.version == p_version,
+                            CondaPackage.channel_id == self.id,
                         )
                     )
                 all_parent_packages = (
@@ -703,24 +738,24 @@ class CondaPackage(Base):
         ),
     )
 
-    id = Column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
 
-    channel_id = Column(Integer, ForeignKey("conda_channel.id"), index=True)
-    channel = relationship(CondaChannel)
+    channel_id: Mapped[int] = mapped_column(ForeignKey("conda_channel.id"), index=True)
+    channel: Mapped["CondaChannel"] = relationship(CondaChannel)
 
-    builds = relationship(
-        "CondaPackageBuild", back_populates="package", cascade="all, delete-orphan"
+    builds: Mapped[List["CondaPackageBuild"]] = relationship(
+        back_populates="package", cascade="all, delete-orphan"
     )
 
-    license = Column(Text, nullable=True)
-    license_family = Column(Unicode(64), nullable=True)
-    name = Column(Unicode(255), nullable=False, index=True)
-    version = Column(Unicode(64), nullable=False, index=True)
-    summary = Column(Text, nullable=True)
-    description = Column(Text, nullable=True)
+    license: Mapped[str] = mapped_column(Text, nullable=True)
+    license_family: Mapped[str] = mapped_column(Unicode(64), nullable=True)
+    name: Mapped[str] = mapped_column(Unicode(255), nullable=False, index=True)
+    version: Mapped[str] = mapped_column(Unicode(64), nullable=False, index=True)
+    summary: Mapped[str] = mapped_column(Text, nullable=True)
+    description: Mapped[str] = mapped_column(Text, nullable=True)
 
     def __repr__(self):
-        return f"<CondaPackage (channel={self.channel} name={self.name} version={self.version})>"
+        return f"<CondaPackage (channel={self.channel_id} name={self.name} version={self.version})>"
 
 
 class CondaPackageBuild(Base):
@@ -738,28 +773,28 @@ class CondaPackageBuild(Base):
         ),
     )
 
-    id = Column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
 
-    package_id = Column(Integer, ForeignKey("conda_package.id"))
-    package = relationship(CondaPackage, back_populates="builds")
+    package_id: Mapped[int] = mapped_column(ForeignKey("conda_package.id"))
+    package: Mapped["CondaPackage"] = relationship(back_populates="builds")
 
     """
     Some package builds have the exact same data from different channels.
     Thus, when adding a channel, populating CondaPackageBuild can encounter
     duplicate keys errors. That's why we need to distinguish them by channel_id.
     """
-    channel_id = Column(Integer, ForeignKey("conda_channel.id"))
-    channel = relationship(CondaChannel)
+    channel_id: Mapped[int] = mapped_column(ForeignKey("conda_channel.id"))
+    channel: Mapped["CondaChannel"] = relationship(CondaChannel)
 
-    build = Column(Unicode(64), nullable=False, index=True)
-    build_number = Column(Integer, nullable=False)
-    constrains = Column(JSON, nullable=True)
-    depends = Column(JSON, nullable=False)
-    md5 = Column(Unicode(255), nullable=False)
-    sha256 = Column(Unicode(64), nullable=False)
-    size = Column(BigInteger, nullable=False)
-    subdir = Column(Unicode(64), nullable=True)
-    timestamp = Column(BigInteger, nullable=True)
+    build: Mapped[int] = mapped_column(Unicode(64), index=True)
+    build_number: Mapped[int]
+    constrains: Mapped[dict] = mapped_column(JSON)
+    depends: Mapped[dict] = mapped_column(JSON)
+    md5: Mapped[str] = mapped_column(Unicode(255))
+    sha256: Mapped[str] = mapped_column(Unicode(64))
+    size: Mapped[int] = mapped_column(BigInteger)
+    subdir: Mapped[str] = mapped_column(Unicode(64))
+    timestamp: Mapped[int] = mapped_column(BigInteger)
 
     def __repr__(self):
         return f"<CondaPackageBuild (id={self.id} build={self.build} size={self.size} sha256={self.sha256})>"
@@ -768,11 +803,11 @@ class CondaPackageBuild(Base):
 class CondaStoreConfiguration(Base):
     __tablename__ = "conda_store_configuration"
 
-    id = Column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
 
-    disk_usage = Column(BigInteger, default=0)
-    free_storage = Column(BigInteger, default=0)
-    total_storage = Column(BigInteger, default=0)
+    disk_usage: Mapped[int] = mapped_column(BigInteger, default=0)
+    free_storage: Mapped[int] = mapped_column(BigInteger, default=0)
+    total_storage: Mapped[int] = mapped_column(BigInteger, default=0)
 
     @classmethod
     def configuration(cls, db):
@@ -799,10 +834,10 @@ class KeyValueStore(Base):
     __tablename__ = "keyvaluestore"
     __table_args__ = (UniqueConstraint("prefix", "key", name="_prefix_key_uc"),)
 
-    id = Column(Integer, primary_key=True)
-    prefix = Column(Unicode)
-    key = Column(Unicode)
-    value = Column(JSON)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    prefix: Mapped[str] = mapped_column(Unicode)
+    key: Mapped[str] = mapped_column(Unicode)
+    value: Mapped[dict] = mapped_column(JSON)
 
 
 def new_session_factory(

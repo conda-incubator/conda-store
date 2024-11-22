@@ -7,10 +7,11 @@ updates:
     schedule:
       interval: "monthly"
     labels:
-      - "area: javascript"
+      - "area: github actions"
       - "area: dependencies 📦"
-    # ensure we have a nicely formatter commit message
-    prefix: "MAINT - "
+    # ensure we have a nicely formatted commit message
+    commit-message:
+      prefix: "MAINT - "
 
   - package-ecosystem: "npm"
     directory: "/docusaurus-docs"
@@ -19,8 +20,9 @@ updates:
     labels:
       - "area: javascript"
       - "area: dependencies 📦"
-    # ensure we have a nicely formatter commit message
-    prefix: "MAINT - "
+    # ensure we have a nicely formatted commit message
+    commit-message:
+      prefix: "MAINT - "
 
   - package-ecosystem: "docker"
     directories:
@@ -30,5 +32,6 @@ updates:
       interval: "monthly"
     labels:
       - "area: dependencies 📦"
-    # ensure we have a nicely formatter commit message
-    prefix: "MAINT - "
+    # ensure we have a nicely formatted commit message
+    commit-message:
+      prefix: "MAINT - "
