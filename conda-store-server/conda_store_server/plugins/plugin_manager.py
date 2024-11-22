@@ -10,7 +10,7 @@ from conda_store_server.plugins import types
 
 
 class PluginManager(pluggy.PluginManager):
-    def get_lock_plugins(self) -> dict[str, types.LockPlugin]:
+    def get_lock_plugins(self) -> dict[str, types.TypeLockPlugin]:
         """Returns a dict of lock plugin name to class"""
         plugins = [item for items in self.hook.lock_plugins() for item in items]
         return {
@@ -18,7 +18,7 @@ class PluginManager(pluggy.PluginManager):
             for p in plugins
         }
     
-    def lock_plugin(self, name: str) -> types.LockPlugin:
+    def lock_plugin(self, name: str) -> types.TypeLockPlugin:
         """Returns a lock plugin by name"""
         lockers = self.get_lock_plugins()
 

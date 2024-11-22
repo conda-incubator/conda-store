@@ -88,7 +88,7 @@ class OtherLock(lock.LockPlugin):
 def lock_plugins():
     """other-lock locking plugin"""
 
-    yield types.LockPlugin(
+    yield types.TypeLockPlugin(
         name="lock-other_lock",
         synopsis="Generate a lockfile using other-lock",
         backend=OtherLock,

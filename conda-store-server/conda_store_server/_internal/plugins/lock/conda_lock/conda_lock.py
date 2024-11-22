@@ -92,7 +92,7 @@ class CondaLock(lock.LockPlugin):
 def lock_plugins():
     """conda-lock locking plugin"""
 
-    yield types.LockPlugin(
+    yield types.TypeLockPlugin(
         name="lock-conda_lock",
         synopsis="Generate a lockfile using conda-lock",
         backend=CondaLock,

@@ -6,7 +6,7 @@ from conda_store_server.plugins.v1.lock import LockPlugin
 from typing import NamedTuple
 
 
-class LockPlugin(NamedTuple):
+class TypeLockPlugin(NamedTuple):
     """
     Return type to use when defining a conda store lock plugin hook.
 
