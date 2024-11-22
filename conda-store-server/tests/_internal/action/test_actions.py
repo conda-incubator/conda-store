@@ -174,6 +174,13 @@ def test_solve_lockfile_multiple_platforms(conda_store, specification, request):
     assert len(context.result["package"]) != 0
 
 
+def test_save_lockfile(simple_lockfile_specification):
+        """Ensure lockfile is saved in conda-lock `output` format"""
+        context = action.action_save_lockfile(
+            specification=simple_lockfile_specification
+        )
+        assert context.result == simple_lockfile_specification.lockfile.dict_for_output()
+
 @pytest.mark.parametrize(
     "specification_name",
     [

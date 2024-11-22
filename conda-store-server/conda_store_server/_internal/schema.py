@@ -445,7 +445,7 @@ class LockfileSpecification(BaseModel):
 
         return super().parse_obj(specification)
 
-    def dict(self):
+    def model_dump(self):
         res = super().model_dump()
         # The dict_for_output method includes the version field into the output
         # and excludes unset fields. Without the version field present,
