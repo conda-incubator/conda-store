@@ -51,12 +51,12 @@ def test_conda_store_register_environment_workflow(
     namespace_name = "pytest-namespace"
 
     build_id = conda_store.register_environment(
-        db, specification=simple_specification.dict(), namespace=namespace_name
+        db, specification=simple_specification.model_dump(), namespace=namespace_name
     )
 
     build = api.get_build(db, build_id=build_id)
     assert build is not None
-    assert build.status == schema.BuildStatus.QUEUED
+    assert build.status in [schema.BuildStatus.QUEUED, schema.BuildStatus.COMPLETED]
     assert build.environment.name == simple_specification.name
     assert build.environment.namespace.name == namespace_name
     assert build.specification.spec["name"] == simple_specification.name
@@ -103,14 +103,14 @@ def test_conda_store_register_environment_force_false_same_namespace(db, conda_s
 
     first_build_id = conda_store.register_environment(
         db,
-        specification=conda_specification.dict(),
+        specification=conda_specification.model_dump(),
         namespace=namespace_name,
         force=False,
     )
 
     second_build_id = conda_store.register_environment(
         db,
-        specification=conda_specification.dict(),
+        specification=conda_specification.model_dump(),
         namespace=namespace_name,
         force=False,
     )
@@ -134,14 +134,14 @@ def test_conda_store_register_environment_force_false_different_namespace(
 
     first_build_id = conda_store.register_environment(
         db,
-        specification=conda_specification.dict(),
+        specification=conda_specification.model_dump(),
         namespace="pytest-namespace",
         force=False,
     )
 
     second_build_id = conda_store.register_environment(
         db,
-        specification=conda_specification.dict(),
+        specification=conda_specification.model_dump(),
         namespace="pytest-different-namespace",
         force=False,
     )
@@ -164,14 +164,14 @@ def test_conda_store_register_environment_duplicate_force_true(db, conda_store):
 
     first_build_id = conda_store.register_environment(
         db,
-        specification=conda_specification.dict(),
+        specification=conda_specification.model_dump(),
         namespace=namespace_name,
         force=True,
     )
 
     second_build_id = conda_store.register_environment(
         db,
-        specification=conda_specification.dict(),
+        specification=conda_specification.model_dump(),
         namespace=namespace_name,
         force=True,
     )

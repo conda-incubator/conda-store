@@ -63,7 +63,7 @@ dependencies = [
   "pyyaml >=6.0.1",
   "redis",
   "requests",
-  "pydantic >=1.10.16,<2.0a0",
+  "pydantic >=2.0",
   "python-multipart",
   # setuptools>=70 uses local version of packaging (and other deps) without
   # pinning them; conda-lock depends on this, but also doesn't pin the setuptools

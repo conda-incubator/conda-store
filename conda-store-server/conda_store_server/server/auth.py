@@ -57,7 +57,7 @@ class AuthenticationBackend(LoggingConfigurable):
     )
 
     def encrypt_token(self, token: schema.AuthenticationToken):
-        return jwt.encode(token.dict(), self.secret, algorithm=self.jwt_algorithm)
+        return jwt.encode(token.model_dump(), self.secret, algorithm=self.jwt_algorithm)
 
     def decrypt_token(self, token: str):
         return jwt.decode(token, self.secret, algorithms=[self.jwt_algorithm])

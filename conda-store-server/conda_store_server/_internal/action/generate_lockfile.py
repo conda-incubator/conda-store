@@ -28,7 +28,7 @@ def action_solve_lockfile(
     lockfile_filename = pathlib.Path.cwd() / "conda-lock.yaml"
 
     with environment_filename.open("w") as f:
-        json.dump(specification.dict(), f)
+        json.dump(specification.model_dump(), f)
 
     context.log.info(
         "Note that the output of `conda config --show` displayed below only reflects "
@@ -82,7 +82,7 @@ def action_save_lockfile(
 ):
     # Note: this calls dict on specification so that the version field is
     # part of the output
-    lockfile = specification.dict()["lockfile"]
+    lockfile = specification.model_dump()["lockfile"]
     lockfile_filename = pathlib.Path.cwd() / "conda-lock.yaml"
 
     with lockfile_filename.open("w") as f:

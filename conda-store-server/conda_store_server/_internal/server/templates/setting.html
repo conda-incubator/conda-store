@@ -20,11 +20,11 @@
             <p>Settings must be JSON parsable</p>
 
             <form id="environment-settings-form">
-               {% for key, value in settings.dict().items() if not settings.__fields__[key].field_info.extra['metadata']['global'] %}
+               {% for key, value in settings.model_dump().items() if not settings.model_fields[key].json_schema_extra['metadata']['global'] %}
             <div class="form-group row">
                 <label for="{{ key }}">{{ key }}</label>
                 <input type="text" class="form-control" id="{{ key }}" name="{{ key }}" value="{{ value | tojson | forceescape }}">
-                <small id="{{ key }}Help" class="form-text text-muted">{{ settings.__fields__[key].field_info.description }}</small>
+                <small id="{{ key }}Help" class="form-text text-muted">{{ settings.model_fields[key].description }}</small>
             </div>
             {% endfor %}
             <button type="submit" class="btn btn-secondary">Save Settings</button>
@@ -42,11 +42,11 @@
             <p>Settings must be JSON parsable</p>
 
             <form id="global-settings-form">
-               {% for key, value in settings.dict().items() if settings.__fields__[key].field_info.extra['metadata']['global'] %}
+               {% for key, value in settings.model_dump().items() if settings.model_fields[key].json_schema_extra['metadata']['global'] %}
             <div class="form-group row">
                 <label for="{{ key }}">{{ key }}</label>
                 <input type="text" {% if namespace is not none %}readonly{% endif %} class="form-control" id="{{ key }}" name="{{ key }}" value="{{ value | tojson | forceescape}}">
-                <small id="{{ key }}Help" class="form-text text-muted">{{ settings.__fields__[key].field_info.description }}</small>
+                <small id="{{ key }}Help" class="form-text text-muted">{{ settings.model_fields[key].description }}</small>
             </div>
             {% endfor %}
             <button type="submit" {% if namespace is not none%}disabled{% endif %} class="btn btn-secondary">Save Global Settings</button>
