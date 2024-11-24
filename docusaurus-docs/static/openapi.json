@@ -4,8 +4,15 @@
       "APIAckResponse": {
         "properties": {
           "message": {
-            "title": "Message",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
           },
           "status": {
             "$ref": "#/components/schemas/APIStatus"
@@ -36,8 +43,15 @@
             "$ref": "#/components/schemas/Build"
           },
           "message": {
-            "title": "Message",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
           },
           "status": {
             "$ref": "#/components/schemas/APIStatus"
@@ -56,8 +70,15 @@
             "$ref": "#/components/schemas/Environment"
           },
           "message": {
-            "title": "Message",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
           },
           "status": {
             "$ref": "#/components/schemas/APIStatus"
@@ -76,8 +97,15 @@
             "$ref": "#/components/schemas/Namespace"
           },
           "message": {
-            "title": "Message",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
           },
           "status": {
             "$ref": "#/components/schemas/APIStatus"
@@ -96,8 +124,15 @@
             "$ref": "#/components/schemas/APIGetPermissionData"
           },
           "message": {
-            "title": "Message",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
           },
           "status": {
             "$ref": "#/components/schemas/APIStatus"
@@ -137,9 +172,16 @@
             "type": "object"
           },
           "expiration": {
-            "format": "date-time",
-            "title": "Expiration",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expiration"
           },
           "primary_namespace": {
             "title": "Primary Namespace",
@@ -162,8 +204,15 @@
             "type": "object"
           },
           "message": {
-            "title": "Message",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
           },
           "status": {
             "$ref": "#/components/schemas/APIStatus"
@@ -177,12 +226,12 @@
         "type": "object"
       },
       "APIGetSpecificationFormat": {
-        "description": "An enumeration.",
         "enum": [
           "yaml",
           "lockfile"
         ],
-        "title": "APIGetSpecificationFormat"
+        "title": "APIGetSpecificationFormat",
+        "type": "string"
       },
       "APIGetStatus": {
         "properties": {
@@ -190,8 +239,15 @@
             "$ref": "#/components/schemas/APIGetStatusData"
           },
           "message": {
-            "title": "Message",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
           },
           "status": {
             "$ref": "#/components/schemas/APIStatus"
@@ -227,8 +283,15 @@
             "type": "object"
           },
           "message": {
-            "title": "Message",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
           },
           "status": {
             "$ref": "#/components/schemas/APIStatus"
@@ -255,8 +318,15 @@
             "type": "array"
           },
           "message": {
-            "title": "Message",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
           },
           "page": {
             "title": "Page",
@@ -294,8 +364,15 @@
             "type": "array"
           },
           "message": {
-            "title": "Message",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
           },
           "page": {
             "title": "Page",
@@ -333,8 +410,15 @@
             "type": "array"
           },
           "message": {
-            "title": "Message",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
           },
           "page": {
             "title": "Page",
@@ -372,8 +456,15 @@
             "type": "array"
           },
           "message": {
-            "title": "Message",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
           },
           "page": {
             "title": "Page",
@@ -411,8 +502,15 @@
             "type": "array"
           },
           "message": {
-            "title": "Message",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
           },
           "page": {
             "title": "Page",
@@ -460,8 +558,15 @@
             "$ref": "#/components/schemas/APIPostSpecificationData"
           },
           "message": {
-            "title": "Message",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
           },
           "status": {
             "$ref": "#/components/schemas/APIStatus"
@@ -493,8 +598,15 @@
             "$ref": "#/components/schemas/APIPostTokenData"
           },
           "message": {
-            "title": "Message",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
           },
           "status": {
             "$ref": "#/components/schemas/APIStatus"
@@ -541,11 +653,24 @@
       "APIPutSetting": {
         "properties": {
           "data": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
             "title": "Data"
           },
           "message": {
-            "title": "Message",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
           },
           "status": {
             "$ref": "#/components/schemas/APIStatus"
@@ -560,11 +685,24 @@
       "APIResponse": {
         "properties": {
           "data": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
             "title": "Data"
           },
           "message": {
-            "title": "Message",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
           },
           "status": {
             "$ref": "#/components/schemas/APIStatus"
@@ -577,33 +715,61 @@
         "type": "object"
       },
       "APIStatus": {
-        "description": "An enumeration.",
         "enum": [
           "ok",
           "error"
         ],
-        "title": "APIStatus"
+        "title": "APIStatus",
+        "type": "string"
       },
       "Body_api_post_specification_api_v1_specification__post": {
         "properties": {
           "environment_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "default": "",
-            "title": "Environment Description",
-            "type": "string"
+            "title": "Environment Description"
           },
           "environment_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "default": "",
-            "title": "Environment Name",
-            "type": "string"
+            "title": "Environment Name"
           },
           "is_lockfile": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "default": false,
-            "title": "Is Lockfile",
-            "type": "boolean"
+            "title": "Is Lockfile"
           },
           "namespace": {
-            "title": "Namespace",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Namespace"
           },
           "specification": {
             "default": "",
@@ -617,23 +783,44 @@
       "Body_api_post_token_api_v1_token__post": {
         "properties": {
           "expiration": {
-            "format": "date-time",
-            "title": "Expiration",
-            "type": "string"
-          },
-          "primary_namespace": {
-            "title": "Primary Namespace",
-            "type": "string"
-          },
-          "role_bindings": {
-            "additionalProperties": {
-              "items": {
+            "anyOf": [
+              {
+                "format": "date-time",
                 "type": "string"
               },
-              "type": "array"
-            },
-            "title": "Role Bindings",
-            "type": "object"
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expiration"
+          },
+          "primary_namespace": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Primary Namespace"
+          },
+          "role_bindings": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role Bindings"
           }
         },
         "title": "Body_api_post_token_api_v1_token__post",
@@ -676,16 +863,30 @@
       "Build": {
         "properties": {
           "build_artifacts": {
-            "items": {
-              "$ref": "#/components/schemas/BuildArtifact"
-            },
-            "title": "Build Artifacts",
-            "type": "array"
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/BuildArtifact"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Build Artifacts"
           },
           "ended_on": {
-            "format": "date-time",
-            "title": "Ended On",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ended On"
           },
           "environment_id": {
             "title": "Environment Id",
@@ -696,11 +897,18 @@
             "type": "integer"
           },
           "packages": {
-            "items": {
-              "$ref": "#/components/schemas/CondaPackage"
-            },
-            "title": "Packages",
-            "type": "array"
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/CondaPackage"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Packages"
           },
           "scheduled_on": {
             "format": "date-time",
@@ -712,19 +920,40 @@
             "type": "integer"
           },
           "specification": {
-            "$ref": "#/components/schemas/Specification"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Specification"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "started_on": {
-            "format": "date-time",
-            "title": "Started On",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started On"
           },
           "status": {
             "$ref": "#/components/schemas/BuildStatus"
           },
           "status_info": {
-            "title": "Status Info",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status Info"
           }
         },
         "required": [
@@ -760,7 +989,6 @@
         "type": "object"
       },
       "BuildArtifactType": {
-        "description": "An enumeration.",
         "enum": [
           "DIRECTORY",
           "LOCKFILE",
@@ -772,10 +1000,10 @@
           "CONTAINER_REGISTRY",
           "CONSTRUCTOR_INSTALLER"
         ],
-        "title": "BuildArtifactType"
+        "title": "BuildArtifactType",
+        "type": "string"
       },
       "BuildStatus": {
-        "description": "An enumeration.",
         "enum": [
           "QUEUED",
           "BUILDING",
@@ -783,7 +1011,8 @@
           "FAILED",
           "CANCELED"
         ],
-        "title": "BuildStatus"
+        "title": "BuildStatus",
+        "type": "string"
       },
       "CondaChannel": {
         "properties": {
@@ -792,9 +1021,16 @@
             "type": "integer"
           },
           "last_update": {
-            "format": "date-time",
-            "title": "Last Update",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Update"
           },
           "name": {
             "title": "Name",
@@ -818,16 +1054,30 @@
             "type": "integer"
           },
           "license": {
-            "title": "License",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "License"
           },
           "name": {
             "title": "Name",
             "type": "string"
           },
           "summary": {
-            "title": "Summary",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
           },
           "version": {
             "title": "Version",
@@ -846,15 +1096,29 @@
       "Environment": {
         "properties": {
           "current_build": {
-            "$ref": "#/components/schemas/Build"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Build"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "current_build_id": {
             "title": "Current Build Id",
             "type": "integer"
           },
           "description": {
-            "title": "Description",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
           },
           "id": {
             "title": "Id",
@@ -897,7 +1161,7 @@
             "type": "integer"
           },
           "metadata_": {
-            "title": "Metadata ",
+            "title": "Metadata",
             "type": "object"
           },
           "name": {
@@ -1021,7 +1285,7 @@
   "paths": {
     "/": {
       "get": {
-        "operationId": "get_conda_store_ui__get",
+        "operationId": "redirect_root_to_ui__get",
         "responses": {
           "200": {
             "content": {
@@ -1032,10 +1296,7 @@
             "description": "Successful Response"
           }
         },
-        "summary": "Get Conda Store Ui",
-        "tags": [
-          "conda-store-ui"
-        ]
+        "summary": "Redirect Root To Ui"
       }
     },
     "/admin/": {
@@ -1047,8 +1308,15 @@
             "name": "search",
             "required": false,
             "schema": {
-              "title": "Search",
-              "type": "string"
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
             }
           }
         ],
@@ -1450,7 +1718,15 @@
             "name": "status",
             "required": false,
             "schema": {
-              "$ref": "#/components/schemas/BuildStatus"
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/BuildStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
             }
           },
           {
@@ -1458,12 +1734,19 @@
             "name": "packages",
             "required": false,
             "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
               "default": [],
-              "items": {
-                "type": "string"
-              },
-              "title": "Packages",
-              "type": "array"
+              "title": "Packages"
             }
           },
           {
@@ -1471,7 +1754,15 @@
             "name": "artifact",
             "required": false,
             "schema": {
-              "$ref": "#/components/schemas/BuildArtifactType"
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/BuildArtifactType"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Artifact"
             }
           },
           {
@@ -1479,8 +1770,15 @@
             "name": "environment_id",
             "required": false,
             "schema": {
-              "title": "Environment Id",
-              "type": "integer"
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Environment Id"
             }
           },
           {
@@ -1488,8 +1786,15 @@
             "name": "name",
             "required": false,
             "schema": {
-              "title": "Name",
-              "type": "string"
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Name"
             }
           },
           {
@@ -1497,8 +1802,15 @@
             "name": "namespace",
             "required": false,
             "schema": {
-              "title": "Namespace",
-              "type": "string"
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Namespace"
             }
           },
           {
@@ -1516,8 +1828,15 @@
             "name": "order",
             "required": false,
             "schema": {
-              "title": "Order",
-              "type": "string"
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Order"
             }
           },
           {
@@ -1525,8 +1844,15 @@
             "name": "size",
             "required": false,
             "schema": {
-              "title": "Size",
-              "type": "integer"
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Size"
             }
           },
           {
@@ -2093,8 +2419,15 @@
             "name": "search",
             "required": false,
             "schema": {
-              "title": "Search",
-              "type": "string"
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
             }
           },
           {
@@ -2102,8 +2435,15 @@
             "name": "exact",
             "required": false,
             "schema": {
-              "title": "Exact",
-              "type": "string"
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Exact"
             }
           },
           {
@@ -2111,8 +2451,15 @@
             "name": "build",
             "required": false,
             "schema": {
-              "title": "Build",
-              "type": "string"
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Build"
             }
           },
           {
@@ -2130,8 +2477,15 @@
             "name": "order",
             "required": false,
             "schema": {
-              "title": "Order",
-              "type": "string"
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Order"
             }
           },
           {
@@ -2139,8 +2493,15 @@
             "name": "size",
             "required": false,
             "schema": {
-              "title": "Size",
-              "type": "integer"
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Size"
             }
           },
           {
@@ -2244,8 +2605,15 @@
             "name": "order",
             "required": false,
             "schema": {
-              "title": "Order",
-              "type": "string"
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Order"
             }
           },
           {
@@ -2253,8 +2621,15 @@
             "name": "size",
             "required": false,
             "schema": {
-              "title": "Size",
-              "type": "integer"
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Size"
             }
           },
           {
@@ -2309,7 +2684,15 @@
             "name": "artifact",
             "required": false,
             "schema": {
-              "$ref": "#/components/schemas/BuildArtifactType"
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/BuildArtifactType"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Artifact"
             }
           },
           {
@@ -2317,8 +2700,15 @@
             "name": "jwt",
             "required": false,
             "schema": {
-              "title": "Jwt",
-              "type": "string"
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Jwt"
             }
           },
           {
@@ -2326,8 +2716,15 @@
             "name": "name",
             "required": false,
             "schema": {
-              "title": "Name",
-              "type": "string"
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Name"
             }
           },
           {
@@ -2335,8 +2732,15 @@
             "name": "namespace",
             "required": false,
             "schema": {
-              "title": "Namespace",
-              "type": "string"
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Namespace"
             }
           },
           {
@@ -2344,12 +2748,19 @@
             "name": "packages",
             "required": false,
             "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
               "default": [],
-              "items": {
-                "type": "string"
-              },
-              "title": "Packages",
-              "type": "array"
+              "title": "Packages"
             }
           },
           {
@@ -2357,8 +2768,15 @@
             "name": "search",
             "required": false,
             "schema": {
-              "title": "Search",
-              "type": "string"
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
             }
           },
           {
@@ -2366,7 +2784,15 @@
             "name": "status",
             "required": false,
             "schema": {
-              "$ref": "#/components/schemas/BuildStatus"
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/BuildStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
             }
           },
           {
@@ -2384,8 +2810,15 @@
             "name": "order",
             "required": false,
             "schema": {
-              "title": "Order",
-              "type": "string"
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Order"
             }
           },
           {
@@ -2393,8 +2826,15 @@
             "name": "size",
             "required": false,
             "schema": {
-              "title": "Size",
-              "type": "integer"
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Size"
             }
           },
           {
@@ -2798,8 +3238,15 @@
             "name": "order",
             "required": false,
             "schema": {
-              "title": "Order",
-              "type": "string"
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Order"
             }
           },
           {
@@ -2807,8 +3254,15 @@
             "name": "size",
             "required": false,
             "schema": {
-              "title": "Size",
-              "type": "integer"
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Size"
             }
           },
           {
@@ -3368,8 +3822,15 @@
             "name": "search",
             "required": false,
             "schema": {
-              "title": "Search",
-              "type": "string"
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
             }
           },
           {
@@ -3377,8 +3838,15 @@
             "name": "exact",
             "required": false,
             "schema": {
-              "title": "Exact",
-              "type": "string"
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Exact"
             }
           },
           {
@@ -3386,8 +3854,15 @@
             "name": "build",
             "required": false,
             "schema": {
-              "title": "Build",
-              "type": "string"
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Build"
             }
           },
           {
@@ -3418,8 +3893,15 @@
             "name": "order",
             "required": false,
             "schema": {
-              "title": "Order",
-              "type": "string"
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Order"
             }
           },
           {
@@ -3427,8 +3909,15 @@
             "name": "size",
             "required": false,
             "schema": {
-              "title": "Size",
-              "type": "integer"
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Size"
             }
           },
           {
@@ -3875,11 +4364,7 @@
             "name": "format",
             "required": false,
             "schema": {
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/APIGetSpecificationFormat"
-                }
-              ],
+              "$ref": "#/components/schemas/APIGetSpecificationFormat",
               "default": "yaml"
             }
           }
@@ -4037,8 +4522,15 @@
             "name": "next",
             "required": false,
             "schema": {
-              "title": "Next",
-              "type": "string"
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Next"
             }
           }
         ],
@@ -4075,8 +4567,15 @@
             "name": "next",
             "required": false,
             "schema": {
-              "title": "Next",
-              "type": "string"
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Next"
             }
           }
         ],
@@ -4115,8 +4614,15 @@
             "name": "next",
             "required": false,
             "schema": {
-              "title": "Next",
-              "type": "string"
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Next"
             }
           }
         ],
@@ -4164,6 +4670,90 @@
         "summary": "Prometheus Metrics",
         "tags": [
           "metrics"
+        ]
+      }
+    },
+    "/ui/": {
+      "get": {
+        "operationId": "get_conda_store_ui_ui__get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "path",
+            "required": true,
+            "schema": {
+              "title": "Path",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Conda Store Ui",
+        "tags": [
+          "conda-store-ui"
+        ]
+      }
+    },
+    "/ui{path}": {
+      "get": {
+        "operationId": "get_conda_store_ui_ui_path__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "path",
+            "required": true,
+            "schema": {
+              "title": "Path",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Conda Store Ui",
+        "tags": [
+          "conda-store-ui"
         ]
       }
     },
