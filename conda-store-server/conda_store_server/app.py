@@ -195,7 +195,7 @@ class CondaStore(LoggingConfigurable):
     )
 
     lock_plugin_name = Unicode(
-        default_value="lock-conda_lock",
+        default_value="conda-lock",
         allow_none=False,
         config=True,
     )
@@ -481,6 +481,7 @@ class CondaStore(LoggingConfigurable):
 
     @property
     def plugin_manager(self):
+        """Creates a plugin manager(if it doesn't already exist) and registers all plugins"""
         if hasattr(self, "_plugin_manager"):
             return self._plugin_manager
 

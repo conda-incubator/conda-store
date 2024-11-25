@@ -93,7 +93,7 @@ def lock_plugins():
     """conda-lock locking plugin"""
 
     yield types.TypeLockPlugin(
-        name="lock-conda_lock",
+        name="conda-lock",
         synopsis="Generate a lockfile using conda-lock",
         backend=CondaLock,
     )

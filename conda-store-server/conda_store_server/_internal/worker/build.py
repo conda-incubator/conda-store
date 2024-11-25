@@ -227,6 +227,10 @@ def build_conda_environment(db: Session, conda_store, build):
             else:
                 lock_plugin_name, locker = conda_store.lock_plugin()
                 conda_lock_spec = locker.lock_environment(
+                    spec=schema.CondaSpecification.parse_obj(
+                        build.specification.spec
+                    ),
+                    platforms=settings.conda_solve_platforms,
                     context=plugin_context.PluginContext(
                         conda_store=conda_store,
                         stdout=LoggedStream(
@@ -236,8 +240,6 @@ def build_conda_environment(db: Session, conda_store, build):
                             prefix=f"plugin-{lock_plugin_name}: ",
                         ),
                     ),
-                    spec=schema.CondaSpecification.parse_obj(build.specification.spec),
-                    platforms=settings.conda_solve_platforms,
                 )
 
             conda_store.storage.set(

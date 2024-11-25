@@ -62,7 +62,6 @@ class PluginContext:
             for line in proc.stdout:
                 self.stdout.write(line)
             if not redirect_stderr:
-                import pdb; pdb.set_trace()
                 for line in proc.stderr:
                     self.stderr.write(line)
 

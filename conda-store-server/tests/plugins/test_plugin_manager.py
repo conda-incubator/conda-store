@@ -20,7 +20,7 @@ def test_get_lock_plugins(plugin_manager):
     lp = plugin_manager.get_lock_plugins()
     
     # Ensure built in lock plugins are accounted for
-    assert "lock-conda_lock" in lp
+    assert "conda-lock" in lp
 
     # Ensure all plugins are lock plugins
     for plugin in lp.values():
@@ -29,8 +29,8 @@ def test_get_lock_plugins(plugin_manager):
 
 def get_lock_plugin(plugin_manager):
     plugin_manager.collect_plugins()
-    lp = plugin_manager.lock_plugin("lock-conda_lock")
-    assert lp.name == "lock-conda_lock"
+    lp = plugin_manager.lock_plugin("conda-lock")
+    assert lp.name == "conda-lock"
     assert lp.backend == conda_lock.CondaLock
 
 
