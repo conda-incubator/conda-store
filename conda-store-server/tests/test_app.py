@@ -9,6 +9,8 @@ from celery.result import AsyncResult
 
 from conda_store_server import api
 from conda_store_server._internal import action, conda_utils, schema
+from conda_store_server._internal.plugins.lock.conda_lock import conda_lock
+from conda_store_server.exception import CondaStorePluginNotFoundError
 
 
 @pytest.mark.long_running_test
@@ -181,4 +183,15 @@ def test_conda_store_register_environment_duplicate_force_true(db, conda_store):
 
 
 def test_conda_store_get_lock_plugin(conda_store):
-    assert conda_store.lock_plugin() is not None
+    lock_plugin_setting = "lock-conda_lock"
+    conda_store.lock_plugin_name = lock_plugin_setting
+    name, plugin = conda_store.lock_plugin()
+    assert name == lock_plugin_setting
+    assert isinstance(plugin, conda_lock.CondaLock)
+
+
+def test_conda_store_get_lock_plugin_does_not_exist(conda_store):
+    lock_plugin_setting = "idontexist"
+    conda_store.lock_plugin_name = lock_plugin_setting
+    with pytest.raises(CondaStorePluginNotFoundError):
+        conda_store.lock_plugin()

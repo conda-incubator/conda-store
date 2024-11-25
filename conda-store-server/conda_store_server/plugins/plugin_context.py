@@ -17,7 +17,11 @@ class PluginContext:
     """
 
     def __init__(
-        self, conda_store=None, stdout=None, stderr=None, log_level=logging.INFO
+        self,
+        conda_store=None,
+        stdout=None,
+        stderr=None,
+        log_level=logging.INFO,
     ):
         if stdout is not None and stderr is None:
             stderr = stdout
@@ -33,7 +37,12 @@ class PluginContext:
         self.log.setLevel(log_level)
         self.conda_store = conda_store
 
-    def run_command(self, command, redirect_stderr=True, **kwargs):
+    def run_command(
+            self,
+            command: str,
+            redirect_stderr: bool = True,
+            **kwargs
+        ):
         """Runs command and immediately writes to logs"""
         self.log.info("Running command: %s", command)
 
@@ -49,12 +58,13 @@ class PluginContext:
             bufsize=1,
             universal_newlines=True,
             **kwargs,
-        ) as p:
-            for line in p.stdout:
+        ) as proc:
+            for line in proc.stdout:
                 self.stdout.write(line)
             if not redirect_stderr:
-                for line in p.stderr:
+                import pdb; pdb.set_trace()
+                for line in proc.stderr:
                     self.stderr.write(line)
 
-        if p.returncode != 0:
-            raise subprocess.CalledProcessError(p.returncode, p.args)
+        if proc.returncode != 0:
+            raise subprocess.CalledProcessError(proc.returncode, proc.args)
