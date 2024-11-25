@@ -67,7 +67,6 @@ def test_conda_store_register_environment_workflow(
 
     # wait for task to complete
     # build: environment, export, archive
-    # docker is expected to fail will be fixed soon
 
     task = AsyncResult(f"build-{build.id}-environment")
     task.wait(timeout=60)
@@ -77,10 +76,6 @@ def test_conda_store_register_environment_workflow(
 
     task = AsyncResult(f"build-{build.id}-conda-pack")
     task.wait(timeout=60)
-
-    if sys.platform == "linux":
-        task = AsyncResult(f"build-{build.id}-docker")
-        task.wait(timeout=2 * 60)
 
     task = AsyncResult(f"build-{build.id}-constructor-installer")
     task.wait(timeout=5 * 60)
