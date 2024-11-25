@@ -265,14 +265,6 @@ class CondaStore(LoggingConfigurable):
             schema.BuildArtifactType.YAML,
             schema.BuildArtifactType.CONDA_PACK,
             schema.BuildArtifactType.CONSTRUCTOR_INSTALLER,
-            *(
-                [
-                    schema.BuildArtifactType.DOCKER_MANIFEST,
-                    schema.BuildArtifactType.CONTAINER_REGISTRY,
-                ]
-                if sys.platform == "linux"
-                else []
-            ),
         ],
         help="artifacts to build in conda-store. By default all of the artifacts",
         config=True,
@@ -723,16 +715,6 @@ class CondaStore(LoggingConfigurable):
                     args=(build.id,),
                     task_id=f"build-{build.id}-conda-pack",
                     immutable=True,
-                )
-            )
-
-        if (
-            schema.BuildArtifactType.DOCKER_MANIFEST in settings.build_artifacts
-            or schema.BuildArtifactType.CONTAINER_REGISTRY in settings.build_artifacts
-        ):
-            artifact_tasks.append(
-                tasks.task_build_conda_docker.subtask(
-                    args=(build.id,), task_id=f"build-{build.id}-docker", immutable=True
                 )
             )
 
