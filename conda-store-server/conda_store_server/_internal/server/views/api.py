@@ -1059,7 +1059,6 @@ async def api_put_build_cancel(
             [
                 f"build-{build_id}-conda-env-export",
                 f"build-{build_id}-conda-pack",
-                f"build-{build_id}-docker",
                 f"build-{build_id}-constructor-installer",
                 f"build-{build_id}-environment",
             ],
@@ -1341,7 +1340,7 @@ async def api_get_build_archive(
         return RedirectResponse(conda_store.storage.get_url(build.conda_pack_key))
 
 
-@router_api.get("/build/{build_id}/docker/")
+@router_api.get("/build/{build_id}/docker/", deprecated=True)
 async def api_get_build_docker_image_url(
     build_id: int,
     request: Request,
@@ -1349,6 +1348,7 @@ async def api_get_build_docker_image_url(
     server=Depends(dependencies.get_server),
     auth=Depends(dependencies.get_auth),
 ):
+    # TODO: remove this route
     with conda_store.get_db() as db:
         build = api.get_build(db, build_id)
         auth.authorize_request(
