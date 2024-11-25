@@ -337,19 +337,6 @@ class CondaStore(LoggingConfigurable):
         allow_none=True,
     )
 
-    default_docker_base_image = Union(
-        [Unicode(), Callable()],
-        help="default base image used for the Dockerized environments. Make sure to have a proper glibc within image (highly discourage alpine/musl based images). Can also be callable function which takes the `orm.Build` object as input which has access to all attributes about the build such as install packages, requested packages, name, namespace, etc",
-        config=True,
-    )
-
-    @default("default_docker_base_image")
-    def _default_docker_base_image(self):
-        def _docker_base_image(build: orm.Build):
-            return "registry-1.docker.io/library/debian:sid-slim"
-
-        return _docker_base_image
-
     validate_specification = Callable(
         conda_store_validate_specification,
         help="callable function taking conda_store, namespace, and specification as input arguments to apply for validating and modifying a given specification. If there are validation issues with the environment ValueError with message should be raised. If changed you may need to call the default function to preseve many of the trait effects e.g. `c.CondaStore.default_channels` etc",
@@ -488,7 +475,6 @@ class CondaStore(LoggingConfigurable):
             pypi_required_packages=self.pypi_required_packages,
             pypi_included_packages=self.pypi_included_packages,
             build_artifacts=self.build_artifacts,
-            # default_docker_base_image=self.default_docker_base_image,
         )
         api.set_kvstore_key_values(db, "setting", settings.model_dump(), update=False)
 

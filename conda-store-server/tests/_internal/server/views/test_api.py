@@ -943,7 +943,6 @@ def test_get_settings_auth(testclient, authenticate, route):
         "pypi_required_packages",
         "pypi_included_packages",
         "build_artifacts",
-        "default_docker_base_image",
     } <= r.data.keys()
 
 
