@@ -8,7 +8,7 @@ import functools
 import os
 import re
 import sys
-from typing import Annotated, Any, Callable, Dict, List, Optional, TypeAlias, Union
+from typing import Annotated, Any, Dict, List, Optional, TypeAlias, Union
 
 from conda_lock.lockfile.v1.models import Lockfile
 from pydantic import (

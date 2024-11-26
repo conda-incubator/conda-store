@@ -20,7 +20,6 @@ from traitlets import (
     TraitError,
     Type,
     Unicode,
-    Union,
     default,
     validate,
 )

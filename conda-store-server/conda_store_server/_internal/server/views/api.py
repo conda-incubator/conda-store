@@ -9,7 +9,7 @@ import pydantic
 import yaml
 from celery.result import AsyncResult
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request
-from fastapi.responses import PlainTextResponse, RedirectResponse, JSONResponse
+from fastapi.responses import JSONResponse, PlainTextResponse, RedirectResponse
 
 from conda_store_server import __version__, api, app
 from conda_store_server._internal import orm, schema, utils
@@ -1368,9 +1368,7 @@ async def api_get_build_docker_image_url(
                 "message": f"Build {build_id} doesn't have a docker manifest",
             }
             return JSONResponse(
-                status_code=400,
-                content=content,
-                headers=response_headers
+                status_code=400, content=content, headers=response_headers
             )
 
 
