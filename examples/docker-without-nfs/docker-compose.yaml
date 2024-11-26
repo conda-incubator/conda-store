@@ -81,7 +81,11 @@ services:
       - "8080:8080"
 
   jupyterhub:
-    build: quansight/conda-store
+    build:
+      context: dockerfiles
+      dockerfile: jupyterhub.Dockerfile
+      args:
+        python_version: 3.11
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.jupyterhub.rule=Host(`conda-store.localhost`) && (Path(`/`) || PathPrefix(`/hub`) || PathPrefix(`/user`))"
@@ -147,21 +151,6 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: conda-store
-
-  mysql:
-    image: mysql:8.0
-    ports:
-      - 3306:3306
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    environment:
-      MYSQL_ROOT_PASSWORD: hbgY8bkoWPMM7EjtcD6wrlVX
-      MYSQL_USER: admin
-      MYSQL_PASSWORD: password
-      MYSQL_DATABASE: conda-store
 
   redis:
     image: bitnami/redis
