@@ -167,8 +167,7 @@ to build. By default it is all the artifacts that conda-store is
 capable of building. These are the
 [lockfile](https://github.com/conda-incubator/conda-lock),
 [YAML](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#create-env-file-manually),
-[Conda-Pack](https://conda.github.io/conda-pack/), and
-[Docker](https://github.com/conda-incubator/conda-docker). Currently
+[Conda-Pack](https://conda.github.io/conda-pack/). Currently
 the `lockfile` one is ignored since it is always created upon build.
 
 `CondaStore.build_artifacts_kept_on_deletion` is a list of artifacts
@@ -210,17 +209,6 @@ assign to all files and directories in a given built environment. This
 setting is useful if you want to protect environments from
 modification from certain users and groups. Note: this configuration
 option is not supported on Windows.
-
-`CondaStore.default_docker_base_image` default base image used for the
-Dockerized environments. Make sure to have a proper glibc within image
-(highly discourage alpine/musl based images). Can also be callable
-function which takes the `orm.Build` object as input which has access
-to all attributes about the build such as installed packages, requested
-packages, name, namespace, etc. This package at a minimum should have
-the [following packages
-installed](https://docs.anaconda.com/anaconda/install/linux/). Often
-times for non-graphic and non-gpu environments glibc is enough. Hence
-the default docker image `library/debian:sid-slim`.
 
 `CondaStore.serialize_builds` DEPRECATED no longer has any effect
 
