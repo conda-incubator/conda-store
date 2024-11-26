@@ -6,6 +6,39 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 The project changed to `CalVer` in September 2023.
 
+---
+## [2024.11.2] - 2024-11-26
+
+([full changelog](https://github.com/conda-incubator/conda-store/compare/2024.11.1...710d61c86b6b8591672c4819328ebd11f9c3a917))
+
+### Merged PRs
+
+FEATURES:
+
+- Create catch-all/fallback route for UI app [#932](https://github.com/conda-incubator/conda-store/pull/932) ([@gabalafou]
+(https://github.com/gabalafou))
+
+IMPROVEMENTS:
+
+- MAINT - Bump base Docker image version [#990](https://github.com/conda-incubator/conda-store/pull/990) ([@trallard](https://github.com/trallard))
+- Bump cross-spawn from 7.0.3 to 7.0.5 in /docusaurus-docs [#989](https://github.com/conda-incubator/conda-store/pull/989) ([@dependabot](https://github.com/dependabot))
+- MAINT - Update dependabot configuration [#988](https://github.com/conda-incubator/conda-store/pull/988) ([@trallard](https://github.com/trallard))
+- [MAINT] Update pydantic to >=2.0 [#985](https://github.com/conda-incubator/conda-store/pull/985) ([@peytondmurray](https://github.com/peytondmurray))
+- MAINT - Do not use `nodefaults` moving forward [#978](https://github.com/conda-incubator/conda-store/pull/978) ([@trallard](https://github.com/trallard))
+- Bump sqlalchemy version [#970](https://github.com/conda-incubator/conda-store/pull/970) ([@soapy1](https://github.com/soapy1))
+
+BUG FIXES:
+
+- DEV - Set traitlets application version [#981](https://github.com/conda-incubator/conda-store/pull/981) ([@soapy1](https://github.com/soapy1))
+- [BUG] Fix python version compatibility issues affecting tests [#973](https://github.com/conda-incubator/conda-store/pull/973) ([@peytondmurray](https://github.com/peytondmurray))
+- Update conda-package-build causes an integrity error on conda_package_build table [#961](https://github.com/conda-incubator/conda-store/pull/961) ([@soapy1](https://github.com/soapy1))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/conda-incubator/conda-store/graphs/contributors?from=2024-11-08&to=2024-11-26&type=c))
+
+[@dependabot](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Adependabot+updated%3A2024-11-08..2024-11-26&type=Issues) | [@gabalafou](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Agabalafou+updated%3A2024-11-08..2024-11-26&type=Issues) | [@github-actions](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Agithub-actions+updated%3A2024-11-08..2024-11-26&type=Issues) | [@marcelovilla](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Amarcelovilla+updated%3A2024-11-08..2024-11-26&type=Issues) | [@netlify](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Anetlify+updated%3A2024-11-08..2024-11-26&type=Issues) | [@nkaretnikov](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Ankaretnikov+updated%3A2024-11-08..2024-11-26&type=Issues) | [@peytondmurray](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Apeytondmurray+updated%3A2024-11-08..2024-11-26&type=Issues) | [@rigzba21](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Arigzba21+updated%3A2024-11-08..2024-11-26&type=Issues) | [@soapy1](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Asoapy1+updated%3A2024-11-08..2024-11-26&type=Issues) | [@trallard](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Atrallard+updated%3A2024-11-08..2024-11-26&type=Issues)
+
 ## [2024.11.1] - 2024-11-08
 
 ([full changelog](https://github.com/conda-incubator/conda-store/compare/2104c4581489474a6f6c6c6b5744c5eeb62b3d14...92a199b52ee4a91d931afcdfb46aca4663c07ebe))
