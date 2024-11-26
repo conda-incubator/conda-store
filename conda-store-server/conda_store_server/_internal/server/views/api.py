@@ -9,7 +9,7 @@ import pydantic
 import yaml
 from celery.result import AsyncResult
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request
-from fastapi.responses import PlainTextResponse, RedirectResponse
+from fastapi.responses import PlainTextResponse, RedirectResponse, JSONResponse
 
 from conda_store_server import __version__, api, app
 from conda_store_server._internal import orm, schema, utils
@@ -1348,7 +1348,7 @@ async def api_get_build_docker_image_url(
     server=Depends(dependencies.get_server),
     auth=Depends(dependencies.get_auth),
 ):
-    # TODO: remove this route
+    response_headers = {"Deprecation": "True"}
     with conda_store.get_db() as db:
         build = api.get_build(db, build_id)
         auth.authorize_request(
@@ -1360,12 +1360,17 @@ async def api_get_build_docker_image_url(
 
         if build.has_docker_manifest:
             url = f"{server.registry_external_url}/{build.environment.namespace.name}/{build.environment.name}:{build.build_key}"
-            return PlainTextResponse(url)
+            return PlainTextResponse(url, headers=response_headers)
 
         else:
-            raise HTTPException(
+            content = {
+                "status": "error",
+                "message": f"Build {build_id} doesn't have a docker manifest",
+            }
+            return JSONResponse(
                 status_code=400,
-                detail=f"Build {build_id} doesn't have a docker manifest",
+                content=content,
+                headers=response_headers
             )
 
 
