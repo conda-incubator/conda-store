@@ -57,7 +57,7 @@ c.CondaStoreServer.behind_proxy = True
 #         auth settings
 # ==================================
 c.CondaStoreServer.authentication_class = JupyterHubOAuthAuthentication
-c.JupyterHubOAuthAuthentication.jupyterhub_url = "https://conda-store.localhost"
+c.JupyterHubOAuthAuthentication.jupyterhub_url = "http://conda-store.localhost"
 c.JupyterHubOAuthAuthentication.client_id = "service-this-is-a-jupyterhub-client"
 c.JupyterHubOAuthAuthentication.client_secret = "this-is-a-jupyterhub-secret"
 c.JupyterHubOAuthAuthentication.oauth_callback_url = "/conda-store/oauth_callback/"

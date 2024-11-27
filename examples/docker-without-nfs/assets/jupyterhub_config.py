@@ -31,8 +31,10 @@ class CondaStoreSpawner(SimpleLocalProcessSpawner):
 conda-store environment must contain jupyterhub, jupyterlab, nb_conda_store_kernels, and jupyterlab
 
 Choose an environment:
+
+
 <select name="build_id" multiple="false">
-{''.join(options)}
+{''.join(["one", "two"])}
 </select>
 """
 
@@ -44,7 +46,7 @@ Choose an environment:
         self.cmd = [
             "/opt/conda/envs/conda-store/bin/conda-store",
             "run",
-            self.user_options["build_id"],
+            "1",
             "--",
             "jupyter-labhub",
         ]
@@ -56,9 +58,8 @@ Choose an environment:
 
     def user_env(self, env):
         env = super().user_env(env)
-        env["CONDA_STORE_URL"] = "https://conda-store.localhost/conda-store"
+        env["CONDA_STORE_URL"] = "http://conda-store.localhost/conda-store"
         env["CONDA_STORE_AUTH"] = "token"
-        env["CONDA_STORE_NO_VERIFY"] = "true"
         env["CONDA_STORE_TOKEN"] = self.conda_store_token
         return env
 
@@ -66,7 +67,7 @@ Choose an environment:
         async with CondaStoreAPI(
             conda_store_url=os.environ["CONDA_STORE_URL"],
             auth_type=os.environ["CONDA_STORE_AUTH"],
-            verify_ssl="CONDA_STORE_NO_VERIFY" not in os.environ,
+            verify_ssl=False,
         ) as conda_store:
             return await conda_store.create_token(
                 primary_namespace=username,
@@ -80,7 +81,7 @@ Choose an environment:
         async with CondaStoreAPI(
             conda_store_url=os.environ["CONDA_STORE_URL"],
             auth_type=os.environ["CONDA_STORE_AUTH"],
-            verify_ssl="CONDA_STORE_NO_VERIFY" not in os.environ,
+            verify_ssl=False,
         ) as conda_store:
             return await conda_store.list_environments(
                 status="COMPLETED",
@@ -101,7 +102,7 @@ c.JupyterHub.services = [
         "name": "conda-store",
         "oauth_client_id": "service-this-is-a-jupyterhub-client",
         "admin": True,
-        "url": "https://conda-store.localhost/conda-store/",
+        "url": "http://conda-store.localhost/conda-store/",
         "api_token": "this-is-a-jupyterhub-secret",
         "oauth_redirect_uri": "/conda-store/oauth_callback/",
         "oauth_no_confirm": True,  # allows no authorize yes/no button
