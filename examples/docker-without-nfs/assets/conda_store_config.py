@@ -12,7 +12,8 @@ from conda_store_server.storage import S3Storage
 #      conda-store settings
 # ==================================
 c.CondaStore.storage_class = S3Storage
-c.CondaStore.store_directory = "/opt/conda-store/conda-store"
+c.CondaStore.store_directory = "/var/lib/conda-store/"
+c.CondaStore.environment_directory = "/opt/conda-store/envs/{namespace}-{name}"
 # Also edit `conda-store-server/alembic.ini` accordingly for key sqlalchemy.url
 c.CondaStore.database_url = (
     "postgresql+psycopg2://postgres:password@postgres/conda-store"

@@ -26,9 +26,9 @@ services:
 
   conda-store-worker:
     image: quansight/conda-store-server
-    user: 1000:1000
+    user: 1000:100
     volumes:
-      - conda_store_data:/opt/conda-store/
+      # - conda_store_data:/opt/conda-store/
       - ./assets/conda_store_config.py:/etc/conda-store/conda_store_config.py:ro
       - ./assets/environments:/opt/environments:ro
     depends_on:
@@ -123,6 +123,8 @@ services:
       - "traefik.http.routers.minio.rule=Host(`conda-store.localhost`)"
       - "traefik.http.routers.minio.entrypoints=minio"
       - "traefik.port=9000"
+    links:
+      - "traefik:conda-store.localhost"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 10s
