@@ -5,7 +5,8 @@
 import pluggy
 
 from conda_store_server.exception import CondaStorePluginNotFoundError
-from conda_store_server.plugins import BUILTIN_PLUGINS, types
+from conda_store_server.plugins import BUILTIN_PLUGINS
+from conda_store_server.plugins.types import types
 
 
 class PluginManager(pluggy.PluginManager):

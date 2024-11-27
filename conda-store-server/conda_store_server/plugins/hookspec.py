@@ -6,7 +6,7 @@ from collections.abc import Iterable
 
 import pluggy
 
-from conda_store_server.plugins.types import LockPlugin
+from conda_store_server.plugins.types.lock import LockPlugin
 
 spec_name = "conda-store-server"
 hookspec = pluggy.HookspecMarker(spec_name)

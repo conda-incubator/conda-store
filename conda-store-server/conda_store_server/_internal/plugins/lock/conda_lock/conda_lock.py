@@ -11,10 +11,9 @@ import yaml
 from conda_lock.conda_lock import run_lock
 
 from conda_store_server._internal import conda_utils, schema, utils
-from conda_store_server.plugins import types
+from conda_store_server.plugins.types import types, lock
 from conda_store_server.plugins.hookspec import hookimpl
 from conda_store_server.plugins.plugin_context import PluginContext
-from conda_store_server.plugins.v1 import lock
 
 
 class CondaLock(lock.LockPlugin):

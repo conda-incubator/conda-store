@@ -6,7 +6,8 @@ import pytest
 
 from conda_store_server._internal.plugins.lock.conda_lock import conda_lock
 from conda_store_server.exception import CondaStorePluginNotFoundError
-from conda_store_server.plugins import BUILTIN_PLUGINS, types
+from conda_store_server.plugins import BUILTIN_PLUGINS
+from conda_store_server.plugins.types import types
 
 
 def test_collect_plugins(plugin_manager):

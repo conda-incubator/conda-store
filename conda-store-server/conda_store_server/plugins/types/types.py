@@ -4,7 +4,7 @@
 
 from typing import NamedTuple
 
-from conda_store_server.plugins.v1.lock import LockPlugin
+from conda_store_server.plugins.types.lock import LockPlugin
 
 
 class TypeLockPlugin(NamedTuple):
