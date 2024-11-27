@@ -15,7 +15,7 @@ class PluginManager(pluggy.PluginManager):
       * retrieving CondaStore type plugins (eg. TypeLockPlugin),
       * discovering and registering CondaStore plugins
     """
-    
+
     def get_lock_plugins(self) -> dict[str, types.TypeLockPlugin]:
         """Returns a dict of lock plugin name to class"""
         plugins = [item for items in self.hook.lock_plugins() for item in items]
