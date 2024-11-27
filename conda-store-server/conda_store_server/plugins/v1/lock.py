@@ -27,6 +27,7 @@ class LockPlugin:
 
         :param context: plugin context for execution
         :param spec: the conda specification to solve
-        :param platforms: list of platforms (or subdirs) to solve for.
+        :param platforms: list of platforms (or subdirs) to solve for
+        :return: string contents of the lockfile
         """
         raise NotImplementedError

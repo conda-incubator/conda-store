@@ -9,12 +9,19 @@ from conda_store_server.plugins import BUILTIN_PLUGINS, types
 
 
 class PluginManager(pluggy.PluginManager):
+    """
+    PluginManager extends pluggy's plugin manager in order to extend
+    functionality for
+      * retrieving CondaStore type plugins (eg. TypeLockPlugin),
+      * discovering and registering CondaStore plugins
+    """
+    
     def get_lock_plugins(self) -> dict[str, types.TypeLockPlugin]:
         """Returns a dict of lock plugin name to class"""
         plugins = [item for items in self.hook.lock_plugins() for item in items]
         return {p.name.lower(): p for p in plugins}
 
-    def lock_plugin(self, name: str) -> types.TypeLockPlugin:
+    def get_lock_plugin(self, name: str) -> types.TypeLockPlugin:
         """Returns a lock plugin by name"""
         lockers = self.get_lock_plugins()
 
