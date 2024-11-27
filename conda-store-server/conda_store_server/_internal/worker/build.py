@@ -227,9 +227,7 @@ def build_conda_environment(db: Session, conda_store, build):
             else:
                 lock_backend, locker = conda_store.lock_plugin()
                 conda_lock_spec = locker.lock_environment(
-                    spec=schema.CondaSpecification.parse_obj(
-                        build.specification.spec
-                    ),
+                    spec=schema.CondaSpecification.parse_obj(build.specification.spec),
                     platforms=settings.conda_solve_platforms,
                     context=plugin_context.PluginContext(
                         conda_store=conda_store,

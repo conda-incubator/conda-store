@@ -26,8 +26,9 @@ from conda_store_server._internal import (  # isort:skip
 )
 
 from conda_store_server._internal.server import app as server_app  # isort:skip
-from conda_store_server.plugins.plugin_manager import PluginManager
 from conda_store_server.plugins import hookspec
+from conda_store_server.plugins.plugin_manager import PluginManager
+
 
 @pytest.fixture
 def celery_config(tmp_path, conda_store):

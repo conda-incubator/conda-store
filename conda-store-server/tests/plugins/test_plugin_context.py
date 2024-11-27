@@ -3,17 +3,19 @@
 # license that can be found in the LICENSE file.
 
 import logging
-import subprocess
-import pytest
 import os
+import subprocess
+
+import pytest
 
 from conda_store_server.plugins.plugin_context import PluginContext
+
 
 class TestOutPutCapture:
     def __init__(self):
         self.output = ""
-    
-    def write(self, line:str):
+
+    def write(self, line: str):
         self.output += line
 
 
@@ -23,8 +25,8 @@ def test_run_command_no_logs():
     pr = PluginContext(stdout=out, stderr=err, log_level=logging.ERROR)
 
     pr.run_command(["echo", "testing"])
-    assert err.output == ''
-    assert out.output == 'testing\n'
+    assert err.output == ""
+    assert out.output == "testing\n"
 
 
 def test_run_command_log_info():
@@ -33,10 +35,13 @@ def test_run_command_log_info():
     pr = PluginContext(stdout=out, stderr=err, log_level=logging.INFO)
 
     pr.run_command(["echo", "testing"])
-    assert err.output == ''
-    assert out.output == """Running command: ['echo', 'testing']
+    assert err.output == ""
+    assert (
+        out.output
+        == """Running command: ['echo', 'testing']
 testing
 """
+    )
 
 
 def test_run_command_errors():
@@ -57,5 +62,5 @@ def test_run_command_kwargs():
     # set the cwd to this directory and check that this file exists
     dir_path = os.path.dirname(os.path.realpath(__file__))
     pr.run_command(["stat", "test_plugin_context.py"], check=True, cwd=dir_path)
-    assert err.output == ''
+    assert err.output == ""
     assert "File: test_plugin_context.py" in out.output

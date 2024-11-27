@@ -5,31 +5,26 @@
 import pluggy
 
 from conda_store_server.exception import CondaStorePluginNotFoundError
-from conda_store_server.plugins import BUILTIN_PLUGINS
-from conda_store_server.plugins import types
+from conda_store_server.plugins import BUILTIN_PLUGINS, types
 
 
 class PluginManager(pluggy.PluginManager):
     def get_lock_plugins(self) -> dict[str, types.TypeLockPlugin]:
         """Returns a dict of lock plugin name to class"""
         plugins = [item for items in self.hook.lock_plugins() for item in items]
-        return {
-            p.name.lower(): p
-            for p in plugins
-        }
-    
+        return {p.name.lower(): p for p in plugins}
+
     def lock_plugin(self, name: str) -> types.TypeLockPlugin:
         """Returns a lock plugin by name"""
         lockers = self.get_lock_plugins()
 
         if name not in lockers:
             raise CondaStorePluginNotFoundError(
-                plugin=name,
-                available_plugins=lockers.keys()
+                plugin=name, available_plugins=lockers.keys()
             )
-        
+
         return lockers.get(name)
-    
+
     def collect_plugins(self) -> None:
         """Registers all availble plugins"""
         # TODO: support loading user defined plugins (eg. https://github.com/conda/conda/blob/cf3a0fa9ce01ada7a4a0c934e17be44b94d4eb91/conda/plugins/manager.py#L131)

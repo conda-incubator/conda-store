@@ -28,7 +28,7 @@ from traitlets.config import LoggingConfigurable
 
 from conda_store_server import CONDA_STORE_DIR, BuildKey, api, registry, storage
 from conda_store_server._internal import conda_utils, environment, orm, schema, utils
-from conda_store_server.plugins import plugin_manager, hookspec
+from conda_store_server.plugins import hookspec, plugin_manager
 from conda_store_server.plugins.v1 import lock
 
 
@@ -492,7 +492,7 @@ class CondaStore(LoggingConfigurable):
         self._plugin_manager.collect_plugins()
 
         return self._plugin_manager
-    
+
     def lock_plugin(self) -> tuple[str, lock.LockPlugin]:
         """Returns the configured lock plugin"""
         lock_plugin = self.plugin_manager.lock_plugin(name=self.lock_backend)

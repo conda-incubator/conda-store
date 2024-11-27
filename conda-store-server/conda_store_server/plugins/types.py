@@ -2,8 +2,9 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
 
-from conda_store_server.plugins.v1.lock import LockPlugin
 from typing import NamedTuple
+
+from conda_store_server.plugins.v1.lock import LockPlugin
 
 
 class TypeLockPlugin(NamedTuple):

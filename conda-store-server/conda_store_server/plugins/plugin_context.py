@@ -37,12 +37,7 @@ class PluginContext:
         self.log.setLevel(log_level)
         self.conda_store = conda_store
 
-    def run_command(
-            self,
-            command: str,
-            redirect_stderr: bool = True,
-            **kwargs
-        ):
+    def run_command(self, command: str, redirect_stderr: bool = True, **kwargs):
         """Runs command and immediately writes to logs"""
         self.log.info("Running command: %s", command)
 

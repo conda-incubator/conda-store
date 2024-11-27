@@ -4,11 +4,11 @@
 
 import pytest
 
-from conda_store_server.plugins import BUILTIN_PLUGINS, types
 from conda_store_server._internal.plugins.lock.conda_lock import conda_lock
 from conda_store_server.exception import CondaStorePluginNotFoundError
+from conda_store_server.plugins import BUILTIN_PLUGINS, types
 
-    
+
 def test_collect_plugins(plugin_manager):
     plugin_manager.collect_plugins()
     for plugin in BUILTIN_PLUGINS:
@@ -18,13 +18,13 @@ def test_collect_plugins(plugin_manager):
 def test_get_lock_plugins(plugin_manager):
     plugin_manager.collect_plugins()
     lp = plugin_manager.get_lock_plugins()
-    
+
     # Ensure built in lock plugins are accounted for
     assert "conda-lock" in lp
 
     # Ensure all plugins are lock plugins
     for plugin in lp.values():
-        assert isinstance(plugin, types.TypeLockPlugin) 
+        assert isinstance(plugin, types.TypeLockPlugin)
 
 
 def get_lock_plugin(plugin_manager):

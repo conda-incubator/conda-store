@@ -3,6 +3,7 @@
 # license that can be found in the LICENSE file.
 
 import contextlib
+import functools
 import hashlib
 import json
 import os
@@ -10,9 +11,8 @@ import pathlib
 import re
 import subprocess
 import sys
-import time
-import functools
 import tempfile
+import time
 from typing import AnyStr, Callable
 
 from filelock import FileLock
@@ -195,7 +195,6 @@ def run_in_tempdir(f: Callable):
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
         with contextlib.ExitStack() as stack:
-
             # create a temporary directory
             tmpdir = stack.enter_context(tempfile.TemporaryDirectory())
 

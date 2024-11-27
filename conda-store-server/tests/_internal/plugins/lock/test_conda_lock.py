@@ -6,12 +6,10 @@ from unittest import mock
 
 import pytest
 import yaml
-
 from conda_lock._vendor.poetry.utils._compat import CalledProcessError
 
 from conda_store_server._internal import conda_utils
 from conda_store_server._internal.plugins.lock.conda_lock import conda_lock
-
 from conda_store_server.plugins import plugin_context
 
 
@@ -31,6 +29,7 @@ def test_solve_lockfile(
     request,
 ):
     """Test that the call to conda_lock.run_lock is formed correctly."""
+
     # Dump dummy data to the expected lockfile output location
     def run_lock_side_effect(lockfile_path, **kwargs):
         with open(lockfile_path, "w") as f:
@@ -72,7 +71,7 @@ def test_solve_lockfile_simple(conda_store, simple_specification):
         platforms=[conda_utils.conda_platform()],
     )
     assert len(lock_result["package"]) != 0
-    assert "zlib" in  [pkg["name"] for pkg in lock_result["package"]]
+    assert "zlib" in [pkg["name"] for pkg in lock_result["package"]]
 
 
 @pytest.mark.parametrize(
@@ -102,7 +101,8 @@ def test_solve_lockfile_invalid_conda_flags(conda_store, simple_specification):
     conda_store.conda_flags = "--this-is-invalid"
 
     with pytest.raises(
-        CalledProcessError, match=(r"Command.*--this-is-invalid.*returned non-zero exit status")
+        CalledProcessError,
+        match=(r"Command.*--this-is-invalid.*returned non-zero exit status"),
     ):
         locker.lock_environment(
             context=plugin_context.PluginContext(conda_store),
