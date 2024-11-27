@@ -23,7 +23,7 @@ class PluginManager(pluggy.PluginManager):
                 plugin=name, available_plugins=lockers.keys()
             )
 
-        return lockers.get(name)
+        return lockers[name]
 
     def collect_plugins(self) -> None:
         """Registers all availble plugins"""

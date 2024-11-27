@@ -9,9 +9,7 @@ import pluggy
 from conda_store_server.plugins.types import LockPlugin
 
 spec_name = "conda-store-server"
-
 hookspec = pluggy.HookspecMarker(spec_name)
-
 hookimpl = pluggy.HookimplMarker(spec_name)
 
 

@@ -15,5 +15,5 @@ class CondaStorePluginNotFoundError(CondaStoreError):
     """
 
     def __init__(self, plugin, available_plugins):
-        self.message = f"Plugin {plugin} was requested but not found! The following plugins are available {','.join(available_plugins)}"
+        self.message = f"Plugin {plugin} was requested but not found! The following plugins are available: {', '.join(available_plugins)}"
         super().__init__(self.message)
