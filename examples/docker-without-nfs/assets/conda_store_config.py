@@ -62,6 +62,7 @@ c.JupyterHubOAuthAuthentication.client_id = "service-this-is-a-jupyterhub-client
 c.JupyterHubOAuthAuthentication.client_secret = "this-is-a-jupyterhub-secret"
 c.JupyterHubOAuthAuthentication.oauth_callback_url = "/conda-store/oauth_callback/"
 c.JupyterHubOAuthAuthentication.tls_verify = False
+c.JupyterHubOAuthAuthentication.access_scope = "conda-store-user"
 
 # ==================================
 #         worker settings

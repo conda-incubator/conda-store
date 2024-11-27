@@ -106,5 +106,21 @@ c.JupyterHub.services = [
         "api_token": "this-is-a-jupyterhub-secret",
         "oauth_redirect_uri": "/conda-store/oauth_callback/",
         "oauth_no_confirm": True,  # allows no authorize yes/no button
+        "oauth_client_allowed_scopes": [
+            "self", "inherit", "access:services",
+        ]
     }
 ]
+
+c.JupyterHub.load_roles = [
+    {
+        "name": "conda-store-user",
+        "scopes": [
+            "self", 'access:services!service=conda-store',
+        ],
+        "groups": ["conda-store-user"],
+    }
+]
+
+# Users are able to log in with username/password combo ritter/test
+c.Authenticator.admin_users = {'ritter'}
