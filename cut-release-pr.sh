@@ -112,7 +112,7 @@ build_and_check conda-store
 cd ..
 
 
-# # add files to git
+# add files to git
 git add conda-store conda-store-server CHANGELOG.md
 git commit -m "REL - $RELEASE_VERSION"
 
