@@ -16,7 +16,7 @@ function build_and_check () {
     # Runs a hatch build, twine check, and checks the version of the package
     # Assumes that you are in the directory for the package
     #
-    # args: 
+    # args:
     #   CHECK_TARGET: the name of the package to check
     CHECK_TARGET=$1
 
@@ -75,9 +75,9 @@ done
 CURRENT_DATE=$(date '+%Y-%m-%d')
 
 echo "Today is ${CURRENT_DATE}
-Building a release for 
+Building a release for
   * conda-store version ${RELEASE_VERSION}
-with 
+with
   * conda-store-ui version ${CONDA_STORE_UI_VERSION}
 "
 
@@ -86,9 +86,9 @@ git checkout -b release-"$RELEASE_VERSION"
 git clean -fxdq
 
 # bump versions
-sed -E -r -i "s/__version__ = .+/__version__ = \"$RELEASE_VERSION\"/g" conda-store-server/conda_store_server/__init__.py 
-sed -E -r -i "s/__version__ = .+/__version__ = \"$RELEASE_VERSION\"/g" conda-store/conda_store/__init__.py 
-sed -E -r -i "s/CONDA_STORE_UI_VERSION = .+/CONDA_STORE_UI_VERSION = \"$CONDA_STORE_UI_VERSION\"/g" conda-store-server/hatch_build.py      
+sed -E -r -i "s/__version__ = .+/__version__ = \"$RELEASE_VERSION\"/g" conda-store-server/conda_store_server/__init__.py
+sed -E -r -i "s/__version__ = .+/__version__ = \"$RELEASE_VERSION\"/g" conda-store/conda_store/__init__.py
+sed -E -r -i "s/CONDA_STORE_UI_VERSION = .+/CONDA_STORE_UI_VERSION = \"$CONDA_STORE_UI_VERSION\"/g" conda-store-server/hatch_build.py
 
 # create changelog
 LATEST_TAG=$(curl https://api.github.com/repos/conda-incubator/conda-store/releases | jq -r '.[0].tag_name')
