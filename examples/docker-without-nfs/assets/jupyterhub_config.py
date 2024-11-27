@@ -31,8 +31,6 @@ class CondaStoreSpawner(SimpleLocalProcessSpawner):
 conda-store environment must contain jupyterhub, jupyterlab, nb_conda_store_kernels, and jupyterlab
 
 Choose an environment:
-
-
 <select name="build_id" multiple="false">
 {''.join(options)}
 </select>
@@ -122,5 +120,5 @@ c.JupyterHub.load_roles = [
     }
 ]
 
-# Users are able to log in with username/password combo ritter/test
-c.Authenticator.admin_users = {'ritter'}
+# Users are able to log in with username/password combo admin/test
+c.Authenticator.admin_users = {'admin'}

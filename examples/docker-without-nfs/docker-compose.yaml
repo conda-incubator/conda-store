@@ -9,17 +9,13 @@ services:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=true"
       - "--entrypoints.web.address=:80"
-      # - "--entrypoints.websecure.address=:443"
       - "--entrypoints.minio.address=:9080"
       - "--entrypoints.websecure.http.tls=false"
       - "--entrypoints.minio.http.tls=false"
-      # - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
       - "--entrypoints.web.http.redirections.entryPoint.scheme=http"
-      # - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
     ports:
       - "80:80"
       - "443:443"
-      # - "8080:8080"
       - "9080:9080"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
@@ -28,7 +24,6 @@ services:
     image: quansight/conda-store-server
     user: 1000:100
     volumes:
-      # - conda_store_data:/opt/conda-store/
       - ./assets/conda_store_config.py:/etc/conda-store/conda_store_config.py:ro
       - ./assets/environments:/opt/environments:ro
     depends_on:
@@ -50,7 +45,6 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.conda-store.rule=Host(`conda-store.localhost`) && PathPrefix(`/conda-store`)"
-      # - "traefik.http.routers.conda-store.entrypoints=websecure"
       - "traefik.port=8080"
     depends_on:
       postgres:
@@ -86,7 +80,6 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.jupyterhub.rule=Host(`conda-store.localhost`) && (Path(`/`) || PathPrefix(`/hub`) || PathPrefix(`/user`))"
-      # - "traefik.http.routers.jupyterhub.entrypoints=websecure"
       - "traefik.port=8000"
     user: 1000:1000
     environment:
