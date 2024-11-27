@@ -5,39 +5,33 @@
 import logging
 import os
 import subprocess
+import io
+import sys
 
 import pytest
 
 from conda_store_server.plugins.plugin_context import PluginContext
 
 
-class TestOutPutCapture:
-    def __init__(self):
-        self.output = ""
-
-    def write(self, line: str):
-        self.output += line
-
-
 def test_run_command_no_logs():
-    out = TestOutPutCapture()
-    err = TestOutPutCapture()
+    out = io.StringIO()
+    err = io.StringIO()
     context = PluginContext(stdout=out, stderr=err, log_level=logging.ERROR)
 
     context.run_command(["echo", "testing"])
-    assert err.output == ""
-    assert out.output == "testing\n"
+    assert err.getvalue() == ""
+    assert out.getvalue() == "testing\n"
 
 
 def test_run_command_log_info():
-    out = TestOutPutCapture()
-    err = TestOutPutCapture()
+    out = io.StringIO()
+    err = io.StringIO()
     context = PluginContext(stdout=out, stderr=err, log_level=logging.INFO)
 
     context.run_command(["echo", "testing"])
-    assert err.output == ""
+    assert err.getvalue() == ""
     assert (
-        out.output
+        out.getvalue()
         == """Running command: ['echo', 'testing']
 testing
 """
@@ -45,22 +39,23 @@ testing
 
 
 def test_run_command_errors():
-    out = TestOutPutCapture()
-    err = TestOutPutCapture()
-    context = PluginContext(stdout=out, stderr=err, log_level=logging.ERROR)
+    context = PluginContext(log_level=logging.ERROR)
 
     with pytest.raises(subprocess.CalledProcessError):
         context.run_command(["conda-store-server", "-thiswillreturnanonzeroexitcode"])
 
 
+@pytest.mark.skipif(
+    sys.platform == "win32", reason="stat is not a valid command on Windows"
+)
 def test_run_command_kwargs():
     """Ensure that kwargs get passed to subprocess"""
-    out = TestOutPutCapture()
-    err = TestOutPutCapture()
+    out = io.StringIO()
+    err = io.StringIO()
     context = PluginContext(stdout=out, stderr=err, log_level=logging.ERROR)
 
     # set the cwd to this directory and check that this file exists
     dir_path = os.path.dirname(os.path.realpath(__file__))
     context.run_command(["stat", "test_plugin_context.py"], check=True, cwd=dir_path)
-    assert err.output == ""
-    assert "File: test_plugin_context.py" in out.output
+    assert err.getvalue() == ""
+    assert "File: test_plugin_context.py" in out.getvalue()
