@@ -34,7 +34,7 @@ Choose an environment:
 
 
 <select name="build_id" multiple="false">
-{''.join(["one", "two"])}
+{''.join(options)}
 </select>
 """
 
@@ -46,7 +46,7 @@ Choose an environment:
         self.cmd = [
             "/opt/conda/envs/conda-store/bin/conda-store",
             "run",
-            "1",
+            self.user_options["build_id"],
             "--",
             "jupyter-labhub",
         ]
