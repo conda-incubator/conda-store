@@ -225,7 +225,7 @@ def build_conda_environment(db: Session, conda_store, build):
                 )
                 conda_lock_spec = context.result
             else:
-                lock_plugin_name, locker = conda_store.lock_plugin()
+                lock_backend, locker = conda_store.lock_plugin()
                 conda_lock_spec = locker.lock_environment(
                     spec=schema.CondaSpecification.parse_obj(
                         build.specification.spec
@@ -237,7 +237,7 @@ def build_conda_environment(db: Session, conda_store, build):
                             db=db,
                             conda_store=conda_store,
                             build=build,
-                            prefix=f"plugin-{lock_plugin_name}: ",
+                            prefix=f"plugin-{lock_backend}: ",
                         ),
                     ),
                 )

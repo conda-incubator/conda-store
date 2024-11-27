@@ -194,7 +194,7 @@ class CondaStore(LoggingConfigurable):
         config=True,
     )
 
-    lock_plugin_name = Unicode(
+    lock_backend = Unicode(
         default_value="conda-lock",
         allow_none=False,
         config=True,
@@ -495,7 +495,7 @@ class CondaStore(LoggingConfigurable):
     
     def lock_plugin(self) -> tuple[str, lock.LockPlugin]:
         """Returns the configured lock plugin"""
-        lock_plugin = self.plugin_manager.lock_plugin(name=self.lock_plugin_name)
+        lock_plugin = self.plugin_manager.lock_plugin(name=self.lock_backend)
         locker = lock_plugin.backend()
         return lock_plugin.name, locker
 

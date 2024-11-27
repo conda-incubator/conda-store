@@ -184,7 +184,7 @@ def test_conda_store_register_environment_duplicate_force_true(db, conda_store):
 
 def test_conda_store_get_lock_plugin(conda_store):
     lock_plugin_setting = "conda-lock"
-    conda_store.lock_plugin_name = lock_plugin_setting
+    conda_store.lock_backend = lock_plugin_setting
     name, plugin = conda_store.lock_plugin()
     assert name == lock_plugin_setting
     assert isinstance(plugin, conda_lock.CondaLock)
@@ -192,6 +192,6 @@ def test_conda_store_get_lock_plugin(conda_store):
 
 def test_conda_store_get_lock_plugin_does_not_exist(conda_store):
     lock_plugin_setting = "idontexist"
-    conda_store.lock_plugin_name = lock_plugin_setting
+    conda_store.lock_backend = lock_plugin_setting
     with pytest.raises(CondaStorePluginNotFoundError):
         conda_store.lock_plugin()
