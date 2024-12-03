@@ -495,6 +495,7 @@ class CondaStore(LoggingConfigurable):
 
     def lock_plugin(self) -> tuple[str, lock.LockPlugin]:
         """Returns the configured lock plugin"""
+        # TODO: get configured lock plugin name from settings
         lock_plugin = self.plugin_manager.get_lock_plugin(name=self.lock_backend)
         locker = lock_plugin.backend()
         return lock_plugin.name, locker
