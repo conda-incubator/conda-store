@@ -15,7 +15,7 @@ spec:
     matchLabels:
       app: "{{ template "condaStore.fullname" . }}-api-server"
   template:
-    metadata:
+    metadata:re
       labels:
         helm.sh/chart: {{ include "condaStore.chart" . }}
         app.kubernetes.io/name: {{ include "condaStore.name" . }}

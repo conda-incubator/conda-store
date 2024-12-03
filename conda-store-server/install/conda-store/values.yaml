@@ -6,54 +6,52 @@ global:
   namespace: ""
 
 apiServer:
+  # Node port for the API Server K8 service
   nodePort: 30501
+
+  # Port the service will be accessible on. To port forward this service
+  # try `kubectl port-forward -n conda-store service/conda-store-api-server <port>:8080`
   port: 8081
+
+  # Number of API Servers replica pods to start up
   replicas: 1
+
+  # Image to use for the api server
   image:
     repository: quansight/conda-store-server
     pullPolicy: IfNotPresent
     tag: 2024.6.1
-  condaStoreConfig: |
-    from conda_store_server.storage import S3Storage
-    from conda_store_server.server.auth import DummyAuthentication
 
-    c.CondaStoreServer.enable_ui = False
-    c.CondaStoreServer.enable_api = True
-    c.CondaStoreServer.enable_registry = False
-
-    c.CondaStore.storage_class = S3Storage
-    c.CondaStore.store_directory = "/opt/conda-store/conda-store/"
-    c.CondaStore.default_uid = 1000
-    c.CondaStore.default_gid = 100
-    c.CondaStore.default_permissions = "555"
-    c.CondaStoreServer.address = "0.0.0.0"
-    c.CondaStoreServer.port = 8080
-    c.CondaStoreServer.url_prefix = "/"
-    c.CondaStoreServer.authentication_class = DummyAuthentication
-    c.CondaStoreWorker.watch_paths = ["/opt/environments"]
-    c.CondaStore.environment_directory = "{store_directory}/{namespace}/envs/{namespace}-{name}"
-
+  # Config for the conda-store-server. For all available options, see the 
+  # docs at https://conda.store/conda-store/references/configuration-options
+  # The following env vars are injected into the container if required:
+  #  * POSTGRES_USERNAME
+  #  * POSTGRES_PASSWORD
+  #  * MINIO_USERNAME
+  #  * MINIO_PASSWORD
+  #  * REDIS_PASSWORD
+  condaStoreConfig: ""
 
 uiServer:
+  # Node port for the UI Server K8 service
   nodePort: 30500
+
+  # Port the service will be accessible on. To port forward this service
+  # try `kubectl port-forward -n conda-store service/conda-store-ui-server <port>:8080`
   port: 8080
+
+  # Number of API Servers replica pods to start up
   replicas: 1
+
+  # Image to use for the ui server
   image:
     repository: quansight/conda-store-server
     pullPolicy: IfNotPresent
     tag: 2024.6.1
-  condaStoreConfig: |
-    from conda_store_server.server.auth import DummyAuthentication
 
-    c.CondaStoreServer.enable_ui = Tue
-    c.CondaStoreServer.enable_api = False
-    c.CondaStoreServer.enable_registry = False
-
-    c.CondaStore.store_directory = "/opt/conda-store/conda-store/"
-    c.CondaStoreServer.address = "0.0.0.0"
-    c.CondaStoreServer.port = 8080
-    c.CondaStoreServer.url_prefix = "/"
-    c.CondaStoreServer.authentication_class = DummyAuthentication
+  # Config for the conda-store-server. For all available options, see the 
+  # docs at https://conda.store/conda-store/references/configuration-options
+  condaStoreConfig: ""
 
 worker:
   # Number of workers that are to be in the worker deployment
@@ -81,25 +79,15 @@ worker:
   # Size of the environmentsVolume
   environmentsVolumeSize: 2Gi
 
-  # Conda store config as a string. This is mounted into the container as a 
-  # config map to /etc/conda-store/
-  condaStoreConfig: |
-    from conda_store_server.storage import S3Storage
-
-    c.CondaStoreServer.enable_ui = False
-    c.CondaStoreServer.enable_api = False
-    c.CondaStoreServer.enable_registry = False
-
-    c.CondaStore.storage_class = S3Storage
-    c.CondaStore.store_directory = "/opt/conda-store/conda-store/"
-    c.CondaStore.default_uid = 1000
-    c.CondaStore.default_gid = 100
-    c.CondaStore.default_permissions = "555"
-    c.CondaStoreServer.address = "0.0.0.0"
-    c.CondaStoreServer.port = 8080
-    c.CondaStoreServer.url_prefix = "/"
-    c.CondaStoreWorker.watch_paths = ["/opt/environments"]
-    c.CondaStore.environment_directory = "{store_directory}/{namespace}/envs/{namespace}-{name}"
+  # Config for the conda-store-server. For all available options, see the 
+  # docs at https://conda.store/conda-store/references/configuration-options
+  # The following env vars are injected into the container if required:
+  #  * POSTGRES_USERNAME
+  #  * POSTGRES_PASSWORD
+  #  * MINIO_USERNAME
+  #  * MINIO_PASSWORD
+  #  * REDIS_PASSWORD
+  condaStoreConfig: ""
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
