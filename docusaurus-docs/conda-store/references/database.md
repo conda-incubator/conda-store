@@ -46,7 +46,7 @@ conda-store relies on [SQLAlchemy](https://www.sqlalchemy.org/) for ORM mapping,
 The procedure to modify the database is the following :
 
 - First, modify [the ORM Model](https://github.com/conda-incubator/conda-store/blob/main/conda-store-server/conda_store_server/orm.py) according to the changes you want to make
-- edit the file `conda-store-server/alembic.ini` and replace the value for entry `sqlalchemy.url` to match the connection URL of your database.
+- edit the file `conda-store-server/conda_store_server/_internal/alembic.ini` and replace the value for entry `sqlalchemy.url` to match the connection URL of your database.
 
 For example (when postgres was started via Docker compose):
 ```
@@ -57,7 +57,7 @@ sqlalchemy.url = postgresql+psycopg2://postgres:password@localhost:5432/conda-st
 - in your command line, run the following :
 
 ```sh
-cd conda-store-server/conda_store_server
+cd conda-store-server/conda_store_server/_internal
 alembic revision --autogenerate -m "description of your changes"
 ```
 
