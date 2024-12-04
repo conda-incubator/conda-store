@@ -33,6 +33,23 @@ spec:
             - "/etc/conda-store/conda_store_config.py"
           ports:
             - containerPort: {{ .Values.uiServer.port }}
+          livenessProbe:
+            httpGet:
+              # TODO: it would be nice to have a "ok" endpoint on the ui
+              path: /
+              port: 8080
+            initialDelaySeconds: {{ .Values.uiServer.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.uiServer.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.uiServer.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.uiServer.livenessProbe.failureThreshold }}
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: {{ .Values.uiServer.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.uiServer.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.uiServer.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.uiServer.readinessProbe.failureThreshold }}
           env:
             - name: POSTGRES_USERNAME
               valueFrom:
