@@ -32,6 +32,19 @@ apiServer:
   #  * REDIS_PASSWORD
   condaStoreConfig: ""
 
+  # This is to setup the liveness and readiness probes more information can be
+  # found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readinessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
 uiServer:
   # Node port for the UI Server K8 service
   nodePort: 30500
@@ -52,6 +65,19 @@ uiServer:
   # Config for the conda-store-server. For all available options, see the 
   # docs at https://conda.store/conda-store/references/configuration-options
   condaStoreConfig: ""
+
+  # This is to setup the liveness and readiness probes more information can be
+  # found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readinessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
 
 worker:
   # Number of workers that are to be in the worker deployment
@@ -100,13 +126,3 @@ resources: {}
   # requests:
   #   cpu: 100m
   #   memory: 128Mi
-
-# This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
-livenessProbe:
-  httpGet:
-    path: /
-    port: http
-readinessProbe:
-  httpGet:
-    path: /
-    port: http
