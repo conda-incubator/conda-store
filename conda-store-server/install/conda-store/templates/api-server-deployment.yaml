@@ -15,7 +15,7 @@ spec:
     matchLabels:
       app: "{{ template "condaStore.fullname" . }}-api-server"
   template:
-    metadata:re
+    metadata:
       labels:
         helm.sh/chart: {{ include "condaStore.chart" . }}
         app.kubernetes.io/name: {{ include "condaStore.name" . }}
@@ -33,6 +33,22 @@ spec:
             - "/etc/conda-store/conda_store_config.py"
           ports:
             - containerPort: {{ .Values.apiServer.port }}
+          livenessProbe:
+            httpGet:
+              path: /api/v1/
+              port: 8080
+            initialDelaySeconds: {{ .Values.apiServer.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.apiServer.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.apiServer.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.apiServer.livenessProbe.failureThreshold }}
+          readinessProbe:
+            httpGet:
+              path: /api/v1/
+              port: 8080
+            initialDelaySeconds: {{ .Values.apiServer.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.apiServer.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.apiServer.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.apiServer.readinessProbe.failureThreshold }}
           env:
             - name: POSTGRES_USERNAME
               valueFrom:
