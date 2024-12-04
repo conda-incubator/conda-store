@@ -80,6 +80,7 @@ outputs:
         - itsdangerous
         - jinja2
         - minio
+        - pluggy
         - pydantic >=2.0
         - pyjwt
         - python >=3.10,<3.13

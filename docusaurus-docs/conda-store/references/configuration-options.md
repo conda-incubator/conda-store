@@ -227,6 +227,9 @@ the default docker image `library/debian:sid-slim`.
 `CondaStore.post_update_environment_build_hook` is an optional configurable to
 allow for custom behavior that will run after an environment's current build changes.
 
+`CondaStore.lock_backend` is the name of the default lock plugin to use
+when locking a conda environment. By default, conda-store uses [conda-lock](https://github.com/conda/conda-lock).
+
 ### `conda_store_server.storage.S3Storage`
 
 conda-store uses [minio-py](https://github.com/minio/minio-py) as a

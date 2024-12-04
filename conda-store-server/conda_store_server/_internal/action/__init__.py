@@ -26,7 +26,6 @@ from conda_store_server._internal.action.generate_constructor_installer import (
 )
 from conda_store_server._internal.action.generate_lockfile import (  # noqa
     action_save_lockfile,
-    action_solve_lockfile,
 )
 from conda_store_server._internal.action.get_conda_prefix_stats import (  # noqa
     action_get_conda_prefix_stats,

@@ -55,6 +55,7 @@ dependencies = [
   "flower",
   "itsdangerous",
   "jinja2",
+  "pluggy",
   "pyjwt",
   "psycopg2-binary",
   "pymysql",

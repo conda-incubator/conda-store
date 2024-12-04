@@ -18,6 +18,7 @@ from sqlalchemy.orm import Session
 
 from conda_store_server import api
 from conda_store_server._internal import action, conda_utils, orm, schema, utils
+from conda_store_server.plugins import plugin_context
 
 
 class LoggedStream:
@@ -222,19 +223,20 @@ def build_conda_environment(db: Session, conda_store, build):
                         prefix="action_save_lockfile: ",
                     ),
                 )
+                conda_lock_spec = context.result
             else:
-                context = action.action_solve_lockfile(
-                    settings.conda_command,
-                    specification=schema.CondaSpecification.parse_obj(
-                        build.specification.spec
-                    ),
+                lock_backend, locker = conda_store.lock_plugin()
+                conda_lock_spec = locker.lock_environment(
+                    spec=schema.CondaSpecification.parse_obj(build.specification.spec),
                     platforms=settings.conda_solve_platforms,
-                    conda_flags=conda_store.conda_flags,
-                    stdout=LoggedStream(
-                        db=db,
+                    context=plugin_context.PluginContext(
                         conda_store=conda_store,
-                        build=build,
-                        prefix="action_solve_lockfile: ",
+                        stdout=LoggedStream(
+                            db=db,
+                            conda_store=conda_store,
+                            build=build,
+                            prefix=f"plugin-{lock_backend}: ",
+                        ),
                     ),
                 )
 
@@ -243,13 +245,11 @@ def build_conda_environment(db: Session, conda_store, build):
                 build.id,
                 build.conda_lock_key,
                 json.dumps(
-                    context.result, indent=4, cls=utils.CustomJSONEncoder
+                    conda_lock_spec, indent=4, cls=utils.CustomJSONEncoder
                 ).encode("utf-8"),
                 content_type="application/json",
                 artifact_type=schema.BuildArtifactType.LOCKFILE,
             )
-
-            conda_lock_spec = context.result
 
             context = action.action_fetch_and_extract_conda_packages(
                 conda_lock_spec=conda_lock_spec,
@@ -335,18 +335,15 @@ def build_conda_environment(db: Session, conda_store, build):
 
 
 def solve_conda_environment(db: Session, conda_store, solve: orm.Solve):
-    settings = conda_store.get_settings(db=db)
-
     solve.started_on = datetime.datetime.utcnow()
     db.commit()
 
-    context = action.action_solve_lockfile(
-        conda_command=settings.conda_command,
-        specification=schema.CondaSpecification.parse_obj(solve.specification.spec),
+    _, locker = conda_store.lock_plugin()
+    conda_lock_spec = locker.lock_environment(
+        context=plugin_context.PluginContext(conda_store=conda_store),
+        spec=schema.CondaSpecification.parse_obj(solve.specification.spec),
         platforms=[conda_utils.conda_platform()],
-        conda_flags=conda_store.conda_flags,
     )
-    conda_lock_spec = context.result
 
     action.action_add_lockfile_packages(
         db=db,

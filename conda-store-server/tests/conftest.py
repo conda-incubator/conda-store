@@ -26,6 +26,8 @@ from conda_store_server._internal import (  # isort:skip
 )
 
 from conda_store_server._internal.server import app as server_app  # isort:skip
+from conda_store_server.plugins import hookspec
+from conda_store_server.plugins.plugin_manager import PluginManager
 
 
 @pytest.fixture
@@ -279,6 +281,13 @@ def conda_prefix(conda_store, tmp_path, request):
         conda_prefix=conda_prefix,
     )
     return conda_prefix
+
+
+@pytest.fixture
+def plugin_manager():
+    pm = PluginManager(hookspec.spec_name)
+    pm.add_hookspecs(hookspec.CondaStoreSpecs)
+    return pm
 
 
 def _seed_conda_store(

@@ -3,6 +3,7 @@
 # license that can be found in the LICENSE file.
 
 import contextlib
+import functools
 import hashlib
 import json
 import os
@@ -10,8 +11,9 @@ import pathlib
 import re
 import subprocess
 import sys
+import tempfile
 import time
-from typing import AnyStr
+from typing import AnyStr, Callable
 
 from filelock import FileLock
 
@@ -187,3 +189,20 @@ def compile_arn_sql_like(
         re.sub(r"\*", "%", match.group(1)),
         re.sub(r"\*", "%", match.group(2)),
     )
+
+
+def run_in_tempdir(f: Callable):
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        with contextlib.ExitStack() as stack:
+            # create a temporary directory
+            tmpdir = stack.enter_context(tempfile.TemporaryDirectory())
+
+            # enter temporary directory
+            stack.enter_context(chdir(tmpdir))
+
+            # run function and store result
+            result = f(*args, **kwargs)
+        return result
+
+    return wrapper

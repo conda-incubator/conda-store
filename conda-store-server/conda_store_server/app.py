@@ -28,6 +28,8 @@ from traitlets.config import LoggingConfigurable
 
 from conda_store_server import CONDA_STORE_DIR, BuildKey, api, registry, storage
 from conda_store_server._internal import conda_utils, environment, orm, schema, utils
+from conda_store_server.plugins import hookspec, plugin_manager
+from conda_store_server.plugins.types import lock
 
 
 def conda_store_validate_specification(
@@ -189,6 +191,12 @@ class CondaStore(LoggingConfigurable):
     conda_included_packages = List(
         [],
         help="Conda packages that auto included within environment specification. Will not raise a validation error if package not in specification and will be auto added",
+        config=True,
+    )
+
+    lock_backend = Unicode(
+        default_value="conda-lock",
+        allow_none=False,
         config=True,
     )
 
@@ -470,6 +478,27 @@ class CondaStore(LoggingConfigurable):
         self._celery_app = Celery("tasks")
         self._celery_app.config_from_object(self.celery_config)
         return self._celery_app
+
+    @property
+    def plugin_manager(self):
+        """Creates a plugin manager (if it doesn't already exist) and registers all plugins"""
+        if hasattr(self, "_plugin_manager"):
+            return self._plugin_manager
+
+        self._plugin_manager = plugin_manager.PluginManager(hookspec.spec_name)
+        self._plugin_manager.add_hookspecs(hookspec.CondaStoreSpecs)
+
+        # Register all available plugins
+        self._plugin_manager.collect_plugins()
+
+        return self._plugin_manager
+
+    def lock_plugin(self) -> tuple[str, lock.LockPlugin]:
+        """Returns the configured lock plugin"""
+        # TODO: get configured lock plugin name from settings
+        lock_plugin = self.plugin_manager.get_lock_plugin(name=self.lock_backend)
+        locker = lock_plugin.backend()
+        return lock_plugin.name, locker
 
     def ensure_settings(self, db: Session):
         """Ensure that conda-store traitlets settings are applied"""
