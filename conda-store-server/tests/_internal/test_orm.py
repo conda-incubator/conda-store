@@ -222,7 +222,7 @@ def test_update_packages_add_existing_pkg_new_version(
     assert count == 3
     builds = (
         populated_db.query(orm.CondaPackageBuild)
-        .filter(orm.CondaPackageBuild.channel_id == 1)
+        .filter(orm.CondaPackageBuild.package.channel_id == 1)
         .all()
     )
     assert len(builds) == 4
@@ -297,7 +297,7 @@ def test_update_packages_multiple_subdirs(mock_repdata, populated_db):
     assert count == 2
     builds = (
         populated_db.query(orm.CondaPackageBuild)
-        .filter(orm.CondaPackageBuild.channel_id == 1)
+        .filter(orm.CondaPackageBuild.package.channel_id == 1)
         .all()
     )
     assert len(builds) == 5
@@ -326,13 +326,13 @@ def test_update_packages_twice(mock_repdata, populated_db, test_repodata):
         assert len(conda_packages) == 1
         conda_packages = (
             populated_db.query(orm.CondaPackageBuild)
-            .filter(orm.CondaPackageBuild.channel_id == 1)
+            .filter(orm.CondaPackageBuild.package.channel_id == 1)
             .all()
         )
         assert len(conda_packages) == 4
         conda_packages = (
             populated_db.query(orm.CondaPackageBuild)
-            .filter(orm.CondaPackageBuild.channel_id == 2)
+            .filter(orm.CondaPackageBuild.package.channel_id == 2)
             .all()
         )
         assert len(conda_packages) == 0
@@ -373,7 +373,7 @@ def test_update_packages_new_package_channel(mock_repdata, populated_db, test_re
     assert count == 2
     builds = (
         populated_db.query(orm.CondaPackageBuild)
-        .filter(orm.CondaPackageBuild.channel_id == 2)
+        .filter(orm.CondaPackageBuild.package.channel_id == 2)
         .all()
     )
     assert len(builds) == 1
@@ -407,7 +407,7 @@ def test_update_packages_multiple_builds(
     assert count == 5
     builds = (
         populated_db.query(orm.CondaPackageBuild)
-        .filter(orm.CondaPackageBuild.channel_id == 2)
+        .filter(orm.CondaPackageBuild.package.channel_id == 2)
         .all()
     )
     assert len(builds) == 2
@@ -429,7 +429,7 @@ def test_update_packages_channel_consistency(
     # ensure the package builds end up with the correct channel
     builds = (
         populated_db.query(orm.CondaPackageBuild)
-        .filter(orm.CondaPackageBuild.channel_id == 2)
+        .filter(orm.CondaPackageBuild.package.channel_id == 2)
         .all()
     )
     for b in builds:
@@ -445,7 +445,7 @@ def test_update_packages_channel_consistency(
     # ensure the package builds end up with the correct channel
     builds = (
         populated_db.query(orm.CondaPackageBuild)
-        .filter(orm.CondaPackageBuild.channel_id == 1)
+        .filter(orm.CondaPackageBuild.package.channel_id == 1)
         .all()
     )
     for b in builds:
