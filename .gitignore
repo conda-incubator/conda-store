@@ -62,3 +62,6 @@ yarn-error.log*
 conda-store.sqlite
 
 *.lockb
+
+# generated test assets
+conda-store-server/tests/alembic.ini

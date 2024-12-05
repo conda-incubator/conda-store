@@ -13,6 +13,7 @@ import pytest
 import yaml
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
+from pytest_alembic.config import Config
 
 from conda_store_server import api, app, storage
 
@@ -288,6 +289,14 @@ def plugin_manager():
     pm = PluginManager(hookspec.spec_name)
     pm.add_hookspecs(hookspec.CondaStoreSpecs)
     return pm
+
+
+@pytest.fixture
+def alembic_config(conda_store):
+     from conda_store_server._internal.dbutil import ALEMBIC_DIR, write_alembic_ini
+     ini_file = pathlib.Path(__file__).parent / "alembic.ini"
+     write_alembic_ini(ini_file, conda_store.database_url)
+     return {"file": ini_file}
 
 
 def _seed_conda_store(

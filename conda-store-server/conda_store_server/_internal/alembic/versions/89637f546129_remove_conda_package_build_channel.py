@@ -10,7 +10,7 @@ Create Date: 2024-12-04 13:09:25.562450
 
 """
 from alembic import op
-from sqlalchemy import Column, INTEGER, String, ForeignKey, table, select, inspect
+from sqlalchemy import Column, INTEGER, String, ForeignKey, table, select
 
 
 # revision identifiers, used by Alembic.
@@ -19,13 +19,17 @@ down_revision = 'bf065abf375b'
 branch_labels = None
 depends_on = None
 
-
-# This function will go thru all the conda_package_build entries and ensure
-# that the right package_id is associated with it
+# Due to the issue fixed in https://github.com/conda-incubator/conda-store/pull/961
+# many conda_package_build entries have the wrong package entry (but the right channel).
+# Because the packages are duplicated, we can not recreate the _conda_package_build_uc
+# constraint without the channel_id. 
+# So, this function will go thru each conda_package_build and re-associate it with the 
+# correct conda_package based on the channel id.
 def fix_misrepresented_packages(conn):
     # conda_packages is a hash of channel-id_name_version to conda_package id
     conda_packages = {}
 
+    # dummy tables to run queries against
     conda_package_build_table = table(
         "conda_package_build",
         Column("id", INTEGER),
@@ -88,36 +92,22 @@ def fix_misrepresented_packages(conn):
             conn.commit()
 
 def upgrade():
-    target_table = "conda_package_build"
     bind = op.get_bind()
 
-    # If the channel_id column does not exist, then exit quickly
-    insp = inspect(bind)
-    columns = insp.get_columns(target_table)
-    if "channel_id" not in columns:
-        return
-
-    # Due to the issue fixed in https://github.com/conda-incubator/conda-store/pull/961
-    # many conda_package_build entries have the wrong package entry (but the right channel).
-    # Because the packages are duplicated, we can not recreate the _conda_package_build_uc
-    # constraint without the channel_id. 
     # So, go thru each conda_package_build and re-associate it with the correct conda_package
     # based on the channel id.
     fix_misrepresented_packages(bind)
 
-    # sqlite does not support altering tables
-    if bind.engine.name != "sqlite":
+    with op.batch_alter_table("conda_package_build") as batch_op:
         # remove channel column from constraints
-        op.drop_constraint(
-            constraint_name="_conda_package_build_uc",
-            table_name=target_table,
+        batch_op.drop_constraint(
+            "_conda_package_build_uc",
         )
 
         # re-add the constraint without the channel column
-        op.create_unique_constraint(
-            constraint_name="_conda_package_build_uc",
-            table_name=target_table,
-            columns=[ 
+        batch_op.create_unique_constraint(
+            "_conda_package_build_uc",
+            [ 
                 "package_id",
                 "subdir",
                 "build",
@@ -126,39 +116,35 @@ def upgrade():
             ],
         )
 
-    # remove channel column
-    op.drop_column(
-        target_table, 
-        "channel_id",
-        mssql_drop_foreign_key=True,
-    )
+        # remove channel column
+        batch_op.drop_column(
+            "channel_id",
+        )
 
 
 def downgrade():
-    target_table = "conda_package_build"
+    with op.batch_alter_table("conda_package_build") as batch_op:
+        # remove channel column from constraints
+        batch_op.drop_constraint(
+            constraint_name="_conda_package_build_uc",
+        )
 
-    # remove channel column from constraints
-    op.drop_constraint(
-        constraint_name="_conda_package_build_uc",
-        table_name=target_table,
-    )
+        # add channel column
+        batch_op.add_column(
+            Column("channel_id", INTEGER)
+        )
 
-    # add channel column
-    op.add_column(
-        target_table,
-        Column("channel_id", INTEGER, ForeignKey("conda_channel.id"))
-    )
+        batch_op.create_foreign_key("fk_channel_id", "conda_channel", ["channel_id"], ["id"])
 
-    # re-add the constraint with the channel column
-    op.create_unique_constraint(
-        constraint_name="_conda_package_build_uc",
-        table_name=target_table,
-        columns=[ 
-            "channel_id",
-            "package_id",
-            "subdir",
-            "build",
-            "build_number",
-            "sha256",
-        ],
-    )
+        # re-add the constraint with the channel column
+        batch_op.create_unique_constraint(
+            constraint_name="_conda_package_build_uc",
+            columns=[ 
+                "channel_id",
+                "package_id",
+                "subdir",
+                "build",
+                "build_number",
+                "sha256",
+            ],
+        )
