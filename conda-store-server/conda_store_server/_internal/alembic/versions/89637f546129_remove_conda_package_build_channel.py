@@ -9,8 +9,9 @@ Revises: bf065abf375b
 Create Date: 2024-12-04 13:09:25.562450
 
 """
-from alembic import op, context
-from sqlalchemy import Column, INTEGER, String, ForeignKey, table, select, engine_from_config, pool
+from alembic import op
+from sqlalchemy import Column, INTEGER, String, ForeignKey, table, select, inspect
+
 
 # revision identifiers, used by Alembic.
 revision = '89637f546129'
@@ -90,6 +91,12 @@ def upgrade():
     target_table = "conda_package_build"
     bind = op.get_bind()
 
+    # If the channel_id column does not exist, then exit quickly
+    insp = inspect(bind)
+    columns = insp.get_columns(target_table)
+    if "channel_id" not in columns:
+        return
+
     # Due to the issue fixed in https://github.com/conda-incubator/conda-store/pull/961
     # many conda_package_build entries have the wrong package entry (but the right channel).
     # Because the packages are duplicated, we can not recreate the _conda_package_build_uc
@@ -98,24 +105,26 @@ def upgrade():
     # based on the channel id.
     fix_misrepresented_packages(bind)
 
-    # remove channel column from constraints
-    op.drop_constraint(
-        constraint_name="_conda_package_build_uc",
-        table_name=target_table,
-    )
+    # sqlite does not support altering tables
+    if bind.engine.name != "sqlite":
+        # remove channel column from constraints
+        op.drop_constraint(
+            constraint_name="_conda_package_build_uc",
+            table_name=target_table,
+        )
 
-    # re-add the constraint without the channel column
-    op.create_unique_constraint(
-        constraint_name="_conda_package_build_uc",
-        table_name=target_table,
-        columns=[ 
-            "package_id",
-            "subdir",
-            "build",
-            "build_number",
-            "sha256",
-        ],
-    )
+        # re-add the constraint without the channel column
+        op.create_unique_constraint(
+            constraint_name="_conda_package_build_uc",
+            table_name=target_table,
+            columns=[ 
+                "package_id",
+                "subdir",
+                "build",
+                "build_number",
+                "sha256",
+            ],
+        )
 
     # remove channel column
     op.drop_column(
