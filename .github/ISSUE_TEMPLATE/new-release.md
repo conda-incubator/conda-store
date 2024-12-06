@@ -22,34 +22,24 @@ Release captain responsible - <@gh_username>
 
 ### 2. Prepare the codebase for a new release
 
-- [ ] Create a new git branch for the release `git checkout -b release-2024.9.1`
-  - [ ] Prepare the branch just in case `git clean -fxdq`
-- [ ] Bump `conda-store` version in [`conda-store/conda-store/__init__.py`](https://github.com/conda-incubator/conda-store/blob/main/conda-store/conda_store/__init__.py)
-- [ ] Bump `conda-store-server` version in [`conda-store-server/conda-store-server/__init__.py`](https://github.com/conda-incubator/conda-store/blob/main/conda-store/conda_store/__init__.py)
-- [ ] Update the `conda-store-ui` version used in `conda-store-server` [`conda-store-server/hatch_build.py`](https://github.com/conda-incubator/conda-store/blob/main/conda-store-server/hatch_build.py)
-- [ ] Update the [CHANGELOG.md](./CHANGELOG.md) file with the new version, release date, and relevant changes[^github-activity].
-- [ ] Check the version locally with `hatch version`
-- [ ] Build and test locally
-  - [ ] For `conda-store` and `conda-store-server`:
+- [ ] Prepare the release by running the `cut-release-pr.sh` script
 
-    ```bash
-    # Note you will need to run this twice, once for each package
-    cd conda-store # or cd conda-store-server
-    hatch build
-    twine check dist/*
-    hatch clean
-    ```
+  ```bash
+  ./cut-release-pr.sh -r <conda-store version> -c <conda-store-ui version>
+  ```
 
-  - [ ] After building `conda-store-server` and before `hatch clean` run the server in standalone mode:
+  - [ ] Ensure that the conda-store, conda-store-server, conda-store-ui versions have been updated
+
+  - [ ] Manually review the CHANGELOG and remove/organize important contributions
+
+- [ ] Test that the application is working. In particular, do a manual inspection of the build and `ui` vendoring process:
 
     ```bash
     cd conda-store-server
+    hatch build
     conda-store-server --standalone
     ```
 
-    To do a manual inspection of the build and `ui` vendoring process.
-
-- [ ] Make a release commit: ``git commit -m 'REL - 2024.9.1'``
 - [ ] Push the release (REL) commit ``git push upstream main``
 - [ ] If a **release candidate** is needed, tick this box when we're ready for a full release.
 
@@ -70,5 +60,3 @@ Release captain responsible - <@gh_username>
 - [ ] Open a follow-up PR to bump `conda-store` and `conda-store-server` versions to the next dev-release number (for example `2024.10.1`).
 - [ ] Open a follow-up PR to bump the `conda-store-server` version in the [`conda-store-ui` compose file](https://github.com/conda-incubator/conda-store-ui/blob/main/docker-compose.yml).
 - [ ] Celebrate, you're done! 🎉
-
-[^github-activity]: If you wish, use [`github-activity` to generate a Changelog](https://github.com/choldgraf/github-activity), e.g. `github-activity conda-incubator/conda-store --since 2024.9.1 --until 2023.10.1`.
