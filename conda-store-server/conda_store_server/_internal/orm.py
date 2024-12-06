@@ -786,7 +786,7 @@ class CondaPackageBuild(Base):
     channel_id: Mapped[int] = mapped_column(ForeignKey("conda_channel.id"))
     channel: Mapped["CondaChannel"] = relationship(CondaChannel)
 
-    build: Mapped[int] = mapped_column(Unicode(64), index=True)
+    build: Mapped[str] = mapped_column(Unicode(64), index=True)
     build_number: Mapped[int]
     constrains: Mapped[dict] = mapped_column(JSON)
     depends: Mapped[dict] = mapped_column(JSON)
