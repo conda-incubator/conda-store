@@ -290,6 +290,20 @@ def plugin_manager():
     return pm
 
 
+@pytest.fixture
+def alembic_config(conda_store):
+    from conda_store_server._internal.dbutil import write_alembic_ini
+
+    ini_file = pathlib.Path(__file__).parent / "alembic.ini"
+    write_alembic_ini(ini_file, conda_store.database_url)
+    return {"file": ini_file}
+
+
+@pytest.fixture
+def alembic_engine(db):
+    return db
+
+
 def _seed_conda_store(
     db: Session,
     conda_store,
