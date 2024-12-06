@@ -50,9 +50,24 @@ c.JupyterHub.services = [
         "name": "conda-store",
         "oauth_client_id": "service-this-is-a-jupyterhub-client",
         "admin": True,
-        "url": "https://conda-store.localhost/conda-store/",
+        "url": "http://conda-store.localhost/conda-store/",
         "api_token": "this-is-a-jupyterhub-secret",
         "oauth_redirect_uri": "/conda-store/oauth_callback/",
         "oauth_no_confirm": True,  # allows no authorize yes/no button
+        "oauth_client_allowed_scopes": [
+            "self", "inherit", "access:services",
+        ]
     }
 ]
+
+c.JupyterHub.load_roles = [
+    {
+        "name": "conda-store-user",
+        "scopes": [
+            "self", 'access:services!service=conda-store',
+        ],
+        "groups": ["conda-store-user"],
+    }
+]
+
+c.Authenticator.admin_users = {'admin'}

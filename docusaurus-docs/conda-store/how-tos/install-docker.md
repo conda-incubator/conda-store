@@ -17,4 +17,4 @@ docker compose up --build
 
 On your web browser, visit: [https://conda-store.localhost/conda-store](https://conda-store.localhost/conda-store).
 
-By default, you can log in with any username and use the password `password`, since we are using `DummyAuthenticator`/`
+This example uses the JupyterHub OAuth Authenticator. You can log in with the test admin user `admin`, with password `test`.
