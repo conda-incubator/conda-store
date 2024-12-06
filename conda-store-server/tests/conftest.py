@@ -391,5 +391,3 @@ def _create_build_artifacts(db: Session, conda_store, build: orm.Build):
         content_type="application/gzip",
         artifact_type=schema.BuildArtifactType.CONDA_PACK,
     )
-
-    # have not included docker at the moment

@@ -8,7 +8,7 @@ import functools
 import os
 import re
 import sys
-from typing import Annotated, Any, Callable, Dict, List, Optional, TypeAlias, Union
+from typing import Annotated, Any, Dict, List, Optional, TypeAlias, Union
 
 from conda_lock.lockfile.v1.models import Lockfile
 from pydantic import (
@@ -346,22 +346,8 @@ class Settings(BaseModel):
             BuildArtifactType.YAML,
             BuildArtifactType.CONDA_PACK,
             BuildArtifactType.CONSTRUCTOR_INSTALLER,
-            *(
-                [
-                    BuildArtifactType.DOCKER_MANIFEST,
-                    BuildArtifactType.CONTAINER_REGISTRY,
-                ]
-                if sys.platform == "linux"
-                else []
-            ),
         ],
         description="artifacts to build in conda-store. By default all of the artifacts",
-        metadata={"global": False},
-    )
-
-    default_docker_base_image: Union[str, Callable] = Field(
-        "registry-1.docker.io/library/debian:sid-slim",
-        description="default base image used for the Dockerized environments. Make sure to have a proper glibc within image (highly discourage alpine/musl based images). Can also be callable function which takes the `orm.Build` object as input which has access to all attributes about the build such as install packages, requested packages, name, namespace, etc",
         metadata={"global": False},
     )
 

@@ -19,7 +19,7 @@ from fastapi.responses import RedirectResponse
 from traitlets import TraitError
 
 from conda_store_server import BuildKey, api
-from conda_store_server._internal import action, conda_utils, orm, schema, server, utils
+from conda_store_server._internal import action, conda_utils, orm, schema, server
 from conda_store_server._internal.action import (
     generate_constructor_installer,
 )
@@ -202,25 +202,6 @@ def test_generate_conda_pack(tmp_path, conda_prefix):
     )
 
     assert output_filename.exists()
-
-
-@pytest.mark.xfail(
-    reason=(
-        "Generating Docker images is currently not supported, see "
-        "https://github.com/conda-incubator/conda-store/issues/666"
-    )
-)
-@pytest.mark.long_running_test
-def test_generate_conda_docker(conda_store, conda_prefix):
-    action.action_generate_conda_docker(
-        conda_prefix=conda_prefix,
-        default_docker_image=utils.callable_or_value(
-            conda_store.default_docker_base_image, None
-        ),
-        container_registry=conda_store.container_registry,
-        output_image_name="test",
-        output_image_tag="tag",
-    )
 
 
 def test_remove_not_conda_prefix(tmp_path):

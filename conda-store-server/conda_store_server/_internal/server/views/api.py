@@ -9,7 +9,7 @@ import pydantic
 import yaml
 from celery.result import AsyncResult
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request
-from fastapi.responses import PlainTextResponse, RedirectResponse
+from fastapi.responses import JSONResponse, PlainTextResponse, RedirectResponse
 
 from conda_store_server import __version__, api, app
 from conda_store_server._internal import orm, schema, utils
@@ -1059,7 +1059,6 @@ async def api_put_build_cancel(
             [
                 f"build-{build_id}-conda-env-export",
                 f"build-{build_id}-conda-pack",
-                f"build-{build_id}-docker",
                 f"build-{build_id}-constructor-installer",
                 f"build-{build_id}-environment",
             ],
@@ -1341,7 +1340,7 @@ async def api_get_build_archive(
         return RedirectResponse(conda_store.storage.get_url(build.conda_pack_key))
 
 
-@router_api.get("/build/{build_id}/docker/")
+@router_api.get("/build/{build_id}/docker/", deprecated=True)
 async def api_get_build_docker_image_url(
     build_id: int,
     request: Request,
@@ -1349,6 +1348,7 @@ async def api_get_build_docker_image_url(
     server=Depends(dependencies.get_server),
     auth=Depends(dependencies.get_auth),
 ):
+    response_headers = {"Deprecation": "True"}
     with conda_store.get_db() as db:
         build = api.get_build(db, build_id)
         auth.authorize_request(
@@ -1360,12 +1360,15 @@ async def api_get_build_docker_image_url(
 
         if build.has_docker_manifest:
             url = f"{server.registry_external_url}/{build.environment.namespace.name}/{build.environment.name}:{build.build_key}"
-            return PlainTextResponse(url)
+            return PlainTextResponse(url, headers=response_headers)
 
         else:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Build {build_id} doesn't have a docker manifest",
+            content = {
+                "status": "error",
+                "message": f"Build {build_id} doesn't have a docker manifest",
+            }
+            return JSONResponse(
+                status_code=400, content=content, headers=response_headers
             )
 
 

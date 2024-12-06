@@ -66,15 +66,8 @@ To install the tarball, follow the [instructions for the target machine in the c
 ## Docker images
 
 :::warning
-Docker image creation is currently only supported on Linux.
-
-The docker image generation and registry features are experimental,
-and the following instructions are not thoroughly tested.
-If you face any difficulties, open an issue on the GitHub repository.
+Docker image creation is currently not supported.
 :::
-
-conda-store acts as a docker registry.
-It leverages [Conda Docker][conda-docker], which builds docker images without Docker, allowing for advanced caching, reduced image sizes, and does not require elevated privileges.
 
 ### Authentication
 

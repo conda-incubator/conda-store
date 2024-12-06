@@ -20,7 +20,6 @@ from traitlets import (
     TraitError,
     Type,
     Unicode,
-    Union,
     default,
     validate,
 )
@@ -273,14 +272,6 @@ class CondaStore(LoggingConfigurable):
             schema.BuildArtifactType.YAML,
             schema.BuildArtifactType.CONDA_PACK,
             schema.BuildArtifactType.CONSTRUCTOR_INSTALLER,
-            *(
-                [
-                    schema.BuildArtifactType.DOCKER_MANIFEST,
-                    schema.BuildArtifactType.CONTAINER_REGISTRY,
-                ]
-                if sys.platform == "linux"
-                else []
-            ),
         ],
         help="artifacts to build in conda-store. By default all of the artifacts",
         config=True,
@@ -352,19 +343,6 @@ class CondaStore(LoggingConfigurable):
         config=True,
         allow_none=True,
     )
-
-    default_docker_base_image = Union(
-        [Unicode(), Callable()],
-        help="default base image used for the Dockerized environments. Make sure to have a proper glibc within image (highly discourage alpine/musl based images). Can also be callable function which takes the `orm.Build` object as input which has access to all attributes about the build such as install packages, requested packages, name, namespace, etc",
-        config=True,
-    )
-
-    @default("default_docker_base_image")
-    def _default_docker_base_image(self):
-        def _docker_base_image(build: orm.Build):
-            return "registry-1.docker.io/library/debian:sid-slim"
-
-        return _docker_base_image
 
     validate_specification = Callable(
         conda_store_validate_specification,
@@ -525,7 +503,6 @@ class CondaStore(LoggingConfigurable):
             pypi_required_packages=self.pypi_required_packages,
             pypi_included_packages=self.pypi_included_packages,
             build_artifacts=self.build_artifacts,
-            # default_docker_base_image=self.default_docker_base_image,
         )
         api.set_kvstore_key_values(db, "setting", settings.model_dump(), update=False)
 
@@ -752,16 +729,6 @@ class CondaStore(LoggingConfigurable):
                     args=(build.id,),
                     task_id=f"build-{build.id}-conda-pack",
                     immutable=True,
-                )
-            )
-
-        if (
-            schema.BuildArtifactType.DOCKER_MANIFEST in settings.build_artifacts
-            or schema.BuildArtifactType.CONTAINER_REGISTRY in settings.build_artifacts
-        ):
-            artifact_tasks.append(
-                tasks.task_build_conda_docker.subtask(
-                    args=(build.id,), task_id=f"build-{build.id}-docker", immutable=True
                 )
             )
 

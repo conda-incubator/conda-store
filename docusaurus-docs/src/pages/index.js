@@ -75,7 +75,7 @@ const FeatureList = [
     description: (
       <>
         Share fully-reproducible environments with auto-generated artifacts like
-        lockfiles, YAML files, docker images, and tarballs.
+        lockfiles, YAML files, and tarballs.
       </>
     ),
   },

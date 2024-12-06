@@ -349,10 +349,6 @@ def list_environments(
         query = query.filter(orm.Build.status == status)
 
     if artifact:
-        # DOCKER_BLOB can return multiple results
-        # use DOCKER_MANIFEST instead
-        if artifact == schema.BuildArtifactType.DOCKER_BLOB:
-            artifact = schema.BuildArtifactType.DOCKER_MANIFEST
         query = query.join(orm.Build.build_artifacts).filter(
             orm.BuildArtifact.artifact_type == artifact
         )
@@ -511,10 +507,6 @@ def list_builds(
         query = query.filter(orm.Build.deleted_on == null())
 
     if artifact:
-        # DOCKER_BLOB can return multiple results
-        # use DOCKER_MANIFEST instead
-        if artifact == schema.BuildArtifactType.DOCKER_BLOB:
-            artifact = schema.BuildArtifactType.DOCKER_MANIFEST
         query = query.join(orm.Build.build_artifacts).filter(
             orm.BuildArtifact.artifact_type == artifact
         )

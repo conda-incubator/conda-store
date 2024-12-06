@@ -31,7 +31,6 @@ the following responsibilities:
 
 - build Conda environments from Conda `environment.yaml` specifications
 - build Conda pack archives
-- build Conda docker images
 - remove Conda builds
 - modify symlinks to point current environment to given build
 - generally any tasks that can take an unbounded amount of time
@@ -64,7 +63,7 @@ the server:
 
 Both the worker and server need a connection to a SQLAchemy compatible
 database, Redis, and S3 compatible object storage. The S3 server is
-used to store all build artifacts for example logs, docker layers, and
+used to store all build artifacts for example logs, and
 the [Conda-Pack](https://conda.github.io/conda-pack/) tarball. The
 PostgreSQL database is used for storing all states on environments and
 builds along with powering the conda-store web server UI, REST API,
