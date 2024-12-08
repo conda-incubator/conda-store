@@ -2223,6 +2223,7 @@
     },
     "/api/v1/build/{build_id}/docker/": {
       "get": {
+        "deprecated": true,
         "operationId": "api_get_build_docker_image_url_api_v1_build__build_id__docker__get",
         "parameters": [
           {
