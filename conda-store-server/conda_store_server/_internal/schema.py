@@ -443,7 +443,7 @@ class LockfileSpecification(BaseModel):
     def __str__(self):
         # This makes sure the format is suitable for output if this object is
         # converted to a string, which can also happen implicitly
-        return str(self.dict())
+        return str(self.model_dump())
 
 
 ###############################
