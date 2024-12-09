@@ -78,7 +78,7 @@ services:
       context: dockerfiles
       dockerfile: jupyterhub.Dockerfile
       args:
-        python_version: 3.11
+        python_version: 3.12
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.jupyterhub.rule=Host(`conda-store.localhost`) && (Path(`/`) || PathPrefix(`/hub`) || PathPrefix(`/user`))"
