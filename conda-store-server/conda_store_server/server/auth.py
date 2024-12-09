@@ -521,6 +521,7 @@ form.addEventListener('submit', loginHandler);
     ):
         request.session["next"] = next
         return templates.TemplateResponse(
+            request,
             "login.html",
             {"request": request, "login_html": self.get_login_html(request, templates)},
         )

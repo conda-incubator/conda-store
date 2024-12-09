@@ -47,7 +47,7 @@ async def ui_create_get_environment(
             "entity": entity,
         }
 
-        return templates.TemplateResponse("create.html", context)
+        return templates.TemplateResponse(request, "create.html", context)
 
 
 @router_ui.get("/")
@@ -74,7 +74,7 @@ async def ui_list_environments(
             "platform": get_installer_platform(),
         }
 
-        return templates.TemplateResponse("home.html", context)
+        return templates.TemplateResponse(request, "home.html", context)
 
 
 @router_ui.get("/namespace/")
@@ -96,7 +96,7 @@ async def ui_list_namespaces(
             "entity": entity,
         }
 
-        return templates.TemplateResponse("namespace.html", context)
+        return templates.TemplateResponse(request, "namespace.html", context)
 
 
 @router_ui.get("/environment/{namespace}/{environment_name}/")
@@ -122,6 +122,7 @@ async def ui_get_environment(
         )
         if environment is None:
             return templates.TemplateResponse(
+                request, 
                 "404.html",
                 {
                     "request": request,
@@ -145,7 +146,7 @@ async def ui_get_environment(
             "spec": yaml.dump(spec),
         }
 
-        return templates.TemplateResponse("environment.html", context)
+        return templates.TemplateResponse(request, "environment.html", context)
 
 
 @router_ui.get("/environment/{namespace}/{environment_name}/edit/")
@@ -171,6 +172,7 @@ async def ui_edit_environment(
         )
         if environment is None:
             return templates.TemplateResponse(
+                request,
                 "404.html",
                 {
                     "request": request,
@@ -198,7 +200,7 @@ async def ui_edit_environment(
             "namespaces": [environment.namespace],
         }
 
-        return templates.TemplateResponse("create.html", context)
+        return templates.TemplateResponse(request, "create.html", context)
 
 
 @router_ui.get("/build/{build_id}/")
@@ -215,6 +217,7 @@ async def ui_get_build(
         build = api.get_build(db, build_id)
         if build is None:
             return templates.TemplateResponse(
+                request,
                 "404.html",
                 {
                     "request": request,
@@ -239,7 +242,7 @@ async def ui_get_build(
             "platform": get_installer_platform(),
         }
 
-        return templates.TemplateResponse("build.html", context)
+        return templates.TemplateResponse(request, "build.html", context)
 
 
 @router_ui.get("/user/")
@@ -276,7 +279,7 @@ async def ui_get_user(
             "system_metrics": system_metrics,
             "namespace_usage_metrics": namespace_usage_metrics,
         }
-        return templates.TemplateResponse("user.html", context)
+        return templates.TemplateResponse(request, "user.html", context)
 
 
 @router_ui.get("/setting/")
@@ -320,4 +323,4 @@ async def ui_get_setting(
                 db, namespace=namespace, environment_name=environment_name
             ),
         }
-    return templates.TemplateResponse("setting.html", context)
+    return templates.TemplateResponse(request, "setting.html", context)
