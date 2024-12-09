@@ -1,5 +1,3 @@
-version: "3.8"
-
 volumes:
   conda_store_data:
   redis:
@@ -12,19 +10,15 @@ services:
     command:
       - "--api.insecure=true"
       - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.exposedbydefault=true"
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
       - "--entrypoints.minio.address=:9080"
       - "--entrypoints.websecure.http.tls=true"
       - "--entrypoints.minio.http.tls=true"
-      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
-      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
-      - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
     ports:
       - "80:80"
       - "443:443"
-      - "8080:8080"
       - "9080:9080"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
@@ -42,7 +36,6 @@ services:
     image: quansight/conda-store-server
     user: 1000:1000
     volumes:
-      - conda_store_data:/opt/conda-store/
       - ./assets/conda_store_config.py:/etc/conda-store/conda_store_config.py:ro
     depends_on:
       initializer:
@@ -60,7 +53,6 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.conda-store.rule=Host(`conda-store.localhost`) && (PathPrefix(`/conda-store`) || PathPrefix(`/v2`))"
-      - "traefik.http.routers.conda-store.entrypoints=websecure"
       - "traefik.port=8080"
     depends_on:
       postgres:
@@ -82,11 +74,14 @@ services:
       - "8080:8080"
 
   jupyterhub:
-    image: quansight/conda-store
+    build:
+      context: dockerfiles
+      dockerfile: jupyterhub.Dockerfile
+      args:
+        python_version: 3.12
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.jupyterhub.rule=Host(`conda-store.localhost`) && (Path(`/`) || PathPrefix(`/hub`) || PathPrefix(`/user`))"
-      - "traefik.http.routers.jupyterhub.entrypoints=websecure"
       - "traefik.port=8000"
     user: 1000:1000
     healthcheck:
@@ -141,21 +136,6 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: conda-store
-
-  mysql:
-    image: mysql:8.0
-    ports:
-      - 3306:3306
-    healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    environment:
-      MYSQL_ROOT_PASSWORD: hbgY8bkoWPMM7EjtcD6wrlVX
-      MYSQL_USER: admin
-      MYSQL_PASSWORD: password
-      MYSQL_DATABASE: conda-store
 
   redis:
     image: bitnami/redis

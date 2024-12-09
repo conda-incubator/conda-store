@@ -56,9 +56,8 @@ Choose an environment:
 
     def user_env(self, env):
         env = super().user_env(env)
-        env["CONDA_STORE_URL"] = "https://conda-store.localhost/conda-store"
+        env["CONDA_STORE_URL"] = "http://conda-store.localhost/conda-store"
         env["CONDA_STORE_AUTH"] = "token"
-        env["CONDA_STORE_NO_VERIFY"] = "true"
         env["CONDA_STORE_TOKEN"] = self.conda_store_token
         return env
 
@@ -66,7 +65,7 @@ Choose an environment:
         async with CondaStoreAPI(
             conda_store_url=os.environ["CONDA_STORE_URL"],
             auth_type=os.environ["CONDA_STORE_AUTH"],
-            verify_ssl="CONDA_STORE_NO_VERIFY" not in os.environ,
+            verify_ssl=False,
         ) as conda_store:
             return await conda_store.create_token(
                 primary_namespace=username,
@@ -80,7 +79,7 @@ Choose an environment:
         async with CondaStoreAPI(
             conda_store_url=os.environ["CONDA_STORE_URL"],
             auth_type=os.environ["CONDA_STORE_AUTH"],
-            verify_ssl="CONDA_STORE_NO_VERIFY" not in os.environ,
+            verify_ssl=False,
         ) as conda_store:
             return await conda_store.list_environments(
                 status="COMPLETED",
@@ -101,9 +100,25 @@ c.JupyterHub.services = [
         "name": "conda-store",
         "oauth_client_id": "service-this-is-a-jupyterhub-client",
         "admin": True,
-        "url": "https://conda-store.localhost/conda-store/",
+        "url": "http://conda-store.localhost/conda-store/",
         "api_token": "this-is-a-jupyterhub-secret",
         "oauth_redirect_uri": "/conda-store/oauth_callback/",
         "oauth_no_confirm": True,  # allows no authorize yes/no button
+        "oauth_client_allowed_scopes": [
+            "self", "inherit", "access:services",
+        ]
     }
 ]
+
+c.JupyterHub.load_roles = [
+    {
+        "name": "conda-store-user",
+        "scopes": [
+            "self", 'access:services!service=conda-store',
+        ],
+        "groups": ["conda-store-user"],
+    }
+]
+
+# Users are able to log in with username/password combo admin/test
+c.Authenticator.admin_users = {'admin'}

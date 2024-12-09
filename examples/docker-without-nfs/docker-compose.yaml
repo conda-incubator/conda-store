@@ -1,37 +1,29 @@
-version: "3.8"
-
 volumes:
   conda_store_data:
 
 services:
   traefik:
     image: "traefik:v2.6"
-    container_name: "traefik"
     command:
       - "--api.insecure=true"
       - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.exposedbydefault=true"
       - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
       - "--entrypoints.minio.address=:9080"
-      - "--entrypoints.websecure.http.tls=true"
-      - "--entrypoints.minio.http.tls=true"
-      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
-      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
-      - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
+      - "--entrypoints.websecure.http.tls=false"
+      - "--entrypoints.minio.http.tls=false"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=http"
     ports:
       - "80:80"
       - "443:443"
-      - "8080:8080"
       - "9080:9080"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
 
   conda-store-worker:
     image: quansight/conda-store-server
-    user: 1000:1000
+    user: 1000:100
     volumes:
-      - conda_store_data:/opt/conda-store/
       - ./assets/conda_store_config.py:/etc/conda-store/conda_store_config.py:ro
       - ./assets/environments:/opt/environments:ro
     depends_on:
@@ -53,7 +45,6 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.conda-store.rule=Host(`conda-store.localhost`) && PathPrefix(`/conda-store`)"
-      - "traefik.http.routers.conda-store.entrypoints=websecure"
       - "traefik.port=8080"
     depends_on:
       postgres:
@@ -81,15 +72,18 @@ services:
       - "8080:8080"
 
   jupyterhub:
-    build: quansight/conda-store
+    build:
+      context: dockerfiles
+      dockerfile: jupyterhub.Dockerfile
+      args:
+        python_version: 3.12
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.jupyterhub.rule=Host(`conda-store.localhost`) && (Path(`/`) || PathPrefix(`/hub`) || PathPrefix(`/user`))"
-      - "traefik.http.routers.jupyterhub.entrypoints=websecure"
       - "traefik.port=8000"
     user: 1000:1000
     environment:
-      CONDA_STORE_URL: https://conda-store.localhost/conda-store
+      CONDA_STORE_URL: http://conda-store.localhost/conda-store
       CONDA_STORE_AUTH: token
       CONDA_STORE_NO_VERIFY: "true"
       CONDA_STORE_TOKEN: this-is-a-jupyterhub-secret-token
@@ -122,6 +116,8 @@ services:
       - "traefik.http.routers.minio.rule=Host(`conda-store.localhost`)"
       - "traefik.http.routers.minio.entrypoints=minio"
       - "traefik.port=9000"
+    links:
+      - "traefik:conda-store.localhost"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 10s
@@ -147,21 +143,6 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: conda-store
-
-  mysql:
-    image: mysql:8.0
-    ports:
-      - 3306:3306
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    environment:
-      MYSQL_ROOT_PASSWORD: hbgY8bkoWPMM7EjtcD6wrlVX
-      MYSQL_USER: admin
-      MYSQL_PASSWORD: password
-      MYSQL_DATABASE: conda-store
 
   redis:
     image: bitnami/redis

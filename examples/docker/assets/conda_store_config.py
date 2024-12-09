@@ -12,7 +12,8 @@ from conda_store_server.storage import S3Storage
 #      conda-store settings
 # ==================================
 c.CondaStore.storage_class = S3Storage
-c.CondaStore.store_directory = "/opt/conda-store/conda-store"
+c.CondaStore.store_directory = "/var/lib/conda-store/"
+c.CondaStore.environment_directory = "/opt/conda-store/envs/{namespace}-{name}"
 # Also edit `conda-store-server/alembic.ini` accordingly for key sqlalchemy.url
 c.CondaStore.database_url = (
     "postgresql+psycopg2://postgres:password@postgres/conda-store"
@@ -51,11 +52,12 @@ c.CondaStoreServer.behind_proxy = True
 #         auth settings
 # ==================================
 c.CondaStoreServer.authentication_class = JupyterHubOAuthAuthentication
-c.JupyterHubOAuthAuthentication.jupyterhub_url = "https://conda-store.localhost"
+c.JupyterHubOAuthAuthentication.jupyterhub_url = "http://conda-store.localhost"
 c.JupyterHubOAuthAuthentication.client_id = "service-this-is-a-jupyterhub-client"
 c.JupyterHubOAuthAuthentication.client_secret = "this-is-a-jupyterhub-secret"
 c.JupyterHubOAuthAuthentication.oauth_callback_url = "/conda-store/oauth_callback/"
 c.JupyterHubOAuthAuthentication.tls_verify = False
+c.JupyterHubOAuthAuthentication.access_scope = "conda-store-user"
 
 # ==================================
 #         worker settings
