@@ -357,6 +357,7 @@ PipArg = Annotated[str, AfterValidator(lambda v: check_pip(v))]
 
 # Conda Environment
 class CondaSpecificationPip(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     pip: List[PipArg] = []
 
 
@@ -370,6 +371,7 @@ class CondaSpecification(BaseModel):
     name: Annotated[str, StringConstraints(pattern=f"^[{ALLOWED_CHARACTERS}]+$")]
     prefix: Optional[str] = None
     variables: Optional[Dict[str, Union[str, int]]] = None
+    model_config = ConfigDict(from_attributes=True)
 
     @classmethod
     def model_validate(cls, specification):
@@ -412,6 +414,7 @@ class LockfileSpecification(BaseModel):
     name: Annotated[str, StringConstraints(pattern=f"^[{ALLOWED_CHARACTERS}]+$")]  # noqa: F722
     description: Optional[str] = ""
     lockfile: Lockfile
+    model_config = ConfigDict(from_attributes=True)
 
     @classmethod
     def model_validate(cls, specification):

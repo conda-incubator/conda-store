@@ -121,7 +121,7 @@ def paginated_api_response(
     )
     return {
         "status": "ok",
-        "data": [object_schema.from_orm(_).model_dump(exclude=exclude) for _ in query.all()],
+        "data": [object_schema.model_validate(_).model_dump(exclude=exclude) for _ in query.all()],
         "page": (paginated_args["offset"] // paginated_args["limit"]) + 1,
         "size": paginated_args["limit"],
         "count": count,
@@ -300,7 +300,7 @@ async def api_get_namespace(
 
         return {
             "status": "ok",
-            "data": schema.Namespace.from_orm(namespace).model_dump(),
+            "data": schema.Namespace.model_validate(namespace).model_dump(),
         }
 
 
@@ -745,7 +745,7 @@ async def api_get_environment(
 
         return {
             "status": "ok",
-            "data": schema.Environment.from_orm(environment).model_dump(
+            "data": schema.Environment.model_validate(environment).model_dump(
                 exclude={"current_build"}
             ),
         }
@@ -983,7 +983,7 @@ async def api_get_build(
 
         return {
             "status": "ok",
-            "data": schema.Build.from_orm(build).model_dump(exclude={"packages"}),
+            "data": schema.Build.model_validate(build).model_dump(exclude={"packages"}),
         }
 
 
