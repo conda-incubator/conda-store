@@ -682,7 +682,7 @@ async def api_list_environments(
         if jwt:
             # Fetch the environments visible to the supplied token
             role_bindings = auth.entity_bindings(
-                AuthenticationToken.parse_obj(auth.authentication.decrypt_token(jwt))
+                AuthenticationToken.model_validate(auth.authentication.decrypt_token(jwt))
             )
         else:
             role_bindings = None
@@ -887,9 +887,9 @@ async def api_post_specification(
                     "description": environment_description,
                     "lockfile": specification,
                 }
-                specification = schema.LockfileSpecification.parse_obj(lockfile_spec)
+                specification = schema.LockfileSpecification.model_validate(lockfile_spec)
             else:
-                specification = schema.CondaSpecification.parse_obj(specification)
+                specification = schema.CondaSpecification.model_validate(specification)
         except yaml.error.YAMLError:
             raise HTTPException(status_code=400, detail="Unable to parse. Invalid YAML")
         except utils.CondaStoreError as e:

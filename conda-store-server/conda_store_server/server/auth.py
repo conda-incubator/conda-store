@@ -68,7 +68,7 @@ class AuthenticationBackend(LoggingConfigurable):
                 authentication_token = self.predefined_tokens[token]
             else:
                 authentication_token = self.decrypt_token(token)
-            return schema.AuthenticationToken.parse_obj(authentication_token)
+            return schema.AuthenticationToken.model_validate(authentication_token)
         except Exception:
             return None
 

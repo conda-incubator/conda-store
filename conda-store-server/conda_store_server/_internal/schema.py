@@ -372,9 +372,9 @@ class CondaSpecification(BaseModel):
     variables: Optional[Dict[str, Union[str, int]]] = None
 
     @classmethod
-    def parse_obj(cls, specification):
+    def model_validate(cls, specification):
         try:
-            return super().parse_obj(specification)
+            return super().model_validate(specification)
         except ValidationError as e:
             # there can be multiple errors. Let's build a comprehensive summary
             # to return to the end user.
@@ -414,7 +414,7 @@ class LockfileSpecification(BaseModel):
     lockfile: Lockfile
 
     @classmethod
-    def parse_obj(cls, specification):
+    def model_validate(cls, specification):
         # To show a human-readable error if no data is provided
         specification = {} if specification is None else specification
         # This uses pop because the version field must not be part of Lockfile
@@ -429,7 +429,7 @@ class LockfileSpecification(BaseModel):
                 "Expected lockfile to have no version field, or version=1",
             )
 
-        return super().parse_obj(specification)
+        return super().model_validate(specification)
 
     def model_dump(self):
         res = super().model_dump()

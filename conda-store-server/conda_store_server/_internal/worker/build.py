@@ -213,7 +213,7 @@ def build_conda_environment(db: Session, conda_store, build):
         with utils.timer(conda_store.log, f"building conda_prefix={conda_prefix}"):
             if is_lockfile:
                 context = action.action_save_lockfile(
-                    specification=schema.LockfileSpecification.parse_obj(
+                    specification=schema.LockfileSpecification.model_validate(
                         build.specification.spec
                     ),
                     stdout=LoggedStream(
@@ -227,7 +227,7 @@ def build_conda_environment(db: Session, conda_store, build):
             else:
                 lock_backend, locker = conda_store.lock_plugin()
                 conda_lock_spec = locker.lock_environment(
-                    spec=schema.CondaSpecification.parse_obj(build.specification.spec),
+                    spec=schema.CondaSpecification.model_validate(build.specification.spec),
                     platforms=settings.conda_solve_platforms,
                     context=plugin_context.PluginContext(
                         conda_store=conda_store,
@@ -341,7 +341,7 @@ def solve_conda_environment(db: Session, conda_store, solve: orm.Solve):
     _, locker = conda_store.lock_plugin()
     conda_lock_spec = locker.lock_environment(
         context=plugin_context.PluginContext(conda_store=conda_store),
-        spec=schema.CondaSpecification.parse_obj(solve.specification.spec),
+        spec=schema.CondaSpecification.model_validate(solve.specification.spec),
         platforms=[conda_utils.conda_platform()],
     )
 
@@ -440,7 +440,7 @@ def build_constructor_installer(db: Session, conda_store, build: orm.Build):
             is_lockfile = build.specification.is_lockfile
 
             if is_lockfile:
-                specification = schema.LockfileSpecification.parse_obj(
+                specification = schema.LockfileSpecification.model_validate(
                     build.specification.spec
                 )
             else:
@@ -449,7 +449,7 @@ def build_constructor_installer(db: Session, conda_store, build: orm.Build):
                     # pinned dependencies. This code is wrapped into try/except
                     # because the lockfile lookup might fail if the file is not
                     # in external storage or on disk, or if parsing fails
-                    specification = schema.LockfileSpecification.parse_obj(
+                    specification = schema.LockfileSpecification.model_validate(
                         {
                             "name": build.specification.name,
                             "lockfile": json.loads(
@@ -463,7 +463,7 @@ def build_constructor_installer(db: Session, conda_store, build: orm.Build):
                         "Exception while obtaining lockfile, using specification",
                         exc_info=e,
                     )
-                    specification = schema.CondaSpecification.parse_obj(
+                    specification = schema.CondaSpecification.model_validate(
                         build.specification.spec
                     )
 

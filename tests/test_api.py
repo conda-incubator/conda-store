@@ -75,7 +75,7 @@ def test_api_status_unauth(testclient):
     response = testclient.get("api/v1/")
     response.raise_for_status()
 
-    r = schema.APIGetStatus.parse_obj(response.json())
+    r = schema.APIGetStatus.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     assert r.data.version == conda_store_server.__version__
 
@@ -84,7 +84,7 @@ def test_api_permissions_unauth(testclient):
     response = testclient.get("api/v1/permission/")
     response.raise_for_status()
 
-    r = schema.APIGetPermission.parse_obj(response.json())
+    r = schema.APIGetPermission.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     assert r.data.authenticated is False
     assert r.data.primary_namespace == "default"
@@ -104,7 +104,7 @@ def test_api_permissions_auth(testclient):
     response = testclient.get("api/v1/permission/")
     response.raise_for_status()
 
-    r = schema.APIGetPermission.parse_obj(response.json())
+    r = schema.APIGetPermission.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     assert r.data.authenticated is True
     assert r.data.primary_namespace == "username"
@@ -151,7 +151,7 @@ def test_api_list_namespace_unauth(testclient):
     response = testclient.get("api/v1/namespace")
     response.raise_for_status()
 
-    r = schema.APIListNamespace.parse_obj(response.json())
+    r = schema.APIListNamespace.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     # by default unauth only has access to the default namespace
     assert len(r.data) == 1
@@ -162,7 +162,7 @@ def test_api_list_namespace_auth(testclient):
     response = testclient.get("api/v1/namespace")
     response.raise_for_status()
 
-    r = schema.APIListNamespace.parse_obj(response.json())
+    r = schema.APIListNamespace.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     # by default auth has at least two environments created
     # `default` and `filesystem`
@@ -173,7 +173,7 @@ def test_api_get_namespace_unauth(testclient):
     response = testclient.get("api/v1/namespace/default")
     response.raise_for_status()
 
-    r = schema.APIGetNamespace.parse_obj(response.json())
+    r = schema.APIGetNamespace.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     assert r.data.name == "default"
 
@@ -182,7 +182,7 @@ def test_api_get_namespace_unauth_no_exist(testclient):
     response = testclient.get("api/v1/namespace/wrong")
     assert response.status_code == 403
 
-    r = schema.APIResponse.parse_obj(response.json())
+    r = schema.APIResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.ERROR
 
 
@@ -191,7 +191,7 @@ def test_api_get_namespace_auth(testclient):
     response = testclient.get("api/v1/namespace/filesystem")
     response.raise_for_status()
 
-    r = schema.APIGetNamespace.parse_obj(response.json())
+    r = schema.APIGetNamespace.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     assert r.data.name == "filesystem"
 
@@ -201,7 +201,7 @@ def test_api_get_namespace_auth_no_exist(testclient):
     response = testclient.get("api/v1/namespace/wrong")
 
     assert response.status_code == 404
-    r = schema.APIResponse.parse_obj(response.json())
+    r = schema.APIResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.ERROR
 
 
@@ -209,7 +209,7 @@ def test_api_list_environments_unauth(testclient):
     response = testclient.get("api/v1/environment")
     response.raise_for_status()
 
-    r = schema.APIListEnvironment.parse_obj(response.json())
+    r = schema.APIListEnvironment.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
 
 
@@ -218,7 +218,7 @@ def test_api_list_environments_auth(testclient):
     response = testclient.get("api/v1/environment")
     response.raise_for_status()
 
-    r = schema.APIListEnvironment.parse_obj(response.json())
+    r = schema.APIListEnvironment.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     assert len(r.data) >= 1
 
@@ -227,7 +227,7 @@ def test_api_get_environment_unauth(testclient):
     response = testclient.get("api/v1/environment/filesystem/python-flask-env")
     assert response.status_code == 403
 
-    r = schema.APIResponse.parse_obj(response.json())
+    r = schema.APIResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.ERROR
 
 
@@ -236,7 +236,7 @@ def test_api_get_environment_auth_existing(testclient):
     response = testclient.get("api/v1/environment/filesystem/python-flask-env")
     response.raise_for_status()
 
-    r = schema.APIGetEnvironment.parse_obj(response.json())
+    r = schema.APIGetEnvironment.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     assert r.data.namespace.name == "filesystem"
     assert r.data.name == "python-flask-env"
@@ -247,7 +247,7 @@ def test_api_get_environment_auth_not_existing(testclient):
     response = testclient.get("api/v1/environment/filesystem/wrong")
     assert response.status_code == 404
 
-    r = schema.APIResponse.parse_obj(response.json())
+    r = schema.APIResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.ERROR
 
 
@@ -255,7 +255,7 @@ def test_api_list_builds_unauth(testclient):
     response = testclient.get("api/v1/build")
     response.raise_for_status()
 
-    r = schema.APIListBuild.parse_obj(response.json())
+    r = schema.APIListBuild.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
 
 
@@ -264,7 +264,7 @@ def test_api_list_builds_auth(testclient):
     response = testclient.get("api/v1/build")
     response.raise_for_status()
 
-    r = schema.APIListBuild.parse_obj(response.json())
+    r = schema.APIListBuild.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     assert len(r.data) >= 1
 
@@ -273,7 +273,7 @@ def test_api_get_build_one_unauth(testclient):
     response = testclient.get("api/v1/build/1")
     assert response.status_code == 403
 
-    r = schema.APIResponse.parse_obj(response.json())
+    r = schema.APIResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.ERROR
 
 
@@ -284,7 +284,7 @@ def test_api_get_build_one_auth(testclient):
         response = testclient.get("api/v1/build/1")
         response.raise_for_status()
 
-        r = schema.APIGetBuild.parse_obj(response.json())
+        r = schema.APIGetBuild.model_validate(response.json())
         assert r.status == schema.APIStatus.OK
         assert r.data.id == 1
         assert r.data.specification.name == "python-flask-env"
@@ -304,7 +304,7 @@ def test_api_get_build_one_unauth_packages(testclient):
     response = testclient.get("api/v1/build/1/packages")
     assert response.status_code == 403
 
-    r = schema.APIResponse.parse_obj(response.json())
+    r = schema.APIResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.ERROR
 
 
@@ -315,7 +315,7 @@ def test_api_get_build_one_auth_packages(testclient):
         response = testclient.get("api/v1/build/1/packages?size=5")
         response.raise_for_status()
 
-        r = schema.APIListCondaPackage.parse_obj(response.json())
+        r = schema.APIListCondaPackage.model_validate(response.json())
         assert r.status == schema.APIStatus.OK
         if len(r.data) == 0:
             time.sleep(10)
@@ -331,7 +331,7 @@ def test_api_get_build_auth_packages_no_exist(testclient):
     response = testclient.get("api/v1/build/101010101/packages")
     assert response.status_code == 404
 
-    r = schema.APIResponse.parse_obj(response.json())
+    r = schema.APIResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.ERROR
 
 
@@ -339,7 +339,7 @@ def test_api_get_build_one_unauth_logs(testclient):
     response = testclient.get("api/v1/build/1/logs")
     assert response.status_code == 403
 
-    r = schema.APIResponse.parse_obj(response.json())
+    r = schema.APIResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.ERROR
 
 
@@ -417,7 +417,7 @@ def test_api_get_build_two_auth(testclient):
     response = testclient.get("api/v1/build/1010101010101")
     response.status_code == 404
 
-    r = schema.APIResponse.parse_obj(response.json())
+    r = schema.APIResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.ERROR
 
 
@@ -425,7 +425,7 @@ def test_api_list_conda_channels_unauth(testclient):
     response = testclient.get("api/v1/channel")
     response.raise_for_status()
 
-    r = schema.APIListCondaChannel.parse_obj(response.json())
+    r = schema.APIListCondaChannel.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     api_channels = set(_.name for _ in r.data)
     assert api_channels == {
@@ -439,7 +439,7 @@ def test_api_list_conda_packages_unauth(testclient):
     response = testclient.get("api/v1/package?size=15")
     response.raise_for_status()
 
-    r = schema.APIListCondaPackage.parse_obj(response.json())
+    r = schema.APIListCondaPackage.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     assert len(r.data) == 15
 
@@ -460,7 +460,7 @@ def test_create_specification_uauth(testclient):
     )
     assert response.status_code == 403
 
-    r = schema.APIResponse.parse_obj(response.json())
+    r = schema.APIResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.ERROR
 
 
@@ -478,14 +478,14 @@ def test_create_specification_auth(testclient):
     )
     response.raise_for_status()
 
-    r = schema.APIPostSpecification.parse_obj(response.json())
+    r = schema.APIPostSpecification.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
 
     # check for the given build
     response = testclient.get(f"api/v1/build/{r.data.build_id}")
     response.raise_for_status()
 
-    r = schema.APIGetBuild.parse_obj(response.json())
+    r = schema.APIGetBuild.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     assert r.data.specification.name == environment_name
 
@@ -493,7 +493,7 @@ def test_create_specification_auth(testclient):
     response = testclient.get(f"api/v1/environment/{namespace}/{environment_name}")
     response.raise_for_status()
 
-    r = schema.APIGetEnvironment.parse_obj(response.json())
+    r = schema.APIGetEnvironment.model_validate(response.json())
     assert r.data.namespace.name == namespace
 
 
@@ -536,7 +536,7 @@ def test_create_specification_parallel_auth(testclient):
             timeout=10,
         )
         response.raise_for_status()
-        r = schema.APIPostSpecification.parse_obj(response.json())
+        r = schema.APIPostSpecification.model_validate(response.json())
         assert r.status == schema.APIStatus.OK
         build_ids.append(r.data.build_id)
 
@@ -579,7 +579,7 @@ def test_create_specification_parallel_auth(testclient):
         # Checks the status
         response = testclient.get(f"api/v1/build/{build_id}", timeout=10)
         response.raise_for_status()
-        r = schema.APIGetBuild.parse_obj(response.json())
+        r = schema.APIGetBuild.model_validate(response.json())
         assert r.status == schema.APIStatus.OK
         assert r.data.specification.name == environment_name
 
@@ -701,7 +701,7 @@ def test_create_specification_auth_env_name_too_long(testclient, size):
         return  # error, nothing to do
     response.raise_for_status()
 
-    r = schema.APIPostSpecification.parse_obj(response.json())
+    r = schema.APIPostSpecification.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     build_id = r.data.build_id
 
@@ -714,7 +714,7 @@ def test_create_specification_auth_env_name_too_long(testclient, size):
         response = testclient.get(f"api/v1/build/{build_id}")
         response.raise_for_status()
 
-        r = schema.APIGetBuild.parse_obj(response.json())
+        r = schema.APIGetBuild.model_validate(response.json())
         assert r.status == schema.APIStatus.OK
         assert r.data.specification.name == environment_name
         if r.data.status == "QUEUED":
@@ -740,14 +740,14 @@ def test_create_specification_auth_no_namespace_specified(testclient):
     )
     response.raise_for_status()
 
-    r = schema.APIPostSpecification.parse_obj(response.json())
+    r = schema.APIPostSpecification.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
 
     # check for the given build
     response = testclient.get(f"api/v1/build/{r.data.build_id}")
     response.raise_for_status()
 
-    r = schema.APIGetBuild.parse_obj(response.json())
+    r = schema.APIGetBuild.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     assert r.data.specification.name == environment_name
 
@@ -755,7 +755,7 @@ def test_create_specification_auth_no_namespace_specified(testclient):
     response = testclient.get(f"api/v1/environment/{namespace}/{environment_name}")
     response.raise_for_status()
 
-    r = schema.APIGetEnvironment.parse_obj(response.json())
+    r = schema.APIGetEnvironment.model_validate(response.json())
     assert r.data.namespace.name == namespace
 
 
@@ -765,7 +765,7 @@ def test_put_build_trigger_build_noauth(testclient):
     response = testclient.put(f"api/v1/build/{build_id}")
     assert response.status_code == 403
 
-    r = schema.APIResponse.parse_obj(response.json())
+    r = schema.APIResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.ERROR
 
 
@@ -774,13 +774,13 @@ def test_put_build_trigger_build_auth(testclient):
 
     testclient.login()
     response = testclient.put(f"api/v1/build/{build_id}")
-    r = schema.APIPostSpecification.parse_obj(response.json())
+    r = schema.APIPostSpecification.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
 
     response = testclient.get(f"api/v1/build/{r.data.build_id}")
     response.raise_for_status()
 
-    r = schema.APIGetBuild.parse_obj(response.json())
+    r = schema.APIGetBuild.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
 
 
@@ -790,7 +790,7 @@ def test_create_namespace_noauth(testclient):
     response = testclient.post(f"api/v1/namespace/{namespace}")
     assert response.status_code == 403
 
-    r = schema.APIResponse.parse_obj(response.json())
+    r = schema.APIResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.ERROR
 
 
@@ -801,13 +801,13 @@ def test_create_namespace_auth(testclient):
     response = testclient.post(f"api/v1/namespace/{namespace}")
     response.raise_for_status()
 
-    r = schema.APIAckResponse.parse_obj(response.json())
+    r = schema.APIAckResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
 
     response = testclient.get(f"api/v1/namespace/{namespace}")
     response.raise_for_status()
 
-    r = schema.APIGetNamespace.parse_obj(response.json())
+    r = schema.APIGetNamespace.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     assert r.data.name == namespace
 
@@ -831,7 +831,7 @@ def test_update_namespace_noauth(testclient):
     )
     assert response.status_code == 403
 
-    r = schema.APIResponse.parse_obj(response.json())
+    r = schema.APIResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.ERROR
 
     # Updates the role mappings only
@@ -840,7 +840,7 @@ def test_update_namespace_noauth(testclient):
     )
     assert response.status_code == 403
 
-    r = schema.APIResponse.parse_obj(response.json())
+    r = schema.APIResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.ERROR
 
     # Updates both the metadata and the role mappings
@@ -853,7 +853,7 @@ def test_update_namespace_noauth(testclient):
     )
     assert response.status_code == 403
 
-    r = schema.APIResponse.parse_obj(response.json())
+    r = schema.APIResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.ERROR
 
 
@@ -884,7 +884,7 @@ def test_update_namespace_auth(testclient, editor_role):
         },
     )
 
-    r = schema.APIResponse.parse_obj(response.json())
+    r = schema.APIResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
 
     # Updates the metadata only
@@ -896,7 +896,7 @@ def test_update_namespace_auth(testclient, editor_role):
     )
     response.raise_for_status()
 
-    r = schema.APIResponse.parse_obj(response.json())
+    r = schema.APIResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
 
     # Updates the role mappings only
@@ -904,7 +904,7 @@ def test_update_namespace_auth(testclient, editor_role):
         f"api/v1/namespace/{namespace}", json={"role_mappings": test_role_mappings}
     )
 
-    r = schema.APIResponse.parse_obj(response.json())
+    r = schema.APIResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
 
 
@@ -915,26 +915,26 @@ def test_create_get_delete_namespace_auth(testclient):
     response = testclient.post(f"api/v1/namespace/{namespace}")
     response.raise_for_status()
 
-    r = schema.APIAckResponse.parse_obj(response.json())
+    r = schema.APIAckResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
 
     response = testclient.get(f"api/v1/namespace/{namespace}")
     response.raise_for_status()
 
-    r = schema.APIGetNamespace.parse_obj(response.json())
+    r = schema.APIGetNamespace.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     assert r.data.name == namespace
 
     response = testclient.delete(f"api/v1/namespace/{namespace}")
     response.raise_for_status()
 
-    r = schema.APIAckResponse.parse_obj(response.json())
+    r = schema.APIAckResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
 
     response = testclient.get(f"api/v1/namespace/{namespace}")
     assert response.status_code == 404
 
-    r = schema.APIResponse.parse_obj(response.json())
+    r = schema.APIResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.ERROR
 
 
@@ -956,7 +956,7 @@ def _crud_common(
     else:
         assert response.status_code == 403
 
-    r = schema.APIResponse.parse_obj(response.json())
+    r = schema.APIResponse.model_validate(response.json())
     if auth:
         assert r.status == schema.APIStatus.OK
         if data_pred is None:
@@ -1074,7 +1074,7 @@ def test_update_environment_build_unauth(testclient):
     )
     assert response.status_code == 403
 
-    r = schema.APIResponse.parse_obj(response.json())
+    r = schema.APIResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.ERROR
 
 
@@ -1089,13 +1089,13 @@ def test_update_environment_build_auth(testclient):
     )
     response.raise_for_status()
 
-    r = schema.APIAckResponse.parse_obj(response.json())
+    r = schema.APIAckResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
 
     response = testclient.get(f"api/v1/environment/{namespace}/{name}")
     response.raise_for_status()
 
-    r = schema.APIGetEnvironment.parse_obj(response.json())
+    r = schema.APIGetEnvironment.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     assert r.data.current_build_id == 1
 
@@ -1107,7 +1107,7 @@ def test_delete_environment_unauth(testclient):
     response = testclient.delete(f"api/v1/environment/{namespace}/{name}")
     assert response.status_code == 403
 
-    r = schema.APIResponse.parse_obj(response.json())
+    r = schema.APIResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.ERROR
 
 
@@ -1125,13 +1125,13 @@ def test_delete_environment_auth(testclient):
     )
     response.raise_for_status()
 
-    r = schema.APIAckResponse.parse_obj(response.json())
+    r = schema.APIAckResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
 
     response = testclient.delete(f"api/v1/environment/{namespace}/{environment_name}")
     response.raise_for_status()
 
-    r = schema.APIAckResponse.parse_obj(response.json())
+    r = schema.APIAckResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
 
 
@@ -1141,7 +1141,7 @@ def test_delete_build_unauth(testclient):
     response = testclient.delete(f"api/v1/build/{build_id}")
     assert response.status_code == 403
 
-    r = schema.APIResponse.parse_obj(response.json())
+    r = schema.APIResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.ERROR
 
 
@@ -1150,7 +1150,7 @@ def test_delete_build_auth(testclient):
 
     testclient.login()
     response = testclient.put(f"api/v1/build/{build_id}")
-    r = schema.APIPostSpecification.parse_obj(response.json())
+    r = schema.APIPostSpecification.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
 
     new_build_id = r.data.build_id
@@ -1158,7 +1158,7 @@ def test_delete_build_auth(testclient):
     response = testclient.get(f"api/v1/build/{new_build_id}")
     response.raise_for_status()
 
-    r = schema.APIGetBuild.parse_obj(response.json())
+    r = schema.APIGetBuild.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
 
     # currently you cannot delete a build before it succeeds or fails
@@ -1166,13 +1166,13 @@ def test_delete_build_auth(testclient):
     response = testclient.delete(f"api/v1/build/{new_build_id}")
     assert response.status_code == 400
 
-    # r = schema.APIAckResponse.parse_obj(response.json())
+    # r = schema.APIAckResponse.model_validate(response.json())
     # assert r.status == schema.APIStatus.OK
 
     # response = testclient.get(f'api/v1/build/{new_build_id}')
     # assert response.status_code == 404
 
-    # r = schema.APIResponse.parse_obj(response.json())
+    # r = schema.APIResponse.model_validate(response.json())
     # assert r.status == schema.APIStatus.ERROR
 
 
@@ -1182,7 +1182,7 @@ def test_api_cancel_build_unauth(testclient):
     response = testclient.put(f"api/v1/build/{build_id}/cancel")
     assert response.status_code == 403
 
-    r = schema.APIResponse.parse_obj(response.json())
+    r = schema.APIResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.ERROR
 
 
@@ -1191,7 +1191,7 @@ def test_api_cancel_build_auth(testclient):
 
     testclient.login()
     response = testclient.put(f"api/v1/build/{build_id}")
-    r = schema.APIPostSpecification.parse_obj(response.json())
+    r = schema.APIPostSpecification.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
 
     new_build_id = r.data.build_id
@@ -1208,7 +1208,7 @@ def test_api_cancel_build_auth(testclient):
             continue
         response.raise_for_status()
 
-        r = schema.APIGetBuild.parse_obj(response.json())
+        r = schema.APIGetBuild.model_validate(response.json())
         assert r.status == schema.APIStatus.OK
         if r.data.status == schema.BuildStatus.BUILDING.value:
             building = True
@@ -1221,7 +1221,7 @@ def test_api_cancel_build_auth(testclient):
     response = testclient.put(f"api/v1/build/{new_build_id}/cancel")
     response.raise_for_status()
 
-    r = schema.APIResponse.parse_obj(response.json())
+    r = schema.APIResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     assert r.message == f"build {new_build_id} canceled"
 
@@ -1238,7 +1238,7 @@ def test_api_cancel_build_auth(testclient):
             continue
         response.raise_for_status()
 
-        r = schema.APIGetBuild.parse_obj(response.json())
+        r = schema.APIGetBuild.model_validate(response.json())
         assert r.status == schema.APIStatus.OK
         assert r.data.id == new_build_id
         if r.data.status == schema.BuildStatus.CANCELED.value:
@@ -1272,7 +1272,7 @@ def test_create_lockfile_specification_auth(testclient):
             },
         )
         response.raise_for_status()
-        r = schema.APIPostSpecification.parse_obj(response.json())
+        r = schema.APIPostSpecification.model_validate(response.json())
         assert r.status == schema.APIStatus.OK
 
         return r.data.build_id

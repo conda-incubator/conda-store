@@ -235,7 +235,7 @@ def simple_conda_lock_with_pip():
 
 @pytest.fixture
 def simple_lockfile_specification(simple_conda_lock):
-    return schema.LockfileSpecification.parse_obj(
+    return schema.LockfileSpecification.model_validate(
         {
             "name": "test",
             "description": "simple lockfile specification",
@@ -246,7 +246,7 @@ def simple_lockfile_specification(simple_conda_lock):
 
 @pytest.fixture
 def simple_lockfile_specification_with_pip(simple_conda_lock_with_pip):
-    return schema.LockfileSpecification.parse_obj(
+    return schema.LockfileSpecification.model_validate(
         {
             "name": "test",
             "description": "simple lockfile specification with pip",
