@@ -441,8 +441,7 @@ endpoints. Default True.
 `CondaStoreServer.enable_api` a Boolean on whether to expose the API
 endpoints. Default True.
 
-`CondaStoreServer.enable_registry` a Boolean on whether to expose the
-registry endpoints. Default True.
+`CondaStoreServer.enable_registry` (deprecated) a Boolean on whether to expose the registry endpoints. Default False.
 
 `CondaStoreServer.enable_metrics` a Boolean on whether to expose the
 metrics endpoints. Default True.

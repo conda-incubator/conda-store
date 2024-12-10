@@ -84,7 +84,7 @@ class CondaStoreServer(Application):
     )
 
     enable_registry = Bool(
-        True, help="enable the docker registry for conda-store", config=True
+        False, help="enable the docker registry for conda-store", config=True
     )
 
     enable_metrics = Bool(

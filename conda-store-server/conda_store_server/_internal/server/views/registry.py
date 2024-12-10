@@ -16,15 +16,17 @@ from conda_store_server.server.schema import Permissions
 router_registry = APIRouter(tags=["registry"])
 
 
-def _json_response(data, status=200, mimetype="application/json"):
+def _json_response(data, status=200, mimetype="application/json", deprecated=False):
     response = Response(
         content=json.dumps(data, indent=3), status_code=status, media_type=mimetype
     )
     response.headers["Docker-Distribution-Api-Version"] = "registry/2.0"
+    if deprecated:
+        response.headers["Deprecation"] = "True"
     return response
 
 
-def docker_error_message(docker_registry_error: schema.DockerRegistryError):
+def docker_error_message(docker_registry_error: schema.DockerRegistryError, deprecated=False):
     response = _json_response(
         {
             "errors": [
@@ -36,6 +38,7 @@ def docker_error_message(docker_registry_error: schema.DockerRegistryError):
             ]
         },
         status=docker_registry_error.value["status"],
+        deprecated=deprecated
     )
 
     if docker_registry_error == schema.DockerRegistryError.UNAUTHORIZED:
@@ -79,15 +82,16 @@ def dynamic_conda_store_environment(conda_store, packages):
 
 def get_docker_image_manifest(conda_store, image, tag, timeout=10 * 60):
     namespace, *image_name = image.split("/")
+    response_headers = {"Deprecation": "True"}
 
     # /v2/<image-name>/manifest/<tag>
     if len(image_name) == 0:
-        return docker_error_message(schema.DockerRegistryError.NAME_UNKNOWN)
+        return docker_error_message(schema.DockerRegistryError.NAME_UNKNOWN, deprecated=True)
 
     if namespace == "conda-store-dynamic":
         environment_name = dynamic_conda_store_environment(conda_store, image_name)
     elif len(image_name) > 1:
-        return docker_error_message(schema.DockerRegistryError.NAME_UNKNOWN)
+        return docker_error_message(schema.DockerRegistryError.NAME_UNKNOWN, deprecated=True)
     else:
         environment_name = image_name[0]
 
@@ -96,24 +100,24 @@ def get_docker_image_manifest(conda_store, image, tag, timeout=10 * 60):
         conda_store.db, namespace=namespace, name=environment_name
     )
     if environment is None:
-        return docker_error_message(schema.DockerRegistryError.NAME_UNKNOWN)
+        return docker_error_message(schema.DockerRegistryError.NAME_UNKNOWN, deprecated=True)
 
     if tag == "latest":
         build_key = environment.current_build.build_key
     elif tag.startswith("sha256:"):
         # looking for sha256 of docker manifest
         manifests_key = f"docker/manifest/{tag}"
-        return RedirectResponse(conda_store.storage.get_url(manifests_key))
+        return RedirectResponse(conda_store.storage.get_url(manifests_key), response_headers=response_headers)
     else:
         build_key = tag
 
     build_id = orm.Build.parse_build_key(conda_store, build_key)
     if build_id is None:
-        return docker_error_message(schema.DockerRegistryError.MANIFEST_UNKNOWN)
+        return docker_error_message(schema.DockerRegistryError.MANIFEST_UNKNOWN, deprecated=True)
 
     build = api.get_build(conda_store.db, build_id)
     if build is None:
-        return docker_error_message(schema.DockerRegistryError.MANIFEST_UNKNOWN)
+        return docker_error_message(schema.DockerRegistryError.MANIFEST_UNKNOWN, deprecated=True)
 
     # waiting for image to be built by conda-store
     start_time = time.time()
@@ -121,30 +125,31 @@ def get_docker_image_manifest(conda_store, image, tag, timeout=10 * 60):
         conda_store.db.refresh(build)
         time.sleep(10)
         if time.time() - start_time > timeout:
-            return docker_error_message(schema.DockerRegistryError.MANIFEST_UNKNOWN)
+            return docker_error_message(schema.DockerRegistryError.MANIFEST_UNKNOWN, deprecated=True)
 
     manifests_key = f"docker/manifest/{build_key}"
-    return RedirectResponse(conda_store.storage.get_url(manifests_key))
+    return RedirectResponse(conda_store.storage.get_url(manifests_key), response_headers=response_headers)
 
 
 def get_docker_image_blob(conda_store, image, blobsum):
     blob_key = f"docker/blobs/{blobsum}"
-    return RedirectResponse(conda_store.storage.get_url(blob_key))
+    response_headers = {"Deprecation": "True"}
+    return RedirectResponse(conda_store.storage.get_url(blob_key), response_headers=response_headers)
 
 
-@router_registry.get("/v2/")
+@router_registry.get("/v2/", deprecated=True)
 def v2(
     request: Request,
     entity=Depends(dependencies.get_entity),
 ):
     if entity is None:
-        return docker_error_message(schema.DockerRegistryError.UNAUTHORIZED)
+        return docker_error_message(schema.DockerRegistryError.UNAUTHORIZED, deprecated=True)
 
-    return _json_response({})
+    return _json_response({}, deprecated=True)
 
 
 @router_registry.get(
-    "/v2/{rest:path}",
+    "/v2/{rest:path}", deprecated=True
 )
 def list_tags(
     rest: str,
@@ -155,10 +160,10 @@ def list_tags(
 ):
     parts = rest.split("/")
     if len(parts) <= 3:
-        return docker_error_message(schema.DockerRegistryError.UNSUPPORTED)
+        return docker_error_message(schema.DockerRegistryError.UNSUPPORTED, deprecated=True)
 
     if entity is None:
-        return docker_error_message(schema.DockerRegistryError.UNAUTHORIZED)
+        return docker_error_message(schema.DockerRegistryError.UNAUTHORIZED, deprecated=True)
 
     image = "/".join(parts[:-2])
 
@@ -175,7 +180,7 @@ def list_tags(
         )
     except HTTPException as e:
         if e.status_code == 403:
-            return docker_error_message(schema.DockerRegistryError.DENIED)
+            return docker_error_message(schema.DockerRegistryError.DENIED, deprecated=True)
 
     # /v2/<image>/tags/list
     if parts[-2:] == ["tags", "list"]:
