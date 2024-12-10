@@ -87,7 +87,6 @@ git clean -fxdq
 
 # bump versions
 sed -E -r -i "s/__version__ = .+/__version__ = \"$RELEASE_VERSION\"/g" conda-store-server/conda_store_server/__init__.py
-sed -E -r -i "s/__version__ = .+/__version__ = \"$RELEASE_VERSION\"/g" conda-store/conda_store/__init__.py
 sed -E -r -i "s/CONDA_STORE_UI_VERSION = .+/CONDA_STORE_UI_VERSION = \"$CONDA_STORE_UI_VERSION\"/g" conda-store-server/hatch_build.py
 
 # create changelog
@@ -107,13 +106,9 @@ cd conda-store-server
 build_and_check conda-store-server
 cd ..
 
-cd conda-store
-build_and_check conda-store
-cd ..
-
 
 # add files to git
-git add conda-store conda-store-server CHANGELOG.md
+git add conda-store-server CHANGELOG.md
 git commit -m "REL - $RELEASE_VERSION"
 
 echo "
@@ -121,6 +116,7 @@ Finished preparing the release!
 
 Next steps:
   * Validate that the changes made are correct
+  * Update the CHANGELOG
   * Follow any testing/validation steps
   * Push them changes up to github
 
