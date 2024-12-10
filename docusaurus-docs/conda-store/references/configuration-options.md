@@ -502,8 +502,8 @@ number of concurrent celery tasks to the integer.
 
 ### (deprecated) `conda_store_server.registry.ContainerRegistry`
 
-`ContainerRegistry.container_registries` (deprecated) dictionary of registries_url to upload built container images with callable function 
-to configure registry instance with credentials. Example configuration 
+`ContainerRegistry.container_registries` (deprecated) dictionary of registries_url to upload built container images with callable function
+to configure registry instance with credentials. Example configuration
 shown bellow. Some registries are more complex to setup such as ECR, GCR,
 etc. `password` is often the token generated from the AWS, GCP, Azure,
 and Digital Ocean clients.
