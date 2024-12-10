@@ -11,7 +11,7 @@ This page is in active development, some content may be inaccurate.
 ## Model
 
 At a high level the database model can be described in the image
-bellow.
+below.
 
 ![high level diagram](../images/conda-store-database-architecture.png)
 
@@ -25,7 +25,7 @@ Important things to note about the relationship:
 - A `condapackage` is a representation of a given Conda package which belongs to a given `condachannel`
 - A `specification` is the environment.yaml using in `conda env create -f <environment.yaml>`
 
-The following will generate the database model shown bellow. It was
+The following will generate the database model shown below. It was
 generated from the `examples/docker` example. You'll see in the
 command that we are excluding several tables. These tables are managed
 by [celery](https://docs.celeryproject.org/en/stable/).
