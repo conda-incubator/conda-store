@@ -84,7 +84,7 @@ class CondaStoreServer(Application):
     )
 
     enable_registry = Bool(
-        False, help="enable the docker registry for conda-store", config=True
+        False, help="(deprecated) enable the docker registry for conda-store", config=True
     )
 
     enable_metrics = Bool(
@@ -101,7 +101,7 @@ class CondaStoreServer(Application):
 
     registry_external_url = Unicode(
         "localhost:8080",
-        help='external hostname and port to access docker registry cannot contain "http://" or "https://"',
+        help='(deprecated) external hostname and port to access docker registry cannot contain "http://" or "https://"',
         config=True,
     )
 
