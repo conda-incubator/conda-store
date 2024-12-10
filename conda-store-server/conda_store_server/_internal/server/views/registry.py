@@ -21,6 +21,8 @@ def _json_response(data, status=200, mimetype="application/json"):
         content=json.dumps(data, indent=3), status_code=status, media_type=mimetype
     )
     response.headers["Docker-Distribution-Api-Version"] = "registry/2.0"
+    response.headers["Deprecation"] = "True"
+    response.headers["Sunset"] = "Mon, 16 Feb 2025 23:59:59 UTC"
     return response
 
 
@@ -79,6 +81,10 @@ def dynamic_conda_store_environment(conda_store, packages):
 
 def get_docker_image_manifest(conda_store, image, tag, timeout=10 * 60):
     namespace, *image_name = image.split("/")
+    response_headers = {
+        "Deprecation": "True",
+        "Sunset": "Mon, 16 Feb 2025 23:59:59 UTC",
+    }
 
     # /v2/<image-name>/manifest/<tag>
     if len(image_name) == 0:
@@ -103,7 +109,10 @@ def get_docker_image_manifest(conda_store, image, tag, timeout=10 * 60):
     elif tag.startswith("sha256:"):
         # looking for sha256 of docker manifest
         manifests_key = f"docker/manifest/{tag}"
-        return RedirectResponse(conda_store.storage.get_url(manifests_key))
+        return RedirectResponse(
+            conda_store.storage.get_url(manifests_key),
+            response_headers=response_headers,
+        )
     else:
         build_key = tag
 
@@ -124,15 +133,23 @@ def get_docker_image_manifest(conda_store, image, tag, timeout=10 * 60):
             return docker_error_message(schema.DockerRegistryError.MANIFEST_UNKNOWN)
 
     manifests_key = f"docker/manifest/{build_key}"
-    return RedirectResponse(conda_store.storage.get_url(manifests_key))
+    return RedirectResponse(
+        conda_store.storage.get_url(manifests_key), response_headers=response_headers
+    )
 
 
 def get_docker_image_blob(conda_store, image, blobsum):
     blob_key = f"docker/blobs/{blobsum}"
-    return RedirectResponse(conda_store.storage.get_url(blob_key))
+    response_headers = {
+        "Deprecation": "True",
+        "Sunset": "Mon, 16 Feb 2025 23:59:59 UTC",
+    }
+    return RedirectResponse(
+        conda_store.storage.get_url(blob_key), response_headers=response_headers
+    )
 
 
-@router_registry.get("/v2/")
+@router_registry.get("/v2/", deprecated=True)
 def v2(
     request: Request,
     entity=Depends(dependencies.get_entity),
@@ -143,9 +160,7 @@ def v2(
     return _json_response({})
 
 
-@router_registry.get(
-    "/v2/{rest:path}",
-)
+@router_registry.get("/v2/{rest:path}", deprecated=True)
 def list_tags(
     rest: str,
     request: Request,

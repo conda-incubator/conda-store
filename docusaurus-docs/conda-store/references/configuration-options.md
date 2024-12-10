@@ -441,8 +441,7 @@ endpoints. Default True.
 `CondaStoreServer.enable_api` a Boolean on whether to expose the API
 endpoints. Default True.
 
-`CondaStoreServer.enable_registry` a Boolean on whether to expose the
-registry endpoints. Default True.
+`CondaStoreServer.enable_registry` (deprecated) a Boolean on whether to expose the registry endpoints. Default False.
 
 `CondaStoreServer.enable_metrics` a Boolean on whether to expose the
 metrics endpoints. Default True.
@@ -453,7 +452,7 @@ to. The default is all IP addresses `0.0.0.0`.
 `CondaStoreServer.port` is the port for conda-store server to
 use. Default is `8080`.
 
-`CondaStoreServer.registry_external_url` is the external hostname and
+`CondaStoreServer.registry_external_url` (deprecated) is the external hostname and
 port to access docker registry cannot contain `http://` or `https://`.
 
 `CondaStoreServer.url_prefix` is the prefix URL (subdirectory) for the

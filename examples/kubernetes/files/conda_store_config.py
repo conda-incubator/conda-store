@@ -34,7 +34,6 @@ c.S3Storage.bucket_name = "conda-store"
 c.CondaStoreServer.log_level = logging.INFO
 c.CondaStoreServer.enable_ui = True
 c.CondaStoreServer.enable_api = True
-c.CondaStoreServer.enable_registry = True
 c.CondaStoreServer.enable_metrics = True
 c.CondaStoreServer.address = "0.0.0.0"
 c.CondaStoreServer.port = 8080
