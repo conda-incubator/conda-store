@@ -156,7 +156,6 @@ class BuildArtifactType(str, enum.Enum):
     CONDA_PACK = "CONDA_PACK"
     DOCKER_BLOB = "DOCKER_BLOB"
     DOCKER_MANIFEST = "DOCKER_MANIFEST"
-    CONTAINER_REGISTRY = "CONTAINER_REGISTRY"
     CONSTRUCTOR_INSTALLER = "CONSTRUCTOR_INSTALLER"
 
 
@@ -267,9 +266,6 @@ class Settings(BaseModel):
             BuildArtifactType.LOGS,
             BuildArtifactType.LOCKFILE,
             BuildArtifactType.YAML,
-            # no possible way to delete these artifacts
-            # in most container registries via api
-            BuildArtifactType.CONTAINER_REGISTRY,
         ],
         description="artifacts to keep on build deletion",
         metadata={"global": True},
