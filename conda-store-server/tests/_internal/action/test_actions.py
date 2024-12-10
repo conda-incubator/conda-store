@@ -189,7 +189,7 @@ def test_generate_conda_export(conda_store, conda_prefix):
     # an environment is in an envs dir. See the discussion on PR #549.
     context.result["name"] = "test-prefix"
 
-    schema.CondaSpecification.parse_obj(context.result)
+    schema.CondaSpecification.model_validate(context.result)
 
 
 @pytest.mark.long_running_test

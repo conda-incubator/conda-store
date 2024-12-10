@@ -130,7 +130,7 @@ class CondaStore(LoggingConfigurable):
 
     conda_solve_platforms = List(
         [conda_utils.conda_platform()],
-        description="Conda platforms to solve environments for via conda-lock. Must include current platform.",
+        help="Conda platforms to solve environments for via conda-lock. Must include current platform.",
         config=True,
     )
 
@@ -651,7 +651,7 @@ class CondaStore(LoggingConfigurable):
                 db=db,
                 conda_store=self,
                 namespace=namespace.name,
-                specification=schema.CondaSpecification.parse_obj(specification),
+                specification=schema.CondaSpecification.model_validate(specification),
             )
 
         spec_sha256 = utils.datastructure_hash(specification_model.model_dump())

@@ -68,7 +68,7 @@ class AuthenticationBackend(LoggingConfigurable):
                 authentication_token = self.predefined_tokens[token]
             else:
                 authentication_token = self.decrypt_token(token)
-            return schema.AuthenticationToken.parse_obj(authentication_token)
+            return schema.AuthenticationToken.model_validate(authentication_token)
         except Exception:
             return None
 
@@ -521,6 +521,7 @@ form.addEventListener('submit', loginHandler);
     ):
         request.session["next"] = next
         return templates.TemplateResponse(
+            request,
             "login.html",
             {"request": request, "login_html": self.get_login_html(request, templates)},
         )
