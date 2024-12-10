@@ -46,12 +46,13 @@ jobs:
           hatch env run -e lint lint
 
   test-conda-store-server:
-    name: "unit-test - ${{ matrix.os}} "
+    name: "unit-test - ${{ matrix.python-version }} "
     strategy:
       matrix:
         # ubuntu 22.04, macos 14, windows 2022
         # os: ["ubuntu-latest", "macos-latest", "windows-latest"]
         os: ["ubuntu-latest"]
+        python-version: ["3.10", "3.11", "3.12"]
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -61,10 +62,6 @@ jobs:
       - name: "Checkout Repository 🛎"
         uses: actions/checkout@v4
 
-      - name: "Get project's default Python version 🏷️"
-        run: |
-          echo "PYTHON_VERSION_DEFAULT=$(cat .python-version-default)" >> $GITHUB_ENV
-
       - name: "Set up env ${{ matrix.os }} 🐍"
         uses: conda-incubator/setup-miniconda@v3
         with:
@@ -72,7 +69,7 @@ jobs:
             miniforge-version: latest
             auto-activate-base: false
             activate-environment: conda-store-server-dev
-            python-version: ${{ env.PYTHON_VERSION_DEFAULT }}
+            python-version: ${{ matrix.python-version }}
             conda-remove-defaults: "true"
 
       # This fixes a "DLL not found" issue importing ctypes from the hatch env
@@ -82,7 +79,7 @@ jobs:
           timeout_minutes: 9999
           max_attempts: 6
           command:
-            conda install --channel=conda-forge --quiet --yes python=${{ env.PYTHON_VERSION_DEFAULT }}
+            conda install --channel=conda-forge --quiet --yes python=${{ matrix.python-version }}
         if: matrix.os == 'windows-latest'
 
       - name: "Install conda-store server 📦"
