@@ -79,10 +79,8 @@ class CondaStore(LoggingConfigurable):
     )
 
     container_registry_class = Type(
-        default_value=registry.ContainerRegistry,
-        klass=registry.ContainerRegistry,
-        allow_none=False,
-        config=True,
+        allow_none=True,
+        help="(deprecated)"
     )
 
     store_directory = Unicode(
@@ -409,15 +407,6 @@ class CondaStore(LoggingConfigurable):
             os.makedirs(self._storage.storage_path, exist_ok=True)
 
         return self._storage
-
-    @property
-    def container_registry(self):
-        if hasattr(self, "_container_registry"):
-            return self._container_registry
-        self._container_registry = self.container_registry_class(
-            parent=self, log=self.log
-        )
-        return self._container_registry
 
     @property
     def celery_config(self):
