@@ -14,7 +14,7 @@ The issues marked with the "good first issue" label are a great place to start. 
 
 conda-store development happens across three repositories, and the relevant programming language and technologies are listed below:
 
-* `conda-store` and `conda-store-server`: Python, FastAPI, and conda ecosystem
+* `conda-store-server`: Python, FastAPI, and conda ecosystem
 * `conda-store-ui`: Typescript, React, and frontend web development
 * `jupyterlab-conda-store`: JupyterLab extension development (Typescript and Javascript)
 
