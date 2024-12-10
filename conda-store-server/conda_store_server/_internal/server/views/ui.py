@@ -122,7 +122,7 @@ async def ui_get_environment(
         )
         if environment is None:
             return templates.TemplateResponse(
-                request, 
+                request,
                 "404.html",
                 {
                     "request": request,

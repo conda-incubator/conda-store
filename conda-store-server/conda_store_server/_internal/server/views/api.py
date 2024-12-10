@@ -121,7 +121,10 @@ def paginated_api_response(
     )
     return {
         "status": "ok",
-        "data": [object_schema.model_validate(_).model_dump(exclude=exclude) for _ in query.all()],
+        "data": [
+            object_schema.model_validate(_).model_dump(exclude=exclude)
+            for _ in query.all()
+        ],
         "page": (paginated_args["offset"] // paginated_args["limit"]) + 1,
         "size": paginated_args["limit"],
         "count": count,
@@ -682,7 +685,9 @@ async def api_list_environments(
         if jwt:
             # Fetch the environments visible to the supplied token
             role_bindings = auth.entity_bindings(
-                AuthenticationToken.model_validate(auth.authentication.decrypt_token(jwt))
+                AuthenticationToken.model_validate(
+                    auth.authentication.decrypt_token(jwt)
+                )
             )
         else:
             role_bindings = None
@@ -887,7 +892,9 @@ async def api_post_specification(
                     "description": environment_description,
                     "lockfile": specification,
                 }
-                specification = schema.LockfileSpecification.model_validate(lockfile_spec)
+                specification = schema.LockfileSpecification.model_validate(
+                    lockfile_spec
+                )
             else:
                 specification = schema.CondaSpecification.model_validate(specification)
         except yaml.error.YAMLError:
