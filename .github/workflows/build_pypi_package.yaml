@@ -4,7 +4,6 @@ on:
   pull_request:
     paths:
       - ".github/workflows/**"
-      - "conda-store/**"
       - "conda-store-server/**"
       - "tests/**"
   push:
@@ -25,7 +24,6 @@ jobs:
     strategy:
       matrix:
         directory:
-          - "conda-store"
           - "conda-store-server"
     defaults:
       run:

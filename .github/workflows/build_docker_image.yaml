@@ -19,7 +19,6 @@ jobs:
     strategy:
       matrix:
         docker-image:
-          - conda-store
           - conda-store-server
         platform:
           - linux/amd64
