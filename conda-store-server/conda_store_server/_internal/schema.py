@@ -156,6 +156,7 @@ class BuildArtifactType(str, enum.Enum):
     CONDA_PACK = "CONDA_PACK"
     DOCKER_MANIFEST = "DOCKER_MANIFEST"
     CONSTRUCTOR_INSTALLER = "CONSTRUCTOR_INSTALLER"
+    _ = "CONTAINER_REGISTRY"
 
 
 class BuildStatus(enum.Enum):
