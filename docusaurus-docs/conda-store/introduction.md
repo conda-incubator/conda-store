@@ -6,17 +6,15 @@ description: Introduction to conda-store (core) documentation
 
 # conda-store (core)
 
-The [`conda-store` repository on GitHub][conda-store-repo] consists of two separate, yet related, packages:
+The [`conda-store` repository on GitHub][conda-store-repo] contains the conda-store application. It has two entrypoints
 
-- **`conda-store-server`**: web server and workers that together provide the `conda-store` "service" through a REST API
-- **`conda-store` (client)**: a client that interacts with the service to offer a user-facing command line interface (CLI)
+- **`conda-store-server`**: web server that provides the `conda-store` "service" through a REST API
+- **`conda-store-worker`**: celery worker that runs actions for conda-store. For example, building, locking and installing environments
 
 ## Get started ✨
 
 The fastest way to get started with conda-store is with a [**local standalone installation**][standalone-install]
 and the [**conda-store UI**][conda-store-ui-tutorials].
-
-Alternatively, you can use some features of conda-store through the [CLI commands][cli-ref] or as a [shebang][shebang].
 
 ## Key concepts 🔖
 
@@ -51,8 +49,6 @@ Check out the [Community documentation][community] for details.
 
 [standalone-install]: ./how-tos/install-standalone
 [conda-store-ui-tutorials]: ../conda-store-ui/tutorials
-[cli-ref]: ./references/cli
-[shebang]: ./how-tos/shebang
 [explanations]: ./explanations/
 [conda-concepts]: ./explanations/conda-concepts
 [conda-store-concepts]: ./explanations/conda-store-concepts

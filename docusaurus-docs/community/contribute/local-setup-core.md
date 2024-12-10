@@ -8,7 +8,7 @@ description: Local development setup for conda-store
 There are two main ways to set up your local environment and conda-store services (web UI, API server, database, etc.) for development:
 
 - Using [Docker and Docker compose](#docker-setup-recommended): This is the recommended approach for working on `conda-store-server` library.
-- Using [standalone mode](#standalone-setup): Required for running tests and for working on the `conda-store` (client) library.
+- Using [standalone mode](#standalone-setup): This approach avoids using docker and starts the conda-store services as one process
 
 :::important
 You need a [local copy of the `conda-store` repository](community/contribute/contribute-code#setup-for-local-development) for the development setup.
@@ -90,12 +90,6 @@ To install the `conda-store-server` package in editable (development) mode, run 
 python -m pip install -e ./conda-store-server
 ```
 
-To install the `conda-store` package in editable (development) mode, run the following from the root of the repository:
-
-```bash
-python -m pip install -e ./conda-store
-```
-
 ### Start conda-store in standalone mode
 
 Running `conda-store` in `--standalone` mode launches celery as a
@@ -111,54 +105,6 @@ Visit [localhost:8080](http://localhost:8080/) from your web browser to access t
 
 You can run the codebase tests locally to verify your changes before submitting a pull request.
 You need [Docker Compose](#pre-requisites) as well as the [conda development environment](#development-environment) to run the complete set of tests.
-
-### conda-store (client)
-
-#### Lint and format
-
-Run the linting and formatting checks with hatch:
-
-```bash
-cd conda-store
-hatch env run -e dev lint
-```
-
-#### Integration tests
-
-These tests are stateful, so clear the state if you previously ran the conda-store-server service on Docker:
-
-```bash
-cd conda-store
-docker compose down -v # ensure you've cleared state
-docker compose up --build
-```
-
-Wait until the conda-store-server is running check by visiting [localhost:8080](http://localhost:8080).
-
-Install `conda-store` (client) library in editable mode:
-
-```bash
-pip install -e .
-```
-
-Execute the scripts in the `tests` directory to run the tests:
-
-```bash
-./tests/unauthenticated-tests.sh
-./tests/authenticated-tests.sh
-./tests/authenticated-token-tests.sh
-```
-
-You need to explicitly set some environment variables to run the shebang tests:
-
-```bash
-export CONDA_STORE_URL=http://localhost:8080/conda-store
-export CONDA_STORE_AUTH=basic
-export CONDA_STORE_USERNAME=username
-export CONDA_STORE_PASSWORD=password
-
-./tests/shebang.sh
-```
 
 ### conda-store-server
 
