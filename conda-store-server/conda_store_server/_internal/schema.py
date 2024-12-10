@@ -572,6 +572,14 @@ class APIPaginatedResponse(APIResponse):
     count: int
 
 
+class APICursorPaginatedResponse(BaseModel):
+    data: Optional[Any]
+    status: APIStatus
+    message: Optional[str]
+    cursor: Optional[str]
+    count: int
+
+
 class APIAckResponse(BaseModel):
     status: APIStatus
     message: Optional[str] = None
@@ -636,7 +644,7 @@ class APIDeleteNamespaceRole(BaseModel):
 
 
 # GET /api/v1/environment
-class APIListEnvironment(APIPaginatedResponse):
+class APIListEnvironment(APICursorPaginatedResponse):
     data: List[Environment]
 
 

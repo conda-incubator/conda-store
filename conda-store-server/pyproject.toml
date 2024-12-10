@@ -125,9 +125,6 @@ user-journey-test = ["pytest -m user_journey"]
 conda-store-server = "conda_store_server._internal.server.__main__:main"
 conda-store-worker = "conda_store_server._internal.worker.__main__:main"
 
-[tool.black]
-line-length = 88
-
 [tool.isort]
 lines_between_types = 1
 lines_after_imports = 2
@@ -142,7 +139,6 @@ exclude = [
 [tool.ruff.lint]
 ignore = [
     "E501", # line-length
-
     "ANN001",	# missing-type-function-argument
     "ANN002",	# missing-type-args
     "ANN003",	# missing-type-kwargs
