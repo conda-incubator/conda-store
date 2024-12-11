@@ -28,9 +28,6 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        docker-image:
-          - conda-store
-          - conda-store-server
         platform:
           - linux/amd64
           - linux/arm64
@@ -48,13 +45,13 @@ jobs:
       - name: "Lint Dockerfiles 🔍"
         uses: jbergstroem/hadolint-gh-action@v1
         with:
-          dockerfile: ${{ matrix.docker-image }}/Dockerfile
+          dockerfile: conda-store-server/Dockerfile
           output_format: tty
           error_level: 0
 
       - name: "Copy .dockerignore"
         run: |
-          cp .dockerignore ${{ matrix.docker-image }}/.dockerignore
+          cp .dockerignore conda-store-server/.dockerignore
         shell: bash
 
       - name: "Add Docker metadata 📝"
@@ -62,15 +59,15 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            quansight/${{ matrix.docker-image }}
+            quansight/conda-store-server
           tags: |
             type=sha
 
       - name: "Build Docker images 🐳"
         uses: docker/build-push-action@v5
         with:
-          context: "${{ matrix.docker-image }}"
-          file: "${{ matrix.docker-image }}/Dockerfile"
+          context: "conda-store-server"
+          file: "conda-store-server/Dockerfile"
           tags: |
             ${{ steps.meta.outputs.tags }}
           target: "dev"
