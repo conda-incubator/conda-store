@@ -77,6 +77,7 @@ def test_expired_token():
     token = authentication.encrypt_token(
         AuthenticationToken(
             primary_namespace="default",
+            # TODO: change to datetime.datetime.now(datetime.UTC) when python 3.10 is dropped
             exp=datetime.datetime.utcnow() - datetime.timedelta(hours=1),
             role_bindings={
                 "default/*": ["viewer"],

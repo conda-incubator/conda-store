@@ -73,6 +73,7 @@ def append_to_logs(db: Session, conda_store, build, logs: typing.Union[str, byte
 
 def set_build_started(db: Session, build: orm.Build):
     build.status = schema.BuildStatus.BUILDING
+    # TODO: change to datetime.datetime.now(datetime.UTC) when python 3.10 is dropped
     build.started_on = datetime.datetime.utcnow()
     db.commit()
 
@@ -82,6 +83,7 @@ def set_build_failed(
 ):
     build.status = schema.BuildStatus.FAILED
     build.status_info = status_info
+    # TODO: change to datetime.datetime.now(datetime.UTC) when python 3.10 is dropped
     build.ended_on = datetime.datetime.utcnow()
     db.commit()
 
@@ -91,12 +93,14 @@ def set_build_canceled(
 ):
     build.status = schema.BuildStatus.CANCELED
     build.status_info = status_info
+    # TODO: change to datetime.datetime.now(datetime.UTC) when python 3.10 is dropped
     build.ended_on = datetime.datetime.utcnow()
     db.commit()
 
 
 def set_build_completed(db: Session, conda_store, build: orm.Build):
     build.status = schema.BuildStatus.COMPLETED
+    # TODO: change to datetime.datetime.now(datetime.UTC) when python 3.10 is dropped
     build.ended_on = datetime.datetime.utcnow()
 
     directory_build_artifact = orm.BuildArtifact(
@@ -156,6 +160,7 @@ or error in conda-store
         builds = api.list_builds(db, status=schema.BuildStatus.BUILDING)
 
     for build in builds:
+        # TODO: change to datetime.datetime.now(datetime.UTC) when python 3.10 is dropped
         if (
             build.status == schema.BuildStatus.BUILDING
             and str(build.id) not in build_active_tasks
@@ -193,6 +198,7 @@ def build_conda_environment(db: Session, conda_store, build):
             db,
             conda_store,
             build,
+            # TODO: change to datetime.datetime.now(datetime.UTC) when python 3.10 is dropped
             f"starting build of conda environment {datetime.datetime.utcnow()} UTC\n",
         )
 
@@ -213,7 +219,7 @@ def build_conda_environment(db: Session, conda_store, build):
         with utils.timer(conda_store.log, f"building conda_prefix={conda_prefix}"):
             if is_lockfile:
                 context = action.action_save_lockfile(
-                    specification=schema.LockfileSpecification.parse_obj(
+                    specification=schema.LockfileSpecification.model_validate(
                         build.specification.spec
                     ),
                     stdout=LoggedStream(
@@ -227,7 +233,9 @@ def build_conda_environment(db: Session, conda_store, build):
             else:
                 lock_backend, locker = conda_store.lock_plugin()
                 conda_lock_spec = locker.lock_environment(
-                    spec=schema.CondaSpecification.parse_obj(build.specification.spec),
+                    spec=schema.CondaSpecification.model_validate(
+                        build.specification.spec
+                    ),
                     platforms=settings.conda_solve_platforms,
                     context=plugin_context.PluginContext(
                         conda_store=conda_store,
@@ -335,13 +343,14 @@ def build_conda_environment(db: Session, conda_store, build):
 
 
 def solve_conda_environment(db: Session, conda_store, solve: orm.Solve):
+    # TODO: change to datetime.datetime.now(datetime.UTC) when python 3.10 is dropped
     solve.started_on = datetime.datetime.utcnow()
     db.commit()
 
     _, locker = conda_store.lock_plugin()
     conda_lock_spec = locker.lock_environment(
         context=plugin_context.PluginContext(conda_store=conda_store),
-        spec=schema.CondaSpecification.parse_obj(solve.specification.spec),
+        spec=schema.CondaSpecification.model_validate(solve.specification.spec),
         platforms=[conda_utils.conda_platform()],
     )
 
@@ -351,6 +360,7 @@ def solve_conda_environment(db: Session, conda_store, solve: orm.Solve):
         solve_id=solve.id,
     )
 
+    # TODO: change to datetime.datetime.now(datetime.UTC) when python 3.10 is dropped
     solve.ended_on = datetime.datetime.utcnow()
     db.commit()
 
@@ -440,7 +450,7 @@ def build_constructor_installer(db: Session, conda_store, build: orm.Build):
             is_lockfile = build.specification.is_lockfile
 
             if is_lockfile:
-                specification = schema.LockfileSpecification.parse_obj(
+                specification = schema.LockfileSpecification.model_validate(
                     build.specification.spec
                 )
             else:
@@ -449,7 +459,7 @@ def build_constructor_installer(db: Session, conda_store, build: orm.Build):
                     # pinned dependencies. This code is wrapped into try/except
                     # because the lockfile lookup might fail if the file is not
                     # in external storage or on disk, or if parsing fails
-                    specification = schema.LockfileSpecification.parse_obj(
+                    specification = schema.LockfileSpecification.model_validate(
                         {
                             "name": build.specification.name,
                             "lockfile": json.loads(
@@ -463,7 +473,7 @@ def build_constructor_installer(db: Session, conda_store, build: orm.Build):
                         "Exception while obtaining lockfile, using specification",
                         exc_info=e,
                     )
-                    specification = schema.CondaSpecification.parse_obj(
+                    specification = schema.CondaSpecification.model_validate(
                         build.specification.spec
                     )
 

@@ -130,7 +130,7 @@ class CondaStore(LoggingConfigurable):
 
     conda_solve_platforms = List(
         [conda_utils.conda_platform()],
-        description="Conda platforms to solve environments for via conda-lock. Must include current platform.",
+        help="Conda platforms to solve environments for via conda-lock. Must include current platform.",
         config=True,
     )
 
@@ -651,7 +651,7 @@ class CondaStore(LoggingConfigurable):
                 db=db,
                 conda_store=self,
                 namespace=namespace.name,
-                specification=schema.CondaSpecification.parse_obj(specification),
+                specification=schema.CondaSpecification.model_validate(specification),
             )
 
         spec_sha256 = utils.datastructure_hash(specification_model.model_dump())
@@ -817,6 +817,7 @@ class CondaStore(LoggingConfigurable):
         if namespace is None:
             raise utils.CondaStoreError(f"namespace={namespace} does not exist")
 
+        # TODO: change to datetime.datetime.now(datetime.UTC) when python 3.10 is dropped
         utcnow = datetime.datetime.utcnow()
         namespace.deleted_on = utcnow
         for environment_orm in namespace.environments:
@@ -846,6 +847,7 @@ class CondaStore(LoggingConfigurable):
                 f"environment namespace={namespace} name={name} does not exist"
             )
 
+        # TODO: change to datetime.datetime.now(datetime.UTC) when python 3.10 is dropped
         utcnow = datetime.datetime.utcnow()
         environment.deleted_on = utcnow
         for build in environment.builds:
@@ -877,6 +879,7 @@ class CondaStore(LoggingConfigurable):
                 "cannot delete build since not finished building"
             )
 
+        # TODO: change to datetime.datetime.now(datetime.UTC) when python 3.10 is dropped
         build.deleted_on = datetime.datetime.utcnow()
         db.commit()
 

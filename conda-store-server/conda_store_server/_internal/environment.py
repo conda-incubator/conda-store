@@ -14,7 +14,7 @@ from conda_store_server._internal import conda_utils, orm, schema, utils
 
 def validate_environment(specification):
     try:
-        specification = schema.CondaSpecification.parse_obj(specification)
+        specification = schema.CondaSpecification.model_validate(specification)
         return True
     except pydantic.ValidationError:
         return False

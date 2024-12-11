@@ -40,7 +40,7 @@ class CondaLock(lock.LockPlugin):
         lockfile_filename = pathlib.Path.cwd() / "conda-lock.yaml"
 
         with environment_filename.open("w") as f:
-            json.dump(spec.dict(), f)
+            json.dump(spec.model_dump(), f)
 
         context.log.info(
             "Note that the output of `conda config --show` displayed below only reflects "

@@ -32,7 +32,7 @@ async def get_conda_store_ui(
         "url_prefix": url_prefix,
         "ui_prefix": router_conda_store_ui.prefix,
     }
-    response = templates.TemplateResponse("conda-store-ui.html", context)
+    response = templates.TemplateResponse(request, "conda-store-ui.html", context)
     if path.endswith("not-found"):
         response.status_code = 404
     return response

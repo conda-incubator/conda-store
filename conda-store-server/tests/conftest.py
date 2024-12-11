@@ -158,6 +158,7 @@ def seed_conda_store(db, conda_store):
 
     # for testing purposes make build 4 complete
     build = api.get_build(db, build_id=4)
+    # TODO: change to datetime.datetime.now(datetime.UTC) when python 3.10 is dropped
     build.started_on = datetime.datetime.utcnow()
     build.ended_on = datetime.datetime.utcnow()
     build.status = schema.BuildStatus.COMPLETED
@@ -235,7 +236,7 @@ def simple_conda_lock_with_pip():
 
 @pytest.fixture
 def simple_lockfile_specification(simple_conda_lock):
-    return schema.LockfileSpecification.parse_obj(
+    return schema.LockfileSpecification.model_validate(
         {
             "name": "test",
             "description": "simple lockfile specification",
@@ -246,7 +247,7 @@ def simple_lockfile_specification(simple_conda_lock):
 
 @pytest.fixture
 def simple_lockfile_specification_with_pip(simple_conda_lock_with_pip):
-    return schema.LockfileSpecification.parse_obj(
+    return schema.LockfileSpecification.model_validate(
         {
             "name": "test",
             "description": "simple lockfile specification with pip",
