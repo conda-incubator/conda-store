@@ -396,16 +396,9 @@ class Build(Base):
         return f"archive/{self.build_key}.tar.gz"
 
     @property
-    def docker_manifest_key(self):
-        return f"docker/manifest/{self.build_key}"
-
-    @property
     def constructor_installer_key(self):
         ext = "exe" if sys.platform == "win32" else "sh"
         return f"installer/{self.build_key}.{ext}"
-
-    def docker_blob_key(self, blob_hash):
-        return f"docker/blobs/{blob_hash}"
 
     @hybrid_property
     def has_lockfile(self):
