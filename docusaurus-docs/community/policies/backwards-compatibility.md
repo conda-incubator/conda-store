@@ -139,42 +139,72 @@ get community feedback.
 
 #### Removing versions of API endpoints
 
-It is not recommended to remove versions of API endpoints. Removing API
-endpoints, or versions of endpoints, breaks backwards compatibility and should
-only be done under exceptional circumstances such as a security vulnerability.
+Removal of an API endpoint is sometimes necessary. Deprecation notices and removals will 
+always be available in [release notes](https://github.com/conda-incubator/conda-store/blob/main/CHANGELOG.md). Further, documentation should be updated to reflect these changes. This should include:
+- version number of the release where this was deprecated
+- provide suggestions for alternatives (if possible)
+- provide justification for the removal (such as a link to the issue
+  or CVE that necessitated the removal).
 
-If the desire is to prevent a developer from relying on an API endpoint, adding
-a warning to the API documentation along with a recommended alternative should
-be used rather than a deprecation or removal.
+In order to make these kind of breaking changes responsibly, follow the steps 
+outlined below. 
 
-In the case of a removed endpoint, or endpoint version, conda-store should
-return a status code of `410 Gone` to indicate the endpoint has been removed
-along with a json object stating when and why the endpoint was removed and what
+##### 1. Deprecate the endpoint
+
+In this stage, conda-store should not be introducing a breaking change. The
+deprecation step communicates to users that the endpoint is marked for removal 
+and will removed in a future release. 
+
+:::info[For vulnerabilities]
+
+In the case of a serious security vulnerability, conda-store may skip the deprecation
+step and remove the endpoint immediately.
+
+:::
+
+Deprecations in the REST API follow the 
+form outlined by the [deprecation header RFC](https://datatracker.ietf.org/doc/html/draft-ietf-httpapi-deprecation-header-02). To deprecate an endpoint add the following 
+response headers to the endpoint
+
+```
+{
+   "Deprecation": "True", 
+   "Sunset": <removal date, eg. "Mon, 16 Feb 2025 23:59:59 UTC" >
+}
+```
+
+The "removal date" indicates the date after which conda store will no longer serve 
+the endpoint. It will be specified as a [HTTP-Date](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Date). The removal date can be set to (at earliest) the date of the target 
+next release.
+
+##### 2. Remove endpoint functionality
+
+At lease one release from the deprecation time, the functionality for the endpoint
+can be removed. To indicate that this endpoint is no longer functional, the endpoint
+must:
+* return a status code of `410 Gone` 
+* return a json object stating when and why the endpoint was removed and what
 version of the endpoint is available currently (if any).
 
 ```python
 {
   # the pull request that removed the endpoint
   "reference_pull_request": "https://github.com/conda-incubator/conda-store/pull/0000",
-  # the date the endpoint was removed
-  "removal_date": "2021-06-24",
+  # the date the endpoint was removed (as HTTP-Date). This should be after the Sunset date specified 
+  # in the deprecation step
+  "removal_date": "Mon, 16 Feb 2025 23:59:59 UTC"
   # the reason for the removal, ideally with a link to a CVE if one is available
   "removal_reason": "Removed to address CVE-2021-32677 (https://nvd.nist.gov/vuln/detail/CVE-2021-32677)",
-  # the endpoint that developers should use as a replacement
+  # the endpoint that developers should use as a replacement (if applicable)
   "new_endpoint": "api/v3/this/should/be/used/instead",
 }
 ```
 
-If an API endpoint must be deprecated, a deprecation warning should be added
-for at least one release before the endpoint is removed. This requirement may
-be waived in the case of a serious security vulnerability.
+##### 3. Remove the endpoint
 
-It should always be clearly communicated in release notes and documentation
-when an API endpoint is deprecated or removed. This should include:
-- version number of the release where this was deprecated
-- provide suggestions for alternatives (if possible)
-- provide justification for the removal (such as a link to the issue
-  or CVE that necessitated the removal).
+At least one release from the completion of step (2), the API endpoint may be fully
+removed. At this stage, users should expect to recieve a `404 Not Found` error for the 
+endpoint.
 
 ### Python API
 
@@ -301,3 +331,17 @@ object like a dict. These are considered non-breaking.
 Public variables should not have their type changed.
 
 Public constants should not have their type or their value changed.
+
+##### Config
+
+Config elements that are deprecated will be marked with a `deprecation` note 
+in the docs and `--help` output. For example:
+```
+$ conda-store-server --help-all
+
+...
+--CondaStoreServer.enable_registry=<Bool>
+   (deprecated) enable the docker registry for conda-store
+   Default: False
+...
+```
