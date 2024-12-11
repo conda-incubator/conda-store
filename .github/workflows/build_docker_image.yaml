@@ -18,8 +18,6 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        docker-image:
-          - conda-store-server
         platform:
           - linux/amd64
           - linux/arm64
@@ -65,8 +63,8 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            quansight/${{ matrix.docker-image }}
-            quay.io/quansight/${{ matrix.docker-image }}
+            quansight/conda-store-server
+            quay.io/quansight/conda-store-server
           tags: |
             type=ref,event=tag
             type=sha
@@ -74,15 +72,15 @@ jobs:
       # we need this as we are setting the context to subproject directory
       - name: "Copy .dockerignore"
         run: |
-          cp .dockerignore ${{ matrix.docker-image }}/.dockerignore
+          cp .dockerignore conda-store-server/.dockerignore
         shell: bash
 
       - name: "Publish Docker image 🚀"
         uses: docker/build-push-action@v5
         with:
-          context: "${{ matrix.docker-image }}"
+          context: "conda-store-server"
           target: "dev"
-          file: "${{ matrix.docker-image }}/Dockerfile"
+          file: "conda-store-server/Dockerfile"
           tags: |
             ${{ steps.meta.outputs.tags }}
           push: true
