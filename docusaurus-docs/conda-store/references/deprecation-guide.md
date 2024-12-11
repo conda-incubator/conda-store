@@ -4,7 +4,7 @@ description: Deprecation guide
 
 # Deprecation guide
 
-This document outlines how conda-store deprecates functionality. Deprecation notices will always be available in release notes.
+This document outlines how conda-store deprecates functionality. Deprecation notices will always be available in [release notes](https://github.com/conda-incubator/conda-store/blob/main/CHANGELOG.md).
 
 ## Deprecations in the REST API
 
