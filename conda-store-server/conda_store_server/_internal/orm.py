@@ -208,7 +208,8 @@ class Solve(Base):
 
     scheduled_on: Mapped[datetime.datetime] = mapped_column(
         # TODO: change to datetime.datetime.now(datetime.UTC) when python 3.10 is dropped
-        DateTime, default=datetime.datetime.utcnow
+        DateTime,
+        default=datetime.datetime.utcnow,
     )
     started_on: Mapped[datetime.datetime] = mapped_column(DateTime, default=None)
     ended_on: Mapped[datetime.datetime] = mapped_column(DateTime, default=None)
@@ -262,7 +263,8 @@ class Build(Base):
     size: Mapped[int] = mapped_column(BigInteger, default=0)
     scheduled_on: Mapped[datetime.datetime] = mapped_column(
         # TODO: change to datetime.datetime.now(datetime.UTC) when python 3.10 is dropped
-        DateTime, default=datetime.datetime.utcnow
+        DateTime,
+        default=datetime.datetime.utcnow,
     )
     started_on: Mapped[datetime.datetime] = mapped_column(DateTime, default=None)
     ended_on: Mapped[datetime.datetime] = mapped_column(DateTime, default=None)
