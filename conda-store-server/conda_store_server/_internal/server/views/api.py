@@ -1348,7 +1348,10 @@ async def api_get_build_docker_image_url(
     server=Depends(dependencies.get_server),
     auth=Depends(dependencies.get_auth),
 ):
-    response_headers = {"Deprecation": "True", "Sunset": "Mon, 16 Feb 2025 23:59:59 UTC"}
+    response_headers = {
+        "Deprecation": "True",
+        "Sunset": "Mon, 16 Feb 2025 23:59:59 UTC",
+    }
     with conda_store.get_db() as db:
         build = api.get_build(db, build_id)
         auth.authorize_request(
