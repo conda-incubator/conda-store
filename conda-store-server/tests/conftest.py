@@ -158,6 +158,7 @@ def seed_conda_store(db, conda_store):
 
     # for testing purposes make build 4 complete
     build = api.get_build(db, build_id=4)
+    # TODO: change to datetime.datetime.now(datetime.UTC) when python 3.10 is dropped
     build.started_on = datetime.datetime.utcnow()
     build.ended_on = datetime.datetime.utcnow()
     build.status = schema.BuildStatus.COMPLETED

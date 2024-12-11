@@ -173,6 +173,7 @@ class Specification(Base):
     name: Mapped[str] = mapped_column(Unicode(255), nullable=False)
     spec: Mapped[dict] = mapped_column(JSON, nullable=False)
     sha256: Mapped[str] = mapped_column(Unicode(255), unique=True, nullable=False)
+    # TODO: change to datetime.datetime.now(datetime.UTC) when python 3.10 is dropped
     created_on: Mapped[datetime.datetime] = mapped_column(
         DateTime, default=datetime.datetime.utcnow
     )
@@ -206,6 +207,7 @@ class Solve(Base):
     specification: Mapped["Specification"] = relationship(back_populates="solves")
 
     scheduled_on: Mapped[datetime.datetime] = mapped_column(
+        # TODO: change to datetime.datetime.now(datetime.UTC) when python 3.10 is dropped
         DateTime, default=datetime.datetime.utcnow
     )
     started_on: Mapped[datetime.datetime] = mapped_column(DateTime, default=None)
@@ -259,6 +261,7 @@ class Build(Base):
     status_info: Mapped[str] = mapped_column(UnicodeText, default=None)
     size: Mapped[int] = mapped_column(BigInteger, default=0)
     scheduled_on: Mapped[datetime.datetime] = mapped_column(
+        # TODO: change to datetime.datetime.now(datetime.UTC) when python 3.10 is dropped
         DateTime, default=datetime.datetime.utcnow
     )
     started_on: Mapped[datetime.datetime] = mapped_column(DateTime, default=None)
@@ -721,6 +724,7 @@ class CondaChannel(Base):
 
             logger.info(f"DONE for architecture  : {architecture}")
 
+        # TODO: change to datetime.datetime.now(datetime.UTC) when python 3.10 is dropped
         self.last_update = datetime.datetime.utcnow()
         db.commit()
         logger.info("update packages DONE ")

@@ -561,6 +561,7 @@ form.addEventListener('submit', loginHandler);
             samesite="strict",
             domain=self.cookie_domain,
             # set cookie to expire at same time as jwt
+            # TODO: change to datetime.datetime.now(datetime.UTC) when python 3.10 is dropped
             max_age=int(
                 (authentication_token.exp - datetime.datetime.utcnow()).total_seconds()
             ),

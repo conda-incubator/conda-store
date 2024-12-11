@@ -25,6 +25,7 @@ from conda_store_server._internal import conda_utils, utils
 
 def _datetime_factory(offset: datetime.timedelta):
     """Utcnow datetime + timezone as string"""
+    # TODO: change to datetime.datetime.now(datetime.UTC) when python 3.10 is dropped
     return datetime.datetime.utcnow() + offset
 
 

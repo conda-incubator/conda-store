@@ -73,6 +73,7 @@ def append_to_logs(db: Session, conda_store, build, logs: typing.Union[str, byte
 
 def set_build_started(db: Session, build: orm.Build):
     build.status = schema.BuildStatus.BUILDING
+    # TODO: change to datetime.datetime.now(datetime.UTC) when python 3.10 is dropped
     build.started_on = datetime.datetime.utcnow()
     db.commit()
 
@@ -82,6 +83,7 @@ def set_build_failed(
 ):
     build.status = schema.BuildStatus.FAILED
     build.status_info = status_info
+    # TODO: change to datetime.datetime.now(datetime.UTC) when python 3.10 is dropped
     build.ended_on = datetime.datetime.utcnow()
     db.commit()
 
@@ -91,12 +93,14 @@ def set_build_canceled(
 ):
     build.status = schema.BuildStatus.CANCELED
     build.status_info = status_info
+    # TODO: change to datetime.datetime.now(datetime.UTC) when python 3.10 is dropped
     build.ended_on = datetime.datetime.utcnow()
     db.commit()
 
 
 def set_build_completed(db: Session, conda_store, build: orm.Build):
     build.status = schema.BuildStatus.COMPLETED
+    # TODO: change to datetime.datetime.now(datetime.UTC) when python 3.10 is dropped
     build.ended_on = datetime.datetime.utcnow()
 
     directory_build_artifact = orm.BuildArtifact(
@@ -156,6 +160,7 @@ or error in conda-store
         builds = api.list_builds(db, status=schema.BuildStatus.BUILDING)
 
     for build in builds:
+        # TODO: change to datetime.datetime.now(datetime.UTC) when python 3.10 is dropped
         if (
             build.status == schema.BuildStatus.BUILDING
             and str(build.id) not in build_active_tasks
@@ -193,6 +198,7 @@ def build_conda_environment(db: Session, conda_store, build):
             db,
             conda_store,
             build,
+            # TODO: change to datetime.datetime.now(datetime.UTC) when python 3.10 is dropped
             f"starting build of conda environment {datetime.datetime.utcnow()} UTC\n",
         )
 
@@ -337,6 +343,7 @@ def build_conda_environment(db: Session, conda_store, build):
 
 
 def solve_conda_environment(db: Session, conda_store, solve: orm.Solve):
+    # TODO: change to datetime.datetime.now(datetime.UTC) when python 3.10 is dropped
     solve.started_on = datetime.datetime.utcnow()
     db.commit()
 
@@ -353,6 +360,7 @@ def solve_conda_environment(db: Session, conda_store, solve: orm.Solve):
         solve_id=solve.id,
     )
 
+    # TODO: change to datetime.datetime.now(datetime.UTC) when python 3.10 is dropped
     solve.ended_on = datetime.datetime.utcnow()
     db.commit()
 
