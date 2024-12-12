@@ -202,7 +202,9 @@ class CondaStore(LoggingConfigurable):
     def _check_redis(self, proposal):
         try:
             if self.redis_url is not None:
-                self.redis.ping()
+                import redis
+                r = redis.Redis.from_url(self.redis_url)
+                r.ping()
         except Exception:
             raise TraitError(
                 f'c.CondaStore.redis_url unable to connect with Redis database at "{self.redis_url}"'

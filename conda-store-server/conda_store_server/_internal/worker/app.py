@@ -71,7 +71,7 @@ class CondaStoreWorker(Application):
         self.conda_store_config = CondaStoreConfig(parent=self, log=self.log)
         self.conda_store = CondaStore(config=self.conda_store_config)
         # ensure checks on redis_url
-        self.conda_store.redis_url
+        self.conda_store.config.redis_url
 
     def logger_to_celery_logging_level(self, logging_level):
         # celery supports the log levels DEBUG | INFO | WARNING | ERROR | CRITICAL | FATAL

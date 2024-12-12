@@ -87,7 +87,7 @@ def task_watch_paths(self):
         settings = conda_store.get_settings(db)
 
         conda_store.configuration(db).update_storage_metrics(
-            db, conda_store.store_directory
+            db, conda_store.config.store_directory
         )
 
         environment_paths = environment.discover_environments(self.worker.watch_paths)
@@ -106,7 +106,7 @@ def task_update_storage_metrics(self):
     conda_store = self.worker.conda_store
     with conda_store.session_factory() as db:
         conda_store.configuration(db).update_storage_metrics(
-            db, conda_store.store_directory
+            db, conda_store.config.store_directory
         )
 
 
@@ -174,7 +174,7 @@ def task_update_conda_channel(self, channel_name):
 
         is_locked = False
 
-        if conda_store.redis_url is not None:
+        if conda_store.config.redis_url is not None:
             lock = conda_store.redis.lock(task_key, timeout=60 * 15)  # timeout 15min
         else:
             lockfile_path = os.path.join(f"/tmp/task_lock_{task_key}")
@@ -195,7 +195,7 @@ def task_update_conda_channel(self, channel_name):
                 )
 
         except TimeoutError:
-            if conda_store.redis_url is None:
+            if conda_store.config.redis_url is None:
                 conda_store.log.warning(
                     f"Timeout when acquiring lock with key {task_key} - We assume the task is already being run"
                 )
@@ -269,7 +269,7 @@ def delete_build_artifact(db: Session, conda_store, build_artifact):
         # ignore key
         conda_prefix = build_artifact.build.build_path(conda_store)
         # be REALLY sure this is a directory within store directory
-        if str(conda_prefix).startswith(conda_store.store_directory) and os.path.isdir(
+        if str(conda_prefix).startswith(conda_store.config.store_directory) and os.path.isdir(
             conda_prefix
         ):
             shutil.rmtree(conda_prefix)

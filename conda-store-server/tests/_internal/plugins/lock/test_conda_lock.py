@@ -98,7 +98,7 @@ def test_solve_lockfile_invalid_conda_flags(conda_store, simple_specification):
     locker = conda_lock.CondaLock()
 
     # Set invalid conda flags
-    conda_store.conda_flags = "--this-is-invalid"
+    conda_store.config.conda_flags = "--this-is-invalid"
 
     with pytest.raises(
         CalledProcessError,
