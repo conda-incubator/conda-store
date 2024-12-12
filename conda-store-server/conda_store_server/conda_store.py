@@ -4,7 +4,6 @@
 
 import datetime
 import os
-import sys
 from contextlib import contextmanager
 from typing import Any, Dict
 
@@ -12,349 +11,17 @@ import pydantic
 from celery import Celery, group
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import QueuePool
-from traitlets import (
-    Bool,
-    Callable,
-    Integer,
-    List,
-    TraitError,
-    Type,
-    Unicode,
-    default,
-    validate,
-)
-from traitlets.config import LoggingConfigurable
 
-from conda_store_server import CONDA_STORE_DIR, BuildKey, api, storage
-from conda_store_server._internal import conda_utils, environment, orm, schema, utils
-from conda_store_server.exception import CondaStoreError
+from conda_store_server import CONDA_STORE_DIR, api, storage, conda_store_config
+from conda_store_server._internal import conda_utils, orm, schema, utils, environment
 from conda_store_server.plugins import hookspec, plugin_manager
+from conda_store_server.exception import CondaStoreError
 from conda_store_server.plugins.types import lock
 
 
-def conda_store_validate_specification(
-    db: Session,
-    conda_store: "CondaStore",
-    namespace: str,
-    specification: schema.CondaSpecification,
-) -> schema.CondaSpecification:
-    settings = conda_store.get_settings(
-        db, namespace=namespace, environment_name=specification.name
-    )
-
-    specification = environment.validate_environment_channels(specification, settings)
-    specification = environment.validate_environment_pypi_packages(
-        specification, settings
-    )
-    specification = environment.validate_environment_conda_packages(
-        specification, settings
-    )
-
-    return specification
-
-
-def conda_store_validate_action(
-    db: Session,
-    conda_store: "CondaStore",
-    namespace: str,
-    action: schema.Permissions,
-) -> None:
-    settings = conda_store.get_settings(db)
-    system_metrics = api.get_system_metrics(db)
-
-    if action in (
-        schema.Permissions.ENVIRONMENT_CREATE,
-        schema.Permissions.ENVIRONMENT_UPDATE,
-    ) and (settings.storage_threshold > system_metrics.disk_free):
-        raise CondaStoreError(
-            f"`CondaStore.storage_threshold` reached. Action {action.value} prevented due to insufficient storage space"
-        )
-
-
-class CondaStore(LoggingConfigurable):
-    storage_class = Type(
-        default_value=storage.LocalStorage,
-        klass=storage.Storage,
-        allow_none=False,
-        config=True,
-    )
-
-    container_registry_class = Type(allow_none=True, help="(deprecated)")
-
-    store_directory = Unicode(
-        str(CONDA_STORE_DIR / "state"),
-        help="directory for conda-store to build environments and store state",
-        config=True,
-    )
-
-    build_directory = Unicode(
-        "{store_directory}/{namespace}",
-        help="Template used to form the directory for storing conda environment builds. Available keys: store_directory, namespace, name. The default will put all built environments in the same namespace within the same directory.",
-        config=True,
-    )
-
-    environment_directory = Unicode(
-        "{store_directory}/{namespace}/envs/{name}",
-        help="Template used to form the directory for symlinking conda environment builds. Available keys: store_directory, namespace, name. The default will put all environments in the same namespace within the same directory.",
-        config=True,
-    )
-
-    build_key_version = Integer(
-        BuildKey.set_current_version(2),
-        help="Build key version to use: 1 (long, legacy), 2 (shorter hash, default), 3 (hash-only, experimental)",
-        config=True,
-    )
-
-    @validate("build_key_version")
-    def _check_build_key_version(self, proposal):
-        try:
-            return BuildKey.set_current_version(proposal.value)
-        except Exception as e:
-            raise TraitError(f"c.CondaStore.build_key_version: {e}")
-
-    win_extended_length_prefix = Bool(
-        False,
-        help="Use the extended-length prefix '\\\\?\\' (Windows-only), default: False",
-        config=True,
-    )
-
-    conda_command = Unicode(
-        "mamba",
-        help="conda executable to use for solves",
-        config=True,
-    )
-
-    conda_solve_platforms = List(
-        [conda_utils.conda_platform()],
-        help="Conda platforms to solve environments for via conda-lock. Must include current platform.",
-        config=True,
-    )
-
-    conda_channel_alias = Unicode(
-        "https://conda.anaconda.org",
-        help="The prepended url location to associate with channel names",
-        config=True,
-    )
-
-    conda_flags = Unicode(
-        "--strict-channel-priority",
-        help="The flags to be passed through the CONDA_FLAGS environment variable during the environment build",
-        config=True,
-    )
-
-    conda_platforms = List(
-        [conda_utils.conda_platform(), "noarch"],
-        help="Conda platforms to download package repodata.json from. By default includes current architecture and noarch",
-        config=True,
-    )
-
-    conda_default_channels = List(
-        ["conda-forge"],
-        help="Conda channels that by default are included if channels are empty",
-        config=True,
-    )
-
-    conda_allowed_channels = List(
-        [],
-        help=(
-            "Allowed conda channels to be used in conda environments. "
-            "If set to empty list all channels are accepted (default). "
-            "Example: "
-            '["main", "conda-forge", "https://repo.anaconda.com/pkgs/main"]'
-        ),
-        config=True,
-    )
-
-    conda_indexed_channels = List(
-        ["main", "conda-forge", "https://repo.anaconda.com/pkgs/main"],
-        help="Conda channels to be indexed by conda-store at start.  Defaults to main and conda-forge.",
-        config=True,
-    )
-
-    conda_default_packages = List(
-        [],
-        help="Conda packages that included by default if none are included",
-        config=True,
-    )
-
-    conda_required_packages = List(
-        [],
-        help="Conda packages that are required to be within environment specification. Will raise a validation error is package not in specification",
-        config=True,
-    )
-
-    conda_included_packages = List(
-        [],
-        help="Conda packages that auto included within environment specification. Will not raise a validation error if package not in specification and will be auto added",
-        config=True,
-    )
-
-    lock_backend = Unicode(
-        default_value="conda-lock",
-        allow_none=False,
-        config=True,
-    )
-
-    pypi_default_packages = List(
-        [],
-        help="PyPi packages that included by default if none are included",
-        config=True,
-    )
-
-    pypi_required_packages = List(
-        [],
-        help="PyPi packages that are required to be within environment specification. Will raise a validation error is package not in specification",
-        config=True,
-    )
-
-    pypi_included_packages = List(
-        [],
-        help="PyPi packages that auto included within environment specification. Will not raise a validation error if package not in specification and will be auto added",
-        config=True,
-    )
-
-    conda_max_solve_time = Integer(
-        5 * 60,  # 5 minute
-        help="Maximum time in seconds to allow for solving a given conda environment",
-        config=True,
-    )
-
-    storage_threshold = Integer(
-        5 * 1024**3,  # 5 GB
-        help="Storage threshold in bytes of minimum available storage required in order to perform builds",
-        config=True,
-    )
-
-    database_url = Unicode(
-        "sqlite:///" + str(CONDA_STORE_DIR / "conda-store.sqlite"),
-        help="url for the database. e.g. 'sqlite:///conda-store.sqlite' tables will be automatically created if they do not exist",
-        config=True,
-    )
-
-    upgrade_db = Bool(
-        True,
-        help="""Upgrade the database automatically on start.
-        Only safe if database is regularly backed up.
-        """,
-        config=True,
-    )
-
-    redis_url = Unicode(
-        None,
-        help="Redis connection url in form 'redis://:<password>@<hostname>:<port>/0'. Connection is used by Celery along with conda-store internally",
-        config=True,
-        allow_none=True,
-    )
-
-    @validate("redis_url")
-    def _check_redis(self, proposal):
-        try:
-            if self.redis_url is not None:
-                self.redis.ping()
-        except Exception:
-            raise TraitError(
-                f'c.CondaStore.redis_url unable to connect with Redis database at "{self.redis_url}"'
-            )
-        return proposal.value
-
-    celery_broker_url = Unicode(
-        help="broker url to use for celery tasks",
-        config=True,
-    )
-
-    build_artifacts = List(
-        [
-            schema.BuildArtifactType.LOCKFILE,
-            schema.BuildArtifactType.YAML,
-            schema.BuildArtifactType.CONDA_PACK,
-            schema.BuildArtifactType.CONSTRUCTOR_INSTALLER,
-        ],
-        help="artifacts to build in conda-store. By default all of the artifacts",
-        config=True,
-    )
-
-    build_artifacts_kept_on_deletion = List(
-        [
-            schema.BuildArtifactType.LOGS,
-            schema.BuildArtifactType.LOCKFILE,
-            schema.BuildArtifactType.YAML,
-        ],
-        help="artifacts to keep on build deletion",
-        config=True,
-    )
-
-    serialize_builds = Bool(
-        True,
-        help="DEPRICATED no longer has any effect",
-        config=True,
-    )
-
-    @default("celery_broker_url")
-    def _default_celery_broker_url(self):
-        if self.redis_url is not None:
-            return self.redis_url
-        return f"sqla+{self.database_url}"
-
-    celery_results_backend = Unicode(
-        help="backend to use for celery task results",
-        config=True,
-    )
-
-    @default("celery_results_backend")
-    def _default_celery_results_backend(self):
-        if self.redis_url is not None:
-            return self.redis_url
-        return f"db+{self.database_url}"
-
-    default_namespace = Unicode(
-        "default", help="default namespace for conda-store", config=True
-    )
-
-    filesystem_namespace = Unicode(
-        "filesystem",
-        help="namespace to use for environments picked up via `CondaStoreWorker.watch_paths` on the filesystem",
-        config=True,
-    )
-
-    default_uid = Integer(
-        None if sys.platform == "win32" else os.getuid(),
-        help="default uid to assign to built environments",
-        config=True,
-        allow_none=True,
-    )
-
-    default_gid = Integer(
-        None if sys.platform == "win32" else os.getgid(),
-        help="default gid to assign to built environments",
-        config=True,
-        allow_none=True,
-    )
-
-    default_permissions = Unicode(
-        None if sys.platform == "win32" else "775",
-        help="default file permissions to assign to built environments",
-        config=True,
-        allow_none=True,
-    )
-
-    validate_specification = Callable(
-        conda_store_validate_specification,
-        help="callable function taking conda_store, namespace, and specification as input arguments to apply for validating and modifying a given specification. If there are validation issues with the environment ValueError with message should be raised. If changed you may need to call the default function to preseve many of the trait effects e.g. `c.CondaStore.default_channels` etc",
-        config=True,
-    )
-
-    validate_action = Callable(
-        conda_store_validate_action,
-        help="callable function taking conda_store, namespace, and action. If there are issues with performing the given action raise a CondaStoreError should be raised.",
-        config=True,
-    )
-
-    post_update_environment_build_hook = Callable(
-        default_value=None,
-        help="callable function taking conda_store and `orm.Environment` object as input arguments. This function can be used to add custom behavior that will run after an environment's current build changes.",
-        config=True,
-        allow_none=True,
-    )
+class CondaStore():
+    def __init__(self, config: conda_store_config.CondaStore):
+        self.config = config
 
     @property
     def session_factory(self) -> sessionmaker:
@@ -362,7 +29,7 @@ class CondaStore(LoggingConfigurable):
             return self._session_factory
 
         self._session_factory = orm.new_session_factory(
-            url=self.database_url,
+            url=self.config.database_url,
             poolclass=QueuePool,
         )
 
@@ -386,7 +53,7 @@ class CondaStore(LoggingConfigurable):
 
         if hasattr(self, "_redis"):
             return self._redis
-        self._redis = redis.Redis.from_url(self.redis_url)
+        self._redis = redis.Redis.from_url(self.config.redis_url)
         return self._redis
 
     def configuration(self, db: Session):
@@ -396,7 +63,7 @@ class CondaStore(LoggingConfigurable):
     def storage(self):
         if hasattr(self, "_storage"):
             return self._storage
-        self._storage = self.storage_class(parent=self, log=self.log)
+        self._storage = self.config.storage_class(parent=self.config, log=self.log)
 
         if isinstance(self._storage, storage.LocalStorage):
             os.makedirs(self._storage.storage_path, exist_ok=True)
@@ -406,8 +73,8 @@ class CondaStore(LoggingConfigurable):
     @property
     def celery_config(self):
         return {
-            "broker_url": self.celery_broker_url,
-            "result_backend": self.celery_results_backend,
+            "broker_url": self.config.celery_broker_url,
+            "result_backend": self.config.celery_results_backend,
             "imports": [
                 "conda_store_server._internal.worker.tasks",
                 "celery.contrib.testing.tasks",
@@ -438,7 +105,7 @@ class CondaStore(LoggingConfigurable):
         #     return self._celery_app
 
         self._celery_app = Celery("tasks")
-        self._celery_app.config_from_object(self.celery_config)
+        self._celery_app.config_from_object(self.config.celery_config)
         return self._celery_app
 
     @property
@@ -458,45 +125,45 @@ class CondaStore(LoggingConfigurable):
     def lock_plugin(self) -> tuple[str, lock.LockPlugin]:
         """Returns the configured lock plugin"""
         # TODO: get configured lock plugin name from settings
-        lock_plugin = self.plugin_manager.get_lock_plugin(name=self.lock_backend)
+        lock_plugin = self.plugin_manager.get_lock_plugin(name=self.config.lock_backend)
         locker = lock_plugin.backend()
         return lock_plugin.name, locker
 
     def ensure_settings(self, db: Session):
         """Ensure that conda-store traitlets settings are applied"""
         settings = schema.Settings(
-            default_namespace=self.default_namespace,
-            filesystem_namespace=self.filesystem_namespace,
-            default_uid=self.default_uid,
-            default_gid=self.default_gid,
-            default_permissions=self.default_permissions,
-            storage_threshold=self.storage_threshold,
-            conda_command=self.conda_command,
-            conda_platforms=self.conda_platforms,
-            conda_max_solve_time=self.conda_max_solve_time,
-            conda_indexed_channels=self.conda_indexed_channels,
-            build_artifacts_kept_on_deletion=self.build_artifacts_kept_on_deletion,
-            conda_solve_platforms=self.conda_solve_platforms,
-            conda_channel_alias=self.conda_channel_alias,
-            conda_default_channels=self.conda_default_channels,
-            conda_allowed_channels=self.conda_allowed_channels,
-            conda_default_packages=self.conda_default_packages,
-            conda_required_packages=self.conda_required_packages,
-            conda_included_packages=self.conda_included_packages,
-            pypi_default_packages=self.pypi_default_packages,
-            pypi_required_packages=self.pypi_required_packages,
-            pypi_included_packages=self.pypi_included_packages,
-            build_artifacts=self.build_artifacts,
+            default_namespace=self.config.default_namespace,
+            filesystem_namespace=self.config.filesystem_namespace,
+            default_uid=self.config.default_uid,
+            default_gid=self.config.default_gid,
+            default_permissions=self.config.default_permissions,
+            storage_threshold=self.config.storage_threshold,
+            conda_command=self.config.conda_command,
+            conda_platforms=self.config.conda_platforms,
+            conda_max_solve_time=self.config.conda_max_solve_time,
+            conda_indexed_channels=self.config.conda_indexed_channels,
+            build_artifacts_kept_on_deletion=self.config.build_artifacts_kept_on_deletion,
+            conda_solve_platforms=self.config.conda_solve_platforms,
+            conda_channel_alias=self.config.conda_channel_alias,
+            conda_default_channels=self.confg.conda_default_channels,
+            conda_allowed_channels=self.config.conda_allowed_channels,
+            conda_default_packages=self.config.conda_default_packages,
+            conda_required_packages=self.config.conda_required_packages,
+            conda_included_packages=self.config.conda_included_packages,
+            pypi_default_packages=self.config.pypi_default_packages,
+            pypi_required_packages=self.config.pypi_required_packages,
+            pypi_included_packages=self.config.pypi_included_packages,
+            build_artifacts=self.config.build_artifacts,
         )
         api.set_kvstore_key_values(db, "setting", settings.model_dump(), update=False)
 
     def ensure_namespace(self, db: Session):
         """Ensure that conda-store default namespaces exists"""
-        api.ensure_namespace(db, self.default_namespace)
+        api.ensure_namespace(db, self.config.default_namespace)
 
     def ensure_directories(self):
         """Ensure that conda-store filesystem directories exist"""
-        os.makedirs(self.store_directory, exist_ok=True)
+        os.makedirs(self.config.store_directory, exist_ok=True)
 
     def ensure_conda_channels(self, db: Session):
         """Ensure that conda-store indexed channels and packages are in database"""
@@ -568,6 +235,43 @@ class CondaStore(LoggingConfigurable):
             settings.update(api.get_kvstore_key_values(db, prefix))
 
         return schema.Settings(**settings)
+    
+    def conda_store_validate_specification(
+        self,
+        db: Session,
+        namespace: str,
+        specification: schema.CondaSpecification,
+    ) -> schema.CondaSpecification:
+        settings = self.get_settings(
+            db, namespace=namespace, environment_name=specification.name
+        )
+
+        specification = environment.validate_environment_channels(specification, settings)
+        specification = environment.validate_environment_pypi_packages(
+            specification, settings
+        )
+        specification = environment.validate_environment_conda_packages(
+            specification, settings
+        )
+
+        return specification
+
+    def conda_store_validate_action(
+        self,
+        db: Session,
+        namespace: str,
+        action: schema.Permissions,
+    ) -> None:
+        settings = self.get_settings(db)
+        system_metrics = api.get_system_metrics(db)
+
+        if action in (
+            schema.Permissions.ENVIRONMENT_CREATE,
+            schema.Permissions.ENVIRONMENT_UPDATE,
+        ) and (settings.storage_threshold > system_metrics.disk_free):
+            raise utils.CondaStoreError(
+                f"`CondaStore.storage_threshold` reached. Action {action.value} prevented due to insufficient storage space"
+            )
 
     def register_solve(self, db: Session, specification: schema.CondaSpecification):
         """Registers a solve for a given specification"""
@@ -575,14 +279,12 @@ class CondaStore(LoggingConfigurable):
 
         self.validate_action(
             db=db,
-            conda_store=self,
             namespace="solve",
             action=schema.Permissions.ENVIRONMENT_SOLVE,
         )
 
         specification_model = self.validate_specification(
             db=db,
-            conda_store=self,
             namespace="solve",
             specification=specification,
         )
@@ -620,7 +322,6 @@ class CondaStore(LoggingConfigurable):
 
         self.validate_action(
             db=db,
-            conda_store=self,
             namespace=namespace.name,
             action=schema.Permissions.ENVIRONMENT_CREATE,
         )
@@ -633,7 +334,6 @@ class CondaStore(LoggingConfigurable):
         else:
             specification_model = self.validate_specification(
                 db=db,
-                conda_store=self,
                 namespace=namespace.name,
                 specification=schema.CondaSpecification.model_validate(specification),
             )
@@ -676,7 +376,6 @@ class CondaStore(LoggingConfigurable):
         environment = api.get_environment(db, id=environment_id)
         self.validate_action(
             db=db,
-            conda_store=self,
             namespace=environment.namespace.name,
             action=schema.Permissions.ENVIRONMENT_UPDATE,
         )
@@ -743,7 +442,6 @@ class CondaStore(LoggingConfigurable):
     ):
         self.validate_action(
             db=db,
-            conda_store=self,
             namespace=namespace,
             action=schema.Permissions.ENVIRONMENT_UPDATE,
         )
@@ -792,7 +490,6 @@ class CondaStore(LoggingConfigurable):
     def delete_namespace(self, db: Session, namespace: str):
         self.validate_action(
             db=db,
-            conda_store=self,
             namespace=namespace,
             action=schema.Permissions.NAMESPACE_DELETE,
         )
@@ -819,7 +516,6 @@ class CondaStore(LoggingConfigurable):
     def delete_environment(self, db: Session, namespace: str, name: str):
         self.validate_action(
             db=db,
-            conda_store=self,
             namespace=namespace,
             action=schema.Permissions.ENVIRONMENT_DELETE,
         )
@@ -848,7 +544,6 @@ class CondaStore(LoggingConfigurable):
 
         self.validate_action(
             db=db,
-            conda_store=self,
             namespace=build.environment.namespace.name,
             action=schema.Permissions.BUILD_DELETE,
         )
