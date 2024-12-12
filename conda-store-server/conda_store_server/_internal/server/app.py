@@ -35,8 +35,9 @@ import conda_store_server
 from conda_store_server import __version__, storage
 from conda_store_server._internal import dbutil, orm
 from conda_store_server._internal.server import views
-from conda_store_server.app import CondaStore
 from conda_store_server.server import auth
+from conda_store_server.conda_store import CondaStore 
+from conda_store_server.conda_store_config import CondaStore as CondaStoreConfig
 
 
 class _Color(str, Enum):
@@ -193,7 +194,8 @@ class CondaStoreServer(Application):
         super().initialize(*args, **kwargs)
         self.load_config_file(self.config_file)
 
-        self.conda_store = CondaStore(parent=self, log=self.log)
+        self.conda_store_config = CondaStoreConfig(parent=self, log=self.log)
+        self.conda_store = CondaStore(config=self.conda_store_config)
 
         self.conda_store.ensure_directories()
         self.log.info(
