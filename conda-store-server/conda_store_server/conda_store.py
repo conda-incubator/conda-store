@@ -6,6 +6,7 @@ import datetime
 import os
 from contextlib import contextmanager
 from typing import Any, Dict
+import logging
 
 import pydantic
 from celery import Celery, group
@@ -22,6 +23,7 @@ from conda_store_server.plugins.types import lock
 class CondaStore():
     def __init__(self, config: conda_store_config.CondaStore):
         self.config = config
+        self.log = logging.getLogger(__name__)
 
     @property
     def session_factory(self) -> sessionmaker:
@@ -105,7 +107,7 @@ class CondaStore():
         #     return self._celery_app
 
         self._celery_app = Celery("tasks")
-        self._celery_app.config_from_object(self.config.celery_config)
+        self._celery_app.config_from_object(self.celery_config)
         return self._celery_app
 
     @property
@@ -145,7 +147,7 @@ class CondaStore():
             build_artifacts_kept_on_deletion=self.config.build_artifacts_kept_on_deletion,
             conda_solve_platforms=self.config.conda_solve_platforms,
             conda_channel_alias=self.config.conda_channel_alias,
-            conda_default_channels=self.confg.conda_default_channels,
+            conda_default_channels=self.config.conda_default_channels,
             conda_allowed_channels=self.config.conda_allowed_channels,
             conda_default_packages=self.config.conda_default_packages,
             conda_required_packages=self.config.conda_required_packages,
@@ -236,7 +238,7 @@ class CondaStore():
 
         return schema.Settings(**settings)
     
-    def conda_store_validate_specification(
+    def validate_specification(
         self,
         db: Session,
         namespace: str,
@@ -256,7 +258,7 @@ class CondaStore():
 
         return specification
 
-    def conda_store_validate_action(
+    def validate_action(
         self,
         db: Session,
         namespace: str,

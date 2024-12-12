@@ -199,20 +199,20 @@ class CondaStoreServer(Application):
 
         self.conda_store.ensure_directories()
         self.log.info(
-            f"Running conda-store with database: {self.conda_store.database_url}"
+            f"Running conda-store with database: {self.conda_store.config.database_url}"
         )
         self.log.info(
-            f"Running conda-store with store directory: {self.conda_store.store_directory}"
+            f"Running conda-store with store directory: {self.conda_store.config.store_directory}"
         )
 
         self.authentication = self.authentication_class(
-            parent=self,
+            parent=self.conda_store_config,
             log=self.log,
             authentication_db=self.conda_store.session_factory,
         )
 
         # ensure checks on redis_url
-        self.conda_store.redis_url
+        self.conda_store.config.redis_url
 
     def init_fastapi_app(self):
         def trim_slash(url):
@@ -368,7 +368,7 @@ class CondaStoreServer(Application):
         # Creates a new DB connection since this will be run in a separate
         # thread and connections cannot be shared between threads
         session_factory = orm.new_session_factory(
-            url=self.conda_store.database_url,
+            url=self.conda_store.config.database_url,
             poolclass=QueuePool,
         )
 
@@ -393,8 +393,8 @@ class CondaStoreServer(Application):
 
     def start(self):
         """Start the CondaStoreServer application, and run a FastAPI-based webserver."""
-        if self.conda_store.upgrade_db:
-            dbutil.upgrade(self.conda_store.database_url)
+        if self.conda_store.config.upgrade_db:
+            dbutil.upgrade(self.conda_store.config.database_url)
 
         with self.conda_store.session_factory() as db:
             self.conda_store.ensure_settings(db)
