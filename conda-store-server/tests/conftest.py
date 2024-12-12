@@ -14,7 +14,9 @@ import yaml
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from conda_store_server import api, app, storage
+from conda_store_server import api, storage
+from conda_store_server.conda_store import CondaStore 
+from conda_store_server.conda_store_config import CondaStore as CondaStoreConfig
 
 from conda_store_server._internal import (  # isort:skip
     action,
@@ -167,7 +169,8 @@ def seed_conda_store(db, conda_store):
 
 @pytest.fixture
 def conda_store(conda_store_config):
-    _conda_store = app.CondaStore(config=conda_store_config)
+    _conda_store_config = CondaStoreConfig(config=conda_store_config)
+    _conda_store = CondaStore(config=_conda_store_config)
 
     pathlib.Path(_conda_store.config.store_directory).mkdir(exist_ok=True)
 
