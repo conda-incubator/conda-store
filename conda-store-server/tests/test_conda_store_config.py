@@ -147,8 +147,9 @@ def test_conda_store_settings_conda_channels_packages_validate_valid(db, conda_s
         },
     )
 
-    global_specification = conda_store.validate_specification(
+    global_specification = conda_store.config.validate_specification(
         db,
+        conda_store=conda_store,
         namespace="default",
         specification=schema.CondaSpecification(
             name="test",
@@ -178,8 +179,9 @@ def test_conda_store_settings_conda_channels_packages_validate_valid(db, conda_s
         },
     )
 
-    namespace_specification = conda_store.validate_specification(
+    namespace_specification = conda_store.config.validate_specification(
         db,
+        conda_store=conda_store,
         namespace="default",
         specification=schema.CondaSpecification(
             name="test",
@@ -211,8 +213,9 @@ def test_conda_store_settings_conda_channels_packages_validate_valid(db, conda_s
         },
     )
 
-    environment_specification = conda_store.validate_specification(
+    environment_specification = conda_store.config.validate_specification(
         db,
+        conda_store=conda_store,
         namespace="default",
         specification=schema.CondaSpecification(
             name="test",
@@ -233,8 +236,9 @@ def test_conda_store_settings_conda_channels_packages_validate_valid(db, conda_s
 
     # not allowed channel name
     with pytest.raises(ValueError):
-        conda_store.validate_specification(
+        conda_store.config.validate_specification(
             db,
+            conda_store=conda_store,
             namespace="default",
             specification=schema.CondaSpecification(
                 name="test",
@@ -245,8 +249,9 @@ def test_conda_store_settings_conda_channels_packages_validate_valid(db, conda_s
 
     # missing required conda package
     with pytest.raises(ValueError):
-        conda_store.validate_specification(
+        conda_store.config.validate_specification(
             db,
+            conda_store=conda_store,
             namespace="default",
             specification=schema.CondaSpecification(
                 name="test", channels=["conda-forge"], dependencies=[{"pip": ["numpy"]}]
@@ -255,8 +260,9 @@ def test_conda_store_settings_conda_channels_packages_validate_valid(db, conda_s
 
     # missing required pip package
     with pytest.raises(ValueError):
-        conda_store.validate_specification(
+        conda_store.config.validate_specification(
             db,
+            conda_store=conda_store,
             namespace="default",
             specification=schema.CondaSpecification(
                 name="test", channels=["conda-forge"], dependencies=["flask"]

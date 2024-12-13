@@ -23,6 +23,45 @@ from conda_store_server import CONDA_STORE_DIR, BuildKey, api, registry, storage
 from conda_store_server._internal import conda_utils, environment, schema, utils
 
 
+def conda_store_validate_specification(
+    db: Session,
+    conda_store,
+    namespace: str,
+    specification: schema.CondaSpecification,
+) -> schema.CondaSpecification:
+    settings = conda_store.get_settings(
+        db, namespace=namespace, environment_name=specification.name
+    )
+
+    specification = environment.validate_environment_channels(specification, settings)
+    specification = environment.validate_environment_pypi_packages(
+        specification, settings
+    )
+    specification = environment.validate_environment_conda_packages(
+        specification, settings
+    )
+
+    return specification
+
+
+def conda_store_validate_action(
+    db: Session,
+    conda_store,
+    namespace: str,
+    action: schema.Permissions,
+) -> None:
+    settings = conda_store.get_settings(db)
+    system_metrics = api.get_system_metrics(db)
+
+    if action in (
+        schema.Permissions.ENVIRONMENT_CREATE,
+        schema.Permissions.ENVIRONMENT_UPDATE,
+    ) and (settings.storage_threshold > system_metrics.disk_free):
+        raise utils.CondaStoreError(
+            f"`CondaStore.storage_threshold` reached. Action {action.value} prevented due to insufficient storage space"
+        )
+
+
 class CondaStore(LoggingConfigurable):
     build_directory = Unicode(
         "{store_directory}/{namespace}",
@@ -298,6 +337,18 @@ class CondaStore(LoggingConfigurable):
         help="""Upgrade the database automatically on start.
         Only safe if database is regularly backed up.
         """,
+        config=True,
+    )
+
+    validate_specification = Callable(
+        conda_store_validate_specification,
+        help="callable function taking conda_store, namespace, and specification as input arguments to apply for validating and modifying a given specification. If there are validation issues with the environment ValueError with message should be raised. If changed you may need to call the default function to preseve many of the trait effects e.g. `c.CondaStore.default_channels` etc",
+        config=True,
+    )
+
+    validate_action = Callable(
+        conda_store_validate_action,
+        help="callable function taking conda_store, namespace, and action. If there are issues with performing the given action raise a CondaStoreError should be raised.",
         config=True,
     )
 
