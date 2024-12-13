@@ -24,36 +24,39 @@ from conda_store_server._internal import conda_utils, environment, schema, utils
 
 
 class CondaStore(LoggingConfigurable):
-    storage_class = Type(
-        default_value=storage.LocalStorage,
-        klass=storage.Storage,
-        allow_none=False,
-        config=True,
-    )
-
-    container_registry_class = Type(allow_none=True, help="(deprecated)")
-
-    store_directory = Unicode(
-        str(CONDA_STORE_DIR / "state"),
-        help="directory for conda-store to build environments and store state",
-        config=True,
-    )
-
     build_directory = Unicode(
         "{store_directory}/{namespace}",
         help="Template used to form the directory for storing conda environment builds. Available keys: store_directory, namespace, name. The default will put all built environments in the same namespace within the same directory.",
         config=True,
     )
 
-    environment_directory = Unicode(
-        "{store_directory}/{namespace}/envs/{name}",
-        help="Template used to form the directory for symlinking conda environment builds. Available keys: store_directory, namespace, name. The default will put all environments in the same namespace within the same directory.",
-        config=True,
-    )
-
     build_key_version = Integer(
         BuildKey.set_current_version(2),
         help="Build key version to use: 1 (long, legacy), 2 (shorter hash, default), 3 (hash-only, experimental)",
+        config=True,
+    )
+
+    build_artifacts = List(
+        [
+            schema.BuildArtifactType.LOCKFILE,
+            schema.BuildArtifactType.YAML,
+            schema.BuildArtifactType.CONDA_PACK,
+            schema.BuildArtifactType.CONSTRUCTOR_INSTALLER,
+        ],
+        help="artifacts to build in conda-store. By default all of the artifacts",
+        config=True,
+    )
+
+    build_artifacts_kept_on_deletion = List(
+        [
+            schema.BuildArtifactType.LOGS,
+            schema.BuildArtifactType.LOCKFILE,
+            schema.BuildArtifactType.YAML,
+            # no possible way to delete these artifacts
+            # in most container registries via api
+            schema.BuildArtifactType.CONTAINER_REGISTRY,
+        ],
+        help="artifacts to keep on build deletion",
         config=True,
     )
 
@@ -64,9 +67,33 @@ class CondaStore(LoggingConfigurable):
         except Exception as e:
             raise TraitError(f"c.CondaStore.build_key_version: {e}")
 
-    win_extended_length_prefix = Bool(
-        False,
-        help="Use the extended-length prefix '\\\\?\\' (Windows-only), default: False",
+    celery_broker_url = Unicode(
+        help="broker url to use for celery tasks",
+        config=True,
+    )
+
+    @default("celery_broker_url")
+    def _default_celery_broker_url(self):
+        if self.redis_url is not None:
+            return self.redis_url
+        return f"sqla+{self.database_url}"
+
+    celery_results_backend = Unicode(
+        help="backend to use for celery task results",
+        config=True,
+    )
+
+    @default("celery_results_backend")
+    def _default_celery_results_backend(self):
+        if self.redis_url is not None:
+            return self.redis_url
+        return f"db+{self.database_url}"
+
+
+    container_registry_class = Type(
+        default_value=registry.ContainerRegistry,
+        klass=registry.ContainerRegistry,
+        allow_none=False,
         config=True,
     )
 
@@ -141,39 +168,9 @@ class CondaStore(LoggingConfigurable):
         config=True,
     )
 
-    lock_backend = Unicode(
-        default_value="conda-lock",
-        allow_none=False,
-        config=True,
-    )
-
-    pypi_default_packages = List(
-        [],
-        help="PyPi packages that included by default if none are included",
-        config=True,
-    )
-
-    pypi_required_packages = List(
-        [],
-        help="PyPi packages that are required to be within environment specification. Will raise a validation error is package not in specification",
-        config=True,
-    )
-
-    pypi_included_packages = List(
-        [],
-        help="PyPi packages that auto included within environment specification. Will not raise a validation error if package not in specification and will be auto added",
-        config=True,
-    )
-
     conda_max_solve_time = Integer(
         5 * 60,  # 5 minute
         help="Maximum time in seconds to allow for solving a given conda environment",
-        config=True,
-    )
-
-    storage_threshold = Integer(
-        5 * 1024**3,  # 5 GB
-        help="Storage threshold in bytes of minimum available storage required in order to perform builds",
         config=True,
     )
 
@@ -183,91 +180,8 @@ class CondaStore(LoggingConfigurable):
         config=True,
     )
 
-    upgrade_db = Bool(
-        True,
-        help="""Upgrade the database automatically on start.
-        Only safe if database is regularly backed up.
-        """,
-        config=True,
-    )
-
-    redis_url = Unicode(
-        None,
-        help="Redis connection url in form 'redis://:<password>@<hostname>:<port>/0'. Connection is used by Celery along with conda-store internally",
-        config=True,
-        allow_none=True,
-    )
-
-    @validate("redis_url")
-    def _check_redis(self, proposal):
-        try:
-            if self.redis_url is not None:
-                import redis
-                r = redis.Redis.from_url(self.redis_url)
-                r.ping()
-        except Exception:
-            raise TraitError(
-                f'c.CondaStore.redis_url unable to connect with Redis database at "{self.redis_url}"'
-            )
-        return proposal.value
-
-    celery_broker_url = Unicode(
-        help="broker url to use for celery tasks",
-        config=True,
-    )
-
-    build_artifacts = List(
-        [
-            schema.BuildArtifactType.LOCKFILE,
-            schema.BuildArtifactType.YAML,
-            schema.BuildArtifactType.CONDA_PACK,
-            schema.BuildArtifactType.CONSTRUCTOR_INSTALLER,
-        ],
-        help="artifacts to build in conda-store. By default all of the artifacts",
-        config=True,
-    )
-
-    build_artifacts_kept_on_deletion = List(
-        [
-            schema.BuildArtifactType.LOGS,
-            schema.BuildArtifactType.LOCKFILE,
-            schema.BuildArtifactType.YAML,
-        ],
-        help="artifacts to keep on build deletion",
-        config=True,
-    )
-
-    serialize_builds = Bool(
-        True,
-        help="DEPRICATED no longer has any effect",
-        config=True,
-    )
-
-    @default("celery_broker_url")
-    def _default_celery_broker_url(self):
-        if self.redis_url is not None:
-            return self.redis_url
-        return f"sqla+{self.database_url}"
-
-    celery_results_backend = Unicode(
-        help="backend to use for celery task results",
-        config=True,
-    )
-
-    @default("celery_results_backend")
-    def _default_celery_results_backend(self):
-        if self.redis_url is not None:
-            return self.redis_url
-        return f"db+{self.database_url}"
-
     default_namespace = Unicode(
         "default", help="default namespace for conda-store", config=True
-    )
-
-    filesystem_namespace = Unicode(
-        "filesystem",
-        help="namespace to use for environments picked up via `CondaStoreWorker.watch_paths` on the filesystem",
-        config=True,
     )
 
     default_uid = Integer(
@@ -291,9 +205,104 @@ class CondaStore(LoggingConfigurable):
         allow_none=True,
     )
 
+    environment_directory = Unicode(
+        "{store_directory}/{namespace}/envs/{name}",
+        help="Template used to form the directory for symlinking conda environment builds. Available keys: store_directory, namespace, name. The default will put all environments in the same namespace within the same directory.",
+        config=True,
+    )
+
+    filesystem_namespace = Unicode(
+        "filesystem",
+        help="namespace to use for environments picked up via `CondaStoreWorker.watch_paths` on the filesystem",
+        config=True,
+    )
+
+    lock_backend = Unicode(
+        default_value="conda-lock",
+        allow_none=False,
+        config=True,
+    )
+
     post_update_environment_build_hook = Callable(
         default_value=None,
         help="callable function taking conda_store and `orm.Environment` object as input arguments. This function can be used to add custom behavior that will run after an environment's current build changes.",
         config=True,
         allow_none=True,
+    )
+
+    pypi_default_packages = List(
+        [],
+        help="PyPi packages that included by default if none are included",
+        config=True,
+    )
+
+    pypi_required_packages = List(
+        [],
+        help="PyPi packages that are required to be within environment specification. Will raise a validation error is package not in specification",
+        config=True,
+    )
+
+    pypi_included_packages = List(
+        [],
+        help="PyPi packages that auto included within environment specification. Will not raise a validation error if package not in specification and will be auto added",
+        config=True,
+    )
+
+    redis_url = Unicode(
+        None,
+        help="Redis connection url in form 'redis://:<password>@<hostname>:<port>/0'. Connection is used by Celery along with conda-store internally",
+        config=True,
+        allow_none=True,
+    )
+
+    @validate("redis_url")
+    def _check_redis(self, proposal):
+        try:
+            if self.redis_url is not None:
+                import redis
+                r = redis.Redis.from_url(self.redis_url)
+                r.ping()
+        except Exception:
+            raise TraitError(
+                f'c.CondaStore.redis_url unable to connect with Redis database at "{self.redis_url}"'
+            )
+        return proposal.value
+
+    storage_class = Type(
+        default_value=storage.LocalStorage,
+        klass=storage.Storage,
+        allow_none=False,
+        config=True,
+    )
+
+    store_directory = Unicode(
+        str(CONDA_STORE_DIR / "state"),
+        help="directory for conda-store to build environments and store state",
+        config=True,
+    )
+
+    storage_threshold = Integer(
+        5 * 1024**3,  # 5 GB
+        help="Storage threshold in bytes of minimum available storage required in order to perform builds",
+        config=True,
+    )
+
+    serialize_builds = Bool(
+        True,
+        help="DEPRICATED no longer has any effect",
+        config=True,
+    )
+
+    upgrade_db = Bool(
+        True,
+        help="""Upgrade the database automatically on start.
+        Only safe if database is regularly backed up.
+        """,
+        config=True,
+    )
+
+    win_extended_length_prefix = Bool(
+        False,
+        help="Use the extended-length prefix '\\\\?\\' (Windows-only), default: False",
+        config=True,
     )
