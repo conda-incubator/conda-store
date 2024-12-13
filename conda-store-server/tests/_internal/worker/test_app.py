@@ -20,7 +20,7 @@ class MockCeleryApp:
 @pytest.mark.skipif(
     sys.platform == "win32", reason="celery beat is not supported on windows"
 )
-@patch("conda_store_server.app.CondaStore.celery_app")
+@patch("conda_store_server.conda_store.CondaStore.celery_app")
 def test_start_worker(mock_celery_app, conda_store_config):
     """Test that the celery worker is started with the right arguments"""
     mock_celery_app.return_value = MockCeleryApp()
