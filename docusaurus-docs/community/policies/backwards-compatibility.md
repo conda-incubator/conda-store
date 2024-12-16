@@ -139,21 +139,21 @@ get community feedback.
 
 #### Removing versions of API endpoints
 
-Removal of an API endpoint is sometimes necessary. Deprecation notices and removals will 
+Removal of an API endpoint is sometimes necessary. Deprecation notices and removals will
 always be available in [release notes](https://github.com/conda-incubator/conda-store/blob/main/CHANGELOG.md). Further, documentation should be updated to reflect these changes. This should include:
 - version number of the release where this was deprecated
 - provide suggestions for alternatives (if possible)
 - provide justification for the removal (such as a link to the issue
   or CVE that necessitated the removal).
 
-In order to make these kind of breaking changes responsibly, follow the steps 
-outlined below. 
+In order to make these kind of breaking changes responsibly, follow the steps
+outlined below.
 
 ##### 1. Deprecate the endpoint
 
 In this stage, conda-store should not be introducing a breaking change. The
-deprecation step communicates to users that the endpoint is marked for removal 
-and will removed in a future release. 
+deprecation step communicates to users that the endpoint is marked for removal
+and will removed in a future release.
 
 :::info[For vulnerabilities]
 
@@ -162,19 +162,19 @@ step and remove the endpoint immediately.
 
 :::
 
-Deprecations in the REST API follow the 
-form outlined by the [deprecation header RFC](https://datatracker.ietf.org/doc/html/draft-ietf-httpapi-deprecation-header-02). To deprecate an endpoint add the following 
+Deprecations in the REST API follow the
+form outlined by the [deprecation header RFC](https://datatracker.ietf.org/doc/html/draft-ietf-httpapi-deprecation-header-02). To deprecate an endpoint add the following
 response headers to the endpoint
 
 ```
 {
-   "Deprecation": "True", 
+   "Deprecation": "True",
    "Sunset": <removal date, eg. "Mon, 16 Feb 2025 23:59:59 UTC" >
 }
 ```
 
-The "removal date" indicates the date after which conda store will no longer serve 
-the endpoint. It will be specified as a [HTTP-Date](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Date). The removal date can be set to (at earliest) the date of the target 
+The "removal date" indicates the date after which conda store will no longer serve
+the endpoint. It will be specified as a [HTTP-Date](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Date). The removal date can be set to (at earliest) the date of the target
 next release.
 
 ##### 2. Remove endpoint functionality
@@ -182,7 +182,7 @@ next release.
 At lease one release from the deprecation time, the functionality for the endpoint
 can be removed. To indicate that this endpoint is no longer functional, the endpoint
 must:
-* return a status code of `410 Gone` 
+* return a status code of `410 Gone`
 * return a json object stating when and why the endpoint was removed and what
 version of the endpoint is available currently (if any).
 
@@ -190,7 +190,7 @@ version of the endpoint is available currently (if any).
 {
   # the pull request that removed the endpoint
   "reference_pull_request": "https://github.com/conda-incubator/conda-store/pull/0000",
-  # the date the endpoint was removed (as HTTP-Date). This should be after the Sunset date specified 
+  # the date the endpoint was removed (as HTTP-Date). This should be after the Sunset date specified
   # in the deprecation step
   "removal_date": "Mon, 16 Feb 2025 23:59:59 UTC"
   # the reason for the removal, ideally with a link to a CVE if one is available
@@ -203,7 +203,7 @@ version of the endpoint is available currently (if any).
 ##### 3. Remove the endpoint
 
 At least one release from the completion of step (2), the API endpoint may be fully
-removed. At this stage, users should expect to recieve a `404 Not Found` error for the 
+removed. At this stage, users should expect to recieve a `404 Not Found` error for the
 endpoint.
 
 ### Python API
@@ -334,7 +334,7 @@ Public constants should not have their type or their value changed.
 
 ##### Config
 
-Config elements that are deprecated will be marked with a `deprecation` note 
+Config elements that are deprecated will be marked with a `deprecation` note
 in the docs and `--help` output. For example:
 ```
 $ conda-store-server --help-all
