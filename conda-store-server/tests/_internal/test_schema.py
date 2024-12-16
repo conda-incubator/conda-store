@@ -60,5 +60,5 @@ def test_parse_lockfile_obj(test_lockfile):
         # against the original dict
         "lockfile": test_lockfile.copy(),
     }
-    specification = schema.LockfileSpecification.parse_obj(lockfile_spec)
+    specification = schema.LockfileSpecification.model_validate(lockfile_spec)
     assert specification.model_dump()["lockfile"] == test_lockfile

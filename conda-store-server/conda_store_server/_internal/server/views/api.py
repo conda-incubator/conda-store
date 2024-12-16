@@ -121,7 +121,10 @@ def paginated_api_response(
     )
     return {
         "status": "ok",
-        "data": [object_schema.from_orm(_).dict(exclude=exclude) for _ in query.all()],
+        "data": [
+            object_schema.model_validate(_).model_dump(exclude=exclude)
+            for _ in query.all()
+        ],
         "page": (paginated_args["offset"] // paginated_args["limit"]) + 1,
         "size": paginated_args["limit"],
         "count": count,
@@ -300,7 +303,7 @@ async def api_get_namespace(
 
         return {
             "status": "ok",
-            "data": schema.Namespace.from_orm(namespace).model_dump(),
+            "data": schema.Namespace.model_validate(namespace).model_dump(),
         }
 
 
@@ -682,7 +685,9 @@ async def api_list_environments(
         if jwt:
             # Fetch the environments visible to the supplied token
             role_bindings = auth.entity_bindings(
-                AuthenticationToken.parse_obj(auth.authentication.decrypt_token(jwt))
+                AuthenticationToken.model_validate(
+                    auth.authentication.decrypt_token(jwt)
+                )
             )
         else:
             role_bindings = None
@@ -745,7 +750,7 @@ async def api_get_environment(
 
         return {
             "status": "ok",
-            "data": schema.Environment.from_orm(environment).dict(
+            "data": schema.Environment.model_validate(environment).model_dump(
                 exclude={"current_build"}
             ),
         }
@@ -887,9 +892,11 @@ async def api_post_specification(
                     "description": environment_description,
                     "lockfile": specification,
                 }
-                specification = schema.LockfileSpecification.parse_obj(lockfile_spec)
+                specification = schema.LockfileSpecification.model_validate(
+                    lockfile_spec
+                )
             else:
-                specification = schema.CondaSpecification.parse_obj(specification)
+                specification = schema.CondaSpecification.model_validate(specification)
         except yaml.error.YAMLError:
             raise HTTPException(status_code=400, detail="Unable to parse. Invalid YAML")
         except utils.CondaStoreError as e:
@@ -983,7 +990,7 @@ async def api_get_build(
 
         return {
             "status": "ok",
-            "data": schema.Build.from_orm(build).dict(exclude={"packages"}),
+            "data": schema.Build.model_validate(build).model_dump(exclude={"packages"}),
         }
 
 

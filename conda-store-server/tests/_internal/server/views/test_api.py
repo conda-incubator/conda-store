@@ -47,7 +47,7 @@ def test_api_version_unauth(testclient):
     response = testclient.get("/api/v1/")
     response.raise_for_status()
 
-    r = schema.APIGetStatus.parse_obj(response.json())
+    r = schema.APIGetStatus.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     assert r.data.version == __version__
 
@@ -56,7 +56,7 @@ def test_api_permissions_unauth(testclient):
     response = testclient.get("api/v1/permission/")
     response.raise_for_status()
 
-    r = schema.APIGetPermission.parse_obj(response.json())
+    r = schema.APIGetPermission.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     assert r.data.authenticated is False
     assert r.data.primary_namespace == "default"
@@ -75,7 +75,7 @@ def test_api_permissions_auth(testclient, authenticate):
     response = testclient.get("api/v1/permission/")
     response.raise_for_status()
 
-    r = schema.APIGetPermission.parse_obj(response.json())
+    r = schema.APIGetPermission.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     assert r.data.authenticated is True
     assert r.data.primary_namespace == "username"
@@ -122,7 +122,7 @@ def test_get_usage_unauth(testclient):
     response = testclient.get("/api/v1/usage/")
     response.raise_for_status()
 
-    r = schema.APIPutSetting.parse_obj(response.json())
+    r = schema.APIPutSetting.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
 
 
@@ -130,7 +130,7 @@ def test_get_usage_auth(testclient, authenticate):
     response = testclient.get("/api/v1/usage/")
     response.raise_for_status()
 
-    r = schema.APIPutSetting.parse_obj(response.json())
+    r = schema.APIPutSetting.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
 
 
@@ -138,7 +138,7 @@ def test_api_list_namespace_unauth(testclient, seed_conda_store):
     response = testclient.get("api/v1/namespace")
     response.raise_for_status()
 
-    r = schema.APIListNamespace.parse_obj(response.json())
+    r = schema.APIListNamespace.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     # by default unauth only has access to the default namespace
     assert len(r.data) == 1
@@ -149,7 +149,7 @@ def test_api_list_namespace_auth(testclient, seed_conda_store, authenticate):
     response = testclient.get("api/v1/namespace")
     response.raise_for_status()
 
-    r = schema.APIListNamespace.parse_obj(response.json())
+    r = schema.APIListNamespace.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     assert sorted([_.name for _ in r.data]) == ["default", "namespace1", "namespace2"]
 
@@ -158,7 +158,7 @@ def test_api_get_namespace_unauth(testclient, seed_conda_store):
     response = testclient.get("api/v1/namespace/default")
     response.raise_for_status()
 
-    r = schema.APIGetNamespace.parse_obj(response.json())
+    r = schema.APIGetNamespace.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     assert r.data.name == "default"
 
@@ -167,7 +167,7 @@ def test_api_get_namespace_unauth_no_exist(testclient, seed_conda_store):
     response = testclient.get("api/v1/namespace/namespace1")
     assert response.status_code == 403
 
-    r = schema.APIResponse.parse_obj(response.json())
+    r = schema.APIResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.ERROR
 
 
@@ -175,7 +175,7 @@ def test_api_get_namespace_auth(testclient, seed_conda_store, authenticate):
     response = testclient.get("api/v1/namespace/namespace1")
     response.raise_for_status()
 
-    r = schema.APIGetNamespace.parse_obj(response.json())
+    r = schema.APIGetNamespace.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     assert r.data.name == "namespace1"
 
@@ -184,7 +184,7 @@ def test_api_get_namespace_auth_no_exist(testclient, seed_conda_store, authentic
     response = testclient.get("api/v1/namespace/wrong")
 
     assert response.status_code == 404
-    r = schema.APIResponse.parse_obj(response.json())
+    r = schema.APIResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.ERROR
 
 
@@ -192,7 +192,7 @@ def test_api_list_environments_unauth(testclient, seed_conda_store):
     response = testclient.get("api/v1/environment")
     response.raise_for_status()
 
-    r = schema.APIListEnvironment.parse_obj(response.json())
+    r = schema.APIListEnvironment.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     assert sorted([_.name for _ in r.data]) == ["name1", "name2"]
 
@@ -201,7 +201,7 @@ def test_api_list_environments_auth(testclient, seed_conda_store, authenticate):
     response = testclient.get("api/v1/environment")
     response.raise_for_status()
 
-    r = schema.APIListEnvironment.parse_obj(response.json())
+    r = schema.APIListEnvironment.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     assert sorted([_.name for _ in r.data]) == ["name1", "name2", "name3", "name4"]
 
@@ -295,7 +295,7 @@ def test_api_list_environments_jwt(
 
     response.raise_for_status()
 
-    r = schema.APIListEnvironment.parse_obj(response.json())
+    r = schema.APIListEnvironment.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
 
     # The environments returned by `/environment/` should only be the ones
@@ -309,7 +309,7 @@ def test_api_get_environment_unauth(testclient, seed_conda_store):
     response = testclient.get("api/v1/environment/namespace1/name3")
     assert response.status_code == 403
 
-    r = schema.APIResponse.parse_obj(response.json())
+    r = schema.APIResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.ERROR
 
 
@@ -317,7 +317,7 @@ def test_api_get_environment_auth_existing(testclient, seed_conda_store, authent
     response = testclient.get("api/v1/environment/namespace1/name3")
     response.raise_for_status()
 
-    r = schema.APIGetEnvironment.parse_obj(response.json())
+    r = schema.APIGetEnvironment.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     assert r.data.namespace.name == "namespace1"
     assert r.data.name == "name3"
@@ -329,7 +329,7 @@ def test_api_get_environment_auth_not_existing(
     response = testclient.get("api/v1/environment/namespace1/wrong")
     assert response.status_code == 404
 
-    r = schema.APIResponse.parse_obj(response.json())
+    r = schema.APIResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.ERROR
 
 
@@ -337,7 +337,7 @@ def test_api_list_builds_unauth(testclient, seed_conda_store):
     response = testclient.get("api/v1/build")
     response.raise_for_status()
 
-    r = schema.APIListBuild.parse_obj(response.json())
+    r = schema.APIListBuild.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     assert len(r.data) == 2
 
@@ -346,7 +346,7 @@ def test_api_list_builds_auth(testclient, seed_conda_store, authenticate):
     response = testclient.get("api/v1/build")
     response.raise_for_status()
 
-    r = schema.APIListBuild.parse_obj(response.json())
+    r = schema.APIListBuild.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     assert len(r.data) == 4
 
@@ -355,7 +355,7 @@ def test_api_get_build_one_unauth(testclient, seed_conda_store):
     response = testclient.get("api/v1/build/3")  # namespace1/name3
     assert response.status_code == 403
 
-    r = schema.APIResponse.parse_obj(response.json())
+    r = schema.APIResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.ERROR
 
 
@@ -363,7 +363,7 @@ def test_api_get_build_one_auth(testclient, seed_conda_store, authenticate):
     response = testclient.get("api/v1/build/3")
     response.raise_for_status()
 
-    r = schema.APIGetBuild.parse_obj(response.json())
+    r = schema.APIGetBuild.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     assert r.data.id == 3
     assert r.data.specification.name == "name3"
@@ -374,7 +374,7 @@ def test_api_get_build_one_unauth_packages(testclient, seed_conda_store):
     response = testclient.get("api/v1/build/3/packages")
     assert response.status_code == 403
 
-    r = schema.APIResponse.parse_obj(response.json())
+    r = schema.APIResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.ERROR
 
 
@@ -382,7 +382,7 @@ def test_api_get_build_one_auth_packages(testclient, seed_conda_store, authentic
     response = testclient.get("api/v1/build/3/packages")
     response.raise_for_status()
 
-    r = schema.APIListCondaPackage.parse_obj(response.json())
+    r = schema.APIListCondaPackage.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     assert len(r.data) == 1
 
@@ -393,7 +393,7 @@ def test_api_get_build_auth_packages_no_exist(
     response = testclient.get("api/v1/build/101010101/packages")
     assert response.status_code == 404
 
-    r = schema.APIResponse.parse_obj(response.json())
+    r = schema.APIResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.ERROR
 
 
@@ -401,7 +401,7 @@ def test_api_get_build_one_unauth_logs(testclient, seed_conda_store):
     response = testclient.get("api/v1/build/3/logs")
     assert response.status_code == 403
 
-    r = schema.APIResponse.parse_obj(response.json())
+    r = schema.APIResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.ERROR
 
 
@@ -435,7 +435,7 @@ def test_api_get_build_two_auth(testclient, seed_conda_store, authenticate):
     response = testclient.get("api/v1/build/1010101010101")
     response.status_code == 404
 
-    r = schema.APIResponse.parse_obj(response.json())
+    r = schema.APIResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.ERROR
 
 
@@ -443,7 +443,7 @@ def test_api_list_conda_channels_unauth(testclient, seed_conda_store):
     response = testclient.get("api/v1/channel")
     response.raise_for_status()
 
-    r = schema.APIListCondaChannel.parse_obj(response.json())
+    r = schema.APIListCondaChannel.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     api_channels = set(_.name for _ in r.data)
     assert api_channels == {
@@ -455,7 +455,7 @@ def test_api_list_conda_packages_unauth(testclient, seed_conda_store):
     response = testclient.get("api/v1/package")
     response.raise_for_status()
 
-    r = schema.APIListCondaPackage.parse_obj(response.json())
+    r = schema.APIListCondaPackage.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     assert len(r.data) == 4
 
@@ -476,7 +476,7 @@ def test_create_specification_unauth(testclient):
     )
     assert response.status_code == 403
 
-    r = schema.APIResponse.parse_obj(response.json())
+    r = schema.APIResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.ERROR
 
 
@@ -508,7 +508,7 @@ def test_create_specification_auth_env_name_too_long(
     )
     response.raise_for_status()
 
-    r = schema.APIPostSpecification.parse_obj(response.json())
+    r = schema.APIPostSpecification.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     build_id = r.data.build_id
 
@@ -521,7 +521,7 @@ def test_create_specification_auth_env_name_too_long(
         response = testclient.get(f"api/v1/build/{build_id}")
         response.raise_for_status()
 
-        r = schema.APIGetBuild.parse_obj(response.json())
+        r = schema.APIGetBuild.model_validate(response.json())
         assert r.status == schema.APIStatus.OK
         assert r.data.specification.name == environment_name
         if r.data.status == "QUEUED":
@@ -580,7 +580,7 @@ def test_create_specification_auth_extended_prefix(
     )
     response.raise_for_status()
 
-    r = schema.APIPostSpecification.parse_obj(response.json())
+    r = schema.APIPostSpecification.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     build_id = r.data.build_id
 
@@ -593,7 +593,7 @@ def test_create_specification_auth_extended_prefix(
         response = testclient.get(f"api/v1/build/{build_id}", timeout=30)
         response.raise_for_status()
 
-        r = schema.APIGetBuild.parse_obj(response.json())
+        r = schema.APIGetBuild.model_validate(response.json())
         assert r.status == schema.APIStatus.OK
         assert r.data.specification.name == environment_name
         if r.data.status in ("QUEUED", "BUILDING"):
@@ -630,14 +630,14 @@ def test_create_specification_auth(testclient, celery_worker, authenticate):
     )
     response.raise_for_status()
 
-    r = schema.APIPostSpecification.parse_obj(response.json())
+    r = schema.APIPostSpecification.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
 
     # check for the given build
     response = testclient.get(f"api/v1/build/{r.data.build_id}")
     response.raise_for_status()
 
-    r = schema.APIGetBuild.parse_obj(response.json())
+    r = schema.APIGetBuild.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     assert r.data.specification.name == environment_name
 
@@ -645,7 +645,7 @@ def test_create_specification_auth(testclient, celery_worker, authenticate):
     response = testclient.get(f"api/v1/environment/{namespace}/{environment_name}")
     response.raise_for_status()
 
-    r = schema.APIGetEnvironment.parse_obj(response.json())
+    r = schema.APIGetEnvironment.model_validate(response.json())
     assert r.data.namespace.name == namespace
 
 
@@ -661,14 +661,14 @@ def test_create_specification_auth_no_namespace_specified(
     )
     response.raise_for_status()
 
-    r = schema.APIPostSpecification.parse_obj(response.json())
+    r = schema.APIPostSpecification.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
 
     # check for the given build
     response = testclient.get(f"api/v1/build/{r.data.build_id}")
     response.raise_for_status()
 
-    r = schema.APIGetBuild.parse_obj(response.json())
+    r = schema.APIGetBuild.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     assert r.data.specification.name == environment_name
 
@@ -676,7 +676,7 @@ def test_create_specification_auth_no_namespace_specified(
     response = testclient.get(f"api/v1/environment/{namespace}/{environment_name}")
     response.raise_for_status()
 
-    r = schema.APIGetEnvironment.parse_obj(response.json())
+    r = schema.APIGetEnvironment.model_validate(response.json())
     assert r.data.namespace.name == namespace
 
 
@@ -686,7 +686,7 @@ def test_put_build_trigger_build_noauth(testclient, seed_conda_store):
     response = testclient.put(f"api/v1/build/{build_id}")
     assert response.status_code == 403
 
-    r = schema.APIResponse.parse_obj(response.json())
+    r = schema.APIResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.ERROR
 
 
@@ -696,13 +696,13 @@ def test_put_build_trigger_build_auth(
     build_id = 1
 
     response = testclient.put(f"api/v1/build/{build_id}")
-    r = schema.APIPostSpecification.parse_obj(response.json())
+    r = schema.APIPostSpecification.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
 
     response = testclient.get(f"api/v1/build/{r.data.build_id}")
     response.raise_for_status()
 
-    r = schema.APIGetBuild.parse_obj(response.json())
+    r = schema.APIGetBuild.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
 
 
@@ -712,7 +712,7 @@ def test_create_namespace_noauth(testclient):
     response = testclient.post(f"api/v1/namespace/{namespace}")
     assert response.status_code == 403
 
-    r = schema.APIResponse.parse_obj(response.json())
+    r = schema.APIResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.ERROR
 
 
@@ -722,13 +722,13 @@ def test_create_namespace_auth(testclient, authenticate):
     response = testclient.post(f"api/v1/namespace/{namespace}")
     response.raise_for_status()
 
-    r = schema.APIAckResponse.parse_obj(response.json())
+    r = schema.APIAckResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
 
     response = testclient.get(f"api/v1/namespace/{namespace}")
     response.raise_for_status()
 
-    r = schema.APIGetNamespace.parse_obj(response.json())
+    r = schema.APIGetNamespace.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     assert r.data.name == namespace
 
@@ -739,26 +739,26 @@ def test_create_get_delete_namespace_auth(testclient, celery_worker, authenticat
     response = testclient.post(f"api/v1/namespace/{namespace}")
     response.raise_for_status()
 
-    r = schema.APIAckResponse.parse_obj(response.json())
+    r = schema.APIAckResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
 
     response = testclient.get(f"api/v1/namespace/{namespace}")
     response.raise_for_status()
 
-    r = schema.APIGetNamespace.parse_obj(response.json())
+    r = schema.APIGetNamespace.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     assert r.data.name == namespace
 
     response = testclient.delete(f"api/v1/namespace/{namespace}")
     response.raise_for_status()
 
-    r = schema.APIAckResponse.parse_obj(response.json())
+    r = schema.APIAckResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
 
     response = testclient.get(f"api/v1/namespace/{namespace}")
     assert response.status_code == 404
 
-    r = schema.APIResponse.parse_obj(response.json())
+    r = schema.APIResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.ERROR
 
 
@@ -772,7 +772,7 @@ def test_update_environment_build_unauth(testclient, seed_conda_store):
     )
     assert response.status_code == 403
 
-    r = schema.APIResponse.parse_obj(response.json())
+    r = schema.APIResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.ERROR
 
 
@@ -788,13 +788,13 @@ def test_update_environment_build_auth(
     )
     response.raise_for_status()
 
-    r = schema.APIAckResponse.parse_obj(response.json())
+    r = schema.APIAckResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
 
     response = testclient.get(f"api/v1/environment/{namespace}/{name}")
     response.raise_for_status()
 
-    r = schema.APIGetEnvironment.parse_obj(response.json())
+    r = schema.APIGetEnvironment.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     assert r.data.current_build_id == 4
 
@@ -806,7 +806,7 @@ def test_delete_environment_unauth(testclient, seed_conda_store):
     response = testclient.delete(f"api/v1/environment/{namespace}/{name}")
     assert response.status_code == 403
 
-    r = schema.APIResponse.parse_obj(response.json())
+    r = schema.APIResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.ERROR
 
 
@@ -825,13 +825,13 @@ def test_delete_environment_auth(
     )
     response.raise_for_status()
 
-    r = schema.APIAckResponse.parse_obj(response.json())
+    r = schema.APIAckResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
 
     response = testclient.delete(f"api/v1/environment/{namespace}/{environment_name}")
     response.raise_for_status()
 
-    r = schema.APIAckResponse.parse_obj(response.json())
+    r = schema.APIAckResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
 
 
@@ -841,7 +841,7 @@ def test_delete_build_unauth(testclient, seed_conda_store):
     response = testclient.delete(f"api/v1/build/{build_id}")
     assert response.status_code == 403
 
-    r = schema.APIResponse.parse_obj(response.json())
+    r = schema.APIResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.ERROR
 
 
@@ -849,7 +849,7 @@ def test_delete_build_auth(testclient, seed_conda_store, authenticate, celery_wo
     build_id = 4
 
     response = testclient.put(f"api/v1/build/{build_id}")
-    r = schema.APIPostSpecification.parse_obj(response.json())
+    r = schema.APIPostSpecification.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
 
     new_build_id = r.data.build_id
@@ -857,7 +857,7 @@ def test_delete_build_auth(testclient, seed_conda_store, authenticate, celery_wo
     response = testclient.get(f"api/v1/build/{new_build_id}")
     response.raise_for_status()
 
-    r = schema.APIGetBuild.parse_obj(response.json())
+    r = schema.APIGetBuild.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
 
     # currently you cannot delete a build before it succeeds or fails
@@ -865,13 +865,13 @@ def test_delete_build_auth(testclient, seed_conda_store, authenticate, celery_wo
     response = testclient.delete(f"api/v1/build/{new_build_id}")
     assert response.status_code == 400
 
-    # r = schema.APIAckResponse.parse_obj(response.json())
+    # r = schema.APIAckResponse.model_validate(response.json())
     # assert r.status == schema.APIStatus.OK
 
     # response = testclient.get(f'api/v1/build/{new_build_id}')
     # assert response.status_code == 404
 
-    # r = schema.APIResponse.parse_obj(response.json())
+    # r = schema.APIResponse.model_validate(response.json())
     # assert r.status == schema.APIStatus.ERROR
 
 
@@ -887,7 +887,7 @@ def test_get_settings_unauth(testclient, route):
     response = testclient.get(route)
     assert response.status_code == 403
 
-    r = schema.APIResponse.parse_obj(response.json())
+    r = schema.APIResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.ERROR
 
 
@@ -903,7 +903,7 @@ def test_put_settings_unauth(testclient, route):
     response = testclient.put(route, json={"conda_included_packages": ["numpy"]})
     assert response.status_code == 403
 
-    r = schema.APIResponse.parse_obj(response.json())
+    r = schema.APIResponse.model_validate(response.json())
     assert r.status == schema.APIStatus.ERROR
 
 
@@ -919,7 +919,7 @@ def test_get_settings_auth(testclient, authenticate, route):
     response = testclient.get(route)
     assert response.status_code == 200
 
-    r = schema.APIGetSetting.parse_obj(response.json())
+    r = schema.APIGetSetting.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     assert {
         "default_namespace",
@@ -961,12 +961,12 @@ def test_put_global_settings_auth(testclient, authenticate, route):
     )
     response.raise_for_status()
 
-    r = schema.APIPutSetting.parse_obj(response.json())
+    r = schema.APIPutSetting.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
 
     response = testclient.get(route)
     response.raise_for_status()
-    r = schema.APIPutSetting.parse_obj(response.json())
+    r = schema.APIPutSetting.model_validate(response.json())
     assert r.data["conda_max_solve_time"] == 60 * 60
 
 
@@ -984,12 +984,12 @@ def test_put_environment_settings_auth(testclient, authenticate, route):
     )
     response.raise_for_status()
 
-    r = schema.APIPutSetting.parse_obj(response.json())
+    r = schema.APIPutSetting.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
 
     response = testclient.get(route)
     response.raise_for_status()
-    r = schema.APIPutSetting.parse_obj(response.json())
+    r = schema.APIPutSetting.model_validate(response.json())
     assert r.data["conda_included_packages"] == ["numpy", "ipykernel"]
 
 
@@ -1005,7 +1005,7 @@ def test_put_environment_settings_auth_invliad_type(testclient, authenticate, ro
     response = testclient.put(route, json={"conda_included_packages": 1})
     assert response.status_code == 400
 
-    r = schema.APIPutSetting.parse_obj(response.json())
+    r = schema.APIPutSetting.model_validate(response.json())
     assert r.status == schema.APIStatus.ERROR
     assert "Invalid parsing" in r.message
 
@@ -1029,7 +1029,7 @@ def test_put_settings_auth_invalid_keys(testclient, authenticate, route):
     )
     assert response.status_code == 400
 
-    r = schema.APIPutSetting.parse_obj(response.json())
+    r = schema.APIPutSetting.model_validate(response.json())
     assert r.status == schema.APIStatus.ERROR
     assert "Invalid setting keys" in r.message
 
@@ -1055,7 +1055,7 @@ def test_put_global_settings_auth_in_namespace_environment(
     )
     assert response.status_code == 400
 
-    r = schema.APIPutSetting.parse_obj(response.json())
+    r = schema.APIPutSetting.model_validate(response.json())
     assert r.status == schema.APIStatus.ERROR
     assert "global setting" in r.message
 

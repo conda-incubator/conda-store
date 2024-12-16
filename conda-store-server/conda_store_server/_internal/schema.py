@@ -353,6 +353,7 @@ PipArg = Annotated[str, AfterValidator(lambda v: check_pip(v))]
 
 # Conda Environment
 class CondaSpecificationPip(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     pip: List[PipArg] = []
 
 
@@ -366,11 +367,12 @@ class CondaSpecification(BaseModel):
     name: Annotated[str, StringConstraints(pattern=f"^[{ALLOWED_CHARACTERS}]+$")]
     prefix: Optional[str] = None
     variables: Optional[Dict[str, Union[str, int]]] = None
+    model_config = ConfigDict(from_attributes=True)
 
     @classmethod
-    def parse_obj(cls, specification):
+    def model_validate(cls, specification):
         try:
-            return super().parse_obj(specification)
+            return super().model_validate(specification)
         except ValidationError as e:
             # there can be multiple errors. Let's build a comprehensive summary
             # to return to the end user.
@@ -408,9 +410,10 @@ class LockfileSpecification(BaseModel):
     name: Annotated[str, StringConstraints(pattern=f"^[{ALLOWED_CHARACTERS}]+$")]  # noqa: F722
     description: Optional[str] = ""
     lockfile: Lockfile
+    model_config = ConfigDict(from_attributes=True)
 
     @classmethod
-    def parse_obj(cls, specification):
+    def model_validate(cls, specification):
         # To show a human-readable error if no data is provided
         specification = {} if specification is None else specification
         # This uses pop because the version field must not be part of Lockfile
@@ -425,7 +428,7 @@ class LockfileSpecification(BaseModel):
                 "Expected lockfile to have no version field, or version=1",
             )
 
-        return super().parse_obj(specification)
+        return super().model_validate(specification)
 
     def model_dump(self):
         res = super().model_dump()
@@ -439,7 +442,7 @@ class LockfileSpecification(BaseModel):
     def __str__(self):
         # This makes sure the format is suitable for output if this object is
         # converted to a string, which can also happen implicitly
-        return str(self.dict())
+        return str(self.model_dump())
 
 
 # https://docs.docker.com/registry/spec/api/#errors-2
