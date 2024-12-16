@@ -22,8 +22,8 @@ depends_on = None
 # Due to the issue fixed in https://github.com/conda-incubator/conda-store/pull/961
 # many conda_package_build entries have the wrong package entry (but the right channel).
 # Because the packages are duplicated, we can not recreate the _conda_package_build_uc
-# constraint without the channel_id. 
-# So, this function will go thru each conda_package_build and re-associate it with the 
+# constraint without the channel_id.
+# So, this function will go thru each conda_package_build and re-associate it with the
 # correct conda_package based on the channel id.
 def fix_misrepresented_packages(conn):
     # conda_packages is a hash of channel-id_name_version to conda_package id
@@ -46,11 +46,11 @@ def fix_misrepresented_packages(conn):
 
     def get_conda_package_id(conn, channel_id, name, version):
         hashed_name = f"{channel_id}-{name}-{version}"
-        
+
         # if package exists in the conda_packages dict, return it
         if hashed_name in conda_packages:
             return conda_packages[hashed_name]
-        
+
         # if not, then query the db for the package
         package = conn.execute(
             select(conda_package_table).where(
@@ -79,7 +79,7 @@ def fix_misrepresented_packages(conn):
         # the channel_id might already be empty
         if row[2] is None:
             continue
-        
+
         package_id = get_conda_package_id(conn, row[2], row[3], row[4])
         # if found package id does not match the found package id, we'll need to updated it
         if package_id != row[1]:
@@ -107,7 +107,7 @@ def upgrade():
         # re-add the constraint without the channel column
         batch_op.create_unique_constraint(
             "_conda_package_build_uc",
-            [ 
+            [
                 "package_id",
                 "subdir",
                 "build",
@@ -139,7 +139,7 @@ def downgrade():
         # re-add the constraint with the channel column
         batch_op.create_unique_constraint(
             constraint_name="_conda_package_build_uc",
-            columns=[ 
+            columns=[
                 "channel_id",
                 "package_id",
                 "subdir",
