@@ -25,7 +25,7 @@ from traitlets import (
 )
 from traitlets.config import LoggingConfigurable
 
-from conda_store_server import CONDA_STORE_DIR, BuildKey, api, registry, storage
+from conda_store_server import CONDA_STORE_DIR, BuildKey, api, storage
 from conda_store_server._internal import conda_utils, environment, orm, schema, utils
 from conda_store_server.plugins import hookspec, plugin_manager
 from conda_store_server.plugins.types import lock
@@ -78,10 +78,7 @@ class CondaStore(LoggingConfigurable):
         config=True,
     )
 
-    container_registry_class = Type(
-        allow_none=True,
-        help="(deprecated)"
-    )
+    container_registry_class = Type(allow_none=True, help="(deprecated)")
 
     store_directory = Unicode(
         str(CONDA_STORE_DIR / "state"),
