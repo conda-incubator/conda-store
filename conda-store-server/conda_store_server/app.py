@@ -25,7 +25,7 @@ from traitlets import (
 )
 from traitlets.config import LoggingConfigurable
 
-from conda_store_server import CONDA_STORE_DIR, BuildKey, api, registry, storage
+from conda_store_server import CONDA_STORE_DIR, BuildKey, api, storage
 from conda_store_server._internal import conda_utils, environment, orm, schema, utils
 from conda_store_server.plugins import hookspec, plugin_manager
 from conda_store_server.plugins.types import lock
@@ -78,12 +78,7 @@ class CondaStore(LoggingConfigurable):
         config=True,
     )
 
-    container_registry_class = Type(
-        default_value=registry.ContainerRegistry,
-        klass=registry.ContainerRegistry,
-        allow_none=False,
-        config=True,
-    )
+    container_registry_class = Type(allow_none=True, help="(deprecated)")
 
     store_directory = Unicode(
         str(CONDA_STORE_DIR / "state"),
@@ -282,9 +277,6 @@ class CondaStore(LoggingConfigurable):
             schema.BuildArtifactType.LOGS,
             schema.BuildArtifactType.LOCKFILE,
             schema.BuildArtifactType.YAML,
-            # no possible way to delete these artifacts
-            # in most container registries via api
-            schema.BuildArtifactType.CONTAINER_REGISTRY,
         ],
         help="artifacts to keep on build deletion",
         config=True,
@@ -409,15 +401,6 @@ class CondaStore(LoggingConfigurable):
             os.makedirs(self._storage.storage_path, exist_ok=True)
 
         return self._storage
-
-    @property
-    def container_registry(self):
-        if hasattr(self, "_container_registry"):
-            return self._container_registry
-        self._container_registry = self.container_registry_class(
-            parent=self, log=self.log
-        )
-        return self._container_registry
 
     @property
     def celery_config(self):
