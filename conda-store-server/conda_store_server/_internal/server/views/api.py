@@ -10,6 +10,7 @@ import yaml
 from celery.result import AsyncResult
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request
 from fastapi.responses import JSONResponse, PlainTextResponse, RedirectResponse
+from functools import wraps
 
 from conda_store_server import __version__, api
 from conda_store_server._internal import orm, schema
@@ -103,6 +104,26 @@ def paginated_api_response(
         "size": paginated_args["limit"],
         "count": count,
     }
+
+def deprecated(sunset_date):
+    """
+    Decorator to add deprecation headers to a response. These will include
+        {
+            Deprecation: True
+            Sunset: <sunset_date>
+        }
+
+    :param sunset_date: the sunset date in HTTP-Date format, for example "Mon, 16 Feb 2025 23:59:59 UTC"
+    """
+    def decorator(func):
+        @wraps(func)
+        def add_deprecated_headers(*args, **kwargs):
+            response = func(*args, **kwargs)
+            response.headers["Deprecation"] = "True"
+            response.headers["Sunset"] = sunset_date
+            return response
+        return add_deprecated_headers
+    return decorator
 
 
 @router_api.get(
@@ -1327,6 +1348,7 @@ async def api_get_build_archive(
 
 
 @router_api.get("/build/{build_id}/docker/", deprecated=True)
+@deprecated(sunset_date="Mon, 16 Feb 2025 23:59:59 UTC")
 async def api_get_build_docker_image_url(
     build_id: int,
     request: Request,
@@ -1334,7 +1356,6 @@ async def api_get_build_docker_image_url(
     server=Depends(dependencies.get_server),
     auth=Depends(dependencies.get_auth),
 ):
-    response_headers = {"Deprecation": "True"}
     with conda_store.get_db() as db:
         build = api.get_build(db, build_id)
         auth.authorize_request(
@@ -1346,7 +1367,7 @@ async def api_get_build_docker_image_url(
 
         if build.has_docker_manifest:
             url = f"{server.registry_external_url}/{build.environment.namespace.name}/{build.environment.name}:{build.build_key}"
-            return PlainTextResponse(url, headers=response_headers)
+            return PlainTextResponse(url)
 
         else:
             content = {
@@ -1354,7 +1375,7 @@ async def api_get_build_docker_image_url(
                 "message": f"Build {build_id} doesn't have a docker manifest",
             }
             return JSONResponse(
-                status_code=400, content=content, headers=response_headers
+                status_code=400, content=content,
             )
 
 
