@@ -145,6 +145,10 @@ class CondaStore:
         return lock_plugin.name, locker
 
     def ensure_settings(self, db: Session):
+        # traitlets settings should not be persisted to the database
+        # instead (in order of precedence):
+        #   * read config from config file - deployment default
+        #   * read config from settings db (from the right specificity)
         """Ensure that conda-store traitlets settings are applied"""
         settings = schema.Settings(
             default_namespace=self.config.default_namespace,
