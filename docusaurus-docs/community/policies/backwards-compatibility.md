@@ -166,25 +166,35 @@ Deprecations in the REST API follow the
 form outlined by the [deprecation header RFC](https://datatracker.ietf.org/doc/html/draft-ietf-httpapi-deprecation-header-02). To deprecate an endpoint add the following
 response headers to the endpoint
 
-```
+```json
 {
    "Deprecation": "True",
    "Sunset": <removal date, eg. "Mon, 16 Feb 2025 23:59:59 UTC" >
 }
 ```
 
-The "removal date" indicates the date after which conda store will no longer serve
-the endpoint. It will be specified as a [HTTP-Date](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Date). The removal date can be set to (at earliest) the date of the target
-next release.
+The "removal date" should be specified as a [HTTP-Date](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Date). 
+
+###### Choosing a removal date
+
+The `Sunset` date indicates the date after which conda store with remove the functionality 
+of this endpoint.
+* Any time before this date, users should expect this endpoint to work
+* Any time after this date, the endpoint may still be available (due to no release having gone out), but users should expect that this endpoint will be removed
+
+Since the conda-store project users CalVer, the `Sunset` date should be set to at least 2 months 
+from the release that the deprecation notice first appears in.
 
 ##### 2. Remove endpoint functionality
 
-At lease one release from the deprecation time, the functionality for the endpoint
-can be removed. To indicate that this endpoint is no longer functional, the endpoint
-must:
+Once we have reached the `Sunset` date (from the step above), conda-store may 
+remove the functionality of the endpoint. To indicate that this endpoint is no 
+longer functional, the endpoint must:
 * return a status code of `410 Gone`
 * return a json object stating when and why the endpoint was removed and what
 version of the endpoint is available currently (if any).
+
+For example:
 
 ```python
 {
@@ -200,9 +210,19 @@ version of the endpoint is available currently (if any).
 }
 ```
 
+###### Choosing a removal date
+
+The `removal_date` date indicates the date after which conda store with remove the endpoint
+from the codebase. After this point, the endpoint will return a `404` response code.
+* Any time before this date, users should expect this endpoint to return a `410` response code
+* Any time after this date, the endpoint may still return a `410` response (due to no release having gone out), but users should expect that this endpoint will disappear
+
+Since the conda-store project users CalVer, the `removal_date` date should be set to at least 2 months 
+from the release that the deprecation notice first appears in.
+
 ##### 3. Remove the endpoint
 
-At least one release from the completion of step (2), the API endpoint may be fully
+Once we have reached the `removal_date` from step (2), the API endpoint may be fully
 removed. At this stage, users should expect to recieve a `404 Not Found` error for the
 endpoint.
 
@@ -332,9 +352,9 @@ Public variables should not have their type changed.
 
 Public constants should not have their type or their value changed.
 
-##### Config
+##### Configuration elements
 
-Config elements that are deprecated will be marked with a `deprecation` note
+Configuration elements that are deprecated will be marked with a `deprecation` note
 in the docs and `--help` output. For example:
 ```
 $ conda-store-server --help-all
