@@ -3,23 +3,23 @@
 # license that can be found in the LICENSE file.
 
 import datetime
+import logging
 import os
 from contextlib import contextmanager
 from typing import Any, Dict
-import logging
 
 import pydantic
 from celery import Celery, group
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import QueuePool
 
-from conda_store_server import CONDA_STORE_DIR, api, storage, conda_store_config
-from conda_store_server._internal import conda_utils, orm, schema, utils, environment
+from conda_store_server import CONDA_STORE_DIR, api, conda_store_config, storage
+from conda_store_server._internal import conda_utils, orm, schema, utils
 from conda_store_server.plugins import hookspec, plugin_manager
 from conda_store_server.plugins.types import lock
 
 
-class CondaStore():
+class CondaStore:
     def __init__(self, config: conda_store_config.CondaStore):
         self.config = config
         self.log = logging.getLogger(__name__)
