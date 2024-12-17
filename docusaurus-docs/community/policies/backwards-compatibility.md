@@ -173,22 +173,22 @@ response headers to the endpoint
 }
 ```
 
-The "removal date" should be specified as a [HTTP-Date](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Date). 
+The "removal date" should be specified as a [HTTP-Date](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Date).
 
 ###### Choosing a removal date
 
-The `Sunset` date indicates the date after which conda store with remove the functionality 
+The `Sunset` date indicates the date after which conda store with remove the functionality
 of this endpoint.
 * Any time before this date, users should expect this endpoint to work
 * Any time after this date, the endpoint may still be available (due to no release having gone out), but users should expect that this endpoint will be removed
 
-Since the conda-store project users CalVer, the `Sunset` date should be set to at least 2 months 
+Since the conda-store project users CalVer, the `Sunset` date should be set to at least 2 months
 from the release that the deprecation notice first appears in.
 
 ##### 2. Remove endpoint functionality
 
-Once we have reached the `Sunset` date (from the step above), conda-store may 
-remove the functionality of the endpoint. To indicate that this endpoint is no 
+Once we have reached the `Sunset` date (from the step above), conda-store may
+remove the functionality of the endpoint. To indicate that this endpoint is no
 longer functional, the endpoint must:
 * return a status code of `410 Gone`
 * return a json object stating when and why the endpoint was removed and what
@@ -217,7 +217,7 @@ from the codebase. After this point, the endpoint will return a `404` response c
 * Any time before this date, users should expect this endpoint to return a `410` response code
 * Any time after this date, the endpoint may still return a `410` response (due to no release having gone out), but users should expect that this endpoint will disappear
 
-Since the conda-store project users CalVer, the `removal_date` date should be set to at least 2 months 
+Since the conda-store project users CalVer, the `removal_date` date should be set to at least 2 months
 from the release that the deprecation notice first appears in.
 
 ##### 3. Remove the endpoint
