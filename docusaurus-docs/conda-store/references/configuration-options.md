@@ -210,13 +210,15 @@ setting is useful if you want to protect environments from
 modification from certain users and groups. Note: this configuration
 option is not supported on Windows.
 
-`CondaStore.serialize_builds` DEPRECATED no longer has any effect
-
 `CondaStore.post_update_environment_build_hook` is an optional configurable to
 allow for custom behavior that will run after an environment's current build changes.
 
 `CondaStore.lock_backend` is the name of the default lock plugin to use
 when locking a conda environment. By default, conda-store uses [conda-lock](https://github.com/conda/conda-lock).
+
+#### Deprecated configuration options for `conda_store_server._internal.app.CondaStore`
+
+`CondaStore.serialize_builds` no longer has any effect
 
 ### `conda_store_server.storage.S3Storage`
 
@@ -305,7 +307,9 @@ bindings that an authenticated user assumes.
 `Authentication.cookie_name` is the name for the browser cookie used
 to authenticate users.
 
-`Authentication.cookie_domain` use when wanting to set a subdomain wide cookie. For example setting this to `example.com` would allow the cookie to be valid for `example.com` along with `*.example.com`.
+`Authentication.cookie_domain` use when wanting to set a subdomain wide 
+cookie. For example setting this to `example.com` would allow the cookie 
+to be valid for `example.com` along with `*.example.com`.
 
 `Authentication.authentication_backend` is the class to use for
 authentication logic. The default is `AuthenticationBackend` and will
@@ -441,8 +445,6 @@ endpoints. Default True.
 `CondaStoreServer.enable_api` a Boolean on whether to expose the API
 endpoints. Default True.
 
-`CondaStoreServer.enable_registry` (deprecated) a Boolean on whether to expose the registry endpoints. Default False.
-
 `CondaStoreServer.enable_metrics` a Boolean on whether to expose the
 metrics endpoints. Default True.
 
@@ -451,9 +453,6 @@ to. The default is all IP addresses `0.0.0.0`.
 
 `CondaStoreServer.port` is the port for conda-store server to
 use. Default is `8080`.
-
-`CondaStoreServer.registry_external_url` (deprecated) is the external hostname and
-port to access docker registry cannot contain `http://` or `https://`.
 
 `CondaStoreServer.url_prefix` is the prefix URL (subdirectory) for the
 entire application. All but the registry routes obey this. This is due
@@ -485,7 +484,15 @@ to serve in form `[(path, method, function), ...]`. `path` is a
 string, `method` is `get`, `post`, `put`, `delete` etc. and function
 is a regular python fastapi function.
 
-### `conda_store_server.._internal.worker.app.CondaStoreWorker`
+#### Deprecated configuration options for `conda_store_server._internal.server.app.CondaStoreServer`
+
+`CondaStoreServer.enable_registry` (deprecated) a Boolean on whether to 
+expose the registry endpoints. Default False.
+
+`CondaStoreServer.registry_external_url` (deprecated) is the external hostname 
+and port to access docker registry cannot contain `http://` or `https://`.
+
+### `conda_store_server._internal.worker.app.CondaStoreWorker`
 
 `CondaStoreWorker.log_level` is the level for all server
 logging. Default is `INFO`. Common options are `DEBUG`, `INFO`,
