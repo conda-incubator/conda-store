@@ -144,38 +144,6 @@ class CondaStore:
         locker = lock_plugin.backend()
         return lock_plugin.name, locker
 
-    def ensure_settings(self, db: Session):
-        # traitlets settings should not be persisted to the database
-        # instead (in order of precedence):
-        #   * read config from config file - deployment default
-        #   * read config from settings db (from the right specificity)
-        """Ensure that conda-store traitlets settings are applied"""
-        settings = schema.Settings(
-            default_namespace=self.config.default_namespace,
-            filesystem_namespace=self.config.filesystem_namespace,
-            default_uid=self.config.default_uid,
-            default_gid=self.config.default_gid,
-            default_permissions=self.config.default_permissions,
-            storage_threshold=self.config.storage_threshold,
-            conda_command=self.config.conda_command,
-            conda_platforms=self.config.conda_platforms,
-            conda_max_solve_time=self.config.conda_max_solve_time,
-            conda_indexed_channels=self.config.conda_indexed_channels,
-            build_artifacts_kept_on_deletion=self.config.build_artifacts_kept_on_deletion,
-            conda_solve_platforms=self.config.conda_solve_platforms,
-            conda_channel_alias=self.config.conda_channel_alias,
-            conda_default_channels=self.config.conda_default_channels,
-            conda_allowed_channels=self.config.conda_allowed_channels,
-            conda_default_packages=self.config.conda_default_packages,
-            conda_required_packages=self.config.conda_required_packages,
-            conda_included_packages=self.config.conda_included_packages,
-            pypi_default_packages=self.config.pypi_default_packages,
-            pypi_required_packages=self.config.pypi_required_packages,
-            pypi_included_packages=self.config.pypi_included_packages,
-            build_artifacts=self.config.build_artifacts,
-        )
-        api.set_kvstore_key_values(db, "setting", settings.model_dump(), update=False)
-
     def ensure_namespace(self, db: Session):
         """Ensure that conda-store default namespaces exists"""
         api.ensure_namespace(db, self.config.default_namespace)

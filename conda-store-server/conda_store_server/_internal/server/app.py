@@ -388,7 +388,6 @@ class CondaStoreServer(Application):
             dbutil.upgrade(self.conda_store.config.database_url)
 
         with self.conda_store.session_factory() as db:
-            self.conda_store.ensure_settings(db)
             self.conda_store.ensure_namespace(db)
             self.conda_store.ensure_conda_channels(db)
 
