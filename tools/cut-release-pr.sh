@@ -8,7 +8,7 @@
 # - `conda-store-server-dev` conda env is activated
 
 function usage {
-    echo -e "Usage: ./cut-release-pr.sh -r release_version -c conda_store_ui_version\n"
+    echo -e "Usage: (from root of project) ./tools/cut-release-pr.sh -r release_version -c conda_store_ui_version\n"
     exit 1
 }
 
