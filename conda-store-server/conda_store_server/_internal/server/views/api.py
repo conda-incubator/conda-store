@@ -3,6 +3,7 @@
 # license that can be found in the LICENSE file.
 
 import datetime
+from functools import wraps
 from typing import Any, Dict, List, Optional, TypedDict
 
 import pydantic
@@ -10,7 +11,6 @@ import yaml
 from celery.result import AsyncResult
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request
 from fastapi.responses import JSONResponse, PlainTextResponse, RedirectResponse
-from functools import wraps
 
 from conda_store_server import __version__, api, app
 from conda_store_server._internal import orm, schema, utils
@@ -128,6 +128,7 @@ def paginated_api_response(
         "count": count,
     }
 
+
 def deprecated(sunset_date: datetime.date):
     """Decorator to add deprecation headers to a response. These will include
         {
@@ -140,14 +141,19 @@ def deprecated(sunset_date: datetime.date):
     sunset_date : datetime.date
         the date that the endpoint will have it's functionality removed
     """
+
     def decorator(func):
         @wraps(func)
         def add_deprecated_headers(*args, **kwargs):
             response = func(*args, **kwargs)
             response.headers["Deprecation"] = "True"
-            response.headers["Sunset"] = sunset_date.strftime("%a, %d %b %Y 00:00:00 UTC")
+            response.headers["Sunset"] = sunset_date.strftime(
+                "%a, %d %b %Y 00:00:00 UTC"
+            )
             return response
+
         return add_deprecated_headers
+
     return decorator
 
 
@@ -1391,7 +1397,8 @@ async def api_get_build_docker_image_url(
                 "message": f"Build {build_id} doesn't have a docker manifest",
             }
             return JSONResponse(
-                status_code=400, content=content,
+                status_code=400,
+                content=content,
             )
 
 
