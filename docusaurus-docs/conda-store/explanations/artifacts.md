@@ -63,7 +63,7 @@ Click **"Download archive"** button to download the archive of your conda enviro
 
 To install the tarball, follow the [instructions for the target machine in the conda-pack documentation][conda-pack-usage].
 
-## Docker images
+## Docker images (deprecated)
 
 :::warning
 Docker image creation is currently not supported.
