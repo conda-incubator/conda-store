@@ -91,9 +91,6 @@ class CondaStore(LoggingConfigurable):
             schema.BuildArtifactType.LOGS,
             schema.BuildArtifactType.LOCKFILE,
             schema.BuildArtifactType.YAML,
-            # no possible way to delete these artifacts
-            # in most container registries via api
-            schema.BuildArtifactType.CONTAINER_REGISTRY,
         ],
         help="artifacts to keep on build deletion",
         config=True,
@@ -129,12 +126,7 @@ class CondaStore(LoggingConfigurable):
         return f"db+{self.database_url}"
 
 
-    container_registry_class = Type(
-        default_value=registry.ContainerRegistry,
-        klass=registry.ContainerRegistry,
-        allow_none=False,
-        config=True,
-    )
+    container_registry_class = Type(allow_none=True, help="(deprecated)")
 
     conda_command = Unicode(
         "mamba",
