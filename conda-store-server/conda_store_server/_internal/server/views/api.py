@@ -105,22 +105,27 @@ def paginated_api_response(
         "count": count,
     }
 
-def deprecated(sunset_date):
-    """
-    Decorator to add deprecation headers to a response. These will include
+def deprecated(sunset_date: datetime.date):
+    """Decorator to add deprecation headers to a HTTP response. These will include:
         {
             Deprecation: True
             Sunset: <sunset_date>
         }
 
-    :param sunset_date: the sunset date in HTTP-Date format, for example "Mon, 16 Feb 2025 23:59:59 UTC"
+    See the conda-store backwards compatibility policy for appropriate use of 
+    deprecations https://conda.store/community/policies/backwards-compatibility.
+
+    Parameters
+    ----------
+    sunset_date : datetime.date
+        the date that the endpoint will have it's functionality removed
     """
     def decorator(func):
         @wraps(func)
         def add_deprecated_headers(*args, **kwargs):
             response = func(*args, **kwargs)
             response.headers["Deprecation"] = "True"
-            response.headers["Sunset"] = sunset_date
+            response.headers["Sunset"] = sunset_date.strftime("%a, %d %b %Y 00:00:00 UTC")
             return response
         return add_deprecated_headers
     return decorator
@@ -1348,7 +1353,7 @@ async def api_get_build_archive(
 
 
 @router_api.get("/build/{build_id}/docker/", deprecated=True)
-@deprecated(sunset_date="Mon, 16 Feb 2025 23:59:59 UTC")
+@deprecated(sunset_date=datetime.date(2025, 2, 17))
 async def api_get_build_docker_image_url(
     build_id: int,
     request: Request,
