@@ -17,6 +17,7 @@ from conda_store_server._internal.environment import filter_environments
 from conda_store_server._internal.schema import AuthenticationToken, Permissions
 from conda_store_server._internal.server import dependencies
 from conda_store_server.server.auth import Authentication
+from conda_store_server.exception import CondaStoreError
 
 
 class PaginatedArgs(TypedDict):
@@ -620,7 +621,7 @@ async def api_delete_namespace(
 
         try:
             conda_store.delete_namespace(db, namespace)
-        except utils.CondaStoreError as e:
+        except CondaStoreError as e:
             raise HTTPException(status_code=400, detail=e.message)
 
         return {"status": "ok"}
@@ -786,7 +787,7 @@ async def api_update_environment_build(
                     db, namespace, name, description
                 )
 
-        except utils.CondaStoreError as e:
+        except CondaStoreError as e:
             raise HTTPException(status_code=400, detail=e.message)
 
         return {"status": "ok"}
@@ -813,7 +814,7 @@ async def api_delete_environment(
 
         try:
             conda_store.delete_environment(db, namespace, name)
-        except utils.CondaStoreError as e:
+        except CondaStoreError as e:
             raise HTTPException(status_code=400, detail=e.message)
 
         return {"status": "ok"}
@@ -899,7 +900,7 @@ async def api_post_specification(
                 specification = schema.CondaSpecification.model_validate(specification)
         except yaml.error.YAMLError:
             raise HTTPException(status_code=400, detail="Unable to parse. Invalid YAML")
-        except utils.CondaStoreError as e:
+        except CondaStoreError as e:
             raise HTTPException(status_code=400, detail="\n".join(e.args[0]))
         except pydantic.ValidationError as e:
             raise HTTPException(status_code=400, detail=str(e))
@@ -921,7 +922,7 @@ async def api_post_specification(
             )
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e.args[0]))
-        except utils.CondaStoreError as e:
+        except CondaStoreError as e:
             raise HTTPException(status_code=400, detail=str(e.message))
 
         return {"status": "ok", "data": {"build_id": build_id}}
@@ -1020,7 +1021,7 @@ async def api_put_build(
             new_build = conda_store.create_build(
                 db, build.environment_id, build.specification.sha256
             )
-        except utils.CondaStoreError as e:
+        except CondaStoreError as e:
             raise HTTPException(status_code=400, detail=e.message)
 
         return {
@@ -1115,7 +1116,7 @@ async def api_delete_build(
 
         try:
             conda_store.delete_build(db, build_id)
-        except utils.CondaStoreError as e:
+        except CondaStoreError as e:
             raise HTTPException(status_code=400, detail=e.message)
 
         return {"status": "ok"}

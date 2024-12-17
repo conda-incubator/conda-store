@@ -26,6 +26,7 @@ from traitlets import (
 from traitlets.config import LoggingConfigurable
 
 from conda_store_server import CONDA_STORE_DIR, BuildKey, api, storage
+from conda_store_server.exception import CondaStoreError
 from conda_store_server._internal import conda_utils, environment, orm, schema, utils
 from conda_store_server.plugins import hookspec, plugin_manager
 from conda_store_server.plugins.types import lock
@@ -65,7 +66,7 @@ def conda_store_validate_action(
         schema.Permissions.ENVIRONMENT_CREATE,
         schema.Permissions.ENVIRONMENT_UPDATE,
     ) and (settings.storage_threshold > system_metrics.disk_free):
-        raise utils.CondaStoreError(
+        raise CondaStoreError(
             f"`CondaStore.storage_threshold` reached. Action {action.value} prevented due to insufficient storage space"
         )
 
@@ -749,21 +750,21 @@ class CondaStore(LoggingConfigurable):
 
         build = api.get_build(db, build_id)
         if build is None:
-            raise utils.CondaStoreError(f"build id={build_id} does not exist")
+            raise CondaStoreError(f"build id={build_id} does not exist")
 
         environment = api.get_environment(db, namespace=namespace, name=name)
         if environment is None:
-            raise utils.CondaStoreError(
+            raise CondaStoreError(
                 f"environment namespace={namespace} name={name} does not exist"
             )
 
         if build.status != schema.BuildStatus.COMPLETED:
-            raise utils.CondaStoreError(
+            raise CondaStoreError(
                 "cannot update environment to build id since not completed"
             )
 
         if build.specification.name != name:
-            raise utils.CondaStoreError(
+            raise CondaStoreError(
                 "cannot update environment to build id since specification does not match environment name"
             )
 
@@ -781,7 +782,7 @@ class CondaStore(LoggingConfigurable):
     ):
         environment = api.get_environment(db, namespace=namespace, name=name)
         if environment is None:
-            raise utils.CondaStoreError(
+            raise CondaStoreError(
                 f"environment namespace={namespace} name={name} does not exist"
             )
 
@@ -798,7 +799,7 @@ class CondaStore(LoggingConfigurable):
 
         namespace = api.get_namespace(db, name=namespace)
         if namespace is None:
-            raise utils.CondaStoreError(f"namespace={namespace} does not exist")
+            raise CondaStoreError(f"namespace={namespace} does not exist")
 
         utcnow = datetime.datetime.utcnow()
         namespace.deleted_on = utcnow
@@ -825,7 +826,7 @@ class CondaStore(LoggingConfigurable):
 
         environment = api.get_environment(db, namespace=namespace, name=name)
         if environment is None:
-            raise utils.CondaStoreError(
+            raise CondaStoreError(
                 f"environment namespace={namespace} name={name} does not exist"
             )
 
@@ -856,7 +857,7 @@ class CondaStore(LoggingConfigurable):
             schema.BuildStatus.FAILED,
             schema.BuildStatus.COMPLETED,
         ]:
-            raise utils.CondaStoreError(
+            raise CondaStoreError(
                 "cannot delete build since not finished building"
             )
 

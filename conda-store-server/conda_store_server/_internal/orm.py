@@ -40,6 +40,7 @@ from sqlalchemy.orm import (
 )
 
 from conda_store_server._internal import conda_utils, schema, utils
+from conda_store_server.exception import BuildPathError
 from conda_store_server._internal.environment import validate_environment
 
 logger = logging.getLogger("orm")
@@ -316,7 +317,7 @@ class Build(Base):
         # conda prefix must be less or equal to 255 chars
         # https://github.com/conda-incubator/conda-store/issues/649
         if len(str(res)) > 255:
-            raise utils.BuildPathError("build_path too long: must be <= 255 characters")
+            raise BuildPathError("build_path too long: must be <= 255 characters")
         # Note: cannot use the '/' operator to prepend the extended-length
         # prefix
         if sys.platform == "win32" and conda_store.win_extended_length_prefix:

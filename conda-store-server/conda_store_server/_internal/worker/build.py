@@ -18,6 +18,7 @@ from sqlalchemy.orm import Session
 
 from conda_store_server import api
 from conda_store_server._internal import action, conda_utils, orm, schema, utils
+from conda_store_server.exception import BuildPathError
 from conda_store_server.plugins import plugin_context
 
 
@@ -322,7 +323,7 @@ def build_conda_environment(db: Session, conda_store, build):
         conda_store.log.exception(e)
         append_to_logs(db, conda_store, build, e.output)
         raise e
-    except utils.BuildPathError as e:
+    except BuildPathError as e:
         # Provide status_info, which will be exposed to the user, ONLY in this
         # case because the error message doesn't expose sensitive information
         set_build_failed(db, build, status_info=e.message)
