@@ -5,6 +5,8 @@
 import datetime
 import json
 import pathlib
+import random
+import string
 import sys
 import typing
 import uuid
@@ -153,6 +155,50 @@ def seed_conda_store(db, conda_store):
                     dependencies=["numba"],
                 )
             },
+        },
+    )
+
+    # for testing purposes make build 4 complete
+    build = api.get_build(db, build_id=4)
+    build.started_on = datetime.datetime.utcnow()
+    build.ended_on = datetime.datetime.utcnow()
+    build.status = schema.BuildStatus.COMPLETED
+    db.commit()
+    return db
+
+
+@pytest.fixture
+def seed_conda_store_big(db, conda_store):
+    default = {}
+    namespace1 = {}
+    namespace2 = {}
+    for i in range(50):
+        name = "".join(random.choices(string.ascii_letters, k=10))
+        default[name] = schema.CondaSpecification(
+            name=name, channels=["defaults"], dependencies=["numpy"]
+        )
+
+        name = "".join(random.choices(string.ascii_letters, k=11))
+        namespace1[name] = schema.CondaSpecification(
+            name=name,
+            channels=["defaults"],
+            dependencies=["flask"],
+        )
+
+        name = "".join(random.choices(string.ascii_letters, k=12))
+        namespace2[name] = schema.CondaSpecification(
+            name=name,
+            channels=["defaults"],
+            dependencies=["flask"],
+        )
+
+    _seed_conda_store(
+        db,
+        conda_store,
+        {
+            "default": default,
+            "namespace1": namespace1,
+            "namespace2": namespace2,
         },
     )
 
