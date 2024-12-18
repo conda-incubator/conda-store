@@ -18,8 +18,7 @@ from conda_store_server.plugins.types import lock, types
 
 class CondaLock(lock.LockPlugin):
     def _conda_command(self, conda_store) -> str:
-        with conda_store.session_factory() as db:
-            settings = conda_store.get_settings(db=db)
+        settings = conda_store.get_settings()
         return settings.conda_command
 
     def _conda_flags(self, conda_store) -> str:
