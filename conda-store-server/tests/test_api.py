@@ -6,7 +6,7 @@ import pytest
 
 from conda_store_server import api
 from conda_store_server._internal.orm import NamespaceRoleMapping
-from conda_store_server._internal.utils import BuildPathError
+from conda_store_server.exception import BuildPathError
 
 
 @pytest.fixture
