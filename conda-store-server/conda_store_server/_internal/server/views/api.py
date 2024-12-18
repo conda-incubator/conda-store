@@ -1447,7 +1447,7 @@ async def api_get_settings(
         return {
             "status": "ok",
             "data": conda_store.get_settings(
-                db, namespace, environment_name
+                namespace, environment_name
             ).model_dump(),
             "message": None,
         }
@@ -1489,7 +1489,7 @@ async def api_put_settings(
         )
 
         try:
-            conda_store.set_settings(db, namespace, environment_name, data)
+            conda_store.set_settings(namespace, environment_name, data)
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e.args[0]))
 

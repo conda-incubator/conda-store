@@ -84,7 +84,7 @@ def task_watch_paths(self):
     conda_store = self.worker.conda_store
 
     with conda_store.session_factory() as db:
-        settings = conda_store.get_settings(db)
+        settings = conda_store.get_settings()
 
         conda_store.configuration(db).update_storage_metrics(
             db, conda_store.config.store_directory
@@ -154,7 +154,7 @@ def task_update_conda_channels(self):
 def task_update_conda_channel(self, channel_name):
     conda_store = self.worker.conda_store
     with conda_store.session_factory() as db:
-        settings = conda_store.get_settings(db)
+        settings = conda_store.get_settings()
 
         # sanitize the channel name as it's an URL, and it's used for the lock.
         sanitizing = {
@@ -283,7 +283,7 @@ def delete_build_artifact(db: Session, conda_store, build_artifact):
 def task_delete_build(self, build_id):
     conda_store = self.worker.conda_store
     with conda_store.session_factory() as db:
-        settings = conda_store.get_settings(db)
+        settings = conda_store.get_settings()
 
         build = api.get_build(db, build_id)
 

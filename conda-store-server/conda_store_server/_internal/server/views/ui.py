@@ -320,7 +320,7 @@ async def ui_get_setting(
             "environment_name": environment_name,
             "api_settings_url": api_setting_url,
             "settings": conda_store.get_settings(
-                db, namespace=namespace, environment_name=environment_name
+                namespace=namespace, environment_name=environment_name
             ),
         }
     return templates.TemplateResponse(request, "setting.html", context)
