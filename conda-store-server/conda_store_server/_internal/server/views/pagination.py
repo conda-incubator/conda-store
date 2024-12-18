@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import base64
 import operator
-from typing import Any, TypedDict
+from typing import Any
 
 import pydantic
 from fastapi import HTTPException
@@ -23,13 +23,13 @@ class Cursor(pydantic.BaseModel):
     last_value: dict[str, str] | None = {}
 
     def dump(self) -> str:
-        return base64.b64encode(self.model_dump_json())
+        return base64.b64encode(self.model_dump_json().encode("utf8"))
 
     @classmethod
     def load(cls, data: str | None = None) -> Cursor | None:
         if data is None:
             return None
-        return cls.from_json(base64.b64decode(data))
+        return cls.from_json(base64.b64decode(data).decode("utf8"))
 
     def get_last_values(self, order_names: list[str]) -> list[Any]:
         if order_names:
@@ -106,6 +106,7 @@ def paginate(
             )
         )
 
+    breakpoint()
     query = query.order_by(
         *[order_func(col) for col in columns], order_func(queried_type.id)
     )
@@ -125,10 +126,32 @@ def paginate(
     return (data, next_cursor)
 
 
-class CursorPaginatedArgs(TypedDict):
+class CursorPaginatedArgs(pydantic.BaseModel):
     limit: int
     order: str
     sort_by: list[str]
+
+    @pydantic.field_validator("sort_by")
+    def validate_sort_by(cls, v: list[str]) -> list[str]:
+        """Validate the columns to sort by.
+
+        FastAPI doesn't support lists in query parameters, so if the
+        `sort_by` value is a single-element list, assume that this
+        could be a comma-separated list. No harm in attempting to split
+        this by commas.
+
+        Parameters
+        ----------
+        v : list[str]
+
+
+        Returns
+        -------
+        list[str]
+        """
+        if len(v) == 1:
+            v = v[0].split(",")
+        return v
 
 
 class OrderingMetadata:
@@ -173,6 +196,7 @@ class OrderingMetadata:
         if order_by:
             for order_name in order_by:
                 idx = self.order_names.index(order_name)
+                # columns.append(text(self.column_names[idx]))
                 columns.append(self.column_names[idx])
 
         return columns
@@ -199,10 +223,12 @@ class OrderingMetadata:
             A mapping between the `order_by` values and the attribute values on `obj`
 
         """
+        breakpoint()
         values = {}
         for order_name in order_by:
             idx = self.order_names.index(order_name)
-            values[order_name] = get_nested_attribute(obj, self.column_names[idx])
+            attr = self.column_names[idx]
+            values[order_name] = get_nested_attribute(obj, attr)
 
         return values
 

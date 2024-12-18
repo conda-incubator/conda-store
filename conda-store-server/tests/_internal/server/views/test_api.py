@@ -1072,16 +1072,78 @@ def test_default_conda_store_dir():
         assert dir == f"/home/{user}/.local/share/conda-store"
 
 
-def test_api_list_environments(
+@pytest.mark.parametrize(
+    "order",
+    [
+        "asc",
+        "desc",
+    ],
+)
+def test_api_list_environments_by_name(
     conda_store_server,
     testclient,
-    seed_conda_store,
+    seed_conda_store_big,
     authenticate,
+    order,
 ):
-    """Test that the REST API lists the expected paginated environments."""
-    response = testclient.get("api/v1/environment/?sort_by=name")
+    """Test the REST API lists the paginated envs when sorting by name."""
+    response = testclient.get(f"api/v1/environment/?sort_by=name&order={order}")
     response.raise_for_status()
 
-    r = schema.APIListEnvironment.parse_obj(response.json())
+    model = schema.APIListEnvironment.model_validate(response.json())
+    assert model.status == schema.APIStatus.OK
 
-    assert r.status == schema.APIStatus.OK
+    env_names = [env.name for env in model.data]
+    assert sorted(env_names, reverse=order == "desc") == env_names
+
+
+@pytest.mark.parametrize(
+    "order",
+    [
+        "asc",
+        "desc",
+    ],
+)
+def test_api_list_environments_by_namespace(
+    conda_store_server,
+    testclient,
+    seed_conda_store_big,
+    authenticate,
+    order,
+):
+    """Test the REST API lists the paginated envs when sorting by namespace."""
+    response = testclient.get(f"api/v1/environment/?sort_by=namespace&order={order}")
+    response.raise_for_status()
+
+    model = schema.APIListEnvironment.model_validate(response.json())
+    assert model.status == schema.APIStatus.OK
+
+    env_names = [env.namespace.name for env in model.data]
+    assert sorted(env_names, reverse=order == "desc") == env_names
+
+
+@pytest.mark.parametrize(
+    "order",
+    [
+        "asc",
+        "desc",
+    ],
+)
+def test_api_list_environments_by_namespace_name(
+    conda_store_server,
+    testclient,
+    seed_conda_store_big,
+    authenticate,
+    order,
+):
+    """Test the REST API lists the paginated envs when sorting by namespace."""
+    response = testclient.get(
+        f"api/v1/environment/?sort_by=namespace,name&order={order}"
+    )
+    response.raise_for_status()
+
+    model = schema.APIListEnvironment.model_validate(response.json())
+    assert model.status == schema.APIStatus.OK
+
+    env_names = [env.namespace.name for env in model.data]
+    assert sorted(env_names, reverse=order == "desc") == env_names
