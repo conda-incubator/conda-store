@@ -12,12 +12,12 @@ from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request
 from fastapi.responses import JSONResponse, PlainTextResponse, RedirectResponse
 
 from conda_store_server import __version__, api, app
-from conda_store_server._internal import orm, schema, utils
+from conda_store_server._internal import orm, schema
 from conda_store_server._internal.environment import filter_environments
 from conda_store_server._internal.schema import AuthenticationToken, Permissions
 from conda_store_server._internal.server import dependencies
-from conda_store_server.server.auth import Authentication
 from conda_store_server.exception import CondaStoreError
+from conda_store_server.server.auth import Authentication
 
 
 class PaginatedArgs(TypedDict):

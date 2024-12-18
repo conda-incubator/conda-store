@@ -40,8 +40,8 @@ from sqlalchemy.orm import (
 )
 
 from conda_store_server._internal import conda_utils, schema, utils
-from conda_store_server.exception import BuildPathError
 from conda_store_server._internal.environment import validate_environment
+from conda_store_server.exception import BuildPathError
 
 logger = logging.getLogger("orm")
 

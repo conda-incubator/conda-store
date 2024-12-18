@@ -26,8 +26,8 @@ from traitlets import (
 from traitlets.config import LoggingConfigurable
 
 from conda_store_server import CONDA_STORE_DIR, BuildKey, api, storage
-from conda_store_server.exception import CondaStoreError
 from conda_store_server._internal import conda_utils, environment, orm, schema, utils
+from conda_store_server.exception import CondaStoreError
 from conda_store_server.plugins import hookspec, plugin_manager
 from conda_store_server.plugins.types import lock
 
@@ -857,9 +857,7 @@ class CondaStore(LoggingConfigurable):
             schema.BuildStatus.FAILED,
             schema.BuildStatus.COMPLETED,
         ]:
-            raise CondaStoreError(
-                "cannot delete build since not finished building"
-            )
+            raise CondaStoreError("cannot delete build since not finished building")
 
         build.deleted_on = datetime.datetime.utcnow()
         db.commit()

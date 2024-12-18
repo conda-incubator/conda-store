@@ -7,12 +7,13 @@ import typing
 
 class CondaStoreError(Exception):
     """Exception raised by conda store
-    
+
     Attributes
     ----------
     message : str
         message to output to users
     """
+
     def __init__(self, msg: str):
         self.message = msg
         super().__init__(msg)
@@ -20,7 +21,7 @@ class CondaStoreError(Exception):
 
 class BuildPathError(CondaStoreError):
     """Exception raised by conda store when there is an issue with the requested build path
-    
+
     Attributes
     ----------
     message : str
@@ -30,7 +31,7 @@ class BuildPathError(CondaStoreError):
 
 class CondaStorePluginNotFoundError(CondaStoreError):
     """Exception raised by conda store when a specified plugin is not found
-    
+
     Attributes
     ----------
     plugin : str
