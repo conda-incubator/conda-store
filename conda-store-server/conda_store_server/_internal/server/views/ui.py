@@ -268,7 +268,7 @@ async def ui_get_user(
         system_metrics = api.get_system_metrics(db) or {
             "disk_total": 0,
             "disk_free": 0,
-            "disk_usage": 0
+            "disk_usage": 0,
         }
 
         namespace_usage_metrics = auth.filter_namespaces(

@@ -124,10 +124,10 @@
             </ul>
 
             <div class="progress">
-                <div class="progress-bar" role="progressbar" 
-                     style="width: {{ (system_metrics.disk_usage / system_metrics.disk_total * 100) | round | int }}%;" 
-                     aria-valuenow="{{ (system_metrics.disk_usage / system_metrics.disk_total * 100) | round | int }}" 
-                     aria-valuemin="0" 
+                <div class="progress-bar" role="progressbar"
+                     style="width: {{ (system_metrics.disk_usage / system_metrics.disk_total * 100) | round | int }}%;"
+                     aria-valuenow="{{ (system_metrics.disk_usage / system_metrics.disk_total * 100) | round | int }}"
+                     aria-valuemin="0"
                      aria-valuemax="100">{{ (system_metrics.disk_usage / system_metrics.disk_total * 100) | round | int }}%</div>
             </div>
         {% endif %}
