@@ -20,16 +20,25 @@ are through:
   [configuration options doc](./configuration-options.md)
 * the conda-store admin console. Available at `<conda_store_url>/admin`
 
-There are multiple levels which config can be applied to conda store. 
+There are multiple levels which settings config can be applied to conda store. 
 
 * deployment defaults (controlled by the config file)
 * global defaults (controlled by the admin console)
 * namespace defaults (controlled by the admin console)
 * environment default (controlled by the admin console)
 
-The most specific config will take precedence over the more  general 
-setting. For example, if the `conda_command` is specified in all four
-config levels, the most specific, environment config will be applied.
+The most specific settings config will take precedence over the more  
+general setting. For example, if the `conda_command` is specified in 
+all four settings config levels, the most specific, environment settings
+config will be applied.
 
-The full list of application config settings is described in the 
+:::note
+Since the deployment defaults are of lowest precedent when settings are
+being generated, it is likely that they will be overridden by another
+by another level, for example the global defaults. 
+
+So, it is recommended that users change global defaults from the admin console.
+:::
+
+The full list of application settings config is described in the 
 [settings pydantic model](https://github.com/conda-incubator/conda-store/blob/main/conda-store-server/conda_store_server/_internal/schema.py#L203).
