@@ -112,7 +112,7 @@
     <div class="card-body">
         <h5>System</h5>
         <p>Below is system metrics.</p>
-        {% if system_metrics.disk_total == 0 %}
+        {% if system_metrics == None %}
             <div class="alert alert-info">
                 System metrics are not available yet. They will be populated once the conda-store worker starts.
             </div>

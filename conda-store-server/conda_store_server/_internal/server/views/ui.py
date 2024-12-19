@@ -265,11 +265,7 @@ async def ui_get_user(
             entity, api.list_namespaces(db, show_soft_deleted=False)
         )
 
-        system_metrics = api.get_system_metrics(db) or {
-            "disk_total": 0,
-            "disk_free": 0,
-            "disk_usage": 0,
-        }
+        system_metrics = api.get_system_metrics(db)
 
         namespace_usage_metrics = auth.filter_namespaces(
             entity, api.get_namespace_metrics(db)
