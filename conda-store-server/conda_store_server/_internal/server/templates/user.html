@@ -112,15 +112,25 @@
     <div class="card-body">
         <h5>System</h5>
         <p>Below is system metrics.</p>
-        <ul class="list-group">
-            <li class="list-group-item">Storage Total<span class="badge badge-light">{{ system_metrics.disk_total | filesizeformat(true) }}</span></li>
-            <li class="list-group-item">Storage Free<span class="badge badge-light">{{ system_metrics.disk_free | filesizeformat(true) }}</span></li>
-            <li class="list-group-item">Storage Used<span class="badge badge-light">{{ system_metrics.disk_usage | filesizeformat(true) }}</span></li>
-        </ul>
+        {% if system_metrics == None %}
+            <div class="alert alert-info">
+                System metrics are not available yet. They will be populated once the conda-store worker starts.
+            </div>
+        {% else %}
+            <ul class="list-group">
+                <li class="list-group-item">Storage Total<span class="badge badge-light">{{ system_metrics.disk_total | filesizeformat(true) }}</span></li>
+                <li class="list-group-item">Storage Free<span class="badge badge-light">{{ system_metrics.disk_free | filesizeformat(true) }}</span></li>
+                <li class="list-group-item">Storage Used<span class="badge badge-light">{{ system_metrics.disk_usage | filesizeformat(true) }}</span></li>
+            </ul>
 
-        <div class="progress">
-            <div class="progress-bar" role="progressbar" style="width: {{ (system_metrics.disk_usage / system_metrics.disk_total * 100) | round | int }}%;" aria-valuenow="{{ (system_metrics.disk_usage / system_metrics.disk_total * 100) | round | int }}" aria-valuemin="0" aria-valuemax="100">{{ (system_metrics.disk_usage / system_metrics.disk_total * 100) | round | int }}%</div>
-        </div>
+            <div class="progress">
+                <div class="progress-bar" role="progressbar"
+                     style="width: {{ (system_metrics.disk_usage / system_metrics.disk_total * 100) | round | int }}%;"
+                     aria-valuenow="{{ (system_metrics.disk_usage / system_metrics.disk_total * 100) | round | int }}"
+                     aria-valuemin="0"
+                     aria-valuemax="100">{{ (system_metrics.disk_usage / system_metrics.disk_total * 100) | round | int }}%</div>
+            </div>
+        {% endif %}
     </div>
 </div>
 
