@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
 
+from unittest import mock
+
 import pytest
 
 from conda_store_server import api
@@ -50,6 +52,27 @@ def settings(db) -> Settings:
         db=db, deployment_default=default_settings
     )
 
+
+def test_ensure_session_is_closed(settings: Settings):
+    # run a query against the db to start a transaction
+    settings.get_settings()
+    # ensure that the settings object cleans up it's transaction
+    assert settings.db.in_transaction() == False
+
+
+@mock.patch("conda_store_server.api.get_kvstore_key_values")
+def test_ensure_session_is_closed_on_error(mock_get_kvstore_key_values, settings: Settings):
+    mock_get_kvstore_key_values.side_effect = Exception
+
+    # run a query that will raise an exception
+    try:
+        settings.get_settings()
+    except:
+        pass
+    
+    # ensure that the settings object cleans up it's transaction
+    assert settings.db.in_transaction() == False
+    
 
 def test_get_settings_default(settings: Settings):
     test_settings = settings.get_settings()

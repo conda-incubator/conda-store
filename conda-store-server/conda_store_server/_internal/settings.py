@@ -2,7 +2,8 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
 
-from typing import Any, Dict
+from typing import Any, Dict, Callable
+import functools
 
 from sqlalchemy.orm import Session
 import pydantic
@@ -16,6 +17,15 @@ class Settings:
         self.db = db
         self.deployment_default = deployment_default.model_dump()
 
+    def _ensure_closed_session(func: Callable):
+        @functools.wraps(func)
+        def wrapper(self, *args, **kwargs):
+            result = func(self, *args, **kwargs)
+            self.db.close()
+            return result
+        return wrapper
+
+    @_ensure_closed_session
     def set_settings(
         self,
         namespace: str = None,
@@ -65,6 +75,7 @@ class Settings:
 
         api.set_kvstore_key_values(self.db, prefix, data)
 
+    @_ensure_closed_session
     def get_settings(
         self, namespace: str = None, environment_name: str = None
     ) -> schema.Settings:
