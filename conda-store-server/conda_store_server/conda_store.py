@@ -167,7 +167,10 @@ class CondaStore:
         os.makedirs(self.config.store_directory, exist_ok=True)
 
     def ensure_conda_channels(self, db: Session):
-        """Ensure that conda-store indexed channels and packages are in database"""
+        """Ensure that conda-store indexed channels and packages are 
+        in database. Only globally defined `conda_indexed_channels`
+        with the globally defined `conda_channel_alias` will be indexed
+        """
         self.log.info("updating conda store channels")
 
         settings = self.get_settings()
@@ -246,9 +249,7 @@ class CondaStore:
         is_lockfile: bool = False,
     ):
         """Register a given specification to conda store with given namespace/name."""
-        settings = self.get_settings()
-
-        namespace = namespace or settings.default_namespace
+        namespace = namespace or self.get_setting("default_namespace")
         namespace = api.ensure_namespace(db, name=namespace)
 
         self.config.validate_action(
