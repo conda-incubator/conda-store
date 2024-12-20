@@ -86,8 +86,11 @@ class Settings:
         self, namespace: str | None = None, environment_name: str | None = None
     ) -> schema.Settings:
         """Get full schema.settings object for a given level of specificity.
-        If no namespace or environment is given, then the default settings
-        are returned. Settings merged follow the merge rules for updating
+        Settings will be merged together from most specific taking precedence
+        over least specific. So, if no namespace or environment is given, then
+        the default settings are returned.
+
+        Settings merged follow the merge rules for updating
         dict's. So, lists and dict fields are overwritten opposed to merged.
 
         Parameters
@@ -139,9 +142,10 @@ class Settings:
         namespace: str | None = None,
         environment_name: str | None = None,
     ) -> Any:  # noqa: ANN401
-        """Get a given setting at the given level of specificity. Will short
-        cut and look up global setting directly even if a namespace/environment
-        is specified
+        """Get a given setting at the given level of specificity. Settings
+        will be merged together from most specific taking precedence over
+        least specific. Will short cut and look up global setting directly
+        (where appropriate) even if a namespace/environment is specified.
 
         Parameters
         ----------
@@ -162,6 +166,8 @@ class Settings:
             return None
 
         prefixes = ["setting"]
+        # if the setting is a global setting, then there is no need
+        # to build up a list of prefixes to check
         if field.json_schema_extra["metadata"]["global"] is False:
             if namespace is not None:
                 prefixes.append(f"setting/{namespace}")

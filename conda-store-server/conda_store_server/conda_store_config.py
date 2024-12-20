@@ -51,13 +51,14 @@ def conda_store_validate_action(
     namespace: str,
     action: auth_schema.Permissions,
 ) -> None:
-    settings = conda_store.get_settings()
+    storage_threshold = conda_store.get_setting("storage_threshold")
+    
     system_metrics = api.get_system_metrics(db)
 
     if action in (
         auth_schema.Permissions.ENVIRONMENT_CREATE,
         auth_schema.Permissions.ENVIRONMENT_UPDATE,
-    ) and (settings.storage_threshold > system_metrics.disk_free):
+    ) and (storage_threshold > system_metrics.disk_free):
         raise utils.CondaStoreError(
             f"`CondaStore.storage_threshold` reached. Action {action.value} prevented due to insufficient storage space"
         )
