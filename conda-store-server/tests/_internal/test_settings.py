@@ -100,7 +100,10 @@ def test_get_settings_namespace(settings: Settings):
 
     # ensure we get the settings overridden by the namespace settings
     assert test_settings.conda_channel_alias == "namespacechannelalias"
-    assert test_settings.conda_command == "mynamespacecondacommand"
+    # the "global" metadata setting should be respected. Since `conda_command`
+    # is scoped globally, even though we are looking at the "namespace" level,
+    # the "global" value should be returned
+    assert test_settings.conda_command == "myglobalcondacommand"
     assert test_settings.conda_default_packages == ["ipykernel"]
 
     # ensure that we get the default value for unset settings
@@ -136,7 +139,7 @@ def test_get_settings_environment(settings: Settings):
 
     # ensure we get the settings overridden by the environment settings
     assert test_settings.conda_channel_alias == "envchannelalias"
-    assert test_settings.conda_command == "mynamespacecondacommand"
+    assert test_settings.conda_command == "myglobalcondacommand"
     assert test_settings.conda_default_packages == ["numpy"]
 
     # ensure that we get the default value for unset settings
