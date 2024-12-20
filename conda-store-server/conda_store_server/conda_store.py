@@ -196,6 +196,13 @@ class CondaStore:
         return self.settings.get_settings(
             namespace=namespace, environment_name=environment_name
         )
+    
+    def get_setting(
+        self, key: str, namespace: str = None, environment_name: str = None
+    ) -> schema.Settings:
+        return self.settings.get_setting(
+            key=key, namespace=namespace, environment_name=environment_name
+        )
 
     def register_solve(self, db: Session, specification: schema.CondaSpecification):
         """Registers a solve for a given specification"""
