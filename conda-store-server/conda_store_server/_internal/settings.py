@@ -109,3 +109,46 @@ class Settings:
             settings.update(api.get_kvstore_key_values(self.db, prefix))
 
         return schema.Settings(**settings)
+
+    @_ensure_closed_session
+    def get_setting(
+        self, name: str, namespace: str = None, environment_name: str = None
+    ) -> Any:
+        """Get a given setting at the given level of specificity. Will short
+        cut and look up global setting directly even if a namespace/environment
+        is specified
+
+        Parameters
+        ----------
+        name : str
+            name of the setting to return
+        namespace : str, optional
+            namespace to use to retrieve settings
+        environment_name : str, optional
+            environment to use to retrieve settings
+
+        Returns
+        -------
+        Any
+            setting value, merged for the given level of specificity
+        """
+        
+        field = schema.Settings.model_fields.get(name)
+        if field is None:
+            return
+        
+        prefixes = ["setting"]
+        if field.json_schema_extra["metadata"]["global"] is False:
+            if namespace is not None:
+                prefixes.append(f"setting/{namespace}")
+            if namespace is not None and environment_name is not None:
+                prefixes.append(f"setting/{namespace}/{environment_name}")
+
+        # start building settings with the least specific defaults
+        result = self.deployment_default.get(name)
+        for prefix in prefixes:
+            value = api.get_kvstore_key(self.db, prefix, name)
+            if value is not None:
+                result = value
+
+        return result
