@@ -96,17 +96,27 @@ class Settings:
         schema.Settings
             merged settings object
         """
+        # build default/global settings object
+        settings = self.deployment_default
+        settings.update(api.get_kvstore_key_values(self.db, "setting"))
+
         # bulid list of prefixes to check from least precidence to highest precedence
-        prefixes = ["setting"]
+        prefixes = []
         if namespace is not None:
             prefixes.append(f"setting/{namespace}")
         if namespace is not None and environment_name is not None:
             prefixes.append(f"setting/{namespace}/{environment_name}")
 
-        # start building settings with the least specific defaults
-        settings = self.deployment_default
-        for prefix in prefixes:
-            settings.update(api.get_kvstore_key_values(self.db, prefix))
+        if len(prefixes) > 0:
+            # get the fields that scoped globally. These are the keys that will NOT be
+            # merged on for namespace and environment prefixes.
+            global_fields = [k for k, v in schema.Settings.model_fields.items() if v.json_schema_extra["metadata"]["global"]]
+            # start building settings with the least specific defaults
+            for prefix in prefixes:
+                new_settings = api.get_kvstore_key_values(self.db, prefix)
+                # remove any global fields
+                new_settings = {k: v for k, v in new_settings.items() if k not in global_fields}
+                settings.update(new_settings)
 
         return schema.Settings(**settings)
 
