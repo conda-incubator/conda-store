@@ -797,6 +797,19 @@ def get_kvstore_key_values(db, prefix: str):
         .all()
     }
 
+def get_kvstore_key(db, prefix: str, key: str):
+    """Get value for a particular prefix and key"""
+    row = (
+        db.query(orm.KeyValueStore)
+            .filter(orm.KeyValueStore.prefix == prefix)
+            .filter(orm.KeyValueStore.key == key)
+            .first()
+    )
+    if row is None:
+        return None
+    return row.value
+    
+
 
 def set_kvstore_key_values(db, prefix: str, d: Dict[str, Any], update: bool = True):
     """Set key, values for a particular prefix"""
