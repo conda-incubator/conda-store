@@ -188,7 +188,48 @@ def test_set_settings_invalid_setting_type(settings: Settings):
 
 
 def test_set_settings_invalid_level(settings: Settings):
-    with pytest.raises(ValueError, match=r"is a global setting cannot be set within namespace"):
-        settings.set_settings(
-            namespace="mynamespace", data={"default_uid": 777}
-        )
+    with pytest.raises(
+        ValueError, match=r"is a global setting cannot be set within namespace"
+    ):
+        settings.set_settings(namespace="mynamespace", data={"default_uid": 777})
+
+
+def test_get_global_setting(settings: Settings):
+    test_setting = settings.get_setting("default_namespace")
+    assert test_setting == "default"
+
+
+def test_get_setting_invalid(settings: Settings):
+    test_setting = settings.get_setting("notarealfield")
+    assert test_setting is None
+
+    test_setting = settings.get_setting("notarealfield", namespace="test_namespace", environment_name="test_env")
+    assert test_setting is None
+
+
+def test_get_setting_overriden(settings: Settings):
+    # conda_channel_alias is not a global command, it may be overriden
+    test_setting = settings.get_setting("conda_channel_alias")
+    assert test_setting == "globalchannelalias"
+    # default_uid is a global setting. It should never be overriden
+    test_setting = settings.get_setting("default_uid")
+    assert test_setting == 888
+    # conda_command is also a global setting. Even if somehow the value gets
+    # injected into the db (as in this test setup), get_setting should honour 
+    # just the global setting
+    test_setting = settings.get_setting("conda_command")
+    assert test_setting == "myglobalcondacommand"
+
+    test_setting = settings.get_setting("conda_channel_alias", namespace="test_namespace")
+    assert test_setting == "namespacechannelalias"
+    test_setting = settings.get_setting("default_uid", namespace="test_namespace")
+    assert test_setting == 888
+    test_setting = settings.get_setting("conda_command", namespace="test_namespace")
+    assert test_setting == "myglobalcondacommand"
+
+    test_setting = settings.get_setting("conda_channel_alias", namespace="test_namespace", environment_name="test_env")
+    assert test_setting == "envchannelalias"
+    test_setting = settings.get_setting("default_uid", namespace="test_namespace", environment_name="test_env")
+    assert test_setting == 888
+    test_setting = settings.get_setting("conda_command", namespace="test_namespace", environment_name="test_env")
+    assert test_setting == "myglobalcondacommand"
