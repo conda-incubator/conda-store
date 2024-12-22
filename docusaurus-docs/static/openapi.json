@@ -995,10 +995,9 @@
           "LOGS",
           "YAML",
           "CONDA_PACK",
-          "DOCKER_BLOB",
           "DOCKER_MANIFEST",
-          "CONTAINER_REGISTRY",
-          "CONSTRUCTOR_INSTALLER"
+          "CONSTRUCTOR_INSTALLER",
+          "CONTAINER_REGISTRY"
         ],
         "title": "BuildArtifactType",
         "type": "string"
