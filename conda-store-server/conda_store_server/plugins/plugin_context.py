@@ -19,8 +19,8 @@ class PluginContext:
     ----------
     conda_store : conda_store_server.conda_store
         conda_store instance
-    log : logging.logger
-        logger
+    log_level : int
+        logging level
     stdout : io.StringIO
         stream to write command output to
     stderr : io.StringIO
@@ -33,12 +33,12 @@ class PluginContext:
 
     def __init__(
         self,
-        conda_store=None,
-        stdout=None,
-        stderr=None,
-        log_level=logging.INFO,
-        namespace=None,
-        environment=None,
+        conda_store,
+        stdout: io.StringIO | None = None,
+        stderr: io.StringIO | None = None,
+        log_level: int = logging.INFO,
+        namespace: str | None = None,
+        environment: str | None = None,
     ):
         if stdout is not None and stderr is None:
             stderr = stdout
