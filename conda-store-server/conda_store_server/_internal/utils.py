@@ -18,16 +18,6 @@ from typing import AnyStr, Callable
 from filelock import FileLock
 
 
-class CondaStoreError(Exception):
-    @property
-    def message(self):
-        return self.args[0]
-
-
-class BuildPathError(CondaStoreError):
-    pass
-
-
 def symlink(source, target):
     # Multiple builds call this, so this lock avoids race conditions on unlink
     # and symlink operations

@@ -20,7 +20,8 @@ from pydantic import (
     ValidationError,
 )
 
-from conda_store_server._internal import conda_utils, utils
+from conda_store_server._internal import conda_utils
+from conda_store_server.exception import CondaStoreError
 
 
 def _datetime_factory(offset: datetime.timedelta):
@@ -403,7 +404,7 @@ class CondaSpecification(BaseModel):
 
                 all_errors_hr.append(human_readable_error)
 
-            raise utils.CondaStoreError(all_errors_hr)
+            raise CondaStoreError(all_errors_hr)
 
 
 class LockfileSpecification(BaseModel):
