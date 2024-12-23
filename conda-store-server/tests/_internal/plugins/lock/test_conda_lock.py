@@ -74,6 +74,33 @@ def test_solve_lockfile_simple(conda_store, simple_specification):
     assert "zlib" in [pkg["name"] for pkg in lock_result["package"]]
 
 
+@mock.patch("conda_store_server._internal.plugins.lock.conda_lock.conda_lock.run_lock")
+def test_solve_right_conda_command(mock_run_lock, conda_store, simple_specification):
+    # Update conda_command settings
+    conda_store.set_settings(
+        data={"conda_command": "conda"}
+    )
+    
+    # Dump dummy data to the expected lockfile output location
+    def run_lock_side_effect(lockfile_path, **kwargs):
+        with open(lockfile_path, "w") as f:
+            yaml.dump({"foo": "bar"}, f)
+
+    mock_run_lock.side_effect = run_lock_side_effect
+
+    locker = conda_lock.CondaLock()
+    locker.lock_environment(
+        context=plugin_context.PluginContext(conda_store, namespace="test", environment="one"),
+        spec=simple_specification,
+        platforms=[conda_utils.conda_platform()],
+    )
+
+    # Check that the call to `conda_lock` is correctly formed
+    mock_run_lock.assert_called_once()
+    call_args = mock_run_lock.call_args_list[0][1]
+    assert call_args["conda_exe"] == "conda"
+
+
 @pytest.mark.parametrize(
     "specification",
     [
