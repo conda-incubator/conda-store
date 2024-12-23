@@ -23,7 +23,7 @@ class CondaLock(lock.LockPlugin):
         return settings.conda_command
 
     def _conda_flags(self, conda_store) -> str:
-        return conda_store.conda_flags
+        return conda_store.config.conda_flags
 
     @utils.run_in_tempdir
     def lock_environment(
