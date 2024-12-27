@@ -43,6 +43,7 @@ spec:
             periodSeconds: {{ .Values.apiServer.readinessProbe.periodSeconds }}
             timeoutSeconds: {{ .Values.apiServer.readinessProbe.timeoutSeconds }}
             failureThreshold: {{ .Values.apiServer.readinessProbe.failureThreshold }}
+          {{ template "apiServer.resources" . }}
           env:
             - name: POSTGRES_USERNAME
               valueFrom:

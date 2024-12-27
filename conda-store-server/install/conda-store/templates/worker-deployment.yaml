@@ -27,6 +27,7 @@ spec:
             - "/etc/conda-store/conda_store_config.py"
           ports:
             - containerPort: {{ .Values.worker.port }}
+          {{ template "worker.resources" . }}
           env:
             - name: POSTGRES_USERNAME
               valueFrom:

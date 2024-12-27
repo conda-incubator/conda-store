@@ -46,3 +46,33 @@ Selector labels
 app.kubernetes.io/name: {{ include "condaStore.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
+
+{{/*
+Set's the worker resources if the user has set any.
+*/}}
+{{- define "worker.resources" -}}
+  {{- if .Values.worker.resources -}}
+          resources:
+{{ toYaml .Values.worker.resources | indent 12}}
+  {{ end }}
+{{- end -}}
+
+{{/*
+Set's the uiServer resources if the user has set any.
+*/}}
+{{- define "uiServer.resources" -}}
+  {{- if .Values.uiServer.resources -}}
+          resources:
+{{ toYaml .Values.uiServer.resources | indent 12}}
+  {{ end }}
+{{- end -}}
+
+{{/*
+Set's the apiServer resources if the user has set any.
+*/}}
+{{- define "apiServer.resources" -}}
+  {{- if .Values.apiServer.resources -}}
+          resources:
+{{ toYaml .Values.apiServer.resources | indent 12}}
+  {{ end }}
+{{- end -}}
