@@ -1,5 +1,9 @@
 # Conda Store Helm Chart
 
+## TODO:
+* use conda-store-ui docker image as the default image for the ui service
+* ensure k8 objects are all annotated properly
+
 In order to install conda store with helm, you must
 have the following things set up:
 
