@@ -70,6 +70,15 @@ apiServer:
     timeoutSeconds: 5
     failureThreshold: 3
 
+  resources: {}
+  # resources:
+  #   limits:
+  #     cpu: 100m
+  #     memory: 128Mi
+  #   requests:
+  #     cpu: 100m
+  #     memory: 128Mi
+
 uiServer:
   # Node port for the UI Server K8 service
   nodePort: 30500
@@ -128,6 +137,15 @@ uiServer:
     periodSeconds: 10
     timeoutSeconds: 5
     failureThreshold: 3
+
+  resources: {}
+  # resources:
+  #   limits:
+  #     cpu: 100m
+  #     memory: 128Mi
+  #   requests:
+  #     cpu: 100m
+  #     memory: 128Mi
 
 worker:
   # Number of workers that are to be in the worker deployment
@@ -191,14 +209,11 @@ worker:
     c.CondaStoreWorker.watch_paths = ["/opt/environments"]
     c.CondaStoreWorker.concurrency = 4
 
-resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+  resources: {}
+  # resources:
+  #   limits:
+  #     cpu: 100m
+  #     memory: 128Mi
+  #   requests:
+  #     cpu: 100m
+  #     memory: 128Mi
