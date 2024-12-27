@@ -42,14 +42,6 @@ c.S3Storage.bucket_name = "conda-store"
 c.RBACAuthorizationBackend.role_mappings_version = 2
 
 # ==================================
-#        server settings
-# ==================================
-c.CondaStoreServer.enable_ui = False
-c.CondaStoreServer.enable_api = False
-c.CondaStoreServer.enable_registry = False
-c.CondaStoreServer.enable_metrics = False
-
-# ==================================
 #         worker settings
 # ==================================
 c.CondaStoreWorker.log_level = logging.INFO
