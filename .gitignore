@@ -65,3 +65,5 @@ conda-store.sqlite
 
 # generated test assets
 conda-store-server/tests/alembic.ini
+
+*.local.yaml
