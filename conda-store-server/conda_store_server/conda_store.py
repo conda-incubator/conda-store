@@ -20,7 +20,18 @@ from conda_store_server.exception import CondaStoreError
 from conda_store_server.plugins.types import lock
 
 
-class CondaStore():
+class CondaStore:
+    """This class provides a set of common functionality to be used by
+    conda store servers and workers. 
+
+    Attributes
+    ----------
+    config : conda_store_config.CondaStore
+        CondaStore config object. This config object has global config
+        that is applied to both servers and workers.
+    log : logging.Logger
+        global logger
+    """
     def __init__(self, config: conda_store_config.CondaStore):
         self.config = config
         self.log = logging.getLogger(__name__)
