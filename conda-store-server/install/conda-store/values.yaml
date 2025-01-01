@@ -96,34 +96,19 @@ uiServer:
     pullPolicy: IfNotPresent
     tag: 2024.6.1
 
-  # Config for the conda-store-server. For all available options, see the 
-  # docs at https://conda.store/conda-store/references/configuration-options
-  # Provided is a good starting point for the config
-  condaStoreConfig: |
-    c.CondaStoreServer.enable_ui = True
-    c.CondaStoreServer.enable_api = True
-    c.CondaStoreServer.enable_registry = False
-    c.CondaStoreServer.address = "0.0.0.0"
-    c.CondaStoreServer.port = 8080
-    c.CondaStoreServer.url_prefix = "/"
+  appEnv:
+    # publically accessible URL for the conda store server api instance
+    apiUrl:
+    
+    # publically accessible URL to access the login page
+    loginPageUrl:
 
-    c.CondaStore.database_url = f"postgresql+psycopg2://{os.environ.get('POSTGRES_USERNAME')}:{os.environ.get('POSTGRES_PASSWORD')}@postgres/conda-store"
-    c.CondaStore.redis_url =   (
-        f"redis://:{os.environ.get('REDIS_PASSWORD')}@redis:6379/0"
-    )
-    c.CondaStore.default_uid = 1000
-    c.CondaStore.default_gid = 100
-    c.CondaStore.default_permissions = "555"
-    c.CondaStore.storage_class = S3Storage
+    # publically accessible URL to access the logout page
+    logoutPageUrl:
 
-    c.S3Storage.internal_endpoint = "minio:9000"
-    c.S3Storage.internal_secure = False
-    c.S3Storage.external_endpoint = "localhost:9000"
-    c.S3Storage.external_secure = False
-    c.S3Storage.access_key = os.environ.get('MINIO_USERNAME')
-    c.S3Storage.secret_key = os.environ.get('MINIO_PASSWORD')
-
-    c.RBACAuthorizationBackend.role_mappings_version = 2
+    # base url prefix to access the api. Should match the api server config option 
+    # `c.CondaStoreServer.url_prefix`
+    urlBasename: "/"
 
   # This is to setup the liveness and readiness probes more information can be
   # found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
