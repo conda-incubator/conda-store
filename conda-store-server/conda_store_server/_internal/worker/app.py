@@ -10,7 +10,7 @@ from traitlets import Integer, List, Unicode, validate
 from traitlets.config import Application, catch_config_error
 
 from conda_store_server import __version__
-from conda_store_server.conda_store import CondaStore 
+from conda_store_server.conda_store import CondaStore
 from conda_store_server.conda_store_config import CondaStore as CondaStoreConfig
 
 
@@ -67,7 +67,7 @@ class CondaStoreWorker(Application):
     def initialize(self, *args, **kwargs):
         super().initialize(*args, **kwargs)
         self.load_config_file(self.config_file)
-        
+
         self.conda_store_config = CondaStoreConfig(parent=self, log=self.log)
         self.conda_store = CondaStore(config=self.conda_store_config)
         # ensure checks on redis_url

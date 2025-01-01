@@ -35,9 +35,9 @@ import conda_store_server
 from conda_store_server import __version__, storage
 from conda_store_server._internal import dbutil, orm
 from conda_store_server._internal.server import views
-from conda_store_server.server import auth
-from conda_store_server.conda_store import CondaStore 
+from conda_store_server.conda_store import CondaStore
 from conda_store_server.conda_store_config import CondaStore as CondaStoreConfig
+from conda_store_server.server import auth
 
 
 class _Color(str, Enum):
