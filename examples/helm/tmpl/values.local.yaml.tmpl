@@ -17,11 +17,13 @@ uiServer:
   port: 8080
   replicas: 1
   image:
-    repository: {{ (datasource "defaults").image.repository }}
-    pullPolicy: {{ (datasource "defaults").image.pullPolicy }}
-    tag: {{ (datasource "defaults").image.tag }}
-  condaStoreConfig: |
-{{ include "ui-server-config" | indent 4 }}
+    repository: ghcr.io/conda-incubator/conda-store-ui
+    pullPolicy: IfNotPresent
+    tag: sha-2469531
+  appEnv:
+    apiUrl: http://localhost:8081
+    loginPageUrl: http://localhost:8081/login?next=
+    logoutPageUrl: http://localhost:8081/logout?next=/
 
 worker:
   port: 8080

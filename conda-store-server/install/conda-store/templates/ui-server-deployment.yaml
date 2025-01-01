@@ -21,16 +21,27 @@ spec:
         - name: "{{ template "condaStore.fullname" . }}-ui-server"
           image: "{{ .Values.uiServer.image.repository }}:{{ .Values.uiServer.image.tag }}"
           imagePullPolicy: {{ .Values.uiServer.image.pullPolicy }}
-          args:
-            - "conda-store-server"
-            - "--config"
-            - "/etc/conda-store/conda_store_config.py"
+          env:
+          - name: REACT_APP_STYLE_TYPE
+            value: green-accent
+          - name: REACT_APP_API_URL
+            value: {{ .Values.uiServer.appEnv.apiUrl }}
+          - name: REACT_APP_LOGIN_PAGE_URL
+            value: {{ .Values.uiServer.appEnv.loginPageUrl }}
+          - name: REACT_APP_LOGOUT_PAGE_URL
+            value: {{ .Values.uiServer.appEnv.logoutPageUrl }}
+          - name: REACT_APP_URL_BASENAME
+            value: {{ .Values.uiServer.appEnv.urlBasename }}
+          - name: DEBUG
+            value: express:*
+          - name: PORT
+            value: "8080"
           ports:
             - containerPort: {{ .Values.uiServer.port }}
           livenessProbe:
             httpGet:
               # TODO: it would be nice to have a "ok" endpoint on the ui
-              path: /
+              path: /status
               port: 8080
             initialDelaySeconds: {{ .Values.uiServer.livenessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.uiServer.livenessProbe.periodSeconds }}
@@ -38,45 +49,11 @@ spec:
             failureThreshold: {{ .Values.uiServer.livenessProbe.failureThreshold }}
           readinessProbe:
             httpGet:
-              path: /
+              path: /status
               port: 8080
             initialDelaySeconds: {{ .Values.uiServer.readinessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.uiServer.readinessProbe.periodSeconds }}
             timeoutSeconds: {{ .Values.uiServer.readinessProbe.timeoutSeconds }}
             failureThreshold: {{ .Values.uiServer.readinessProbe.failureThreshold }}
           {{ template "uiServer.resources" . }}
-          env:
-            - name: POSTGRES_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: conda-store-postgres-secret
-                  key: username
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: conda-store-postgres-secret
-                  key: password
-            - name: MINIO_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: conda-store-minio-secret
-                  key: username
-            - name: MINIO_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: conda-store-minio-secret
-                  key: password
-            - name: REDIS_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: conda-store-redis-secret
-                  key: password
-          volumeMounts:
-            - name: config
-              mountPath: "/etc/conda-store/"
-              readOnly: true
       restartPolicy: Always
-      volumes:
-        - name: config
-          configMap:
-            name: "{{ template "condaStore.fullname" . }}-ui-server"
