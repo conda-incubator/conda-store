@@ -258,7 +258,7 @@ class CondaStoreServer(Application):
             return JSONResponse(
                 {
                     "status": "error",
-                    "message": exc.detail,
+                    "message": exc,
                 },
                 status_code=exc.status_code,
             )

@@ -1,0 +1,7 @@
+apiVersion: v2
+name: conda-store
+description: A Helm chart for deploying conda-store to kubernetes
+type: application
+version: 0.1.0
+icon: https://raw.githubusercontent.com/conda-incubator/conda-store/refs/heads/main/docusaurus-docs/community/images/logos/conda-store-logo-vertical-lockup.svg
+home: https://github.com/conda-incubator/conda-store
