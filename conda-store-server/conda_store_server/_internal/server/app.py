@@ -197,9 +197,6 @@ class CondaStoreServer(Application):
 
         self.conda_store.ensure_directories()
         self.log.info(
-            f"Running conda-store with database: {self.conda_store.database_url}"
-        )
-        self.log.info(
             f"Running conda-store with store directory: {self.conda_store.store_directory}"
         )
 
