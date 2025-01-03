@@ -90,11 +90,11 @@ def setup_bad_data_db(conda_store):
             },
         ]
         default_values = {
-             "depends": "",
-             "md5": "",
-             "timestamp": 0,
-             "constrains": "",
-             "size": 0,
+            "depends": "",
+            "md5": "",
+            "timestamp": 0,
+            "constrains": "",
+            "size": 0,
         }
         for cpb in conda_package_builds:
             conda_package = orm.CondaPackageBuild(**cpb, **default_values)
@@ -110,17 +110,19 @@ def setup_bad_data_db(conda_store):
         db.execute(text("UPDATE conda_package_build SET channel_id=1 WHERE id=3"))
         # conda_package_build 4 should have package_id 2 after migration
         db.execute(text("UPDATE conda_package_build SET channel_id=2 WHERE id=4"))
-        
+
         # don't set conda_package_build 5 channel_id as a test case
         # conda_package_build 5 package_id should be unchanged (2) after migration
-        
+
         db.commit()
 
 
-def test_remove_conda_package_build_channel_basic(conda_store, alembic_config, alembic_runner):
+def test_remove_conda_package_build_channel_basic(
+    conda_store, alembic_config, alembic_runner
+):
     """Simply run the upgrade and downgrade for this migration"""
     # migrate all the way to the target revision
-    alembic_runner.migrate_up_to('89637f546129')
+    alembic_runner.migrate_up_to("89637f546129")
 
     # try downgrading
     alembic_runner.migrate_down_one()
@@ -138,11 +140,13 @@ def test_remove_conda_package_build_channel_basic(conda_store, alembic_config, a
             db.execute(text("SELECT channel_id from conda_package_build"))
 
 
-def test_remove_conda_package_build_bad_data(conda_store, alembic_config, alembic_runner):
+def test_remove_conda_package_build_bad_data(
+    conda_store, alembic_config, alembic_runner
+):
     """Simply run the upgrade and downgrade for this migration"""
-     # migrate all the way to the target revision
-    alembic_runner.migrate_up_to('89637f546129')
-    
+    # migrate all the way to the target revision
+    alembic_runner.migrate_up_to("89637f546129")
+
     # try downgrading
     alembic_runner.migrate_down_one()
 
@@ -163,27 +167,37 @@ def test_remove_conda_package_build_bad_data(conda_store, alembic_config, alembi
 
     # ensure all packages builds have the right package associated
     with conda_store.session_factory() as db:
-        build = db.query(orm.CondaPackageBuild).filter(
-            orm.CondaPackageBuild.id == 1
-        ).first()
+        build = (
+            db.query(orm.CondaPackageBuild)
+            .filter(orm.CondaPackageBuild.id == 1)
+            .first()
+        )
         assert build.package_id == 2
 
-        build = db.query(orm.CondaPackageBuild).filter(
-            orm.CondaPackageBuild.id == 2
-        ).first()
+        build = (
+            db.query(orm.CondaPackageBuild)
+            .filter(orm.CondaPackageBuild.id == 2)
+            .first()
+        )
         assert build.package_id == 1
 
-        build = db.query(orm.CondaPackageBuild).filter(
-            orm.CondaPackageBuild.id == 3
-        ).first()
+        build = (
+            db.query(orm.CondaPackageBuild)
+            .filter(orm.CondaPackageBuild.id == 3)
+            .first()
+        )
         assert build.package_id == 1
 
-        build = db.query(orm.CondaPackageBuild).filter(
-            orm.CondaPackageBuild.id == 4
-        ).first()
+        build = (
+            db.query(orm.CondaPackageBuild)
+            .filter(orm.CondaPackageBuild.id == 4)
+            .first()
+        )
         assert build.package_id == 2
 
-        build = db.query(orm.CondaPackageBuild).filter(
-            orm.CondaPackageBuild.id == 5
-        ).first()
+        build = (
+            db.query(orm.CondaPackageBuild)
+            .filter(orm.CondaPackageBuild.id == 5)
+            .first()
+        )
         assert build.package_id == 2
