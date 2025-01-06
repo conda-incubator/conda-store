@@ -78,7 +78,7 @@ def dynamic_conda_store_environment(conda_store, packages):
         )
     return environment_name
 
-@deprecated(sunset_date=datetime.date(2025, 2, 17))
+@deprecated(sunset_date=datetime.date(2025, 3, 17))
 def get_docker_image_manifest(conda_store, image, tag, timeout=10 * 60):
     namespace, *image_name = image.split("/")
 
@@ -129,13 +129,13 @@ def get_docker_image_manifest(conda_store, image, tag, timeout=10 * 60):
     return RedirectResponse(conda_store.storage.get_url(manifests_key))
 
 
-@deprecated(sunset_date=datetime.date(2025, 2, 17))
+@deprecated(sunset_date=datetime.date(2025, 3, 17))
 def get_docker_image_blob(conda_store, image, blobsum):
     blob_key = f"docker/blobs/{blobsum}"
     return RedirectResponse(conda_store.storage.get_url(blob_key))
 
 @router_registry.get("/v2/", deprecated=True)
-@deprecated(sunset_date=datetime.date(2025, 2, 17))
+@deprecated(sunset_date=datetime.date(2025, 3, 17))
 def v2(
     request: Request,
     entity=Depends(dependencies.get_entity),
@@ -149,7 +149,7 @@ def v2(
 @router_registry.get(
     "/v2/{rest:path}", deprecated=True
 )
-@deprecated(sunset_date=datetime.date(2025, 2, 17))
+@deprecated(sunset_date=datetime.date(2025, 3, 17))
 def list_tags(
     rest: str,
     request: Request,
