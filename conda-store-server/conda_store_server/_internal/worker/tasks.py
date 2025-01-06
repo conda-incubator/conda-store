@@ -269,9 +269,9 @@ def delete_build_artifact(db: Session, conda_store, build_artifact):
         # ignore key
         conda_prefix = build_artifact.build.build_path(conda_store)
         # be REALLY sure this is a directory within store directory
-        if str(conda_prefix).startswith(conda_store.config.store_directory) and os.path.isdir(
-            conda_prefix
-        ):
+        if str(conda_prefix).startswith(
+            conda_store.config.store_directory
+        ) and os.path.isdir(conda_prefix):
             shutil.rmtree(conda_prefix)
             db.delete(build_artifact)
     else:

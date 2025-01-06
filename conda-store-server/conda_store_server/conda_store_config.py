@@ -19,7 +19,7 @@ from traitlets import (
 )
 from traitlets.config import LoggingConfigurable
 
-from conda_store_server import CONDA_STORE_DIR, BuildKey, api, registry, storage
+from conda_store_server import CONDA_STORE_DIR, BuildKey, api, storage
 from conda_store_server._internal import conda_utils, environment, schema, utils
 
 
@@ -124,7 +124,6 @@ class CondaStore(LoggingConfigurable):
         if self.redis_url is not None:
             return self.redis_url
         return f"db+{self.database_url}"
-
 
     container_registry_class = Type(allow_none=True, help="(deprecated)")
 
@@ -291,6 +290,7 @@ class CondaStore(LoggingConfigurable):
         try:
             if self.redis_url is not None:
                 import redis
+
                 r = redis.Redis.from_url(self.redis_url)
                 r.ping()
         except Exception:
