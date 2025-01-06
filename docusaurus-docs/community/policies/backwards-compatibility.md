@@ -140,8 +140,8 @@ get community feedback.
 #### Removing versions of API endpoints
 
 Removal of an API endpoint is sometimes necessary. Deprecation notices and removals will
-always be available in [release notes](https://github.com/conda-incubator/conda-store/blob/main/CHANGELOG.md). Further, documentation should be updated to reflect these changes. This should include:
-- version number of the release where this was deprecated
+always be documented in the [conda-store release notes](https://github.com/conda-incubator/conda-store/blob/main/CHANGELOG.md). Further, documentation should be updated to reflect these changes. This should include:
+- version number of the release where the deprecation was introduced
 - provide suggestions for alternatives (if possible)
 - provide justification for the removal (such as a link to the issue
   or CVE that necessitated the removal).
@@ -175,9 +175,9 @@ response headers to the endpoint
 
 The "removal date" should be specified as a [HTTP-Date](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Date).
 
-###### Choosing a removal date
+###### Choosing a deprecation date
 
-The `Sunset` date indicates the date after which conda store with remove the functionality
+The `Sunset` date indicates the date after which conda-store will remove the functionality
 of this endpoint.
 * Any time before this date, users should expect this endpoint to work
 * Any time after this date, the endpoint may still be available (due to no release having gone out), but users should expect that this endpoint will be removed
@@ -354,13 +354,10 @@ Public constants should not have their type or their value changed.
 
 ##### Configuration elements
 
-Configuration elements that are deprecated will be marked with a `deprecation` note
-in the docs and `--help` output. For example:
-```
-$ conda-store-server --help-all
-
+Deprecated configuration elements will be marked with a `deprecation` note
+in the docs and the CLI `--help-all` output. For example:
 ...
---CondaStoreServer.enable_registry=<Bool>
+--CondaStoreServer.enable_registry
    (deprecated) enable the docker registry for conda-store
    Default: False
 ...
