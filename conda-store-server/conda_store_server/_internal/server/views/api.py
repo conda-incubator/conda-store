@@ -3,7 +3,7 @@
 # license that can be found in the LICENSE file.
 
 import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Callable
 
 import pydantic
 import yaml
@@ -105,14 +105,14 @@ def paginated_api_response(
         "count": count,
     }
 
-def deprecated(sunset_date: datetime.date):
+def deprecated(sunset_date: datetime.date) -> Callable:
     """Decorator to add deprecation headers to a HTTP response. These will include:
         {
             Deprecation: True
             Sunset: <sunset_date>
         }
 
-    See the conda-store backwards compatibility policy for appropriate use of 
+    See the conda-store backwards compatibility policy for appropriate use of
     deprecations https://conda.store/community/policies/backwards-compatibility.
 
     Parameters
