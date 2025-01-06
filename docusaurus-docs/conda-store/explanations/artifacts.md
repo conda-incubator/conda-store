@@ -65,8 +65,9 @@ To install the tarball, follow the [instructions for the target machine in the c
 
 ## Docker images (deprecated)
 
-:::warning
-Docker image creation is currently not supported.
+:::warning[Deprecation notice]
+Docker image creation is currently not supported. This feature is scheduled to be 
+removed March 17, 2025.
 :::
 
 ### Authentication
