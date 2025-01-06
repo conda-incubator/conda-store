@@ -1353,7 +1353,7 @@ async def api_get_build_archive(
 
 
 @router_api.get("/build/{build_id}/docker/", deprecated=True)
-@deprecated(sunset_date=datetime.date(2025, 2, 17))
+@deprecated(sunset_date=datetime.date(2025, 3, 17))
 async def api_get_build_docker_image_url(
     build_id: int,
     request: Request,
