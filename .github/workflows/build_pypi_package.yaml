@@ -30,9 +30,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - run: echo "Running on conda-store-server"
-
-      - name: "Build and check package - conda-store-server 📦"
+      - name: "Build and check package 📦"
         uses: hynek/build-and-inspect-python-package@v2
         id: baipp
         with:

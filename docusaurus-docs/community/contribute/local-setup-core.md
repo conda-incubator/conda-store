@@ -8,7 +8,7 @@ description: Local development setup for conda-store
 There are two main ways to set up your local environment and conda-store services (web UI, API server, database, etc.) for development:
 
 - Using [Docker and Docker compose](#docker-setup-recommended): This is the recommended approach for working on `conda-store-server` library.
-- Using [standalone mode](#standalone-setup): This approach avoids using docker and starts the conda-store services as one process
+- Using [standalone mode](#standalone-setup): This approach avoids using Docker and starts the conda-store services as one process
 
 :::important
 You need a [local copy of the `conda-store` repository](community/contribute/contribute-code#setup-for-local-development) for the development setup.

@@ -6,7 +6,7 @@ description: Introduction to conda-store (core) documentation
 
 # conda-store (core)
 
-The [`conda-store` repository on GitHub][conda-store-repo] contains the conda-store application. It has two entrypoints
+The [`conda-store` repository on GitHub][conda-store-repo] contains the conda-store application. It has two entrypoints:
 
 - **`conda-store-server`**: web server that provides the `conda-store` "service" through a REST API
 - **`conda-store-worker`**: celery worker that runs actions for conda-store. For example, building, locking and installing environments

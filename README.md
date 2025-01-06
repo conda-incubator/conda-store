@@ -16,6 +16,9 @@ Flexible. Reproducible. Governable.
 |Community | [![Open an issue](https://img.shields.io/badge/%F0%9F%93%9D%20Open-an%20issue-gray.svg?colorA=2b2d42&colorB=206532&style=flat.svg)](https://github.com/conda-incubator/conda-store/issues/new/choose) [![Community guidelines](https://img.shields.io/badge/🤝%20Community-guidelines-gray.svg?colorA=2b2d42&colorB=206532&style=flat.svg)](https://conda.store/community/introduction)|
 |Releases | [![PyPI release conda-store-server](https://img.shields.io/pypi/v/conda-store-server?label=pypi%20conda-store-server)](https://badge.fury.io/py/conda-store-server) [![conda-forge release conda-store-server](https://img.shields.io/conda/vn/conda-forge/conda-store-server?label=conda-forge%20conda-store-server)]((https://anaconda.org/conda-forge/conda-store-server)) |
 
+> [!CAUTION]
+> conda-store (client) will no longer be recieving updates!
+> The last release is [2024.11.2](https://pypi.org/project/conda-store/2024.11.2/)
 ---
 
 conda-store provides the familiarity and flexibility of conda environments, without compromising reliability for
