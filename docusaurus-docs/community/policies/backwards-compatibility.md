@@ -185,44 +185,9 @@ of this endpoint.
 Since the conda-store project users CalVer, the `Sunset` date should be set to at least 2 months
 from the release that the deprecation notice first appears in.
 
-##### 2. Remove endpoint functionality
+##### 2. Remove the endpoint
 
-Once we have reached the `Sunset` date (from the step above), conda-store may
-remove the functionality of the endpoint. To indicate that this endpoint is no
-longer functional, the endpoint must:
-* return a status code of `410 Gone`
-* return a json object stating when and why the endpoint was removed and what
-version of the endpoint is available currently (if any).
-
-For example:
-
-```python
-{
-  # the pull request that removed the endpoint
-  "reference_pull_request": "https://github.com/conda-incubator/conda-store/pull/0000",
-  # the date the endpoint was removed (as HTTP-Date). This should be after the Sunset date specified
-  # in the deprecation step
-  "removal_date": "Mon, 16 Feb 2025 23:59:59 UTC"
-  # the reason for the removal, ideally with a link to a CVE if one is available
-  "removal_reason": "Removed to address CVE-2021-32677 (https://nvd.nist.gov/vuln/detail/CVE-2021-32677)",
-  # the endpoint that developers should use as a replacement (if applicable)
-  "new_endpoint": "api/v3/this/should/be/used/instead",
-}
-```
-
-###### Choosing a removal date
-
-The `removal_date` date indicates the date after which conda store with remove the endpoint
-from the codebase. After this point, the endpoint will return a `404` response code.
-* Any time before this date, users should expect this endpoint to return a `410` response code
-* Any time after this date, the endpoint may still return a `410` response (due to no release having gone out), but users should expect that this endpoint will disappear
-
-Since the conda-store project users CalVer, the `removal_date` date should be set to at least 2 months
-from the release that the deprecation notice first appears in.
-
-##### 3. Remove the endpoint
-
-Once we have reached the `removal_date` from step (2), the API endpoint may be fully
+Once we have reached the `Sunset` date from step (1), the API endpoint may be fully
 removed. At this stage, users should expect to recieve a `404 Not Found` error for the
 endpoint.
 
