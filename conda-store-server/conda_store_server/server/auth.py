@@ -551,7 +551,7 @@ form.addEventListener('submit', loginHandler);
 
         request.session["next"] = next or request.session.get("next")
         redirect_url = request.session.pop("next") or str(
-            request.url_for("ui_list_environments")
+            request.base_url
         )
         response = await self._post_login_method_response(redirect_url)
         response.set_cookie(
@@ -568,7 +568,7 @@ form.addEventListener('submit', loginHandler);
         return response
 
     def post_logout_method(self, request: Request, next: Optional[str] = None):
-        redirect_url = next or request.url_for("ui_list_environments")
+        redirect_url = next or request.base_url
         response = RedirectResponse(redirect_url, status_code=303)
         response.set_cookie(self.cookie_name, "", domain=self.cookie_domain, expires=0)
         return response
