@@ -757,7 +757,6 @@ class CondaPackageBuild(Base):
 
     __table_args__ = (
         UniqueConstraint(
-            "channel_id",
             "package_id",
             "subdir",
             "build",
@@ -771,14 +770,6 @@ class CondaPackageBuild(Base):
 
     package_id: Mapped[int] = mapped_column(ForeignKey("conda_package.id"))
     package: Mapped["CondaPackage"] = relationship(back_populates="builds")
-
-    """
-    Some package builds have the exact same data from different channels.
-    Thus, when adding a channel, populating CondaPackageBuild can encounter
-    duplicate keys errors. That's why we need to distinguish them by channel_id.
-    """
-    channel_id: Mapped[int] = mapped_column(ForeignKey("conda_channel.id"))
-    channel: Mapped["CondaChannel"] = relationship(CondaChannel)
 
     build: Mapped[str] = mapped_column(Unicode(64), index=True)
     build_number: Mapped[int]
