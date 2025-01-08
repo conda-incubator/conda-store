@@ -44,7 +44,9 @@ class API:
         token: str = "",
         username: str = "username",
         password: str = "password",
+        verify_ssl: bool = True,
     ) -> None:
+        self.verify_ssl = verify_ssl
         self.base_url = base_url
         self.token = token
         if not token:
@@ -64,7 +66,7 @@ class API:
         headers = headers or {}
         headers["Authorization"] = f"Bearer {self.token}"
         response = requests.request(
-            method, url, json=json_data, headers=headers, timeout=timeout
+            method, url, json=json_data, headers=headers, timeout=timeout, verify=self.verify_ssl
         )
         response.raise_for_status()
         return response
@@ -89,11 +91,11 @@ class API:
         """Log in to the API and set an access token."""
         json_data = {"username": username, "password": password}
         response = requests.post(
-            f"{self.base_url}/login", json=json_data, timeout=TIMEOUT
+            f"{self.base_url}/login", json=json_data, timeout=TIMEOUT, verify=self.verify_ssl
         )
         cookies = response.cookies.get_dict()
         token_response = requests.post(
-            f"{self.base_url}/api/v1/token", cookies=cookies, timeout=TIMEOUT
+            f"{self.base_url}/api/v1/token", cookies=cookies, timeout=TIMEOUT, verify=self.verify_ssl
         )
         data = token_response.json()
         self.token = data["data"]["token"]

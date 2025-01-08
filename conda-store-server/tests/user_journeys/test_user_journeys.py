@@ -23,6 +23,15 @@ def token(base_url) -> str:
     return os.getenv("CONDA_STORE_TOKEN", "")
 
 
+@pytest.fixture(scope="session")
+def verify_ssl() -> bool:
+    """Reads env var to determine if requests should disable ssl verification.
+    If CONDA_STORE_TEST_VERIFY_SSL is 0, ssl verification is disabled. For all
+    other inputs, ssl verification is enabled.
+    """
+    return bool(os.environ.get("CONDA_STORE_TEST_VERIFY_SSL", True))
+
+
 @pytest.mark.user_journey
 @pytest.mark.parametrize(
     "specification_path",
@@ -31,10 +40,10 @@ def token(base_url) -> str:
     ],
 )
 def test_admin_user_can_create_environment(
-    base_url: str, token: str, specification_path: str
+    base_url: str, token: str, specification_path: str, verify_ssl: bool
 ) -> None:
     """Test that an admin user can create an environment."""
-    api = utils.API(base_url=base_url, token=token)
+    api = utils.API(base_url=base_url, token=token, verify_ssl=verify_ssl)
     namespace = "default"
     environment = api.create_environment(namespace, specification_path).json()["data"][
         "specification"
@@ -50,10 +59,10 @@ def test_admin_user_can_create_environment(
     ],
 )
 def test_admin_login_and_delete_shared_environment(
-    base_url: str, specification_path: str
+    base_url: str, specification_path: str, verify_ssl: bool
 ) -> None:
     """Test that an admin can login and create/delete an env in a shared namespace."""
-    api = utils.API(base_url=base_url)
+    api = utils.API(base_url=base_url, verify_ssl=verify_ssl)
 
     # Create a shared namespace; default permissions for namepace/environment
     # */* is admin
@@ -75,10 +84,10 @@ def test_admin_login_and_delete_shared_environment(
     ],
 )
 def test_user_login_and_create_shared_environment(
-    base_url: str, specification_path: str
+    base_url: str, specification_path: str, verify_ssl: bool
 ) -> None:
     """Test that a user can login and create an environment in a shared namespace."""
-    api = utils.API(base_url=base_url)
+    api = utils.API(base_url=base_url, verify_ssl=verify_ssl)
 
     # Create a shared namespace; default permissions for namepace/environment
     # */* is admin
@@ -102,13 +111,13 @@ def test_user_login_and_create_shared_environment(
 
 
 @pytest.mark.user_journey
-def test_admin_set_active_build(base_url: str):
+def test_admin_set_active_build(base_url: str, verify_ssl: bool):
     """Test that an admin can delete environments."""
     specs = [
         "tests/user_journeys/test_data/simple_environment.yaml",
         "tests/user_journeys/test_data/simple_environment2.yaml",
     ]
-    api = utils.API(base_url=base_url)
+    api = utils.API(base_url=base_url, verify_ssl=verify_ssl)
     namespace = api.create_namespace().json()["data"]["name"]
     envs = set()
     for spec in specs:
@@ -150,9 +159,9 @@ def test_admin_set_active_build(base_url: str):
 
 
 @pytest.mark.user_journey
-def test_failed_build_logs(base_url: str):
+def test_failed_build_logs(base_url: str, verify_ssl: bool):
     """Test that a user can access logs for a failed build."""
-    api = utils.API(base_url=base_url)
+    api = utils.API(base_url=base_url, verify_ssl=verify_ssl)
     namespace = "default"
     build_request = api.create_environment(
         namespace,
@@ -172,9 +181,9 @@ def test_failed_build_logs(base_url: str):
 
 
 @pytest.mark.user_journey
-def test_cancel_build(base_url: str):
+def test_cancel_build(base_url: str, verify_ssl: bool):
     """Test that a user cancel a build in progress."""
-    api = utils.API(base_url=base_url)
+    api = utils.API(base_url=base_url, verify_ssl=verify_ssl)
     namespace = "default"
     build_id = api.create_environment(
         namespace,
@@ -204,9 +213,9 @@ def test_cancel_build(base_url: str):
 
 
 @pytest.mark.user_journey
-def test_get_lockfile(base_url: str):
+def test_get_lockfile(base_url: str, verify_ssl: bool):
     """Test that an admin can access a valid lockfile for a build."""
-    api = utils.API(base_url=base_url)
+    api = utils.API(base_url=base_url, verify_ssl=verify_ssl)
     namespace = "default"
     build_request = api.create_environment(
         namespace,
