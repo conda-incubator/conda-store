@@ -30,7 +30,7 @@ def conda_store_validate_specification(
     specification: schema.CondaSpecification,
 ) -> schema.CondaSpecification:
     settings = conda_store.get_settings(
-        db, namespace=namespace, environment_name=specification.name
+        namespace=namespace, environment_name=specification.name
     )
 
     specification = environment.validate_environment_channels(specification, settings)
@@ -50,7 +50,7 @@ def conda_store_validate_action(
     namespace: str,
     action: schema.Permissions,
 ) -> None:
-    settings = conda_store.get_settings(db)
+    settings = conda_store.get_settings()
     system_metrics = api.get_system_metrics(db)
 
     if action in (
