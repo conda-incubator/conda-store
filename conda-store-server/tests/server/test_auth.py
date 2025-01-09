@@ -4,15 +4,15 @@
 
 import datetime
 import uuid
-from fastapi import Request
 
 import pytest
+from fastapi import Request
 
 from conda_store_server._internal.schema import AuthenticationToken, Permissions
 from conda_store_server.server.auth import (
+    Authentication,
     AuthenticationBackend,
     RBACAuthorizationBackend,
-    Authentication,
 )
 
 
@@ -534,13 +534,15 @@ def test_is_subset_entity_permissions(
 
 def test_post_logout_method_default_next():
     authentication = Authentication()
-    test_request = Request(scope={
-        "type": "http",
-        "path": "/logout",
-        "app_root_path": "mytest.url.com",
-        "headers": [
-            ("host", "mytest.url.com"),
-        ],
-    })
+    test_request = Request(
+        scope={
+            "type": "http",
+            "path": "/logout",
+            "app_root_path": "mytest.url.com",
+            "headers": [
+                ("host", "mytest.url.com"),
+            ],
+        }
+    )
     redirect_response = authentication.post_logout_method(request=test_request)
     assert redirect_response.headers["location"] == "mytest.url.com/"
