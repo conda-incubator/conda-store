@@ -84,7 +84,9 @@ class CondaStoreServer(Application):
     )
 
     enable_registry = Bool(
-        False, help="(deprecated) enable the docker registry for conda-store", config=True
+        False,
+        help="(deprecated) enable the docker registry for conda-store",
+        config=True,
     )
 
     enable_metrics = Bool(
