@@ -1158,3 +1158,22 @@ def test_api_list_environments_by_namespace_name(
     )
     assert [env.name for env in sorted_envs] == env_names
     assert [env.namespace.name for env in sorted_envs] == namespace_names
+
+
+def test_api_list_environments_no_qparam(
+    conda_store_server,
+    testclient,
+    seed_conda_store_big,
+    authenticate,
+):
+    """Test the REST API lists the paginated envs when sorting by namespace."""
+    response = testclient.get("api/v1/environment/")
+    response.raise_for_status()
+
+    model = schema.APIListEnvironment.model_validate(response.json())
+    assert model.status == schema.APIStatus.OK
+
+    env_ids = [env.id for env in model.data]
+
+    # Check that the environments are sorted by ID
+    assert sorted(env_ids) == env_ids

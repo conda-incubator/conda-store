@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import base64
 import operator
-from typing import Any
+from typing import Any, Optional
 
 import pydantic
 from fastapi import HTTPException
@@ -159,7 +159,7 @@ def paginate(
 
 class CursorPaginatedArgs(pydantic.BaseModel):
     limit: int
-    order: str
+    order: Optional[str] = None
     sort_by: list[str]
 
     @pydantic.field_validator("sort_by")
