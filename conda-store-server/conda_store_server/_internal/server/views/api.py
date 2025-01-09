@@ -1429,28 +1429,25 @@ async def api_get_settings(
     namespace: str = None,
     environment_name: str = None,
 ):
-    with conda_store.get_db() as db:
-        if namespace is None:
-            arn = ""
-        elif environment_name is None:
-            arn = namespace
-        else:
-            arn = f"{namespace}/{environment_name}"
+    if namespace is None:
+        arn = ""
+    elif environment_name is None:
+        arn = namespace
+    else:
+        arn = f"{namespace}/{environment_name}"
 
-        auth.authorize_request(
-            request,
-            arn,
-            {Permissions.SETTING_READ},
-            require=True,
-        )
+    auth.authorize_request(
+        request,
+        arn,
+        {Permissions.SETTING_READ},
+        require=True,
+    )
 
-        return {
-            "status": "ok",
-            "data": conda_store.get_settings(
-                namespace, environment_name
-            ).model_dump(),
-            "message": None,
-        }
+    return {
+        "status": "ok",
+        "data": conda_store.get_settings(namespace, environment_name).model_dump(),
+        "message": None,
+    }
 
 
 @router_api.put(
@@ -1473,28 +1470,27 @@ async def api_put_settings(
     namespace: str = None,
     environment_name: str = None,
 ):
-    with conda_store.get_db() as db:
-        if namespace is None:
-            arn = ""
-        elif environment_name is None:
-            arn = namespace
-        else:
-            arn = f"{namespace}/{environment_name}"
+    if namespace is None:
+        arn = ""
+    elif environment_name is None:
+        arn = namespace
+    else:
+        arn = f"{namespace}/{environment_name}"
 
-        auth.authorize_request(
-            request,
-            arn,
-            {Permissions.SETTING_UPDATE},
-            require=True,
-        )
+    auth.authorize_request(
+        request,
+        arn,
+        {Permissions.SETTING_UPDATE},
+        require=True,
+    )
 
-        try:
-            conda_store.set_settings(namespace, environment_name, data)
-        except ValueError as e:
-            raise HTTPException(status_code=400, detail=str(e.args[0]))
+    try:
+        conda_store.set_settings(namespace, environment_name, data)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e.args[0]))
 
-        return {
-            "status": "ok",
-            "data": None,
-            "message": f"global setting keys {list(data.keys())} updated",
-        }
+    return {
+        "status": "ok",
+        "data": None,
+        "message": f"global setting keys {list(data.keys())} updated",
+    }

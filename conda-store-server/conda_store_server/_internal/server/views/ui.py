@@ -293,34 +293,33 @@ async def ui_get_setting(
     namespace: str = None,
     environment_name: str = None,
 ):
-    with conda_store.get_db() as db:
-        if namespace is None:
-            arn = ""
-        elif environment_name is None:
-            arn = namespace
-        else:
-            arn = f"{namespace}/{environment_name}"
+    if namespace is None:
+        arn = ""
+    elif environment_name is None:
+        arn = namespace
+    else:
+        arn = f"{namespace}/{environment_name}"
 
-        auth.authorize_request(
-            request,
-            arn,
-            {Permissions.SETTING_READ},
-            require=True,
-        )
+    auth.authorize_request(
+        request,
+        arn,
+        {Permissions.SETTING_READ},
+        require=True,
+    )
 
-        api_setting_url = str(request.url_for("api_put_settings"))
-        if namespace is not None:
-            api_setting_url += f"{namespace}/"
-        if environment_name is not None:
-            api_setting_url += f"{environment_name}/"
+    api_setting_url = str(request.url_for("api_put_settings"))
+    if namespace is not None:
+        api_setting_url += f"{namespace}/"
+    if environment_name is not None:
+        api_setting_url += f"{environment_name}/"
 
-        context = {
-            "request": request,
-            "namespace": namespace,
-            "environment_name": environment_name,
-            "api_settings_url": api_setting_url,
-            "settings": conda_store.get_settings(
-                namespace=namespace, environment_name=environment_name
-            ),
-        }
+    context = {
+        "request": request,
+        "namespace": namespace,
+        "environment_name": environment_name,
+        "api_settings_url": api_setting_url,
+        "settings": conda_store.get_settings(
+            namespace=namespace, environment_name=environment_name
+        ),
+    }
     return templates.TemplateResponse(request, "setting.html", context)

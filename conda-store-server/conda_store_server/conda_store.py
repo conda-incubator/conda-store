@@ -8,14 +8,13 @@ import os
 from contextlib import contextmanager
 from typing import Any, Dict
 
-import pydantic
 from celery import Celery, group
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import QueuePool
 
 from conda_store_server import CONDA_STORE_DIR, api, conda_store_config, storage
+from conda_store_server._internal import conda_utils, orm, schema, settings, utils
 from conda_store_server.exception import CondaStoreError
-from conda_store_server._internal import conda_utils, orm, schema, utils, settings
 from conda_store_server.plugins import hookspec, plugin_manager
 from conda_store_server.plugins.types import lock
 from conda_store_server.server import schema as auth_schema
@@ -73,8 +72,7 @@ class CondaStore:
             # will release the connection, however, the connection may be restablished.
             # ref: https://docs.sqlalchemy.org/en/20/orm/session_basics.html#closing
             self._settings = settings.Settings(
-                db=db,
-                deployment_default=schema.Settings(**self.config.trait_values())
+                db=db, deployment_default=schema.Settings(**self.config.trait_values())
             )
         return self._settings
 
@@ -196,7 +194,7 @@ class CondaStore:
         return self.settings.get_settings(
             namespace=namespace, environment_name=environment_name
         )
-    
+
     def get_setting(
         self, key: str, namespace: str = None, environment_name: str = None
     ) -> schema.Settings:
