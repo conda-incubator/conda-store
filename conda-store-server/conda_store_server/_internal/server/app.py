@@ -256,7 +256,9 @@ class CondaStoreServer(Application):
             return response
 
         @app.exception_handler(HTTPException)
-        async def http_exception_handler(request, exc):
+        async def http_exception_handler(
+            request: Request, exc: HTTPException
+        ) -> JSONResponse:
             return JSONResponse(
                 {
                     "status": "error",
@@ -264,14 +266,6 @@ class CondaStoreServer(Application):
                 },
                 status_code=exc.status_code,
             )
-
-        # Prints exceptions to the terminal
-        # https://fastapi.tiangolo.com/tutorial/handling-errors/#re-use-fastapis-exception-handlers
-        # https://github.com/tiangolo/fastapi/issues/1241
-        @app.exception_handler(Exception)
-        async def exception_handler(request, exc):
-            print(exc)
-            return await http_exception_handler(request, exc)
 
         app.include_router(
             self.authentication.router,
