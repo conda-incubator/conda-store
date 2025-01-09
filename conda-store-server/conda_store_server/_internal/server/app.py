@@ -256,7 +256,9 @@ class CondaStoreServer(Application):
             return response
 
         @app.exception_handler(HTTPException)
-        async def http_exception_handler(request: Request, exc: HTTPException) -> JSONResponse:
+        async def http_exception_handler(
+            request: Request, exc: HTTPException
+        ) -> JSONResponse:
             return JSONResponse(
                 {
                     "status": "error",
