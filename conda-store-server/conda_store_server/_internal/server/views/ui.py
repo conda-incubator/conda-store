@@ -32,7 +32,7 @@ async def ui_create_get_environment(
         )
 
         default_namespace = (
-            entity.primary_namespace if entity else conda_store.default_namespace
+            entity.primary_namespace if entity else conda_store.config.default_namespace
         )
 
         def sort_namespace(n):

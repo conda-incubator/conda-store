@@ -329,17 +329,6 @@ def test_environment_crud(db):
     )
     assert environment is not None
 
-    # # check that deleting a environment works
-    # api.delete_environment(conda_store.db, namespace_id=namespace.id, name=environment_name)
-    # conda_store.db.commit()
-
-    # assert len(api.list_environment(conda_store.db).all()) == 0
-
-    # # check that ensuring a environment doesn't creates one
-    # api.ensure_environment(conda_store.db, name=environment_name, namespace_id=namespace.id)
-
-    # assert len(api.list_environments(conda_store.db).all()) == 1
-
 
 def test_get_set_keyvaluestore(db):
     setting_1 = {"a": 1, "b": 2}
@@ -364,7 +353,7 @@ def test_get_set_keyvaluestore(db):
 
 
 def test_build_path_too_long(db, conda_store, simple_specification):
-    conda_store.store_directory = "A" * 800
+    conda_store.config.store_directory = "A" * 800
     build_id = conda_store.register_environment(
         db, specification=simple_specification, namespace="pytest"
     )

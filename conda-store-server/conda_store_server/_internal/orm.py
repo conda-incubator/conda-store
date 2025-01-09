@@ -304,10 +304,10 @@ class Build(Base):
         else:
             namespace = ""
 
-        store_directory = os.path.abspath(conda_store.store_directory)
+        store_directory = os.path.abspath(conda_store.config.store_directory)
         res = (
             pathlib.Path(
-                conda_store.build_directory.format(
+                conda_store.config.build_directory.format(
                     store_directory=store_directory,
                     namespace=namespace,
                 )
@@ -320,7 +320,7 @@ class Build(Base):
             raise BuildPathError("build_path too long: must be <= 255 characters")
         # Note: cannot use the '/' operator to prepend the extended-length
         # prefix
-        if sys.platform == "win32" and conda_store.win_extended_length_prefix:
+        if sys.platform == "win32" and conda_store.config.win_extended_length_prefix:
             return pathlib.Path(f"\\\\?\\{res}")
         else:
             return res
@@ -342,17 +342,17 @@ class Build(Base):
         if BuildKey.current_version() >= 3:
             return None
 
-        store_directory = os.path.abspath(conda_store.store_directory)
+        store_directory = os.path.abspath(conda_store.config.store_directory)
         namespace = self.environment.namespace.name
         name = self.specification.name
         res = pathlib.Path(
-            conda_store.environment_directory.format(
+            conda_store.config.environment_directory.format(
                 store_directory=store_directory, namespace=namespace, name=name
             )
         )
         # Note: cannot use the '/' operator to prepend the extended-length
         # prefix
-        if sys.platform == "win32" and conda_store.win_extended_length_prefix:
+        if sys.platform == "win32" and conda_store.config.win_extended_length_prefix:
             return pathlib.Path(f"\\\\?\\{res}")
         else:
             return res
@@ -757,7 +757,6 @@ class CondaPackageBuild(Base):
 
     __table_args__ = (
         UniqueConstraint(
-            "channel_id",
             "package_id",
             "subdir",
             "build",
@@ -771,14 +770,6 @@ class CondaPackageBuild(Base):
 
     package_id: Mapped[int] = mapped_column(ForeignKey("conda_package.id"))
     package: Mapped["CondaPackage"] = relationship(back_populates="builds")
-
-    """
-    Some package builds have the exact same data from different channels.
-    Thus, when adding a channel, populating CondaPackageBuild can encounter
-    duplicate keys errors. That's why we need to distinguish them by channel_id.
-    """
-    channel_id: Mapped[int] = mapped_column(ForeignKey("conda_channel.id"))
-    channel: Mapped["CondaChannel"] = relationship(CondaChannel)
 
     build: Mapped[str] = mapped_column(Unicode(64), index=True)
     build_number: Mapped[int]
