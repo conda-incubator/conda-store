@@ -14,7 +14,9 @@ import yaml
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from conda_store_server import api, app, storage
+from conda_store_server import api, storage
+from conda_store_server.conda_store import CondaStore
+from conda_store_server.conda_store_config import CondaStore as CondaStoreConfig
 
 from conda_store_server._internal import (  # isort:skip
     action,
@@ -35,8 +37,8 @@ def celery_config(tmp_path, conda_store):
     config = conda_store.celery_config
     config["traitlets"] = {
         "CondaStore": {
-            "database_url": conda_store.database_url,
-            "store_directory": conda_store.store_directory,
+            "database_url": conda_store.config.database_url,
+            "store_directory": conda_store.config.store_directory,
         }
     }
     config["beat_schedule_filename"] = str(
@@ -85,14 +87,14 @@ def conda_store_server(conda_store_config):
 
     _conda_store = _conda_store_server.conda_store
 
-    pathlib.Path(_conda_store.store_directory).mkdir(exist_ok=True)
+    pathlib.Path(_conda_store.config.store_directory).mkdir(exist_ok=True)
 
-    dbutil.upgrade(_conda_store.database_url)
+    dbutil.upgrade(_conda_store.config.database_url)
 
     with _conda_store.session_factory() as db:
         _conda_store.ensure_settings(db)
         _conda_store.configuration(db).update_storage_metrics(
-            db, _conda_store.store_directory
+            db, _conda_store.config.store_directory
         )
 
         _conda_store.celery_app
@@ -167,16 +169,17 @@ def seed_conda_store(db, conda_store):
 
 @pytest.fixture
 def conda_store(conda_store_config):
-    _conda_store = app.CondaStore(config=conda_store_config)
+    _conda_store_config = CondaStoreConfig(config=conda_store_config)
+    _conda_store = CondaStore(config=_conda_store_config)
 
-    pathlib.Path(_conda_store.store_directory).mkdir(exist_ok=True)
+    pathlib.Path(_conda_store.config.store_directory).mkdir(exist_ok=True)
 
-    dbutil.upgrade(_conda_store.database_url)
+    dbutil.upgrade(_conda_store.config.database_url)
 
     with _conda_store.session_factory() as db:
         _conda_store.ensure_settings(db)
         _conda_store.configuration(db).update_storage_metrics(
-            db, _conda_store.store_directory
+            db, _conda_store.config.store_directory
         )
 
         _conda_store.celery_app
@@ -276,7 +279,7 @@ def conda_prefix(conda_store, tmp_path, request):
     specification = schema.CondaSpecification(**request.param)
 
     action.action_install_specification(
-        conda_command=conda_store.conda_command,
+        conda_command=conda_store.config.conda_command,
         specification=specification,
         conda_prefix=conda_prefix,
     )
@@ -328,7 +331,7 @@ def _seed_conda_store(
 
 def _create_build_packages(db: Session, conda_store, build: orm.Build):
     channel_name = conda_utils.normalize_channel_name(
-        conda_store.conda_channel_alias, "conda-forge"
+        conda_store.config.conda_channel_alias, "conda-forge"
     )
     channel = api.ensure_conda_channel(db, channel_name)
 
