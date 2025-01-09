@@ -2,11 +2,11 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
 
-from typing import Any, Dict, Callable
 import functools
+from typing import Any, Callable, Dict
 
-from sqlalchemy.orm import Session
 import pydantic
+from sqlalchemy.orm import Session
 
 from conda_store_server import api
 from conda_store_server._internal import schema
@@ -23,6 +23,7 @@ class Settings:
             result = func(self, *args, **kwargs)
             self.db.close()
             return result
+
         return wrapper
 
     @_ensure_closed_session
@@ -110,12 +111,18 @@ class Settings:
         if len(prefixes) > 0:
             # get the fields that scoped globally. These are the keys that will NOT be
             # merged on for namespace and environment prefixes.
-            global_fields = [k for k, v in schema.Settings.model_fields.items() if v.json_schema_extra["metadata"]["global"]]
+            global_fields = [
+                k
+                for k, v in schema.Settings.model_fields.items()
+                if v.json_schema_extra["metadata"]["global"]
+            ]
             # start building settings with the least specific defaults
             for prefix in prefixes:
                 new_settings = api.get_kvstore_key_values(self.db, prefix)
                 # remove any global fields
-                new_settings = {k: v for k, v in new_settings.items() if k not in global_fields}
+                new_settings = {
+                    k: v for k, v in new_settings.items() if k not in global_fields
+                }
                 settings.update(new_settings)
 
         return schema.Settings(**settings)
@@ -123,7 +130,7 @@ class Settings:
     @_ensure_closed_session
     def get_setting(
         self, key: str, namespace: str = None, environment_name: str = None
-    ) -> Any:
+    ):
         """Get a given setting at the given level of specificity. Will short
         cut and look up global setting directly even if a namespace/environment
         is specified
@@ -142,11 +149,10 @@ class Settings:
         Any
             setting value, merged for the given level of specificity
         """
-        
         field = schema.Settings.model_fields.get(key)
         if field is None:
-            return
-        
+            return None
+
         prefixes = ["setting"]
         if field.json_schema_extra["metadata"]["global"] is False:
             if namespace is not None:
