@@ -117,7 +117,7 @@ def test_generate_constructor_installer(
             "conda_store_server._internal.action.generate_constructor_installer.logged_command"
         ) as mock_command:
             generate_constructor_installer.action_generate_constructor_installer(
-                conda_command=conda_store.conda_command,
+                conda_command=conda_store.config.conda_command,
                 specification=specification,
                 installer_dir=installer_dir,
                 version="1",
@@ -162,7 +162,7 @@ def test_install_specification(tmp_path, conda_store, simple_specification):
     conda_prefix = tmp_path / "test"
 
     action.action_install_specification(
-        conda_command=conda_store.conda_command,
+        conda_command=conda_store.config.conda_command,
         specification=simple_specification,
         conda_prefix=conda_prefix,
     )
@@ -183,7 +183,7 @@ def test_install_lockfile(tmp_path, conda_store, simple_conda_lock):
 @pytest.mark.long_running_test
 def test_generate_conda_export(conda_store, conda_prefix):
     context = action.action_generate_conda_export(
-        conda_command=conda_store.conda_command, conda_prefix=conda_prefix
+        conda_command=conda_store.config.conda_command, conda_prefix=conda_prefix
     )
     # The env name won't be correct because conda only sets the env name when
     # an environment is in an envs dir. See the discussion on PR #549.
@@ -327,9 +327,9 @@ def test_api_get_build_lockfile(
                 r"expected: \(1, 2, 3\)"
             ),
         ):
-            conda_store.build_key_version = build_key_version
+            conda_store.config.build_key_version = build_key_version
         return  # invalid, nothing more to test
-    conda_store.build_key_version = build_key_version
+    conda_store.config.build_key_version = build_key_version
     assert BuildKey.current_version() == build_key_version
     assert BuildKey.versions() == (1, 2, 3)
 
