@@ -39,6 +39,12 @@ def test_integration(page: Page, server_port):
     with page.expect_navigation():
         page.locator('button:has-text("Sign In")').click()
 
+    # Go to the main admin page (authenticated)
+    page.goto(
+        f"http://localhost:{server_port}/conda-store/admin/",
+        wait_until="domcontentloaded",
+    )
+
     page.screenshot(path="test-results/conda-store-authenticated.png")
 
     # Click [placeholder="Search"]
