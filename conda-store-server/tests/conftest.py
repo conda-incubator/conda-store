@@ -298,7 +298,7 @@ def alembic_config(conda_store):
     from conda_store_server._internal.dbutil import write_alembic_ini
 
     ini_file = pathlib.Path(__file__).parent / "alembic.ini"
-    write_alembic_ini(ini_file, conda_store.database_url)
+    write_alembic_ini(ini_file, conda_store.config.database_url)
     return {"file": ini_file}
 
 
