@@ -48,7 +48,7 @@ c.CondaStoreServer.log_level = logging.INFO
 c.CondaStoreServer.log_format = (
     "%(asctime)s %(levelname)9s %(name)s:%(lineno)4s: %(message)s"
 )
-c.CondaStoreServer.enable_ui = True
+c.CondaStoreServer.enable_ui = False
 c.CondaStoreServer.enable_api = True
 c.CondaStoreServer.enable_registry = False
 c.CondaStoreServer.enable_metrics = True
