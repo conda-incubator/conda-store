@@ -33,6 +33,7 @@ from traitlets import (
 from traitlets.config import LoggingConfigurable
 
 from conda_store_server import api
+from conda_store_server.server import schema as auth_schema
 from conda_store_server._internal import environment, orm, schema, utils
 from conda_store_server._internal.server import dependencies
 
@@ -56,7 +57,7 @@ class AuthenticationBackend(LoggingConfigurable):
         config=True,
     )
 
-    def encrypt_token(self, token: schema.AuthenticationToken):
+    def encrypt_token(self, token: auth_schema.AuthenticationToken):
         return jwt.encode(token.model_dump(), self.secret, algorithm=self.jwt_algorithm)
 
     def decrypt_token(self, token: str):
@@ -68,7 +69,7 @@ class AuthenticationBackend(LoggingConfigurable):
                 authentication_token = self.predefined_tokens[token]
             else:
                 authentication_token = self.decrypt_token(token)
-            return schema.AuthenticationToken.model_validate(authentication_token)
+            return auth_schema.AuthenticationToken.model_validate(authentication_token)
         except Exception:
             return None
 
@@ -80,7 +81,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
         config=True,
     )
 
-    def _database_role_bindings_v1(self, entity: schema.AuthenticationToken):
+    def _database_role_bindings_v1(self, entity: auth_schema.AuthenticationToken):
         with self.authentication_db() as db:
             result = db.execute(
                 text(
@@ -101,7 +102,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
 
         return db_role_mappings
 
-    def _database_role_bindings_v2(self, entity: schema.AuthenticationToken):
+    def _database_role_bindings_v2(self, entity: auth_schema.AuthenticationToken):
         def _convert_namespace_to_entity_arn(namespace):
             return f"{namespace}/*"
 
@@ -143,38 +144,38 @@ class RBACAuthorizationBackend(LoggingConfigurable):
         return proposal.value
 
     _viewer_permissions = {
-        schema.Permissions.ENVIRONMENT_READ,
-        schema.Permissions.NAMESPACE_READ,
-        schema.Permissions.NAMESPACE_ROLE_MAPPING_READ,
+        auth_schema.Permissions.ENVIRONMENT_READ,
+        auth_schema.Permissions.NAMESPACE_READ,
+        auth_schema.Permissions.NAMESPACE_ROLE_MAPPING_READ,
     }
     _editor_permissions = {
-        schema.Permissions.BUILD_CANCEL,
-        schema.Permissions.ENVIRONMENT_CREATE,
-        schema.Permissions.ENVIRONMENT_READ,
-        schema.Permissions.ENVIRONMENT_UPDATE,
-        schema.Permissions.ENVIRONMENT_SOLVE,
-        schema.Permissions.NAMESPACE_READ,
-        schema.Permissions.NAMESPACE_ROLE_MAPPING_READ,
-        schema.Permissions.SETTING_READ,
+        auth_schema.Permissions.BUILD_CANCEL,
+        auth_schema.Permissions.ENVIRONMENT_CREATE,
+        auth_schema.Permissions.ENVIRONMENT_READ,
+        auth_schema.Permissions.ENVIRONMENT_UPDATE,
+        auth_schema.Permissions.ENVIRONMENT_SOLVE,
+        auth_schema.Permissions.NAMESPACE_READ,
+        auth_schema.Permissions.NAMESPACE_ROLE_MAPPING_READ,
+        auth_schema.Permissions.SETTING_READ,
     }
     _admin_permissions = {
-        schema.Permissions.BUILD_DELETE,
-        schema.Permissions.BUILD_CANCEL,
-        schema.Permissions.ENVIRONMENT_CREATE,
-        schema.Permissions.ENVIRONMENT_DELETE,
-        schema.Permissions.ENVIRONMENT_READ,
-        schema.Permissions.ENVIRONMENT_UPDATE,
-        schema.Permissions.ENVIRONMENT_SOLVE,
-        schema.Permissions.NAMESPACE_CREATE,
-        schema.Permissions.NAMESPACE_DELETE,
-        schema.Permissions.NAMESPACE_READ,
-        schema.Permissions.NAMESPACE_UPDATE,
-        schema.Permissions.NAMESPACE_ROLE_MAPPING_CREATE,
-        schema.Permissions.NAMESPACE_ROLE_MAPPING_READ,
-        schema.Permissions.NAMESPACE_ROLE_MAPPING_UPDATE,
-        schema.Permissions.NAMESPACE_ROLE_MAPPING_DELETE,
-        schema.Permissions.SETTING_READ,
-        schema.Permissions.SETTING_UPDATE,
+        auth_schema.Permissions.BUILD_DELETE,
+        auth_schema.Permissions.BUILD_CANCEL,
+        auth_schema.Permissions.ENVIRONMENT_CREATE,
+        auth_schema.Permissions.ENVIRONMENT_DELETE,
+        auth_schema.Permissions.ENVIRONMENT_READ,
+        auth_schema.Permissions.ENVIRONMENT_UPDATE,
+        auth_schema.Permissions.ENVIRONMENT_SOLVE,
+        auth_schema.Permissions.NAMESPACE_CREATE,
+        auth_schema.Permissions.NAMESPACE_DELETE,
+        auth_schema.Permissions.NAMESPACE_READ,
+        auth_schema.Permissions.NAMESPACE_UPDATE,
+        auth_schema.Permissions.NAMESPACE_ROLE_MAPPING_CREATE,
+        auth_schema.Permissions.NAMESPACE_ROLE_MAPPING_READ,
+        auth_schema.Permissions.NAMESPACE_ROLE_MAPPING_UPDATE,
+        auth_schema.Permissions.NAMESPACE_ROLE_MAPPING_DELETE,
+        auth_schema.Permissions.SETTING_READ,
+        auth_schema.Permissions.SETTING_UPDATE,
     }
 
     role_mappings = Dict(
@@ -218,7 +219,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
           - "example-asdf"
           - "example-asdf/example-qwer"
         """
-        if schema.ARN_ALLOWED_REGEX.match(arn) is None:
+        if auth_schema.ARN_ALLOWED_REGEX.match(arn) is None:
             raise ValueError(f"invalid arn={arn}")
 
         # replace "*" with schema.ALLOWED_CHARACTERS
@@ -252,7 +253,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
             See conda_store_server.server.auth.Authentication.filter_environments
             for usage.
         """
-        return utils.compile_arn_sql_like(arn, schema.ARN_ALLOWED_REGEX)
+        return utils.compile_arn_sql_like(arn, auth_schema.ARN_ALLOWED_REGEX)
 
     @staticmethod
     def is_arn_subset(arn_1: str, arn_2: str):
@@ -278,8 +279,8 @@ class RBACAuthorizationBackend(LoggingConfigurable):
         return (arn_1_matches_arn_2 and arn_2_matches_arn_1) or arn_2_matches_arn_1
 
     def get_entity_bindings(
-        self, entity: schema.AuthenticationToken
-    ) -> Set[schema.Permissions]:
+        self, entity: auth_schema.AuthenticationToken
+    ) -> Set[auth_schema.Permissions]:
         authenticated = entity is not None
         entity_role_bindings = {} if entity is None else entity.role_bindings
 
@@ -299,7 +300,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
 
     def convert_roles_to_permissions(
         self, roles: Iterable[str]
-    ) -> Set[schema.Permissions]:
+    ) -> Set[auth_schema.Permissions]:
         permissions = set()
         for role in roles:
             # 'editor' is the new alias of 'developer'. The new name is
@@ -322,14 +323,14 @@ class RBACAuthorizationBackend(LoggingConfigurable):
             permissions = permissions | role_mappings
         return permissions
 
-    def get_entity_binding_permissions(self, entity: schema.AuthenticationToken):
+    def get_entity_binding_permissions(self, entity: auth_schema.AuthenticationToken):
         entity_bindings = self.get_entity_bindings(entity)
         return {
             entity_arn: self.convert_roles_to_permissions(roles=entity_roles)
             for entity_arn, entity_roles in entity_bindings.items()
         }
 
-    def get_entity_permissions(self, entity: schema.AuthenticationToken, arn: str):
+    def get_entity_permissions(self, entity: auth_schema.AuthenticationToken, arn: str):
         """Get set of permissions for given ARN given AUTHENTICATION
         state and entity_bindings
 
@@ -368,13 +369,13 @@ class RBACAuthorizationBackend(LoggingConfigurable):
         return True
 
     def authorize(
-        self, entity: schema.AuthenticationToken, arn: str, required_permissions
+        self, entity: auth_schema.AuthenticationToken, arn: str, required_permissions
     ):
         return required_permissions <= self.get_entity_permissions(
             entity=entity, arn=arn
         )
 
-    def database_role_bindings(self, entity: schema.AuthenticationToken):
+    def database_role_bindings(self, entity: auth_schema.AuthenticationToken):
         # This method can be reached from the router_ui via filter_environments.
         # Since the UI routes are not versioned, we don't know which API version
         # the client might be using. So we rely on the role_mappings_version
@@ -506,7 +507,7 @@ form.addEventListener('submit', loginHandler);
         ]
 
     async def authenticate(self, request: Request):
-        return schema.AuthenticationToken(
+        return auth_schema.AuthenticationToken(
             primary_namespace="default",
             role_bindings={
                 "*/*": ["admin"],
@@ -602,7 +603,7 @@ form.addEventListener('submit', loginHandler);
             )
         return request.state.entity
 
-    def entity_bindings(self, entity: schema.AuthenticationToken):
+    def entity_bindings(self, entity: auth_schema.AuthenticationToken):
         return self.authorization.get_entity_bindings(entity)
 
     def authorize_request(self, request: Request, arn, permissions, require=False):
@@ -626,7 +627,7 @@ form.addEventListener('submit', loginHandler);
         cases = []
         for entity_arn, entity_roles in self.entity_bindings(entity).items():
             namespace, name = utils.compile_arn_sql_like(
-                entity_arn, schema.ARN_ALLOWED_REGEX
+                entity_arn, auth_schema.ARN_ALLOWED_REGEX
             )
             cases.append(
                 and_(
@@ -645,7 +646,7 @@ form.addEventListener('submit', loginHandler);
         )
 
     def filter_environments(
-        self, entity: schema.AuthenticationToken, query: Query
+        self, entity: auth_schema.AuthenticationToken, query: Query
     ) -> Query:
         return environment.filter_environments(
             query,
@@ -656,7 +657,7 @@ form.addEventListener('submit', loginHandler);
         cases = []
         for entity_arn, entity_roles in self.entity_bindings(entity).items():
             namespace, name = utils.compile_arn_sql_like(
-                entity_arn, schema.ARN_ALLOWED_REGEX
+                entity_arn, auth_schema.ARN_ALLOWED_REGEX
             )
             cases.append(orm.Namespace.name.like(namespace))
 
@@ -690,7 +691,7 @@ class DummyAuthentication(Authentication):
         if self.password and data.get("password") != self.password:
             return None
 
-        return schema.AuthenticationToken(
+        return auth_schema.AuthenticationToken(
             primary_namespace=data["username"],
             role_bindings={
                 "*/*": ["admin"],
@@ -816,7 +817,7 @@ class GenericOAuthAuthentication(Authentication):
         username = self._get_username(oauth_access_token)
 
         # 3. create our own internal token
-        return schema.AuthenticationToken(
+        return auth_schema.AuthenticationToken(
             primary_namespace=username,
             role_bindings={
                 "*/*": ["admin"],

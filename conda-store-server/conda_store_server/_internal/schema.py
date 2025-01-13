@@ -4,11 +4,10 @@
 
 import datetime
 import enum
-import functools
 import os
 import re
 import sys
-from typing import Annotated, Any, Dict, List, Optional, TypeAlias, Union
+from typing import Annotated, Any, Dict, List, Optional, Union
 
 from conda_lock.lockfile.v1.models import Lockfile
 from pydantic import (
@@ -24,64 +23,12 @@ from conda_store_server._internal import conda_utils
 from conda_store_server.exception import CondaStoreError
 
 
-def _datetime_factory(offset: datetime.timedelta):
-    """Utcnow datetime + timezone as string"""
-    return datetime.datetime.utcnow() + offset
-
-
-# An ARN is a string which matches namespaces and environments. For example:
-#     */*          matches all environments
-#     */team       matches all environments named 'team' in any namespace
-#
-# Namespaces and environment names cannot contain "*" ":" "#" " " "/"
 ALLOWED_CHARACTERS = "A-Za-z0-9-+_@$&?^~.="
-ARN_ALLOWED = f"^([{ALLOWED_CHARACTERS}*]+)/([{ALLOWED_CHARACTERS}*]+)$"
-ARN_ALLOWED_REGEX = re.compile(ARN_ALLOWED)
-
-
-#########################
-# Authentication Schema
-#########################
-
-RoleBindings: TypeAlias = Dict[
-    Annotated[str, StringConstraints(pattern=ARN_ALLOWED)], List[str]
-]
-
-
-class Permissions(enum.Enum):
-    """Permissions map to conda-store actions"""
-
-    ENVIRONMENT_CREATE = "environment:create"
-    ENVIRONMENT_READ = "environment::read"
-    ENVIRONMENT_UPDATE = "environment::update"
-    ENVIRONMENT_DELETE = "environment::delete"
-    ENVIRONMENT_SOLVE = "environment::solve"
-    BUILD_CANCEL = "build::cancel"
-    BUILD_DELETE = "build::delete"
-    NAMESPACE_CREATE = "namespace::create"
-    NAMESPACE_READ = "namespace::read"
-    NAMESPACE_UPDATE = "namespace::update"
-    NAMESPACE_DELETE = "namespace::delete"
-    NAMESPACE_ROLE_MAPPING_CREATE = "namespace-role-mapping::create"
-    NAMESPACE_ROLE_MAPPING_READ = "namespace-role-mapping::read"
-    NAMESPACE_ROLE_MAPPING_UPDATE = "namespace-role-mapping::update"
-    NAMESPACE_ROLE_MAPPING_DELETE = "namespace-role-mapping::delete"
-    SETTING_READ = "setting::read"
-    SETTING_UPDATE = "setting::update"
-
-
-class AuthenticationToken(BaseModel):
-    exp: datetime.datetime = Field(
-        default_factory=functools.partial(_datetime_factory, datetime.timedelta(days=1))
-    )
-    primary_namespace: str = "default"
-    role_bindings: RoleBindings = {}
 
 
 ##########################
 # Database Schema
 ##########################
-
 
 class StorageBackend(enum.Enum):
     FILESYSTEM = "filesystem"

@@ -34,7 +34,7 @@ user. Similar to JupyterHub
 method. This method is the primary way to customize authentication. It
 is responsible for checking that the user credentials to login are
 correct as well as returning a dictionary following the schema
-`conda_store_server._internal.schema.AuthenticationToken`. This stores a
+`conda_store_server.auth.schema.AuthenticationToken`. This stores a
 `primary_namespace` for a given authenticated service or user. In
 addition a dictionary of `<namespace>/<name>` map to a set of
 roles. See the Authorization model to better understand the key to set

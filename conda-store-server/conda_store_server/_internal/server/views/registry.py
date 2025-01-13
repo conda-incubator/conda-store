@@ -10,8 +10,9 @@ from fastapi.responses import RedirectResponse, Response
 
 from conda_store_server import api
 from conda_store_server._internal import orm, schema
-from conda_store_server._internal.schema import Permissions
 from conda_store_server._internal.server import dependencies
+from conda_store_server.server.schema import Permissions
+
 
 router_registry = APIRouter(tags=["registry"])
 

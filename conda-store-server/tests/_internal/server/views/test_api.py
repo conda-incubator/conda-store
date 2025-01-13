@@ -15,13 +15,14 @@ from fastapi.testclient import TestClient
 
 from conda_store_server import CONDA_STORE_DIR, __version__
 from conda_store_server._internal import schema
+from conda_store_server.server import schema as auth_schema
 from conda_store_server._internal.server import dependencies
 
 
 @contextlib.contextmanager
 def mock_entity_role_bindings(
     testclient: TestClient,
-    role_bindings: schema.RoleBindings,
+    role_bindings: auth_schema.RoleBindings,
 ):
     """Override the entity role bindings for the FastAPI app temporarily.
 
@@ -29,12 +30,12 @@ def mock_entity_role_bindings(
     ----------
     testclient : TestClient
         FastAPI application for which the entity should be mocked
-    role_bindings : schema.RoleBindings
+    role_bindings : auth_schema.RoleBindings
         Role bindings that the mocked entity should have
     """
 
     def mock_get_entity():
-        return schema.AuthenticationToken(role_bindings=role_bindings)
+        return auth_schema.AuthenticationToken(role_bindings=role_bindings)
 
     testclient.app.dependency_overrides[dependencies.get_entity] = mock_get_entity
 
@@ -63,9 +64,9 @@ def test_api_permissions_unauth(testclient):
     assert r.data.entity_permissions == {
         "default/*": sorted(
             [
-                schema.Permissions.ENVIRONMENT_READ.value,
-                schema.Permissions.NAMESPACE_READ.value,
-                schema.Permissions.NAMESPACE_ROLE_MAPPING_READ.value,
+                auth_schema.Permissions.ENVIRONMENT_READ.value,
+                auth_schema.Permissions.NAMESPACE_READ.value,
+                auth_schema.Permissions.NAMESPACE_ROLE_MAPPING_READ.value,
             ]
         )
     }
@@ -82,37 +83,37 @@ def test_api_permissions_auth(testclient, authenticate):
     assert r.data.entity_permissions == {
         "*/*": sorted(
             [
-                schema.Permissions.ENVIRONMENT_CREATE.value,
-                schema.Permissions.ENVIRONMENT_READ.value,
-                schema.Permissions.ENVIRONMENT_UPDATE.value,
-                schema.Permissions.ENVIRONMENT_DELETE.value,
-                schema.Permissions.ENVIRONMENT_SOLVE.value,
-                schema.Permissions.BUILD_CANCEL.value,
-                schema.Permissions.BUILD_DELETE.value,
-                schema.Permissions.NAMESPACE_CREATE.value,
-                schema.Permissions.NAMESPACE_READ.value,
-                schema.Permissions.NAMESPACE_DELETE.value,
-                schema.Permissions.NAMESPACE_UPDATE.value,
-                schema.Permissions.NAMESPACE_ROLE_MAPPING_CREATE.value,
-                schema.Permissions.NAMESPACE_ROLE_MAPPING_READ.value,
-                schema.Permissions.NAMESPACE_ROLE_MAPPING_UPDATE.value,
-                schema.Permissions.NAMESPACE_ROLE_MAPPING_DELETE.value,
-                schema.Permissions.SETTING_READ.value,
-                schema.Permissions.SETTING_UPDATE.value,
+                auth_schema.Permissions.ENVIRONMENT_CREATE.value,
+                auth_schema.Permissions.ENVIRONMENT_READ.value,
+                auth_schema.Permissions.ENVIRONMENT_UPDATE.value,
+                auth_schema.Permissions.ENVIRONMENT_DELETE.value,
+                auth_schema.Permissions.ENVIRONMENT_SOLVE.value,
+                auth_schema.Permissions.BUILD_CANCEL.value,
+                auth_schema.Permissions.BUILD_DELETE.value,
+                auth_schema.Permissions.NAMESPACE_CREATE.value,
+                auth_schema.Permissions.NAMESPACE_READ.value,
+                auth_schema.Permissions.NAMESPACE_DELETE.value,
+                auth_schema.Permissions.NAMESPACE_UPDATE.value,
+                auth_schema.Permissions.NAMESPACE_ROLE_MAPPING_CREATE.value,
+                auth_schema.Permissions.NAMESPACE_ROLE_MAPPING_READ.value,
+                auth_schema.Permissions.NAMESPACE_ROLE_MAPPING_UPDATE.value,
+                auth_schema.Permissions.NAMESPACE_ROLE_MAPPING_DELETE.value,
+                auth_schema.Permissions.SETTING_READ.value,
+                auth_schema.Permissions.SETTING_UPDATE.value,
             ]
         ),
         "default/*": sorted(
             [
-                schema.Permissions.ENVIRONMENT_READ.value,
-                schema.Permissions.NAMESPACE_READ.value,
-                schema.Permissions.NAMESPACE_ROLE_MAPPING_READ.value,
+                auth_schema.Permissions.ENVIRONMENT_READ.value,
+                auth_schema.Permissions.NAMESPACE_READ.value,
+                auth_schema.Permissions.NAMESPACE_ROLE_MAPPING_READ.value,
             ]
         ),
         "filesystem/*": sorted(
             [
-                schema.Permissions.ENVIRONMENT_READ.value,
-                schema.Permissions.NAMESPACE_READ.value,
-                schema.Permissions.NAMESPACE_ROLE_MAPPING_READ.value,
+                auth_schema.Permissions.ENVIRONMENT_READ.value,
+                auth_schema.Permissions.NAMESPACE_READ.value,
+                auth_schema.Permissions.NAMESPACE_ROLE_MAPPING_READ.value,
             ]
         ),
     }
@@ -285,7 +286,7 @@ def test_api_list_environments_jwt(
     envs_accessible_to_target.extend(["name1", "name2"])
 
     jwt = conda_store_server.authentication.authentication.encrypt_token(
-        schema.AuthenticationToken(role_bindings=target_role_bindings)
+        auth_schema.AuthenticationToken(role_bindings=target_role_bindings)
     )
 
     # Override the get_entity dependency to allow the request to appear to be
