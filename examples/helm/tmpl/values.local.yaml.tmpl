@@ -11,7 +11,7 @@ apiServer:
     tag: {{ (datasource "defaults").image.tag }}
   condaStoreConfig: |
 {{ include "api-server-config" | indent 4 }}
-  
+
 uiServer:
   nodePort: 30500
   port: 8080
