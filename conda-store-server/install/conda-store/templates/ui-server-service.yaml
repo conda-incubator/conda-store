@@ -8,7 +8,7 @@ metadata:
 spec:
   type: NodePort
   ports:
-    - port: 8080
+    - port: {{ .Values.uiServer.port }}
       nodePort: {{ .Values.uiServer.nodePort }}
       targetPort: {{ .Values.uiServer.port }}
       protocol: TCP

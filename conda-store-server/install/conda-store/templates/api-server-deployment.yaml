@@ -30,7 +30,7 @@ spec:
           livenessProbe:
             httpGet:
               path: /api/v1/
-              port: 8080
+              port: {{ .Values.apiServer.port }}
             initialDelaySeconds: {{ .Values.apiServer.livenessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.apiServer.livenessProbe.periodSeconds }}
             timeoutSeconds: {{ .Values.apiServer.livenessProbe.timeoutSeconds }}
@@ -38,7 +38,7 @@ spec:
           readinessProbe:
             httpGet:
               path: /api/v1/
-              port: 8080
+              port: {{ .Values.apiServer.port }}
             initialDelaySeconds: {{ .Values.apiServer.readinessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.apiServer.readinessProbe.periodSeconds }}
             timeoutSeconds: {{ .Values.apiServer.readinessProbe.timeoutSeconds }}
