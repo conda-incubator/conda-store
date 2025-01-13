@@ -9,9 +9,9 @@ apiServer:
   # Node port for the API Server K8 service
   nodePort: 30501
 
-  # Port the service will be accessible on. To port forward this service
+  # Port (internal) the service will be accessible on. To port forward this service
   # try `kubectl port-forward -n conda-store service/conda-store-api-server <port>:8080`
-  port: 8081
+  port: 8080
 
   # Number of API Servers replica pods to start up
   replicas: 1
@@ -83,7 +83,7 @@ uiServer:
   # Node port for the UI Server K8 service
   nodePort: 30500
 
-  # Port the service will be accessible on. To port forward this service
+  # Port (internal) the service will be accessible on. To port forward this service
   # try `kubectl port-forward -n conda-store service/conda-store-ui-server <port>:8080`
   port: 8080
 
@@ -92,7 +92,7 @@ uiServer:
 
   # Image to use for the ui server
   image:
-    repository: quansight/conda-store-server
+    repository: ghcr.io/conda-incubator/conda-store-ui
     pullPolicy: IfNotPresent
     tag: 2024.6.1
 

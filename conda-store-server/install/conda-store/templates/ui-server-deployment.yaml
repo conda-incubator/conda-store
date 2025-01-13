@@ -32,17 +32,14 @@ spec:
             value: {{ .Values.uiServer.appEnv.logoutPageUrl }}
           - name: REACT_APP_URL_BASENAME
             value: {{ .Values.uiServer.appEnv.urlBasename }}
-          - name: DEBUG
-            value: express:*
           - name: PORT
-            value: "8080"
+            value: "{{ .Values.uiServer.port }}"
           ports:
             - containerPort: {{ .Values.uiServer.port }}
           livenessProbe:
             httpGet:
-              # TODO: it would be nice to have a "ok" endpoint on the ui
               path: /status
-              port: 8080
+              port: {{ .Values.uiServer.port }}
             initialDelaySeconds: {{ .Values.uiServer.livenessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.uiServer.livenessProbe.periodSeconds }}
             timeoutSeconds: {{ .Values.uiServer.livenessProbe.timeoutSeconds }}
@@ -50,7 +47,7 @@ spec:
           readinessProbe:
             httpGet:
               path: /status
-              port: 8080
+              port: {{ .Values.uiServer.port }}
             initialDelaySeconds: {{ .Values.uiServer.readinessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.uiServer.readinessProbe.periodSeconds }}
             timeoutSeconds: {{ .Values.uiServer.readinessProbe.timeoutSeconds }}

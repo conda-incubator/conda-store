@@ -26,7 +26,6 @@ uiServer:
     logoutPageUrl: http://localhost:8081/logout?next=/
 
 worker:
-  port: 8080
   replicas: 1
   image:
     repository: {{ (datasource "defaults").image.repository }}
