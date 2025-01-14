@@ -48,6 +48,43 @@ def celery_config(tmp_path, conda_store):
 
 
 @pytest.fixture
+def conda_store_api_config(tmp_path):
+    """A conda store configuration fixture.
+
+    sys.path is manipulated so that only the name of the called program
+    (e.g. `pytest`) is present. This prevents traitlets from parsing any
+    additional pytest args as configuration settings to be applied to
+    the conda-store-server.
+    """
+    from traitlets.config import Config
+
+    filename = tmp_path / ".conda-store" / "database.sqlite"
+
+    store_directory = tmp_path / ".conda-store" / "state"
+    store_directory.mkdir(parents=True)
+
+    storage.LocalStorage.storage_path = str(tmp_path / ".conda-store" / "storage")
+
+    original_sys_argv = list(sys.argv)
+    sys.argv = [sys.argv[0]]
+
+    with utils.chdir(tmp_path):
+        yield Config(
+            CondaStore=dict(
+                storage_class=storage.LocalStorage,
+                store_directory=str(store_directory),
+                database_url=f"sqlite:///{filename}?check_same_thread=False",
+            ),
+            CondaStoreServer=dict(
+                enable_ui=False,
+                enable_api=True,
+            ),
+        )
+
+    sys.argv = list(original_sys_argv)
+
+
+@pytest.fixture
 def conda_store_config(tmp_path):
     """A conda store configuration fixture.
 
@@ -78,6 +115,36 @@ def conda_store_config(tmp_path):
         )
 
     sys.argv = list(original_sys_argv)
+
+
+@pytest.fixture
+def conda_store_api_server(conda_store_api_config):
+    _conda_store_server = server_app.CondaStoreServer(config=conda_store_api_config)
+    _conda_store_server.initialize()
+
+    _conda_store = _conda_store_server.conda_store
+
+    pathlib.Path(_conda_store.config.store_directory).mkdir(exist_ok=True)
+
+    dbutil.upgrade(_conda_store.config.database_url)
+
+    with _conda_store.session_factory() as db:
+        _conda_store.ensure_settings(db)
+        _conda_store.configuration(db).update_storage_metrics(
+            db, _conda_store.config.store_directory
+        )
+
+        _conda_store.celery_app
+
+        # must import tasks after a celery app has been initialized
+        # ensure that models are created
+        from celery.backends.database.session import ResultModelBase
+
+        import conda_store_server._internal.worker.tasks  # noqa
+
+        ResultModelBase.metadata.create_all(db.get_bind())
+
+    return _conda_store_server
 
 
 @pytest.fixture
@@ -113,6 +180,14 @@ def conda_store_server(conda_store_config):
 @pytest.fixture
 def testclient(conda_store_server):
     return TestClient(conda_store_server.init_fastapi_app())
+
+
+@pytest.fixture
+def testclient_api_server(conda_store_api_server):
+    client = TestClient(conda_store_api_server.init_fastapi_app())
+    ui_respones = client.get("/ui/")
+    assert ui_respones.status_code == 404
+    return client
 
 
 @pytest.fixture
