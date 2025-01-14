@@ -4,16 +4,15 @@
 
 import datetime
 import uuid
-from fastapi import Request
-from fastapi.testclient import TestClient
 
 import pytest
+from fastapi import Request
 
 from conda_store_server._internal.schema import AuthenticationToken, Permissions
 from conda_store_server.server.auth import (
+    Authentication,
     AuthenticationBackend,
     RBACAuthorizationBackend,
-    Authentication,
 )
 
 
@@ -536,20 +535,22 @@ def test_is_subset_entity_permissions(
 def test_post_logout_method_default_next():
     """Test to ensure that the default logout redirect is set correctly"""
     authentication = Authentication()
-    test_request = Request(scope={
-        "type": "http",
-        "path": "/logout",
-        "app_root_path": "mytest.url.com",
-        "headers": [
-            ("host", "mytest.url.com"),
-        ],
-    })
+    test_request = Request(
+        scope={
+            "type": "http",
+            "path": "/logout",
+            "app_root_path": "mytest.url.com",
+            "headers": [
+                ("host", "mytest.url.com"),
+            ],
+        }
+    )
     redirect_response = authentication.post_logout_method(request=test_request)
     assert redirect_response.headers["location"] == "mytest.url.com/"
 
 
 def test_auth_no_ui(testclient_api_server):
-    """Test that users can use the /login route if only the api is 
+    """Test that users can use the /login route if only the api is
     enabled (and the ui is disabled).
     """
     response = testclient_api_server.post(

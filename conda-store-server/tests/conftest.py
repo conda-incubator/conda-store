@@ -78,7 +78,7 @@ def conda_store_api_config(tmp_path):
             CondaStoreServer=dict(
                 enable_ui=False,
                 enable_api=True,
-            )
+            ),
         )
 
     sys.argv = list(original_sys_argv)
@@ -184,7 +184,7 @@ def testclient(conda_store_server):
 
 @pytest.fixture
 def testclient_api_server(conda_store_api_server):
-    client =  TestClient(conda_store_api_server.init_fastapi_app())
+    client = TestClient(conda_store_api_server.init_fastapi_app())
     ui_respones = client.get("/ui/")
     assert ui_respones.status_code == 404
     return client
