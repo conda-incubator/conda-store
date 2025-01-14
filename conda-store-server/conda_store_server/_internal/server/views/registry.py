@@ -13,7 +13,6 @@ from conda_store_server._internal import orm, schema
 from conda_store_server._internal.server import dependencies
 from conda_store_server.server.schema import Permissions
 
-
 router_registry = APIRouter(tags=["registry"])
 
 

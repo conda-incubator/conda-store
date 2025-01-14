@@ -20,8 +20,8 @@ from traitlets import (
 from traitlets.config import LoggingConfigurable
 
 from conda_store_server import CONDA_STORE_DIR, BuildKey, api, storage
-from conda_store_server.server import schema as auth_schema
 from conda_store_server._internal import conda_utils, environment, schema, utils
+from conda_store_server.server import schema as auth_schema
 
 
 def conda_store_validate_specification(

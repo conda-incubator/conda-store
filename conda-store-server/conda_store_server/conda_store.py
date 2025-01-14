@@ -14,11 +14,11 @@ from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import QueuePool
 
 from conda_store_server import CONDA_STORE_DIR, api, conda_store_config, storage
-from conda_store_server.server import schema as auth_schema
 from conda_store_server._internal import conda_utils, orm, schema, utils
 from conda_store_server.exception import CondaStoreError
 from conda_store_server.plugins import hookspec, plugin_manager
 from conda_store_server.plugins.types import lock
+from conda_store_server.server import schema as auth_schema
 
 
 class CondaStore:

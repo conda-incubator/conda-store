@@ -9,9 +9,9 @@ from typing import Any, Dict, List, Union
 from sqlalchemy import distinct, func, null, or_
 from sqlalchemy.orm import Query, aliased, session
 
-from conda_store_server.server import schema as auth_schema
 from conda_store_server._internal import conda_utils, orm, schema, utils
 from conda_store_server._internal.environment import filter_environments
+from conda_store_server.server import schema as auth_schema
 
 
 def list_namespaces(db, show_soft_deleted: bool = False):

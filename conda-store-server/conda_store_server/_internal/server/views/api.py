@@ -17,9 +17,9 @@ from conda_store_server._internal.environment import filter_environments
 from conda_store_server._internal.server import dependencies
 from conda_store_server.conda_store import CondaStore
 from conda_store_server.exception import CondaStoreError
+from conda_store_server.server import schema as auth_schema
 from conda_store_server.server.auth import Authentication
 from conda_store_server.server.schema import AuthenticationToken, Permissions
-from conda_store_server.server import schema as auth_schema
 
 
 class PaginatedArgs(TypedDict):

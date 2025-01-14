@@ -7,11 +7,11 @@ import uuid
 
 import pytest
 
-from conda_store_server.server.schema import AuthenticationToken, Permissions
 from conda_store_server.server.auth import (
     AuthenticationBackend,
     RBACAuthorizationBackend,
 )
+from conda_store_server.server.schema import AuthenticationToken, Permissions
 
 
 @pytest.mark.parametrize(

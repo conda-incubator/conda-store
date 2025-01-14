@@ -3,8 +3,8 @@
 # license that can be found in the LICENSE file.
 
 import datetime
-import functools
 import enum
+import functools
 import re
 from typing import Annotated, Dict, List, TypeAlias
 
@@ -15,7 +15,6 @@ from pydantic import (
 )
 
 from conda_store_server._internal.schema import ALLOWED_CHARACTERS
-
 
 # An ARN is a string which matches namespaces and environments. For example:
 #     */*          matches all environments

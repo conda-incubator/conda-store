@@ -22,13 +22,13 @@ from pydantic import (
 from conda_store_server._internal import conda_utils
 from conda_store_server.exception import CondaStoreError
 
-
 ALLOWED_CHARACTERS = "A-Za-z0-9-+_@$&?^~.="
 
 
 ##########################
 # Database Schema
 ##########################
+
 
 class StorageBackend(enum.Enum):
     FILESYSTEM = "filesystem"

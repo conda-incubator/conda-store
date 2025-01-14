@@ -33,9 +33,9 @@ from traitlets import (
 from traitlets.config import LoggingConfigurable
 
 from conda_store_server import api
-from conda_store_server.server import schema as auth_schema
 from conda_store_server._internal import environment, orm, schema, utils
 from conda_store_server._internal.server import dependencies
+from conda_store_server.server import schema as auth_schema
 
 
 class AuthenticationBackend(LoggingConfigurable):

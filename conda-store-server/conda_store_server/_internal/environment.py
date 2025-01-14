@@ -9,7 +9,6 @@ import yaml
 from sqlalchemy import and_, or_
 from sqlalchemy.orm import Query
 
-from conda_store_server.server import schema as auth_schema
 from conda_store_server._internal import conda_utils, orm, schema, utils
 from conda_store_server.server import schema as auth_schema
 
