@@ -5,6 +5,7 @@
 import datetime
 import uuid
 from fastapi import Request
+from fastapi.testclient import TestClient
 
 import pytest
 
@@ -533,6 +534,7 @@ def test_is_subset_entity_permissions(
 
 
 def test_post_logout_method_default_next():
+    """Test to ensure that the default logout redirect is set correctly"""
     authentication = Authentication()
     test_request = Request(scope={
         "type": "http",
@@ -544,3 +546,13 @@ def test_post_logout_method_default_next():
     })
     redirect_response = authentication.post_logout_method(request=test_request)
     assert redirect_response.headers["location"] == "mytest.url.com/"
+
+
+def test_auth_no_ui(testclient_api_server):
+    """Test that users can use the /login route if only the api is 
+    enabled (and the ui is disabled).
+    """
+    response = testclient_api_server.post(
+        "/login/", json={"username": "username", "password": "password"}
+    )
+    assert response.status_code == 200
