@@ -12,8 +12,8 @@ from conda_store_server import api
 from conda_store_server._internal.action.generate_constructor_installer import (
     get_installer_platform,
 )
-from conda_store_server._internal.schema import Permissions
 from conda_store_server._internal.server import dependencies
+from conda_store_server.server.schema import Permissions
 
 router_ui = APIRouter(tags=["ui"])
 

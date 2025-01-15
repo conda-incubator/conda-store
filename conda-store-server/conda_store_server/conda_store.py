@@ -18,6 +18,7 @@ from conda_store_server._internal import conda_utils, orm, schema, utils
 from conda_store_server.exception import CondaStoreError
 from conda_store_server.plugins import hookspec, plugin_manager
 from conda_store_server.plugins.types import lock
+from conda_store_server.server import schema as auth_schema
 
 
 class CondaStore:
@@ -258,7 +259,7 @@ class CondaStore:
             db=db,
             conda_store=self,
             namespace="solve",
-            action=schema.Permissions.ENVIRONMENT_SOLVE,
+            action=auth_schema.Permissions.ENVIRONMENT_SOLVE,
         )
 
         specification_model = self.config.validate_specification(
@@ -303,7 +304,7 @@ class CondaStore:
             db=db,
             conda_store=self,
             namespace=namespace.name,
-            action=schema.Permissions.ENVIRONMENT_CREATE,
+            action=auth_schema.Permissions.ENVIRONMENT_CREATE,
         )
 
         if is_lockfile:
@@ -359,7 +360,7 @@ class CondaStore:
             db=db,
             conda_store=self,
             namespace=environment.namespace.name,
-            action=schema.Permissions.ENVIRONMENT_UPDATE,
+            action=auth_schema.Permissions.ENVIRONMENT_UPDATE,
         )
 
         settings = self.get_settings(
@@ -426,7 +427,7 @@ class CondaStore:
             db=db,
             conda_store=self,
             namespace=namespace,
-            action=schema.Permissions.ENVIRONMENT_UPDATE,
+            action=auth_schema.Permissions.ENVIRONMENT_UPDATE,
         )
 
         build = api.get_build(db, build_id)
@@ -475,7 +476,7 @@ class CondaStore:
             db=db,
             conda_store=self,
             namespace=namespace,
-            action=schema.Permissions.NAMESPACE_DELETE,
+            action=auth_schema.Permissions.NAMESPACE_DELETE,
         )
 
         namespace = api.get_namespace(db, name=namespace)
@@ -502,7 +503,7 @@ class CondaStore:
             db=db,
             conda_store=self,
             namespace=namespace,
-            action=schema.Permissions.ENVIRONMENT_DELETE,
+            action=auth_schema.Permissions.ENVIRONMENT_DELETE,
         )
 
         environment = api.get_environment(db, namespace=namespace, name=name)
@@ -531,7 +532,7 @@ class CondaStore:
             db=db,
             conda_store=self,
             namespace=build.environment.namespace.name,
-            action=schema.Permissions.BUILD_DELETE,
+            action=auth_schema.Permissions.BUILD_DELETE,
         )
 
         if build.status not in [

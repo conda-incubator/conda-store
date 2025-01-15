@@ -10,6 +10,7 @@ from sqlalchemy import and_, or_
 from sqlalchemy.orm import Query
 
 from conda_store_server._internal import conda_utils, orm, schema, utils
+from conda_store_server.server import schema as auth_schema
 
 
 def validate_environment(specification):
@@ -151,7 +152,7 @@ def validate_environment_pypi_packages(
 
 def filter_environments(
     query: Query,
-    role_bindings: schema.RoleBindings,
+    role_bindings: auth_schema.RoleBindings,
 ) -> Query:
     """Filter a query containing environments and namespaces by a set of role bindings.
 
@@ -159,7 +160,7 @@ def filter_environments(
     ----------
     query : Query
         Query containing both environments and namespaces
-    role_bindings : schema.RoleBindings
+    role_bindings : auth_schema.RoleBindings
         Role bindings to filter the results by
 
     Returns
@@ -171,7 +172,7 @@ def filter_environments(
     cases = []
     for entity_arn, entity_roles in role_bindings.items():
         namespace, name = utils.compile_arn_sql_like(
-            entity_arn, schema.ARN_ALLOWED_REGEX
+            entity_arn, auth_schema.ARN_ALLOWED_REGEX
         )
         cases.append(
             and_(

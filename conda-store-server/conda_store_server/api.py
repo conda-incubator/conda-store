@@ -11,6 +11,7 @@ from sqlalchemy.orm import Query, aliased, session
 
 from conda_store_server._internal import conda_utils, orm, schema, utils
 from conda_store_server._internal.environment import filter_environments
+from conda_store_server.server import schema as auth_schema
 
 
 def list_namespaces(db, show_soft_deleted: bool = False):
@@ -284,7 +285,7 @@ def list_environments(
     artifact: schema.BuildArtifactType = None,
     search: str = None,
     show_soft_deleted: bool = False,
-    role_bindings: schema.RoleBindings | None = None,
+    role_bindings: auth_schema.RoleBindings | None = None,
 ) -> Query:
     """Retrieve all environments managed by conda-store.
 
@@ -308,7 +309,7 @@ def list_environments(
     show_soft_deleted : bool
         If specified, filter by environments which have a null value for the
         deleted_on attribute
-    role_bindings : schema.RoleBindings | None
+    role_bindings : auth_schema.RoleBindings | None
         If specified, filter by only the environments the given role_bindings
         have read, write, or admin access to. This should be the same object as
         the role bindings in conda_store_config.py, for example:

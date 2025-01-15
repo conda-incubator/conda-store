@@ -8,12 +8,12 @@ import uuid
 import pytest
 from fastapi import Request
 
-from conda_store_server._internal.schema import AuthenticationToken, Permissions
 from conda_store_server.server.auth import (
     Authentication,
     AuthenticationBackend,
     RBACAuthorizationBackend,
 )
+from conda_store_server.server.schema import AuthenticationToken, Permissions
 
 
 @pytest.mark.parametrize(

@@ -14,11 +14,12 @@ from fastapi.responses import JSONResponse, PlainTextResponse, RedirectResponse
 from conda_store_server import __version__, api
 from conda_store_server._internal import orm, schema
 from conda_store_server._internal.environment import filter_environments
-from conda_store_server._internal.schema import AuthenticationToken, Permissions
 from conda_store_server._internal.server import dependencies
 from conda_store_server.conda_store import CondaStore
 from conda_store_server.exception import CondaStoreError
+from conda_store_server.server import schema as auth_schema
 from conda_store_server.server.auth import Authentication
+from conda_store_server.server.schema import AuthenticationToken, Permissions
 
 
 class PaginatedArgs(TypedDict):
@@ -225,14 +226,14 @@ async def api_post_token(
     entity=Depends(dependencies.get_entity),
 ):
     if entity is None:
-        entity = schema.AuthenticationToken(
+        entity = auth_schema.AuthenticationToken(
             exp=datetime.datetime.now(tz=datetime.timezone.utc)
             + datetime.timedelta(days=1),
             primary_namespace=conda_store.config.default_namespace,
             role_bindings={},
         )
 
-    new_entity = schema.AuthenticationToken(
+    new_entity = auth_schema.AuthenticationToken(
         exp=expiration or entity.exp,
         primary_namespace=primary_namespace or entity.primary_namespace,
         role_bindings=role_bindings or auth.authorization.get_entity_bindings(entity),
@@ -672,7 +673,7 @@ async def api_list_environments(
         If specified, filter by environments containing the given package name(s)
     artifact : Optional[schema.BuildArtifactType]
         If specified, filter by environments with the given BuildArtifactType
-    jwt : Optional[schema.AuthenticationToken]
+    jwt : Optional[auth_schema.AuthenticationToken]
         If specified, retrieve only the environments accessible to this token; that is,
         only return environments that the user has 'admin', 'editor', and 'viewer'
         role bindings for.

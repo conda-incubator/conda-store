@@ -30,6 +30,7 @@ import requests
 import conda_store_server
 
 from conda_store_server._internal import schema
+from conda_store_server.server import schema as auth_schema
 
 from .conftest import CONDA_STORE_BASE_URL
 
@@ -91,9 +92,9 @@ def test_api_permissions_unauth(testclient):
     assert r.data.entity_permissions == {
         "default/*": sorted(
             [
-                schema.Permissions.ENVIRONMENT_READ.value,
-                schema.Permissions.NAMESPACE_READ.value,
-                schema.Permissions.NAMESPACE_ROLE_MAPPING_READ.value,
+                auth_schema.Permissions.ENVIRONMENT_READ.value,
+                auth_schema.Permissions.NAMESPACE_READ.value,
+                auth_schema.Permissions.NAMESPACE_ROLE_MAPPING_READ.value,
             ]
         )
     }
@@ -111,37 +112,37 @@ def test_api_permissions_auth(testclient):
     assert r.data.entity_permissions == {
         "*/*": sorted(
             [
-                schema.Permissions.ENVIRONMENT_CREATE.value,
-                schema.Permissions.ENVIRONMENT_READ.value,
-                schema.Permissions.ENVIRONMENT_UPDATE.value,
-                schema.Permissions.ENVIRONMENT_DELETE.value,
-                schema.Permissions.ENVIRONMENT_SOLVE.value,
-                schema.Permissions.BUILD_CANCEL.value,
-                schema.Permissions.BUILD_DELETE.value,
-                schema.Permissions.NAMESPACE_CREATE.value,
-                schema.Permissions.NAMESPACE_READ.value,
-                schema.Permissions.NAMESPACE_DELETE.value,
-                schema.Permissions.NAMESPACE_UPDATE.value,
-                schema.Permissions.NAMESPACE_ROLE_MAPPING_CREATE.value,
-                schema.Permissions.NAMESPACE_ROLE_MAPPING_READ.value,
-                schema.Permissions.NAMESPACE_ROLE_MAPPING_UPDATE.value,
-                schema.Permissions.NAMESPACE_ROLE_MAPPING_DELETE.value,
-                schema.Permissions.SETTING_READ.value,
-                schema.Permissions.SETTING_UPDATE.value,
+                auth_schema.Permissions.ENVIRONMENT_CREATE.value,
+                auth_schema.Permissions.ENVIRONMENT_READ.value,
+                auth_schema.Permissions.ENVIRONMENT_UPDATE.value,
+                auth_schema.Permissions.ENVIRONMENT_DELETE.value,
+                auth_schema.Permissions.ENVIRONMENT_SOLVE.value,
+                auth_schema.Permissions.BUILD_CANCEL.value,
+                auth_schema.Permissions.BUILD_DELETE.value,
+                auth_schema.Permissions.NAMESPACE_CREATE.value,
+                auth_schema.Permissions.NAMESPACE_READ.value,
+                auth_schema.Permissions.NAMESPACE_DELETE.value,
+                auth_schema.Permissions.NAMESPACE_UPDATE.value,
+                auth_schema.Permissions.NAMESPACE_ROLE_MAPPING_CREATE.value,
+                auth_schema.Permissions.NAMESPACE_ROLE_MAPPING_READ.value,
+                auth_schema.Permissions.NAMESPACE_ROLE_MAPPING_UPDATE.value,
+                auth_schema.Permissions.NAMESPACE_ROLE_MAPPING_DELETE.value,
+                auth_schema.Permissions.SETTING_READ.value,
+                auth_schema.Permissions.SETTING_UPDATE.value,
             ]
         ),
         "default/*": sorted(
             [
-                schema.Permissions.ENVIRONMENT_READ.value,
-                schema.Permissions.NAMESPACE_READ.value,
-                schema.Permissions.NAMESPACE_ROLE_MAPPING_READ.value,
+                auth_schema.Permissions.ENVIRONMENT_READ.value,
+                auth_schema.Permissions.NAMESPACE_READ.value,
+                auth_schema.Permissions.NAMESPACE_ROLE_MAPPING_READ.value,
             ]
         ),
         "filesystem/*": sorted(
             [
-                schema.Permissions.ENVIRONMENT_READ.value,
-                schema.Permissions.NAMESPACE_READ.value,
-                schema.Permissions.NAMESPACE_ROLE_MAPPING_READ.value,
+                auth_schema.Permissions.ENVIRONMENT_READ.value,
+                auth_schema.Permissions.NAMESPACE_READ.value,
+                auth_schema.Permissions.NAMESPACE_ROLE_MAPPING_READ.value,
             ]
         ),
     }
