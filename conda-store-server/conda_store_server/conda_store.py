@@ -562,10 +562,16 @@ class CondaStore:
             action=auth_schema.Permissions.BUILD_ARCHIVE,
         )
 
-        if build.status not in [
-            schema.BuildStatus.FAILED,
-            schema.BuildStatus.COMPLETED,
-        ]:
-            raise CondaStoreError("cannot archive build since not finished building")
+        if build.status != schema.BuildStatus.COMPLETED:
+            raise CondaStoreError(f"cannot archive build that is in the {build.status.value} state")
 
-        # TODO: archive build
+        build.archived_on = datetime.datetime.utcnow()
+        build.status = schema.BuildStatus.ARCHIVED
+        db.commit()
+
+        self.celery_app
+
+        # must import tasks after a celery app has been initialized
+        from conda_store_server._internal.worker import tasks
+
+        tasks.task_archive_build.si(build.id).apply_async()

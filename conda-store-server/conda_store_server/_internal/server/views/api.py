@@ -1151,7 +1151,7 @@ async def api_archive_build(
         except CondaStoreError as e:
             raise HTTPException(status_code=400, detail=e.message)
 
-        return {"status": schema.APIStatus.OK}
+    return {"status": schema.APIStatus.OK}
 
 
 @router_api.get(
