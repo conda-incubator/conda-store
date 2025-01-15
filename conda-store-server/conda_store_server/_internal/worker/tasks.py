@@ -298,6 +298,7 @@ def task_delete_build(self, build_id):
 
         # Updates build size and marks build as deleted
         build.deleted_on = datetime.datetime.utcnow()
+        build.status = schema.BuildStatus.DELETED
         build.size = 0
 
         db.commit()
