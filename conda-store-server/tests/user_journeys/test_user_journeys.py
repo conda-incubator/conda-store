@@ -29,7 +29,8 @@ def verify_ssl() -> bool:
     If CONDA_STORE_TEST_VERIFY_SSL is 0, ssl verification is disabled. For all
     other inputs, ssl verification is enabled.
     """
-    return bool(os.environ.get("CONDA_STORE_TEST_VERIFY_SSL", True))
+    verify = os.environ.get("CONDA_STORE_TEST_VERIFY_SSL", "true")
+    return not verify.lower() in ("0", "false")
 
 
 @pytest.mark.user_journey
