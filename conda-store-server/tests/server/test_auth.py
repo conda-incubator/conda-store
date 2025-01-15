@@ -154,6 +154,7 @@ _viewer_permissions = {
 }
 _editor_permissions = {
     Permissions.BUILD_CANCEL,
+    Permissions.BUILD_ARCHIVE,
     Permissions.ENVIRONMENT_CREATE,
     Permissions.ENVIRONMENT_READ,
     Permissions.ENVIRONMENT_UPDATE,
@@ -165,6 +166,7 @@ _editor_permissions = {
 _admin_permissions = {
     Permissions.BUILD_DELETE,
     Permissions.BUILD_CANCEL,
+    Permissions.BUILD_ARCHIVE,
     Permissions.ENVIRONMENT_CREATE,
     Permissions.ENVIRONMENT_DELETE,
     Permissions.ENVIRONMENT_READ,

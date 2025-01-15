@@ -119,6 +119,7 @@ def test_api_permissions_auth(testclient):
                 auth_schema.Permissions.ENVIRONMENT_SOLVE.value,
                 auth_schema.Permissions.BUILD_CANCEL.value,
                 auth_schema.Permissions.BUILD_DELETE.value,
+                auth_schema.Permissions.BUILD_ARCHIVE.value,
                 auth_schema.Permissions.NAMESPACE_CREATE.value,
                 auth_schema.Permissions.NAMESPACE_READ.value,
                 auth_schema.Permissions.NAMESPACE_DELETE.value,

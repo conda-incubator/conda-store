@@ -47,6 +47,7 @@ By default, the following roles are available in conda-store. All users are in o
     }
     _editor_permissions = {
         schema.Permissions.BUILD_CANCEL,
+        schema.Permissions.BUILD_ARCHIVE,
         schema.Permissions.ENVIRONMENT_CREATE,
         schema.Permissions.ENVIRONMENT_READ,
         schema.Permissions.ENVIRONMENT_UPDATE,
@@ -58,6 +59,7 @@ By default, the following roles are available in conda-store. All users are in o
     _admin_permissions = {
         schema.Permissions.BUILD_DELETE,
         schema.Permissions.BUILD_CANCEL,
+        schema.Permissions.BUILD_ARCHIVE,
         schema.Permissions.ENVIRONMENT_CREATE,
         schema.Permissions.ENVIRONMENT_DELETE,
         schema.Permissions.ENVIRONMENT_READ,
