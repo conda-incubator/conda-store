@@ -551,3 +551,21 @@ class CondaStore:
         from conda_store_server._internal.worker import tasks
 
         tasks.task_delete_build.si(build.id).apply_async()
+
+    def archive_build(self, db: Session, build_id: int):
+        build = api.get_build(db, build_id)
+
+        self.config.validate_action(
+            db=db,
+            conda_store=self,
+            namespace=build.environment.namespace.name,
+            action=auth_schema.Permissions.BUILD_ARCHIVE,
+        )
+
+        if build.status not in [
+            schema.BuildStatus.FAILED,
+            schema.BuildStatus.COMPLETED,
+        ]:
+            raise CondaStoreError("cannot archive build since not finished building")
+
+        # TODO: archive build

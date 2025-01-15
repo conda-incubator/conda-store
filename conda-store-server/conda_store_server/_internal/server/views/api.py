@@ -1124,6 +1124,36 @@ async def api_delete_build(
         return {"status": "ok"}
 
 
+@router_api.post(
+    "/build/{build_id}/archive/",
+    response_model=schema.APIResponse,
+)
+async def api_archive_build(
+    build_id: int,
+    request: Request,
+    conda_store=Depends(dependencies.get_conda_store),
+    auth=Depends(dependencies.get_auth),
+):
+    with conda_store.get_db() as db:
+        build = api.get_build(db, build_id)
+        if build is None:
+            raise HTTPException(status_code=404, detail="build id does not exist")
+
+        auth.authorize_request(
+            request,
+            f"{build.environment.namespace.name}/{build.environment.name}",
+            {Permissions.BUILD_ARCHIVE},
+            require=True,
+        )
+
+        try:
+            conda_store.archive_build(db, build_id)
+        except CondaStoreError as e:
+            raise HTTPException(status_code=400, detail=e.message)
+
+        return {"status": schema.APIStatus.OK}
+
+
 @router_api.get(
     "/build/{build_id}/packages/",
     response_model=schema.APIListCondaPackage,
