@@ -2,14 +2,13 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
 
-import pytest
 import datetime
 
+import pytest
 from sqlalchemy import text
 from sqlalchemy.exc import OperationalError
 
 from conda_store_server import api
-from conda_store_server._internal import orm
 
 
 def test_add_build_archived_on_column_basic(

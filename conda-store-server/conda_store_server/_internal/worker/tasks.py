@@ -309,8 +309,11 @@ def task_archive_build(self, build_id):
     conda_store = self.worker.conda_store
     with conda_store.session_factory() as db:
         build = api.get_build(db, build_id)
-        
-        archive_save_artifacts = [schema.BuildArtifactType.LOCKFILE, schema.BuildArtifactType.LOGS]
+
+        archive_save_artifacts = [
+            schema.BuildArtifactType.LOCKFILE,
+            schema.BuildArtifactType.LOGS,
+        ]
         # Deletes build artifacts for this build
         conda_store.log.info(f"archiving build={build.id}")
         for build_artifact in api.list_build_artifacts(
@@ -318,7 +321,9 @@ def task_archive_build(self, build_id):
             build_id=build_id,
             excluded_artifact_types=archive_save_artifacts,
         ).all():
-            conda_store.log.info(f"archiving build={build.id} - deleting artifact {build_artifact.artifact_type.value}")
+            conda_store.log.info(
+                f"archiving build={build.id} - deleting artifact {build_artifact.artifact_type.value}"
+            )
             delete_build_artifact(db, conda_store, build_artifact)
 
         # Updates build size and marks build as deleted

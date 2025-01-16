@@ -563,7 +563,9 @@ class CondaStore:
         )
 
         if build.status != schema.BuildStatus.COMPLETED:
-            raise CondaStoreError(f"cannot archive build that is in the {build.status.value} state")
+            raise CondaStoreError(
+                f"cannot archive build that is in the {build.status.value} state"
+            )
 
         build.archived_on = datetime.datetime.utcnow()
         build.status = schema.BuildStatus.ARCHIVED

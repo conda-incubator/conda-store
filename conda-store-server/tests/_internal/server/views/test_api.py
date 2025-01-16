@@ -847,7 +847,9 @@ def test_delete_build_unauth(testclient, seed_conda_store):
     assert r.status == schema.APIStatus.ERROR
 
 
-def test_delete_build_auth_queued_build(testclient, seed_conda_store, authenticate, celery_worker):
+def test_delete_build_auth_queued_build(
+    testclient, seed_conda_store, authenticate, celery_worker
+):
     build_id = 4
 
     response = testclient.put(f"api/v1/build/{build_id}")
@@ -868,7 +870,9 @@ def test_delete_build_auth_queued_build(testclient, seed_conda_store, authentica
     assert response.status_code == 400
 
 
-def test_delete_build_auth_completed_build(testclient, seed_conda_store, authenticate, celery_worker):
+def test_delete_build_auth_completed_build(
+    testclient, seed_conda_store, authenticate, celery_worker
+):
     new_build_id = 4
 
     # ensure the build exists - seed_conda_store should create a build
@@ -905,7 +909,9 @@ def test_archive_build_unauth(testclient, seed_conda_store):
     assert r.status == schema.APIStatus.ERROR
 
 
-def test_archive_build_auth_completed_build(testclient, seed_conda_store, authenticate, celery_worker):
+def test_archive_build_auth_completed_build(
+    testclient, seed_conda_store, authenticate, celery_worker
+):
     new_build_id = 4
 
     # ensure the build exists - seed_conda_store should create a build
