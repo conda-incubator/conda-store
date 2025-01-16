@@ -895,6 +895,44 @@ def test_delete_build_auth_completed_build(testclient, seed_conda_store, authent
     assert build_data.get("deleted_on") is not None
 
 
+def test_archive_build_unauth(testclient, seed_conda_store):
+    build_id = 4
+
+    response = testclient.post(f"api/v1/build/{build_id}/archive")
+    assert response.status_code == 403
+
+    r = schema.APIResponse.model_validate(response.json())
+    assert r.status == schema.APIStatus.ERROR
+
+
+def test_archive_build_auth_completed_build(testclient, seed_conda_store, authenticate, celery_worker):
+    new_build_id = 4
+
+    # ensure the build exists - seed_conda_store should create a build
+    # with id 4 that is in the "completed" state
+    response = testclient.get(f"api/v1/build/{new_build_id}")
+    response.raise_for_status()
+    response_json = response.json()
+    r = schema.APIGetBuild.model_validate(response_json)
+    assert r.status == schema.APIStatus.OK
+    build_data = response_json.get("data")
+    assert build_data.get("deleted_on") is None
+
+    # delete the build
+    response = testclient.post(f"api/v1/build/{new_build_id}/archive")
+    assert response.status_code == 200
+
+    # check to make sure the build has been deleted
+    response = testclient.get(f"api/v1/build/{new_build_id}")
+    response.raise_for_status()
+    response_json = response.json()
+    r = schema.APIGetBuild.model_validate(response_json)
+    assert r.status == schema.APIStatus.OK
+    build_data = response_json.get("data")
+    assert build_data.get("archived_on") is not None
+    assert build_data.get("status") == "ARCHIVED"
+
+
 @pytest.mark.parametrize(
     "route",
     [
