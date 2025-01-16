@@ -24,7 +24,7 @@ def test_add_build_archived_on_column_basic(
         db.execute(text("SELECT archived_on from build"))
 
     # try downgrading
-    alembic_runner.migrate_down_one()
+    alembic_runner.migrate_down_to("89637f546129")
 
     # ensure the archived_on column does not exists
     with conda_store.session_factory() as db:
@@ -53,11 +53,11 @@ def test_downgrade_works_for_populated_column(
     # update demo data to have data in archived_on column
     with conda_store.session_factory() as db:
         build = api.get_build(db, 1)
-        build.archived_on = datetime.datetime.now(datetime.UTC)
+        build.archived_on = datetime.datetime.utcnow()
         db.commit()
 
     # try downgrading
-    alembic_runner.migrate_down_one()
+    alembic_runner.migrate_down_to("89637f546129")
 
     # ensure the archived_on column does not exists
     with conda_store.session_factory() as db:
