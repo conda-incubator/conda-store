@@ -266,6 +266,7 @@ class Build(Base):
     started_on: Mapped[datetime.datetime] = mapped_column(DateTime, default=None)
     ended_on: Mapped[datetime.datetime] = mapped_column(DateTime, default=None)
     deleted_on: Mapped[datetime.datetime] = mapped_column(DateTime, default=None)
+    archived_on: Mapped[datetime.datetime] = mapped_column(DateTime, default=None)
 
     # Only used by build_key_version 3, not necessary for earlier versions
     hash: Mapped[str] = mapped_column(Unicode(32), default=None)

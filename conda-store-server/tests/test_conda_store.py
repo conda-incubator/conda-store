@@ -189,3 +189,35 @@ def test_conda_store_get_lock_plugin_does_not_exist(conda_store):
     conda_store.config.lock_backend = lock_plugin_setting
     with pytest.raises(CondaStorePluginNotFoundError):
         conda_store.lock_plugin()
+
+
+def test_conda_store_delete_build(seed_conda_store, conda_store):
+    """Ensure conda store will delete a build and update all appropriate metadata"""
+    db = seed_conda_store
+
+    # build 4 is completed, we'll use that test test deletion
+    build = api.get_build(db, build_id=4)
+    assert build.deleted_on is None
+    assert build.status == schema.BuildStatus.COMPLETED
+
+    conda_store.delete_build(db, 4)
+
+    build = api.get_build(db, build_id=4)
+    assert build.deleted_on is not None
+    assert build.status == schema.BuildStatus.DELETED
+
+
+def test_conda_store_archive_build(seed_conda_store, conda_store):
+    """Ensure conda store will archive a build and update all appropriate metadata"""
+    db = seed_conda_store
+
+    # build 4 is completed, we'll use that test test deletion
+    build = api.get_build(db, build_id=4)
+    assert build.archived_on is None
+    assert build.status == schema.BuildStatus.COMPLETED
+
+    conda_store.archive_build(db, 4)
+
+    build = api.get_build(db, build_id=4)
+    assert build.archived_on is not None
+    assert build.status == schema.BuildStatus.ARCHIVED

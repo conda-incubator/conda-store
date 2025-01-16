@@ -113,6 +113,8 @@ class BuildStatus(enum.Enum):
     COMPLETED = "COMPLETED"
     FAILED = "FAILED"
     CANCELED = "CANCELED"
+    DELETED = "DELETED"
+    ARCHIVED = "ARCHIVED"
 
 
 class BuildArtifact(BaseModel):
@@ -133,6 +135,8 @@ class Build(BaseModel):
     scheduled_on: datetime.datetime
     started_on: Optional[datetime.datetime] = None
     ended_on: Optional[datetime.datetime] = None
+    deleted_on: Optional[datetime.datetime] = None
+    archived_on: Optional[datetime.datetime] = None
     build_artifacts: Optional[List[BuildArtifact]] = None
     model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 

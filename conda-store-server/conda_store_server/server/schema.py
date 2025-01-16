@@ -45,6 +45,7 @@ class Permissions(enum.Enum):
     ENVIRONMENT_SOLVE = "environment::solve"
     BUILD_CANCEL = "build::cancel"
     BUILD_DELETE = "build::delete"
+    BUILD_ARCHIVE = "build::archive"
     NAMESPACE_CREATE = "namespace::create"
     NAMESPACE_READ = "namespace::read"
     NAMESPACE_UPDATE = "namespace::update"

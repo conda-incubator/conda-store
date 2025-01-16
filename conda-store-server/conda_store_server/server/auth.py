@@ -150,6 +150,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
     }
     _editor_permissions = {
         auth_schema.Permissions.BUILD_CANCEL,
+        auth_schema.Permissions.BUILD_ARCHIVE,
         auth_schema.Permissions.ENVIRONMENT_CREATE,
         auth_schema.Permissions.ENVIRONMENT_READ,
         auth_schema.Permissions.ENVIRONMENT_UPDATE,
@@ -161,6 +162,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
     _admin_permissions = {
         auth_schema.Permissions.BUILD_DELETE,
         auth_schema.Permissions.BUILD_CANCEL,
+        auth_schema.Permissions.BUILD_ARCHIVE,
         auth_schema.Permissions.ENVIRONMENT_CREATE,
         auth_schema.Permissions.ENVIRONMENT_DELETE,
         auth_schema.Permissions.ENVIRONMENT_READ,
