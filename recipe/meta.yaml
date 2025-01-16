@@ -2,12 +2,12 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
 
-{% set name = "conda-store" %}
+{% set name = "conda-store-server" %}
 # version MUST be updated when a new release is made
 {% set version = "2024.11.1" %}
 
 package:
-  name: {{ name|lower }}-split
+  name: {{ name|lower }}
   version: {{ version }}
 
 source:
@@ -16,94 +16,56 @@ source:
 
 build:
   number: 0
+  noarch: python
+  script: python -m pip install ./conda-store-server -vv --no-deps --no-build-isolation --no-index
+  entry_points:
+    - conda-store-server = conda_store_server._internal.server.__main__:main
+    - conda-store-worker = conda_store_server._internal.worker.__main__:main
 
-outputs:
-  - name: conda-store
-    version: {{ version }}
-    build:
-      noarch: python
-      script: python -m pip install ./conda-store -vv --no-deps --no-build-isolation --no-index
-      entry_points:
-        - conda-store = conda_store.__main__:main
-    requirements:
-      host:
-        - python >=3.10,<3.13
-        - pip
-        - hatchling >=1.14.0
-        - hatch-vcs
-      run:
-        - __linux  # [linux]
-        - __osx    # [osx]
-        - __win    # [win]
-        - aiohttp >=3.8.1
-        - click
-        - python >=3.10,<3.13
-        - rich
-        - ruamel.yaml
-        - yarl
-      run_constrained:
-        - {{ pin_subpackage('conda-store-server', min_pin='x.x.x', max_pin='x.x.x') }}
+requirements:
+  host:
+    - python >=3.10,<3.13
+    - pip
+    - hatchling >=1.14.0
+    - hatch-vcs
+  run:
+    - alembic
+    - celery
+    - conda
+    - conda-docker  # [linux]
+    - __linux  # [linux]
+    - __osx    # [osx]
+    - __win    # [win]
+    - conda-pack
+    - conda-lock
+    - constructor
+    - fastapi
+    - filelock
+    - itsdangerous
+    - jinja2
+    - minio
+    - pluggy
+    - pydantic >=2.0
+    - pyjwt
+    - python >=3.10,<3.13
+    - python-docker
+    - python-multipart
+    - pyyaml >=6.0.1
+    - redis-py
+    - requests
+    - sqlalchemy >=2.0,<2.1
+    - traitlets
+    - uvicorn
+    - yarl
+    - psycopg2
+    - pymysql
 
-    test:
-      imports:
-        - conda_store
-      commands:
-        - conda-store --help
-
-  - name: conda-store-server
-    version: {{ version }}
-    build:
-      noarch: python
-      script: python -m pip install ./conda-store-server -vv --no-deps --no-build-isolation --no-index
-      entry_points:
-        - conda-store-server = conda_store_server._internal.server.__main__:main
-        - conda-store-worker = conda_store_server._internal.worker.__main__:main
-    requirements:
-      host:
-        - python >=3.10,<3.13
-        - pip
-        - hatchling >=1.14.0
-        - hatch-vcs
-      run:
-        - alembic
-        - celery
-        - conda
-        - conda-docker  # [linux]
-        - __linux  # [linux]
-        - __osx    # [osx]
-        - __win    # [win]
-        - conda-pack
-        - conda-lock
-        - constructor
-        - fastapi
-        - filelock
-        - itsdangerous
-        - jinja2
-        - minio
-        - pluggy
-        - pydantic >=2.0
-        - pyjwt
-        - python >=3.10,<3.13
-        - python-docker
-        - python-multipart
-        - pyyaml >=6.0.1
-        - redis-py
-        - requests
-        - sqlalchemy >=2.0,<2.1
-        - traitlets
-        - uvicorn
-        - yarl
-        - psycopg2
-        - pymysql
-      run_constrained:
-        - {{ pin_subpackage('conda-store', min_pin='x.x.x', max_pin='x.x.x') }}
-
-    test:
-      imports:
-        - conda_store_server
-      commands:
-        - conda-store-server --help
-        - conda-store-worker --help
+test:
+  imports:
+    - conda_store_server
+  commands:
+    - conda-store-server --help
+    - conda-store-worker --help
 
 about:
   home: https://github.com/conda-incubator/conda-store
