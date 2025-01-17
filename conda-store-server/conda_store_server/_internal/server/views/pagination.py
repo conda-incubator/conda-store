@@ -3,7 +3,7 @@ from __future__ import annotations
 import base64
 import operator
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 
 import pydantic
 from fastapi import HTTPException
@@ -105,7 +105,7 @@ def paginate(
     query: SqlQuery,
     ordering_metadata: OrderingMetadata,
     cursor: Cursor | None = None,
-    order_by: list[str] | None = None,
+    sort_by: list[str] | None = None,
     order: Ordering = Ordering.ASCENDING,
     limit: int = 10,
 ) -> tuple[list[Base], Cursor, int]:
@@ -127,7 +127,7 @@ def paginate(
         Cursor object containing information about the last item on the previous page.
         If None, the first page is returned.
     order_by : list[str] | None
-        List of sort_by query parameters
+        List of query parameters to order the results by
 
     Returns
     -------
@@ -135,8 +135,8 @@ def paginate(
         Query containing the paginated results, Cursor for retrieving
         the next page, and total number of results
     """
-    if order_by is None:
-        order_by = []
+    if sort_by is None:
+        sort_by = []
 
     if order == Ordering.ASCENDING:
         comparison = operator.gt
@@ -147,7 +147,20 @@ def paginate(
     else:
         raise HTTPException(
             status_code=400,
-            detail=f"Invalid query parameter: order = {order}; must be one of ['asc', 'desc']",
+            detail=(
+                f"Cannot order results: {order}"
+                f"Valid order values are [{Ordering.ASCENDING.value}, {Ordering.DESCENDING.value}]",
+            ),
+        )
+
+    invalid_params = ordering_metadata.get_invalid_orderings(sort_by)
+    if invalid_params:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Cannot sort results by {invalid_params}. "
+                f"Valid sort_by values are {ordering_metadata.valid_orderings}"
+            ),
         )
 
     # Fetch the total number of objects in the database before filtering
@@ -155,13 +168,13 @@ def paginate(
 
     # Get the python type of the objects being queried
     queried_type = query.column_descriptions[0]["type"]
-    columns = ordering_metadata.get_requested_columns(order_by)
+    columns = ordering_metadata.get_requested_columns(sort_by)
 
     # If there's a cursor already, use the last attributes to filter
     # the results by (*attributes, id) >/< (*last_values, last_id)
     # Order by desc or asc
     if cursor is not None and cursor != Cursor.end():
-        last_values = cursor.get_last_values(order_by)
+        last_values = cursor.get_last_values(sort_by)
         query = query.filter(
             comparison(
                 tuple_(*columns, queried_type.id),
@@ -179,7 +192,7 @@ def paginate(
         last_result = data[-1]
         next_cursor = Cursor(
             last_id=last_result.id,
-            last_value=ordering_metadata.get_attr_values(last_result, order_by),
+            last_value=ordering_metadata.get_attr_values(last_result, sort_by),
         )
     else:
         next_cursor = Cursor.end()
@@ -188,9 +201,9 @@ def paginate(
 
 
 class CursorPaginatedArgs(pydantic.BaseModel):
-    limit: Optional[int] = 10
-    order: Optional[Ordering] = Ordering.ASCENDING
-    sort_by: Optional[list[str]] = []
+    limit: int | None
+    order: Ordering
+    sort_by: list[str]
 
     @pydantic.field_validator("sort_by")
     def validate_sort_by(cls, v: list[str]) -> list[str]:
@@ -218,24 +231,31 @@ class CursorPaginatedArgs(pydantic.BaseModel):
 class OrderingMetadata:
     def __init__(
         self,
-        order_names: list[str] | None = None,
+        valid_orderings: list[str] | None = None,
         column_names: list[str] | None = None,
         column_objects: list[InstrumentedAttribute] | None = None,
     ):
-        self.order_names = order_names
+        self.valid_orderings = valid_orderings
         self.column_names = column_names
         self.column_objects = column_objects
 
-    def validate(self, model: Base):
-        if len(self.order_names) != len(self.column_names):
-            raise ValueError(
-                "Each name of a valid ordering available to the order_by query parameter"
-                "must have an associated column name to select in the table."
-            )
+    def get_invalid_orderings(self, query_params: list[str] | None) -> list[str]:
+        """Return a list of invalid ordering query parameters.
 
-        for col in self.column_names:
-            if not hasattr(model, col):
-                raise ValueError(f"No column named {col} found on model {model}.")
+        Parameters
+        ----------
+        query_params : list[str] | None
+            A list of ordering query parameters
+
+        Returns
+        -------
+        list[str]
+            A list of the query parameters which cannot be used to order the results
+        """
+        if query_params is None:
+            return []
+
+        return [param for param in query_params if param not in self.valid_orderings]
 
     def get_requested_columns(
         self,
@@ -258,13 +278,13 @@ class OrderingMetadata:
         columns = []
         if order_by:
             for order_name in order_by:
-                idx = self.order_names.index(order_name)
+                idx = self.valid_orderings.index(order_name)
                 columns.append(self.column_objects[idx])
 
         return columns
 
     def __str__(self) -> str:
-        return f"OrderingMetadata<order_names={self.order_names}, column_names={self.column_names}>"
+        return f"OrderingMetadata<order_names={self.valid_orderings}, column_names={self.column_names}>"
 
     def __repr__(self) -> str:
         return str(self)
@@ -293,7 +313,7 @@ class OrderingMetadata:
         """
         values = {}
         for order_name in order_by:
-            idx = self.order_names.index(order_name)
+            idx = self.valid_orderings.index(order_name)
             attr = self.column_names[idx]
             values[order_name] = get_nested_attribute(obj, attr)
 

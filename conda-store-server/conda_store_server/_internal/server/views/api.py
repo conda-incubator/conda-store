@@ -3,7 +3,7 @@
 # license that can be found in the LICENSE file.
 
 import datetime
-from typing import Any, Dict, List, Optional, TypedDict
+from typing import Any, Dict, List, Optional
 
 import pydantic
 import yaml
@@ -18,7 +18,6 @@ from conda_store_server._internal.server import dependencies
 from conda_store_server._internal.server.views.pagination import (
     Cursor,
     CursorPaginatedArgs,
-    Ordering,
     OrderingMetadata,
     paginate,
 )
@@ -28,56 +27,10 @@ from conda_store_server.server import schema as auth_schema
 from conda_store_server.server.auth import Authentication
 from conda_store_server.server.schema import AuthenticationToken, Permissions
 
-
-def get_cursor(cursor: Optional[str] = None) -> Cursor:
-    return Cursor.load(cursor)
-
-
-def get_cursor_paginated_args(
-    order: Optional[Ordering] = Ordering.ASCENDING,
-    limit: Optional[int] = None,
-    sort_by: List[str] = Query([]),
-    server=Depends(dependencies.get_server),
-) -> CursorPaginatedArgs:
-    return CursorPaginatedArgs(
-        limit=server.max_page_size if limit is None else limit,
-        order=order,
-        sort_by=sort_by,
-    )
-
-
-class PaginatedArgs(TypedDict):
-    """Dictionary type holding information about paginated requests."""
-
-    limit: int
-    offset: int
-    sort_by: List[str]
-    order: str
-
-
 router_api = APIRouter(
     tags=["api"],
     prefix="/api/v1",
 )
-
-
-def get_paginated_args(
-    page: int = 1,
-    order: Optional[str] = None,
-    size: Optional[int] = None,
-    sort_by: List[str] = Query([]),
-    server=Depends(dependencies.get_server),
-) -> PaginatedArgs:
-    if size is None:
-        size = server.max_page_size
-    size = min(size, server.max_page_size)
-    offset = (page - 1) * size
-    return {
-        "limit": size,
-        "offset": offset,
-        "sort_by": sort_by,
-        "order": order,
-    }
 
 
 def filter_distinct_on(
@@ -290,7 +243,9 @@ async def api_post_token(
 async def api_list_namespaces(
     auth=Depends(dependencies.get_auth),
     entity=Depends(dependencies.get_entity),
-    paginated_args: PaginatedArgs = Depends(get_paginated_args),
+    paginated_args: dependencies.PaginatedArgs = Depends(
+        dependencies.get_paginated_args
+    ),
     conda_store=Depends(dependencies.get_conda_store),
 ):
     with conda_store.get_db() as db:
@@ -656,14 +611,17 @@ async def api_delete_namespace(
 @router_api.get(
     "/environment/",
     response_model=schema.APIListEnvironment,
+    response_model_exclude={"data": {"__all__": {"current_build"}}},
 )
 async def api_list_environments(
     request: Request,
     auth: Authentication = Depends(dependencies.get_auth),
     conda_store: CondaStore = Depends(dependencies.get_conda_store),
     entity: AuthenticationToken = Depends(dependencies.get_entity),
-    paginated_args: CursorPaginatedArgs = Depends(get_cursor_paginated_args),
-    cursor: Cursor = Depends(get_cursor),
+    paginated_args: CursorPaginatedArgs = Depends(
+        dependencies.get_cursor_paginated_args
+    ),
+    cursor: Cursor = Depends(dependencies.get_cursor),
     artifact: Optional[schema.BuildArtifactType] = None,
     jwt: Optional[str] = None,
     name: Optional[str] = None,
@@ -711,6 +669,10 @@ async def api_list_environments(
         envrionment's build's scheduled_on time to ensure all results are returned when iterating
         over pages in systems where the number of environments is changing while results are being
         requested; see https://github.com/conda-incubator/conda-store/issues/859 for context
+
+        Note that the Environment objects returned here have their `current_build` fields omitted
+        to keep the repsonse size down; these fields otherwise drastically increase the response
+        size.
     """
     with conda_store.get_db() as db:
         if jwt:
@@ -744,12 +706,12 @@ async def api_list_environments(
         paginated, next_cursor, count = paginate(
             query=query,
             ordering_metadata=OrderingMetadata(
-                order_names=["namespace", "name"],
+                valid_orderings=["namespace", "name"],
                 column_names=["namespace.name", "name"],
                 column_objects=[orm.Namespace.name, orm.Environment.name],
             ),
             cursor=cursor,
-            order_by=paginated_args.sort_by,
+            sort_by=paginated_args.sort_by,
             order=paginated_args.order,
             limit=paginated_args.limit,
         )
@@ -977,7 +939,7 @@ async def api_list_builds(
     conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
     entity=Depends(dependencies.get_entity),
-    paginated_args=Depends(get_paginated_args),
+    paginated_args=Depends(dependencies.get_paginated_args),
 ):
     with conda_store.get_db() as db:
         orm_builds = auth.filter_builds(
@@ -1172,7 +1134,7 @@ async def api_get_build_packages(
     build: Optional[str] = None,
     auth=Depends(dependencies.get_auth),
     conda_store=Depends(dependencies.get_conda_store),
-    paginated_args=Depends(get_paginated_args),
+    paginated_args=Depends(dependencies.get_paginated_args),
 ):
     with conda_store.get_db() as db:
         build_orm = api.get_build(db, build_id)
@@ -1229,7 +1191,7 @@ async def api_get_build_logs(
 )
 async def api_list_channels(
     conda_store=Depends(dependencies.get_conda_store),
-    paginated_args=Depends(get_paginated_args),
+    paginated_args=Depends(dependencies.get_paginated_args),
 ):
     with conda_store.get_db() as db:
         orm_channels = api.list_conda_channels(db)
@@ -1250,7 +1212,7 @@ async def api_list_packages(
     search: Optional[str] = None,
     exact: Optional[str] = None,
     build: Optional[str] = None,
-    paginated_args=Depends(get_paginated_args),
+    paginated_args=Depends(dependencies.get_paginated_args),
     conda_store=Depends(dependencies.get_conda_store),
     distinct_on: List[str] = Query([]),
 ):

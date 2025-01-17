@@ -94,6 +94,7 @@ dependencies = [
   "build",
   "docker-compose",
   "docker-py<7",
+  "httpx",
   "pre-commit",
   "pytest",
   "pytest-celery",

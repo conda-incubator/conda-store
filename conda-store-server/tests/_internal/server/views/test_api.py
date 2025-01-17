@@ -8,6 +8,7 @@ import os
 import sys
 import time
 
+import httpx
 import pytest
 import traitlets
 import yaml
@@ -1181,3 +1182,19 @@ def test_api_list_environments_paginate(
 
     # Check that the environments are sorted by ID
     assert sorted(env_ids) == env_ids
+
+
+def test_api_list_environments_invalid_query_params(
+    conda_store_server,
+    testclient,
+    seed_conda_store_big,
+    authenticate,
+):
+    """Test that invalid query parameters return 400 status codes."""
+    response = testclient.get("api/v1/environment/?order=foo")
+    with pytest.raises(httpx.HTTPStatusError):
+        response.raise_for_status()
+
+    response = testclient.get("api/v1/environment/?sort_by=foo")
+    with pytest.raises(httpx.HTTPStatusError):
+        response.raise_for_status()
