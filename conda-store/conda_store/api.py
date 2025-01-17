@@ -71,6 +71,21 @@ class CondaStoreAPI:
 
         return data
 
+    async def get_cursor_paginated_request(self, url: yarl.URL):
+        data = []
+        async with self.session.get(utils.ensure_slash(url)) as response:
+            response_json = await response.json()
+            data.extend(response_json["data"])
+
+            count = response_json["count"]
+
+        while len(data) != count:
+            async with self.session.get(utils.ensure_slash(url)) as response:
+                response_json = await response.json()
+                data.extend(response_json["data"])
+
+        return data
+
     async def get_permissions(self):
         async with self.session.get(
             utils.ensure_slash(self.api_url / "permission")
@@ -123,7 +138,7 @@ class CondaStoreAPI:
             url = url % {"artifact": artifact}
         if packages:
             url = url % {"packages": packages}
-        return await self.get_paginated_request(url)
+        return await self.get_cursor_paginated_request(url)
 
     async def delete_environment(self, namespace: str, name: str):
         async with self.session.delete(
