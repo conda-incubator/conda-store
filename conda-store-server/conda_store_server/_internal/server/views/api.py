@@ -1486,8 +1486,8 @@ async def api_put_settings(
 
     try:
         conda_store.set_settings(namespace, environment_name, data)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e.args[0]))
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
     return {
         "status": "ok",

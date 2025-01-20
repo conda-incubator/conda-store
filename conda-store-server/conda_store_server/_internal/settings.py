@@ -31,7 +31,7 @@ class Settings:
         self,
         namespace: str | None = None,
         environment_name: str | None = None,
-        data: Dict[str, Any] = {},
+        data: Dict[str, Any] | None = None,
     ):
         """Persist settings to the database
 
@@ -44,6 +44,9 @@ class Settings:
         data : dict
             settings to upsert
         """
+        if data is None:
+            return
+
         setting_keys = schema.Settings.model_fields.keys()
         if not data.keys() <= setting_keys:
             invalid_keys = data.keys() - setting_keys
@@ -59,13 +62,8 @@ class Settings:
                     f"Setting {key} is a global setting and cannot be set within a namespace or environment"
                 )
 
-            try:
-                validator = pydantic.TypeAdapter(field.annotation)
-                validator.validate_python(value)
-            except Exception as e:
-                raise ValueError(
-                    f"Invalid parsing of setting {key} expected type {field.annotation} ran into error {e}"
-                )
+            validator = pydantic.TypeAdapter(field.annotation)
+            validator.validate_python(value)
 
         if namespace is not None and environment_name is not None:
             prefix = f"setting/{namespace}/{environment_name}"
