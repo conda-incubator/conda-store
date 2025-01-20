@@ -29,8 +29,8 @@ class Settings:
     @_ensure_closed_session
     def set_settings(
         self,
-        namespace: str = None,
-        environment_name: str = None,
+        namespace: str | None = None,
+        environment_name: str | None = None,
         data: Dict[str, Any] = {},
     ):
         """Persist settings to the database
@@ -56,7 +56,7 @@ class Settings:
                 namespace is not None or environment_name is not None
             ):
                 raise ValueError(
-                    f"Setting {key} is a global setting cannot be set within namespace or environment"
+                    f"Setting {key} is a global setting and cannot be set within a namespace or environment"
                 )
 
             try:
@@ -78,7 +78,7 @@ class Settings:
 
     @_ensure_closed_session
     def get_settings(
-        self, namespace: str = None, environment_name: str = None
+        self, namespace: str | None = None, environment_name: str | None = None
     ) -> schema.Settings:
         """Get full schema.settings object for a given level of specificity.
         If no namespace or environment is given, then the default settings
@@ -129,8 +129,8 @@ class Settings:
 
     @_ensure_closed_session
     def get_setting(
-        self, key: str, namespace: str = None, environment_name: str = None
-    ):
+        self, key: str, namespace: str | None = None, environment_name: str | None = None
+    ) -> Any:
         """Get a given setting at the given level of specificity. Will short
         cut and look up global setting directly even if a namespace/environment
         is specified
