@@ -3,8 +3,9 @@
 # license that can be found in the LICENSE file.
 
 from unittest import mock
-
 import pytest
+
+import pydantic
 
 from conda_store_server import api
 from conda_store_server._internal import schema
@@ -189,15 +190,22 @@ def test_set_settings_invalid_setting_field(settings: Settings):
 
 
 def test_set_settings_invalid_setting_type(settings: Settings):
-    with pytest.raises(ValueError, match=r"Invalid parsing of setting"):
+    with pytest.raises(pydantic.ValidationError):
         settings.set_settings(data={"conda_channel_alias": [1, 2, 3]})
 
 
 def test_set_settings_invalid_level(settings: Settings):
     with pytest.raises(
-        ValueError, match=r"is a global setting cannot be set within namespace"
+        ValueError, match="Setting default_uid is a global setting and cannot be set within a namespace or environment"
     ):
         settings.set_settings(namespace="mynamespace", data={"default_uid": 777})
+
+
+def test_set_settings_environment_without_namespace(settings: Settings):
+    with pytest.raises(
+        ValueError, match=r"Please specify a namespace"
+    ):
+        settings.set_settings(environment_name="test_env", data={"conda_channel_alias": "mynewalias"})
 
 
 def test_get_global_setting(settings: Settings):

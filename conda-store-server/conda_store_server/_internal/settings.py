@@ -47,6 +47,11 @@ class Settings:
         if data is None:
             return
 
+        # if an environment is specified without a namespace, it is not possible to
+        # determine which environment the setting should be applied to. Raise an error.
+        if namespace is None and environment_name is not None:
+            raise ValueError(f"Environment {environment_name} is set without a namespace. Please specify a namespace.")
+
         setting_keys = schema.Settings.model_fields.keys()
         if not data.keys() <= setting_keys:
             invalid_keys = data.keys() - setting_keys
@@ -131,7 +136,7 @@ class Settings:
         key: str,
         namespace: str | None = None,
         environment_name: str | None = None,
-    ) -> Any:
+    ) -> Any: # noqa: ANN401
         """Get a given setting at the given level of specificity. Will short
         cut and look up global setting directly even if a namespace/environment
         is specified
