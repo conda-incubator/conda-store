@@ -17,7 +17,7 @@ from fastapi.testclient import TestClient
 from conda_store_server import CONDA_STORE_DIR, __version__
 from conda_store_server._internal import schema
 from conda_store_server._internal.server import dependencies
-from conda_store_server._internal.server.views.pagination import Cursor
+from conda_store_server._internal.server.pagination import Cursor
 from conda_store_server.server import schema as auth_schema
 
 

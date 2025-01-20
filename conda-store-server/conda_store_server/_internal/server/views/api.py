@@ -15,7 +15,7 @@ from conda_store_server import __version__, api
 from conda_store_server._internal import orm, schema
 from conda_store_server._internal.environment import filter_environments
 from conda_store_server._internal.server import dependencies
-from conda_store_server._internal.server.views.pagination import (
+from conda_store_server._internal.server.pagination import (
     Cursor,
     CursorPaginatedArgs,
     OrderingMetadata,

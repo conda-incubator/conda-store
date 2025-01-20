@@ -6,7 +6,7 @@ from typing import Optional, TypedDict
 
 from fastapi import Depends, Query, Request
 
-from conda_store_server._internal.server.views.pagination import (
+from conda_store_server._internal.server.pagination import (
     Cursor,
     CursorPaginatedArgs,
     Ordering,
