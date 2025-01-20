@@ -129,7 +129,10 @@ class Settings:
 
     @_ensure_closed_session
     def get_setting(
-        self, key: str, namespace: str | None = None, environment_name: str | None = None
+        self,
+        key: str,
+        namespace: str | None = None,
+        environment_name: str | None = None,
     ) -> Any:
         """Get a given setting at the given level of specificity. Will short
         cut and look up global setting directly even if a namespace/environment
