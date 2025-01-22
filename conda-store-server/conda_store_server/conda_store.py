@@ -167,7 +167,7 @@ class CondaStore:
         os.makedirs(self.config.store_directory, exist_ok=True)
 
     def ensure_conda_channels(self, db: Session):
-        """Ensure that conda-store indexed channels and packages are 
+        """Ensure that conda-store indexed channels and packages are
         in database. Only globally defined `conda_indexed_channels`
         with the globally defined `conda_channel_alias` will be indexed
         """

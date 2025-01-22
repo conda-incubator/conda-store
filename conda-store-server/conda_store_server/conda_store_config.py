@@ -53,7 +53,7 @@ def conda_store_validate_action(
 ) -> None:
     # get global setting storage thershold, no need to specify a namespace/environment
     storage_threshold = conda_store.get_setting("storage_threshold")
-    
+
     system_metrics = api.get_system_metrics(db)
 
     if action in (
