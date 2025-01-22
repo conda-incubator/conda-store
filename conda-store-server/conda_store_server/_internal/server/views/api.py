@@ -15,26 +15,15 @@ from conda_store_server import __version__, api
 from conda_store_server._internal import orm, schema
 from conda_store_server._internal.environment import filter_environments
 from conda_store_server._internal.server import dependencies
-from conda_store_server._internal.server.pagination import (
-    Cursor,
-    CursorPaginatedArgs,
-    OrderingMetadata,
-    paginate,
-)
 from conda_store_server.conda_store import CondaStore
 from conda_store_server.exception import CondaStoreError
 from conda_store_server.server import schema as auth_schema
 from conda_store_server.server.auth import Authentication
 from conda_store_server.server.schema import AuthenticationToken, Permissions
 
-router_api_v1 = APIRouter(
+router_api = APIRouter(
     tags=["api"],
     prefix="/api/v1",
-)
-
-router_api_v2 = APIRouter(
-    tags=["api"],
-    prefix="/api/v2",
 )
 
 
@@ -116,7 +105,7 @@ def paginated_api_response(
     }
 
 
-@router_api_v1.get(
+@router_api.get(
     "/",
     response_model=schema.APIGetStatus,
 )
@@ -124,7 +113,7 @@ async def api_status():
     return {"status": "ok", "data": {"version": __version__}}
 
 
-@router_api_v1.get(
+@router_api.get(
     "/permission/",
     response_model=schema.APIGetPermission,
 )
@@ -164,7 +153,7 @@ async def api_get_permissions(
     }
 
 
-@router_api_v1.get(
+@router_api.get(
     "/usage/",
     response_model=schema.APIGetUsage,
 )
@@ -194,7 +183,7 @@ async def api_get_usage(
         }
 
 
-@router_api_v1.post(
+@router_api.post(
     "/token/",
     response_model=schema.APIPostToken,
 )
@@ -239,7 +228,7 @@ async def api_post_token(
     }
 
 
-@router_api_v1.get(
+@router_api.get(
     "/namespace/",
     response_model=schema.APIListNamespace,
     # don't send metadata_ and role_mappings
@@ -269,7 +258,7 @@ async def api_list_namespaces(
         )
 
 
-@router_api_v1.get(
+@router_api.get(
     "/namespace/{namespace}/",
     response_model=schema.APIGetNamespace,
 )
@@ -294,7 +283,7 @@ async def api_get_namespace(
         }
 
 
-@router_api_v1.post(
+@router_api.post(
     "/namespace/{namespace}/",
     response_model=schema.APIAckResponse,
 )
@@ -321,7 +310,7 @@ async def api_create_namespace(
         return {"status": "ok"}
 
 
-@router_api_v1.put(
+@router_api.put(
     "/namespace/{namespace}/",
     response_model=schema.APIAckResponse,
 )
@@ -357,9 +346,7 @@ async def api_update_namespace(
         return {"status": "ok"}
 
 
-@router_api_v1.put(
-    "/namespace/{namespace}/metadata", response_model=schema.APIAckResponse
-)
+@router_api.put("/namespace/{namespace}/metadata", response_model=schema.APIAckResponse)
 async def api_update_namespace_metadata(
     namespace: str,
     request: Request,
@@ -389,7 +376,7 @@ async def api_update_namespace_metadata(
         return {"status": "ok"}
 
 
-@router_api_v1.get("/namespace/{namespace}/roles", response_model=schema.APIResponse)
+@router_api.get("/namespace/{namespace}/roles", response_model=schema.APIResponse)
 async def api_get_namespace_roles(
     namespace: str,
     request: Request,
@@ -422,9 +409,7 @@ async def api_get_namespace_roles(
         }
 
 
-@router_api_v1.delete(
-    "/namespace/{namespace}/roles", response_model=schema.APIAckResponse
-)
+@router_api.delete("/namespace/{namespace}/roles", response_model=schema.APIAckResponse)
 async def api_delete_namespace_roles(
     namespace: str,
     request: Request,
@@ -454,7 +439,7 @@ async def api_delete_namespace_roles(
         return {"status": "ok"}
 
 
-@router_api_v1.get("/namespace/{namespace}/role", response_model=schema.APIResponse)
+@router_api.get("/namespace/{namespace}/role", response_model=schema.APIResponse)
 async def api_get_namespace_role(
     namespace: str,
     request: Request,
@@ -490,7 +475,7 @@ async def api_get_namespace_role(
         }
 
 
-@router_api_v1.post("/namespace/{namespace}/role", response_model=schema.APIAckResponse)
+@router_api.post("/namespace/{namespace}/role", response_model=schema.APIAckResponse)
 async def api_create_namespace_role(
     namespace: str,
     request: Request,
@@ -526,7 +511,7 @@ async def api_create_namespace_role(
         return {"status": "ok"}
 
 
-@router_api_v1.put("/namespace/{namespace}/role", response_model=schema.APIAckResponse)
+@router_api.put("/namespace/{namespace}/role", response_model=schema.APIAckResponse)
 async def api_update_namespace_role(
     namespace: str,
     request: Request,
@@ -562,9 +547,7 @@ async def api_update_namespace_role(
         return {"status": "ok"}
 
 
-@router_api_v1.delete(
-    "/namespace/{namespace}/role", response_model=schema.APIAckResponse
-)
+@router_api.delete("/namespace/{namespace}/role", response_model=schema.APIAckResponse)
 async def api_delete_namespace_role(
     namespace: str,
     request: Request,
@@ -595,7 +578,7 @@ async def api_delete_namespace_role(
         return {"status": "ok"}
 
 
-@router_api_v1.delete("/namespace/{namespace}/", response_model=schema.APIAckResponse)
+@router_api.delete("/namespace/{namespace}/", response_model=schema.APIAckResponse)
 async def api_delete_namespace(
     namespace: str,
     request: Request,
@@ -619,121 +602,7 @@ async def api_delete_namespace(
         return {"status": "ok"}
 
 
-@router_api_v2.get(
-    "/environment/",
-    response_model=schema.APIListEnvironment,
-    response_model_exclude={"data": {"__all__": {"current_build"}}},
-)
-async def api_list_environments_v2(
-    request: Request,
-    auth: Authentication = Depends(dependencies.get_auth),
-    conda_store: CondaStore = Depends(dependencies.get_conda_store),
-    entity: AuthenticationToken = Depends(dependencies.get_entity),
-    paginated_args: CursorPaginatedArgs = Depends(
-        dependencies.get_cursor_paginated_args
-    ),
-    cursor: Cursor = Depends(dependencies.get_cursor),
-    artifact: Optional[schema.BuildArtifactType] = None,
-    jwt: Optional[str] = None,
-    name: Optional[str] = None,
-    namespace: Optional[str] = None,
-    packages: Optional[List[str]] = Query([]),
-    search: Optional[str] = None,
-    status: Optional[schema.BuildStatus] = None,
-) -> schema.APIListEnvironment:
-    """Retrieve a list of environments.
-
-    Parameters
-    ----------
-    auth : Authentication
-        Authentication instance for the request. Used to get role bindings
-        and filter environments returned to those visible by the user making
-        the request
-    entity : AuthenticationToken
-        Token of the user making the request
-    paginated_args : CursorPaginatedArgs
-        Arguments for controlling pagination of the response
-    conda_store : app.CondaStore
-        The running conda store application
-    search : Optional[str]
-        If specified, filter by environment names or namespace names containing the
-        search term
-    namespace : Optional[str]
-        If specified, filter by environments in the given namespace
-    name : Optional[str]
-        If specified, filter by environments with the given name
-    status : Optional[schema.BuildStatus]
-        If specified, filter by environments with the given status
-    packages : Optional[List[str]]
-        If specified, filter by environments containing the given package name(s)
-    artifact : Optional[schema.BuildArtifactType]
-        If specified, filter by environments with the given BuildArtifactType
-    jwt : Optional[auth_schema.AuthenticationToken]
-        If specified, retrieve only the environments accessible to this token; that is,
-        only return environments that the user has 'admin', 'editor', and 'viewer'
-        role bindings for.
-
-    Returns
-    -------
-    schema.APIListEnvironment
-        Paginated JSON response containing the requested environments. Cursor-based pagination
-        is used.
-
-        Note that the Environment objects returned here have their `current_build` fields omitted
-        to keep the repsonse size down; these fields otherwise drastically increase the response
-        size.
-    """
-    with conda_store.get_db() as db:
-        if jwt:
-            # Fetch the environments visible to the supplied token
-            role_bindings = auth.entity_bindings(
-                AuthenticationToken.model_validate(
-                    auth.authentication.decrypt_token(jwt)
-                )
-            )
-        else:
-            role_bindings = None
-
-        query = api.list_environments(
-            db,
-            search=search,
-            namespace=namespace,
-            name=name,
-            status=status,
-            packages=packages,
-            artifact=artifact,
-            show_soft_deleted=False,
-            role_bindings=role_bindings,
-        )
-
-        # Filter by environments that the user who made the query has access to
-        query = filter_environments(
-            query=query,
-            role_bindings=auth.entity_bindings(entity),
-        )
-
-        paginated, next_cursor, count = paginate(
-            query=query,
-            ordering_metadata=OrderingMetadata(
-                valid_orderings=["namespace", "name"],
-                column_names=["namespace.name", "name"],
-                column_objects=[orm.Namespace.name, orm.Environment.name],
-            ),
-            cursor=cursor,
-            sort_by=paginated_args.sort_by,
-            order=paginated_args.order,
-            limit=paginated_args.limit,
-        )
-
-        return schema.APIListEnvironment(
-            data=paginated,
-            status="ok",
-            cursor=next_cursor.dump(),
-            count=count,
-        )
-
-
-@router_api_v1.get(
+@router_api.get(
     "/environment/",
     response_model=schema.APIListEnvironment,
 )
@@ -833,7 +702,7 @@ async def api_list_environments_v1(
         )
 
 
-@router_api_v1.get(
+@router_api.get(
     "/environment/{namespace}/{environment_name}/",
     response_model=schema.APIGetEnvironment,
 )
@@ -866,7 +735,7 @@ async def api_get_environment(
         }
 
 
-@router_api_v1.put(
+@router_api.put(
     "/environment/{namespace}/{name}/",
     response_model=schema.APIAckResponse,
 )
@@ -902,7 +771,7 @@ async def api_update_environment_build(
         return {"status": "ok"}
 
 
-@router_api_v1.delete(
+@router_api.delete(
     "/environment/{namespace}/{name}/",
     response_model=schema.APIAckResponse,
 )
@@ -929,7 +798,7 @@ async def api_delete_environment(
         return {"status": "ok"}
 
 
-@router_api_v1.get(
+@router_api.get(
     "/specification/",
 )
 async def api_get_specification(
@@ -967,7 +836,7 @@ async def api_get_specification(
         return {"solve": solve.package_builds}
 
 
-@router_api_v1.post(
+@router_api.post(
     "/specification/",
     response_model=schema.APIPostSpecification,
 )
@@ -1037,7 +906,7 @@ async def api_post_specification(
         return {"status": "ok", "data": {"build_id": build_id}}
 
 
-@router_api_v1.get("/build/", response_model=schema.APIListBuild)
+@router_api.get("/build/", response_model=schema.APIListBuild)
 async def api_list_builds(
     status: Optional[schema.BuildStatus] = None,
     packages: Optional[List[str]] = Query([]),
@@ -1079,7 +948,7 @@ async def api_list_builds(
         )
 
 
-@router_api_v1.get("/build/{build_id}/", response_model=schema.APIGetBuild)
+@router_api.get("/build/{build_id}/", response_model=schema.APIGetBuild)
 async def api_get_build(
     build_id: int,
     request: Request,
@@ -1104,7 +973,7 @@ async def api_get_build(
         }
 
 
-@router_api_v1.put(
+@router_api.put(
     "/build/{build_id}/",
     response_model=schema.APIPostSpecification,
 )
@@ -1140,7 +1009,7 @@ async def api_put_build(
         }
 
 
-@router_api_v1.put(
+@router_api.put(
     "/build/{build_id}/cancel/",
     response_model=schema.APIAckResponse,
 )
@@ -1201,7 +1070,7 @@ async def api_put_build_cancel(
         }
 
 
-@router_api_v1.delete(
+@router_api.delete(
     "/build/{build_id}/",
     response_model=schema.APIAckResponse,
 )
@@ -1231,7 +1100,7 @@ async def api_delete_build(
         return {"status": "ok"}
 
 
-@router_api_v1.get(
+@router_api.get(
     "/build/{build_id}/packages/",
     response_model=schema.APIListCondaPackage,
 )
@@ -1272,7 +1141,7 @@ async def api_get_build_packages(
         )
 
 
-@router_api_v1.get("/build/{build_id}/logs/")
+@router_api.get("/build/{build_id}/logs/")
 async def api_get_build_logs(
     build_id: int,
     request: Request,
@@ -1294,7 +1163,7 @@ async def api_get_build_logs(
         return RedirectResponse(conda_store.storage.get_url(build.log_key))
 
 
-@router_api_v1.get(
+@router_api.get(
     "/channel/",
     response_model=schema.APIListCondaChannel,
 )
@@ -1313,7 +1182,7 @@ async def api_list_channels(
         )
 
 
-@router_api_v1.get(
+@router_api.get(
     "/package/",
     response_model=schema.APIListCondaPackage,
 )
@@ -1353,7 +1222,7 @@ async def api_list_packages(
         )
 
 
-@router_api_v1.get("/build/{build_id}/yaml/")
+@router_api.get("/build/{build_id}/yaml/")
 async def api_get_build_yaml(
     build_id: int,
     request: Request,
@@ -1374,25 +1243,25 @@ async def api_get_build_yaml(
         return RedirectResponse(conda_store.storage.get_url(build.conda_env_export_key))
 
 
-@router_api_v1.get(
+@router_api.get(
     "/environment/{namespace}/{environment_name}/conda-lock.yml",
     response_class=PlainTextResponse,
 )
-@router_api_v1.get(
+@router_api.get(
     "/environment/{namespace}/{environment_name}/conda-lock.yaml",
     response_class=PlainTextResponse,
 )
-@router_api_v1.get(
+@router_api.get(
     "/environment/{namespace}/{environment_name}/lockfile/",
     response_class=PlainTextResponse,
 )
-@router_api_v1.get("/build/{build_id}/conda-lock.yml", response_class=PlainTextResponse)
-@router_api_v1.get(
+@router_api.get("/build/{build_id}/conda-lock.yml", response_class=PlainTextResponse)
+@router_api.get(
     "/build/{build_id}/conda-lock.yaml",
     name="api_get_build_conda_lock_file",
     response_class=PlainTextResponse,
 )
-@router_api_v1.get("/build/{build_id}/lockfile/", response_class=PlainTextResponse)
+@router_api.get("/build/{build_id}/lockfile/", response_class=PlainTextResponse)
 async def api_get_build_lockfile(
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),
@@ -1438,7 +1307,7 @@ async def api_get_build_lockfile(
         return RedirectResponse(conda_store.storage.get_url(build.conda_lock_key))
 
 
-@router_api_v1.get("/build/{build_id}/archive/")
+@router_api.get("/build/{build_id}/archive/")
 async def api_get_build_archive(
     build_id: int,
     request: Request,
@@ -1457,7 +1326,7 @@ async def api_get_build_archive(
         return RedirectResponse(conda_store.storage.get_url(build.conda_pack_key))
 
 
-@router_api_v1.get("/build/{build_id}/docker/", deprecated=True)
+@router_api.get("/build/{build_id}/docker/", deprecated=True)
 async def api_get_build_docker_image_url(
     build_id: int,
     request: Request,
@@ -1489,7 +1358,7 @@ async def api_get_build_docker_image_url(
             )
 
 
-@router_api_v1.get("/build/{build_id}/installer/")
+@router_api.get("/build/{build_id}/installer/")
 async def api_get_build_installer(
     build_id: int,
     request: Request,
@@ -1517,15 +1386,15 @@ async def api_get_build_installer(
             )
 
 
-@router_api_v1.get(
+@router_api.get(
     "/setting/",
     response_model=schema.APIGetSetting,
 )
-@router_api_v1.get(
+@router_api.get(
     "/setting/{namespace}/",
     response_model=schema.APIGetSetting,
 )
-@router_api_v1.get(
+@router_api.get(
     "/setting/{namespace}/{environment_name}/",
     response_model=schema.APIGetSetting,
 )
@@ -1560,15 +1429,15 @@ async def api_get_settings(
         }
 
 
-@router_api_v1.put(
+@router_api.put(
     "/setting/",
     response_model=schema.APIPutSetting,
 )
-@router_api_v1.put(
+@router_api.put(
     "/setting/{namespace}/",
     response_model=schema.APIPutSetting,
 )
-@router_api_v1.put(
+@router_api.put(
     "/setting/{namespace}/{environment_name}/",
     response_model=schema.APIPutSetting,
 )
@@ -1605,9 +1474,3 @@ async def api_put_settings(
             "data": None,
             "message": f"global setting keys {list(data.keys())} updated",
         }
-
-
-router_apis = [
-    router_api_v1,
-    router_api_v2,
-]

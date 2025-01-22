@@ -192,35 +192,35 @@ def test_api_get_namespace_auth_no_exist(testclient, seed_conda_store, authentic
 
 
 @pytest.mark.parametrize(
-    ("version"),
+    ("version", "model"),
     [
-        "v1",
-        "v2",
+        ("v1", schema.APIListEnvironment),
+        ("v2", schema.APIV2ListEnvironment),
     ],
 )
-def test_api_list_environments_unauth(testclient, seed_conda_store, version):
+def test_api_list_environments_unauth(testclient, seed_conda_store, version, model):
     response = testclient.get(f"api/{version}/environment")
     response.raise_for_status()
 
-    r = schema.APIListEnvironment.model_validate(response.json())
+    r = model.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     assert sorted([_.name for _ in r.data]) == ["name1", "name2"]
 
 
 @pytest.mark.parametrize(
-    ("version"),
+    ("version", "model"),
     [
-        "v1",
-        "v2",
+        ("v1", schema.APIListEnvironment),
+        ("v2", schema.APIV2ListEnvironment),
     ],
 )
 def test_api_list_environments_auth(
-    testclient, seed_conda_store, authenticate, version
+    testclient, seed_conda_store, authenticate, version, model
 ):
     response = testclient.get(f"api/{version}/environment")
     response.raise_for_status()
 
-    r = schema.APIListEnvironment.model_validate(response.json())
+    r = model.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     assert sorted([_.name for _ in r.data]) == ["name1", "name2", "name3", "name4"]
 
@@ -1131,7 +1131,7 @@ def test_api_list_environments_paginate_order_by(
         )
         response.raise_for_status()
 
-        model = schema.APIListEnvironment.model_validate(response.json())
+        model = schema.APIV2ListEnvironment.model_validate(response.json())
         assert model.status == schema.APIStatus.OK
 
         envs.extend(model.data)
@@ -1171,10 +1171,11 @@ def test_api_list_environments_paginate(
     cursor = None
     cursor_param = ""
     while cursor is None or cursor != Cursor.end():
+        # breakpoint()
         response = testclient.get(f"api/v2/environment/?limit={limit}{cursor_param}")
         response.raise_for_status()
 
-        model = schema.APIListEnvironment.model_validate(response.json())
+        model = schema.APIV2ListEnvironment.model_validate(response.json())
         assert model.status == schema.APIStatus.OK
 
         envs.extend(model.data)

@@ -517,7 +517,12 @@ class APIDeleteNamespaceRole(BaseModel):
 
 
 # GET /api/v1/environment
-class APIListEnvironment(APICursorPaginatedResponse):
+class APIListEnvironment(APIPaginatedResponse):
+    data: List[Environment] = []
+
+
+# GET /api/v2/environment
+class APIV2ListEnvironment(APICursorPaginatedResponse):
     data: List[Environment] = []
 
 
