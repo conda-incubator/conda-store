@@ -129,7 +129,6 @@ def conda_store_api_server(conda_store_api_config):
     dbutil.upgrade(_conda_store.config.database_url)
 
     with _conda_store.session_factory() as db:
-        _conda_store.ensure_settings(db)
         _conda_store.configuration(db).update_storage_metrics(
             db, _conda_store.config.store_directory
         )
@@ -159,7 +158,6 @@ def conda_store_server(conda_store_config):
     dbutil.upgrade(_conda_store.config.database_url)
 
     with _conda_store.session_factory() as db:
-        _conda_store.ensure_settings(db)
         _conda_store.configuration(db).update_storage_metrics(
             db, _conda_store.config.store_directory
         )
@@ -252,7 +250,6 @@ def conda_store(conda_store_config):
     dbutil.upgrade(_conda_store.config.database_url)
 
     with _conda_store.session_factory() as db:
-        _conda_store.ensure_settings(db)
         _conda_store.configuration(db).update_storage_metrics(
             db, _conda_store.config.store_directory
         )

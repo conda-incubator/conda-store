@@ -137,7 +137,6 @@ def test_conda_store_server_additional_routes(conda_store_server):
 
 def test_conda_store_settings_conda_channels_packages_validate_valid(db, conda_store):
     conda_store.set_settings(
-        db,
         data={
             "conda_allowed_channels": ["conda-forge"],
             "conda_included_packages": ["ipykernel"],
@@ -168,7 +167,6 @@ def test_conda_store_settings_conda_channels_packages_validate_valid(db, conda_s
     ]
 
     conda_store.set_settings(
-        db,
         namespace="default",
         data={
             "conda_allowed_channels": ["conda-forge"],
@@ -201,7 +199,6 @@ def test_conda_store_settings_conda_channels_packages_validate_valid(db, conda_s
     ]
 
     conda_store.set_settings(
-        db,
         namespace="default",
         environment_name="test",
         data={

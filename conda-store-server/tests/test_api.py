@@ -339,17 +339,30 @@ def test_get_set_keyvaluestore(db):
     api.set_kvstore_key_values(db, "pytest/1", setting_2)
     api.set_kvstore_key_values(db, "pytest/1/2", setting_3)
 
+    # check get_kvstore_key_values
     assert setting_1 == api.get_kvstore_key_values(db, "pytest")
     assert setting_2 == api.get_kvstore_key_values(db, "pytest/1")
     assert setting_3 == api.get_kvstore_key_values(db, "pytest/1/2")
 
+    # check get_kvstore_value
+    assert api.get_kvstore_key(db, "pytest", "b") == 2
+    assert api.get_kvstore_key(db, "pytest/1", "d") == 2
+    assert api.get_kvstore_key(db, "pytest/1/2", "f") == 2
+
     # test updating a prefix
     api.set_kvstore_key_values(db, "pytest", setting_2)
     assert api.get_kvstore_key_values(db, "pytest") == {**setting_1, **setting_2}
+    assert api.get_kvstore_key(db, "pytest", "d") == 2
 
     # test updating a prefix
     api.set_kvstore_key_values(db, "pytest", {"c": 999, "d": 999}, update=False)
     assert api.get_kvstore_key_values(db, "pytest") == {**setting_1, **setting_2}
+    assert api.get_kvstore_key(db, "pytest", "d") == 2
+
+
+def test_get_kvstore_key_dne(db):
+    # db starts empty, try to get a value that does not exist
+    assert api.get_kvstore_key(db, "pytest", "c") is None
 
 
 def test_build_path_too_long(db, conda_store, simple_specification):

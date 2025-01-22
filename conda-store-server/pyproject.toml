@@ -190,6 +190,7 @@ ignore = [
     "RET504",	# unnecessary-assign
     "RET505",	# superfluous-else-return
     "RET506",	# superfluous-else-raise
+    "SIM102", # collapsible-if
     "SIM105",	# suppressible-exception
     "SIM115",	# open-file-with-context-handler
     "SIM117",	# multiple-with-statements

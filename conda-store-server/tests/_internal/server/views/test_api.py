@@ -1008,7 +1008,7 @@ def test_put_environment_settings_auth_invliad_type(testclient, authenticate, ro
 
     r = schema.APIPutSetting.model_validate(response.json())
     assert r.status == schema.APIStatus.ERROR
-    assert "Invalid parsing" in r.message
+    assert "validation error" in r.message
 
 
 @pytest.mark.parametrize(
