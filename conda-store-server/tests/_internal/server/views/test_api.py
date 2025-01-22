@@ -191,8 +191,15 @@ def test_api_get_namespace_auth_no_exist(testclient, seed_conda_store, authentic
     assert r.status == schema.APIStatus.ERROR
 
 
-def test_api_list_environments_unauth(testclient, seed_conda_store):
-    response = testclient.get("api/v1/environment")
+@pytest.mark.parametrize(
+    ("version"),
+    [
+        "v1",
+        "v2",
+    ],
+)
+def test_api_list_environments_unauth(testclient, seed_conda_store, version):
+    response = testclient.get(f"api/{version}/environment")
     response.raise_for_status()
 
     r = schema.APIListEnvironment.model_validate(response.json())
@@ -200,8 +207,17 @@ def test_api_list_environments_unauth(testclient, seed_conda_store):
     assert sorted([_.name for _ in r.data]) == ["name1", "name2"]
 
 
-def test_api_list_environments_auth(testclient, seed_conda_store, authenticate):
-    response = testclient.get("api/v1/environment")
+@pytest.mark.parametrize(
+    ("version"),
+    [
+        "v1",
+        "v2",
+    ],
+)
+def test_api_list_environments_auth(
+    testclient, seed_conda_store, authenticate, version
+):
+    response = testclient.get(f"api/{version}/environment")
     response.raise_for_status()
 
     r = schema.APIListEnvironment.model_validate(response.json())
@@ -1111,7 +1127,7 @@ def test_api_list_environments_paginate_order_by(
     cursor_param = ""
     while cursor is None or cursor != Cursor.end():
         response = testclient.get(
-            f"api/v1/environment/?limit={limit}&sort_by={sort_by_param}{order_param}{cursor_param}"
+            f"api/v2/environment/?limit={limit}&sort_by={sort_by_param}{order_param}{cursor_param}"
         )
         response.raise_for_status()
 
@@ -1155,7 +1171,7 @@ def test_api_list_environments_paginate(
     cursor = None
     cursor_param = ""
     while cursor is None or cursor != Cursor.end():
-        response = testclient.get(f"api/v1/environment/?limit={limit}{cursor_param}")
+        response = testclient.get(f"api/v2/environment/?limit={limit}{cursor_param}")
         response.raise_for_status()
 
         model = schema.APIListEnvironment.model_validate(response.json())
@@ -1191,10 +1207,10 @@ def test_api_list_environments_invalid_query_params(
     authenticate,
 ):
     """Test that invalid query parameters return 400 status codes."""
-    response = testclient.get("api/v1/environment/?order=foo")
+    response = testclient.get("api/v2/environment/?order=foo")
     with pytest.raises(httpx.HTTPStatusError):
         response.raise_for_status()
 
-    response = testclient.get("api/v1/environment/?sort_by=foo")
+    response = testclient.get("api/v2/environment/?sort_by=foo")
     with pytest.raises(httpx.HTTPStatusError):
         response.raise_for_status()
