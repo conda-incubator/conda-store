@@ -165,8 +165,8 @@ class Settings:
         if field.json_schema_extra["metadata"]["global"] is False:
             if namespace is not None:
                 prefixes.append(f"setting/{namespace}")
-            if namespace is not None and environment_name is not None:
-                prefixes.append(f"setting/{namespace}/{environment_name}")
+                if environment_name is not None:
+                    prefixes.append(f"setting/{namespace}/{environment_name}")
 
         # start building settings with the least specific defaults
         result = self.deployment_default.get(key)
