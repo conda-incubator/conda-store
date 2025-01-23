@@ -96,6 +96,7 @@ def test_user_login_and_create_shared_environment(
 
     dev_api = utils.API(
         base_url=base_url,
+        verify_ssl=verify_ssl,
         token=api.create_token(
             namespace,
             "developer",
