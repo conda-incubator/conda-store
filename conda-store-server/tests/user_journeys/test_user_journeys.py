@@ -30,7 +30,7 @@ def verify_ssl() -> bool:
     other inputs, ssl verification is enabled.
     """
     verify = os.environ.get("CONDA_STORE_TEST_VERIFY_SSL", "true")
-    return not verify.lower() in ("0", "false")
+    return verify.lower() not in ("0", "false")
 
 
 @pytest.mark.user_journey
@@ -60,7 +60,7 @@ def test_admin_user_can_create_environment(
     ],
 )
 def test_admin_login_and_delete_shared_environment(
-    base_url: str, token: str,specification_path: str, verify_ssl: bool
+    base_url: str, token: str, specification_path: str, verify_ssl: bool
 ) -> None:
     """Test that an admin can login and create/delete an env in a shared namespace."""
     api = utils.API(base_url=base_url, token=token, verify_ssl=verify_ssl)

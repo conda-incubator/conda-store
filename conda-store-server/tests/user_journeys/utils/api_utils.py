@@ -12,8 +12,6 @@ from typing import Any, Callable, Dict, Optional, Union
 
 import requests
 
-import utils.time_utils as time_utils
-
 TIMEOUT = 10
 
 
