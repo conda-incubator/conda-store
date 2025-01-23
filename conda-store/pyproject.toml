@@ -46,10 +46,6 @@ dependencies = [
   "yarl",
   "aiohttp>=3.8.1",
   "ruamel.yaml",
-  "jupyterhub<2.0.0",
-  "jupyterlab>=4.0.0",
-  "jupyter-launcher-shortcuts",
-  "jupyterlab-conda-store",
 ]
 dynamic = ["version"]
 
