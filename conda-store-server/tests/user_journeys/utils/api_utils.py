@@ -136,7 +136,7 @@ class API:
         """Create a token with a specified role in a specified namespace."""
         json_data = {
             "primary_namespace": default_namespace,
-            "expiration": time_utils.get_iso8601_time(1),
+            #"expiration": time_utils.get_iso8601_time(1),
             "role_bindings": {f"{namespace}/*": [role]},
         }
         return self._make_request("api/v1/token", method="POST", json_data=json_data)
