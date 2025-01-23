@@ -8,6 +8,7 @@ import os
 import sys
 import time
 
+import httpx
 import pytest
 import traitlets
 import yaml
@@ -16,6 +17,7 @@ from fastapi.testclient import TestClient
 from conda_store_server import CONDA_STORE_DIR, __version__
 from conda_store_server._internal import schema
 from conda_store_server._internal.server import dependencies
+from conda_store_server._internal.server.pagination import Cursor
 from conda_store_server.server import schema as auth_schema
 
 
@@ -189,20 +191,36 @@ def test_api_get_namespace_auth_no_exist(testclient, seed_conda_store, authentic
     assert r.status == schema.APIStatus.ERROR
 
 
-def test_api_list_environments_unauth(testclient, seed_conda_store):
-    response = testclient.get("api/v1/environment")
+@pytest.mark.parametrize(
+    ("version", "model"),
+    [
+        ("v1", schema.APIListEnvironment),
+        ("v2", schema.APIV2ListEnvironment),
+    ],
+)
+def test_api_list_environments_unauth(testclient, seed_conda_store, version, model):
+    response = testclient.get(f"api/{version}/environment")
     response.raise_for_status()
 
-    r = schema.APIListEnvironment.model_validate(response.json())
+    r = model.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     assert sorted([_.name for _ in r.data]) == ["name1", "name2"]
 
 
-def test_api_list_environments_auth(testclient, seed_conda_store, authenticate):
-    response = testclient.get("api/v1/environment")
+@pytest.mark.parametrize(
+    ("version", "model"),
+    [
+        ("v1", schema.APIListEnvironment),
+        ("v2", schema.APIV2ListEnvironment),
+    ],
+)
+def test_api_list_environments_auth(
+    testclient, seed_conda_store, authenticate, version, model
+):
+    response = testclient.get(f"api/{version}/environment")
     response.raise_for_status()
 
-    r = schema.APIListEnvironment.model_validate(response.json())
+    r = model.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
     assert sorted([_.name for _ in r.data]) == ["name1", "name2", "name3", "name4"]
 
@@ -1071,3 +1089,129 @@ def test_default_conda_store_dir():
         assert dir == rf"C:\Users\{user}\AppData\Local\conda-store\conda-store"
     else:
         assert dir == f"/home/{user}/.local/share/conda-store"
+
+
+@pytest.mark.parametrize(
+    "order",
+    [
+        "asc",
+        "desc",
+        None,  # If none is specified, results will be sorted ascending
+    ],
+)
+@pytest.mark.parametrize(
+    ("sort_by_param", "attr_func"),
+    [
+        ("name", lambda x: (x.name, x.id)),
+        ("namespace", lambda x: (x.namespace.name, x.id)),
+        ("name,namespace", lambda x: (x.name, x.namespace.name, x.id)),
+        ("namespace,name", lambda x: (x.namespace.name, x.name, x.id)),
+    ],
+)
+def test_api_list_environments_paginate_order_by(
+    conda_store_server,
+    testclient,
+    seed_conda_store_big,
+    authenticate,
+    order,
+    sort_by_param,
+    attr_func,
+):
+    """Test the REST API lists the paginated envs when given sort_by query parameters."""
+    limit = 10
+    nfetches = 0
+    envs = []
+
+    order_param = "" if order is None else f"&order={order}"
+    cursor = None
+    cursor_param = ""
+    while cursor is None or cursor != Cursor.end():
+        response = testclient.get(
+            f"api/v2/environment/?limit={limit}&sort_by={sort_by_param}{order_param}{cursor_param}"
+        )
+        response.raise_for_status()
+
+        model = schema.APIV2ListEnvironment.model_validate(response.json())
+        assert model.status == schema.APIStatus.OK
+
+        envs.extend(model.data)
+
+        # Get the next cursor and the next query parameters
+        cursor = Cursor.load(model.cursor)
+        cursor_param = f"&cursor={model.cursor}"
+
+        nfetches += 1
+
+    env_attrs = [attr_func(env) for env in envs]
+
+    # Check that the number of results reported by the server corresponds to the number of
+    # results retrieved
+    assert model.count == len(envs)
+
+    # Check that number of results requested corresponds to the number of results retrieved.
+    # Since the last fetch isn't always of length `limit`, we subtract off the remainder
+    # before checking.
+    assert len(envs) - (len(envs) % limit) == limit * (nfetches - 1)
+
+    # The environments should already be sorted; check that this is the case
+    assert sorted(env_attrs, reverse=(order == "desc")) == env_attrs
+
+
+def test_api_list_environments_paginate(
+    conda_store_server,
+    testclient,
+    seed_conda_store_big,
+    authenticate,
+):
+    """Test the REST API lists the envs by id when no query params are specified."""
+    limit = 10
+    nfetches = 0
+    envs = []
+
+    cursor = None
+    cursor_param = ""
+    while cursor is None or cursor != Cursor.end():
+        # breakpoint()
+        response = testclient.get(f"api/v2/environment/?limit={limit}{cursor_param}")
+        response.raise_for_status()
+
+        model = schema.APIV2ListEnvironment.model_validate(response.json())
+        assert model.status == schema.APIStatus.OK
+
+        envs.extend(model.data)
+
+        # Get the next cursor and the next query parameters
+        cursor = Cursor.load(model.cursor)
+        cursor_param = f"&cursor={model.cursor}"
+
+        nfetches += 1
+
+    env_ids = [env.id for env in envs]
+
+    # Check that the number of results reported by the server corresponds to the number of
+    # results retrieved
+    assert model.count == len(env_ids)
+
+    # Check that number of results requested corresponds to the number of results retrieved.
+    # Since the last fetch isn't always of length `limit`, we subtract off the remainder
+    # before checking.
+    assert len(env_ids) - (len(env_ids) % limit) == limit * (nfetches - 1)
+
+    # Check that the environments are sorted by ID
+    assert sorted(env_ids) == env_ids
+
+
+def test_api_list_environments_invalid_query_params(
+    conda_store_server,
+    testclient,
+    seed_conda_store_big,
+    authenticate,
+):
+    """Test that invalid query parameters return 400 status codes."""
+    response = testclient.get("api/v2/environment/?order=foo")
+    with pytest.raises(httpx.HTTPStatusError):
+        response.raise_for_status()
+
+    response = testclient.get("api/v2/environment/?sort_by=foo")
+    with pytest.raises(httpx.HTTPStatusError):
+        response.raise_for_status()

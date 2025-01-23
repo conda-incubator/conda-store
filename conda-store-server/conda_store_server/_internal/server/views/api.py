@@ -3,7 +3,7 @@
 # license that can be found in the LICENSE file.
 
 import datetime
-from typing import Any, Dict, List, Optional, TypedDict
+from typing import Any, Dict, List, Optional
 
 import pydantic
 import yaml
@@ -21,39 +21,10 @@ from conda_store_server.server import schema as auth_schema
 from conda_store_server.server.auth import Authentication
 from conda_store_server.server.schema import AuthenticationToken, Permissions
 
-
-class PaginatedArgs(TypedDict):
-    """Dictionary type holding information about paginated requests."""
-
-    limit: int
-    offset: int
-    sort_by: List[str]
-    order: str
-
-
 router_api = APIRouter(
     tags=["api"],
     prefix="/api/v1",
 )
-
-
-def get_paginated_args(
-    page: int = 1,
-    order: Optional[str] = None,
-    size: Optional[int] = None,
-    sort_by: List[str] = Query([]),
-    server=Depends(dependencies.get_server),
-) -> PaginatedArgs:
-    if size is None:
-        size = server.max_page_size
-    size = min(size, server.max_page_size)
-    offset = (page - 1) * size
-    return {
-        "limit": size,
-        "offset": offset,
-        "sort_by": sort_by,
-        "order": order,
-    }
 
 
 def filter_distinct_on(
@@ -266,7 +237,9 @@ async def api_post_token(
 async def api_list_namespaces(
     auth=Depends(dependencies.get_auth),
     entity=Depends(dependencies.get_entity),
-    paginated_args: PaginatedArgs = Depends(get_paginated_args),
+    paginated_args: dependencies.PaginatedArgs = Depends(
+        dependencies.get_paginated_args
+    ),
     conda_store=Depends(dependencies.get_conda_store),
 ):
     with conda_store.get_db() as db:
@@ -633,11 +606,13 @@ async def api_delete_namespace(
     "/environment/",
     response_model=schema.APIListEnvironment,
 )
-async def api_list_environments(
+async def api_list_environments_v1(
     auth: Authentication = Depends(dependencies.get_auth),
     conda_store: CondaStore = Depends(dependencies.get_conda_store),
     entity: AuthenticationToken = Depends(dependencies.get_entity),
-    paginated_args: PaginatedArgs = Depends(get_paginated_args),
+    paginated_args: dependencies.PaginatedArgs = Depends(
+        dependencies.get_paginated_args
+    ),
     artifact: Optional[schema.BuildArtifactType] = None,
     jwt: Optional[str] = None,
     name: Optional[str] = None,
@@ -681,7 +656,8 @@ async def api_list_environments(
     Returns
     -------
     Dict
-        Paginated JSON response containing the requested environments
+        Paginated JSON response containing the requested environments. Uses limit/offset-based
+        pagination.
 
     """
     with conda_store.get_db() as db:
@@ -941,7 +917,7 @@ async def api_list_builds(
     conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
     entity=Depends(dependencies.get_entity),
-    paginated_args=Depends(get_paginated_args),
+    paginated_args=Depends(dependencies.get_paginated_args),
 ):
     with conda_store.get_db() as db:
         orm_builds = auth.filter_builds(
@@ -1136,7 +1112,7 @@ async def api_get_build_packages(
     build: Optional[str] = None,
     auth=Depends(dependencies.get_auth),
     conda_store=Depends(dependencies.get_conda_store),
-    paginated_args=Depends(get_paginated_args),
+    paginated_args=Depends(dependencies.get_paginated_args),
 ):
     with conda_store.get_db() as db:
         build_orm = api.get_build(db, build_id)
@@ -1193,7 +1169,7 @@ async def api_get_build_logs(
 )
 async def api_list_channels(
     conda_store=Depends(dependencies.get_conda_store),
-    paginated_args=Depends(get_paginated_args),
+    paginated_args=Depends(dependencies.get_paginated_args),
 ):
     with conda_store.get_db() as db:
         orm_channels = api.list_conda_channels(db)
@@ -1214,7 +1190,7 @@ async def api_list_packages(
     search: Optional[str] = None,
     exact: Optional[str] = None,
     build: Optional[str] = None,
-    paginated_args=Depends(get_paginated_args),
+    paginated_args=Depends(dependencies.get_paginated_args),
     conda_store=Depends(dependencies.get_conda_store),
     distinct_on: List[str] = Query([]),
 ):
