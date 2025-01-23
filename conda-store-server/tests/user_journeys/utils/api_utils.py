@@ -12,8 +12,6 @@ from typing import Any, Callable, Dict, Optional, Union
 
 import requests
 
-import utils.time_utils as time_utils
-
 TIMEOUT = 10
 
 
@@ -136,7 +134,6 @@ class API:
         """Create a token with a specified role in a specified namespace."""
         json_data = {
             "primary_namespace": default_namespace,
-            "expiration": time_utils.get_iso8601_time(1),
             "role_bindings": {f"{namespace}/*": [role]},
         }
         return self._make_request("api/v1/token", method="POST", json_data=json_data)
