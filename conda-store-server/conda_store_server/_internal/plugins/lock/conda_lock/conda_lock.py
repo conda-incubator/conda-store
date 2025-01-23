@@ -18,9 +18,12 @@ from conda_store_server.plugins.types import lock, types
 
 class CondaLock(lock.LockPlugin):
     def _conda_command(self, conda_store, namespace=None, environment=None) -> str:
-        return conda_store.get_setting(
-            "conda_command", namespace=namespace, environment_name=environment
-        ) or "mamba"
+        return (
+            conda_store.get_setting(
+                "conda_command", namespace=namespace, environment_name=environment
+            )
+            or "mamba"
+        )
 
     def _conda_flags(self, conda_store) -> str:
         return conda_store.config.conda_flags
@@ -34,7 +37,9 @@ class CondaLock(lock.LockPlugin):
     ) -> str:
         context.log.info("lock_environment entrypoint for conda-lock")
         conda_command = self._conda_command(
-            context.conda_store, namespace=context.namespace, environment=context.environment
+            context.conda_store,
+            namespace=context.namespace,
+            environment=context.environment,
         )
         conda_flags = self._conda_flags(context.conda_store)
 
