@@ -3,11 +3,11 @@
 # license that can be found in the LICENSE file.
 
 import contextlib
+import datetime
 import json
 import os
 import sys
 import time
-import datetime
 
 import httpx
 import pytest
@@ -49,17 +49,19 @@ def mock_entity_role_bindings(
 
 def test_deprecation_warning():
     from fastapi.responses import JSONResponse
+
     from conda_store_server._internal.server.views.api import deprecated
 
     @deprecated(datetime.date(2024, 12, 17))
     def api_status():
         return JSONResponse(
-                status_code=400, content={"ok": "ok"},
-            )
-    
+            status_code=400,
+            content={"ok": "ok"},
+        )
+
     result = api_status()
-    assert(result.headers.get("Deprecation") == "True")
-    assert(result.headers.get("Sunset") == "Tue, 17 Dec 2024 00:00:00 UTC")
+    assert result.headers.get("Deprecation") == "True"
+    assert result.headers.get("Sunset") == "Tue, 17 Dec 2024 00:00:00 UTC"
 
 
 def test_api_version_unauth(testclient):

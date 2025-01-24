@@ -307,8 +307,8 @@ bindings that an authenticated user assumes.
 `Authentication.cookie_name` is the name for the browser cookie used
 to authenticate users.
 
-`Authentication.cookie_domain` use when wanting to set a subdomain wide 
-cookie. For example setting this to `example.com` would allow the cookie 
+`Authentication.cookie_domain` use when wanting to set a subdomain wide
+cookie. For example setting this to `example.com` would allow the cookie
 to be valid for `example.com` along with `*.example.com`.
 
 `Authentication.authentication_backend` is the class to use for
@@ -486,10 +486,10 @@ is a regular python fastapi function.
 
 ### Deprecated configuration options for `conda_store_server._internal.server.app.CondaStoreServer`
 
-`CondaStoreServer.enable_registry` (deprecated) a Boolean on whether to 
+`CondaStoreServer.enable_registry` (deprecated) a Boolean on whether to
 expose the registry endpoints. Default False.
 
-`CondaStoreServer.registry_external_url` (deprecated) is the external hostname 
+`CondaStoreServer.registry_external_url` (deprecated) is the external hostname
 and port to access docker registry cannot contain `http://` or `https://`.
 
 ## `conda_store_server._internal.worker.app.CondaStoreWorker`
