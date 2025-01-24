@@ -92,6 +92,7 @@ def test_api_permissions_auth(testclient, authenticate):
                 auth_schema.Permissions.ENVIRONMENT_SOLVE.value,
                 auth_schema.Permissions.BUILD_CANCEL.value,
                 auth_schema.Permissions.BUILD_DELETE.value,
+                auth_schema.Permissions.BUILD_ARCHIVE.value,
                 auth_schema.Permissions.NAMESPACE_CREATE.value,
                 auth_schema.Permissions.NAMESPACE_READ.value,
                 auth_schema.Permissions.NAMESPACE_DELETE.value,
@@ -864,7 +865,9 @@ def test_delete_build_unauth(testclient, seed_conda_store):
     assert r.status == schema.APIStatus.ERROR
 
 
-def test_delete_build_auth(testclient, seed_conda_store, authenticate, celery_worker):
+def test_delete_build_auth_queued_build(
+    testclient, seed_conda_store, authenticate, celery_worker
+):
     build_id = 4
 
     response = testclient.put(f"api/v1/build/{build_id}")
@@ -884,14 +887,74 @@ def test_delete_build_auth(testclient, seed_conda_store, authenticate, celery_wo
     response = testclient.delete(f"api/v1/build/{new_build_id}")
     assert response.status_code == 400
 
-    # r = schema.APIAckResponse.model_validate(response.json())
-    # assert r.status == schema.APIStatus.OK
 
-    # response = testclient.get(f'api/v1/build/{new_build_id}')
-    # assert response.status_code == 404
+def test_delete_build_auth_completed_build(
+    testclient, seed_conda_store, authenticate, celery_worker
+):
+    new_build_id = 4
 
-    # r = schema.APIResponse.model_validate(response.json())
-    # assert r.status == schema.APIStatus.ERROR
+    # ensure the build exists - seed_conda_store should create a build
+    # with id 4 that is in the "completed" state
+    response = testclient.get(f"api/v1/build/{new_build_id}")
+    response.raise_for_status()
+    response_json = response.json()
+    r = schema.APIGetBuild.model_validate(response_json)
+    assert r.status == schema.APIStatus.OK
+    build_data = response_json.get("data")
+    assert build_data.get("deleted_on") is None
+
+    # delete the build
+    response = testclient.delete(f"api/v1/build/{new_build_id}")
+    assert response.status_code == 200
+
+    # check to make sure the build has been deleted
+    response = testclient.get(f"api/v1/build/{new_build_id}")
+    response.raise_for_status()
+    response_json = response.json()
+    r = schema.APIGetBuild.model_validate(response_json)
+    assert r.status == schema.APIStatus.OK
+    build_data = response_json.get("data")
+    assert build_data.get("deleted_on") is not None
+
+
+def test_archive_build_unauth(testclient, seed_conda_store):
+    build_id = 4
+
+    response = testclient.post(f"api/v1/build/{build_id}/archive")
+    assert response.status_code == 403
+
+    r = schema.APIResponse.model_validate(response.json())
+    assert r.status == schema.APIStatus.ERROR
+
+
+def test_archive_build_auth_completed_build(
+    testclient, seed_conda_store, authenticate, celery_worker
+):
+    new_build_id = 4
+
+    # ensure the build exists - seed_conda_store should create a build
+    # with id 4 that is in the "completed" state
+    response = testclient.get(f"api/v1/build/{new_build_id}")
+    response.raise_for_status()
+    response_json = response.json()
+    r = schema.APIGetBuild.model_validate(response_json)
+    assert r.status == schema.APIStatus.OK
+    build_data = response_json.get("data")
+    assert build_data.get("deleted_on") is None
+
+    # delete the build
+    response = testclient.post(f"api/v1/build/{new_build_id}/archive")
+    assert response.status_code == 200
+
+    # check to make sure the build has been deleted
+    response = testclient.get(f"api/v1/build/{new_build_id}")
+    response.raise_for_status()
+    response_json = response.json()
+    r = schema.APIGetBuild.model_validate(response_json)
+    assert r.status == schema.APIStatus.OK
+    build_data = response_json.get("data")
+    assert build_data.get("archived_on") is not None
+    assert build_data.get("status") == "ARCHIVED"
 
 
 @pytest.mark.parametrize(

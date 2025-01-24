@@ -493,6 +493,7 @@ class CondaStore:
             raise CondaStoreError("cannot delete build since not finished building")
 
         build.deleted_on = datetime.datetime.utcnow()
+        build.status = schema.BuildStatus.DELETED
         db.commit()
 
         self.celery_app
@@ -501,3 +502,29 @@ class CondaStore:
         from conda_store_server._internal.worker import tasks
 
         tasks.task_delete_build.si(build.id).apply_async()
+
+    def archive_build(self, db: Session, build_id: int):
+        build = api.get_build(db, build_id)
+
+        self.config.validate_action(
+            db=db,
+            conda_store=self,
+            namespace=build.environment.namespace.name,
+            action=auth_schema.Permissions.BUILD_ARCHIVE,
+        )
+
+        if build.status != schema.BuildStatus.COMPLETED:
+            raise CondaStoreError(
+                f"cannot archive build that is in the {build.status.value} state"
+            )
+
+        build.archived_on = datetime.datetime.utcnow()
+        build.status = schema.BuildStatus.ARCHIVED
+        db.commit()
+
+        self.celery_app
+
+        # must import tasks after a celery app has been initialized
+        from conda_store_server._internal.worker import tasks
+
+        tasks.task_archive_build.si(build.id).apply_async()

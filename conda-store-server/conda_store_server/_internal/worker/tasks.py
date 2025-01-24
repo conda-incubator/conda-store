@@ -298,8 +298,38 @@ def task_delete_build(self, build_id):
 
         # Updates build size and marks build as deleted
         build.deleted_on = datetime.datetime.utcnow()
+        build.status = schema.BuildStatus.DELETED
         build.size = 0
 
+        db.commit()
+
+
+@shared_task(base=WorkerTask, name="task_archive_build", bind=True)
+def task_archive_build(self, build_id):
+    conda_store = self.worker.conda_store
+    with conda_store.session_factory() as db:
+        build = api.get_build(db, build_id)
+
+        archive_save_artifacts = [
+            schema.BuildArtifactType.LOCKFILE,
+            schema.BuildArtifactType.LOGS,
+        ]
+        # Deletes build artifacts for this build
+        conda_store.log.info(f"archiving build={build.id}")
+        for build_artifact in api.list_build_artifacts(
+            db,
+            build_id=build_id,
+            excluded_artifact_types=archive_save_artifacts,
+        ).all():
+            conda_store.log.info(
+                f"archiving build={build.id} - deleting artifact {build_artifact.artifact_type.value}"
+            )
+            delete_build_artifact(db, conda_store, build_artifact)
+
+        # Updates build size and marks build as deleted
+        build.archived_on = datetime.datetime.utcnow()
+        build.status = schema.BuildStatus.ARCHIVED
+        build.size = 0
         db.commit()
 
 
