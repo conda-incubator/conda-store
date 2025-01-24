@@ -82,10 +82,10 @@ def task_initialize_worker(self):
 @shared_task(base=WorkerTask, name="task_watch_paths", bind=True)
 def task_watch_paths(self):
     conda_store = self.worker.conda_store
+    # filesystem_namespace is a global setting, don't need to specify namespace/environment
+    filesystem_namespace = conda_store.get_setting("filesystem_namespace")
 
     with conda_store.session_factory() as db:
-        settings = conda_store.get_settings()
-
         conda_store.configuration(db).update_storage_metrics(
             db, conda_store.config.store_directory
         )
@@ -96,7 +96,7 @@ def task_watch_paths(self):
                 conda_store.register_environment(
                     db,
                     specification=yaml.safe_load(f),
-                    namespace=settings.filesystem_namespace,
+                    namespace=filesystem_namespace,
                     force=False,
                 )
 
@@ -153,33 +153,33 @@ def task_update_conda_channels(self):
 @shared_task(base=WorkerTask, name="task_update_conda_channel", bind=True)
 def task_update_conda_channel(self, channel_name):
     conda_store = self.worker.conda_store
+    settings = conda_store.get_settings()
+
+    # sanitize the channel name as it's an URL, and it's used for the lock.
+    sanitizing = {
+        "https": "",
+        "http": "",
+        ":": "",
+        "/": "_",
+        "?": "",
+        "&": "_",
+        "=": "_",
+    }
+    channel_name_sanitized = channel_name
+    for k, v in sanitizing.items():
+        channel_name_sanitized = channel_name_sanitized.replace(k, v)
+
+    task_key = f"lock_{self.name}_{channel_name_sanitized}"
+
+    is_locked = False
+
+    if conda_store.config.redis_url is not None:
+        lock = conda_store.redis.lock(task_key, timeout=60 * 15)  # timeout 15min
+    else:
+        lockfile_path = os.path.join(f"/tmp/task_lock_{task_key}")
+        lock = FileLock(lockfile_path, timeout=60 * 15)
+
     with conda_store.session_factory() as db:
-        settings = conda_store.get_settings()
-
-        # sanitize the channel name as it's an URL, and it's used for the lock.
-        sanitizing = {
-            "https": "",
-            "http": "",
-            ":": "",
-            "/": "_",
-            "?": "",
-            "&": "_",
-            "=": "_",
-        }
-        channel_name_sanitized = channel_name
-        for k, v in sanitizing.items():
-            channel_name_sanitized = channel_name_sanitized.replace(k, v)
-
-        task_key = f"lock_{self.name}_{channel_name_sanitized}"
-
-        is_locked = False
-
-        if conda_store.config.redis_url is not None:
-            lock = conda_store.redis.lock(task_key, timeout=60 * 15)  # timeout 15min
-        else:
-            lockfile_path = os.path.join(f"/tmp/task_lock_{task_key}")
-            lock = FileLock(lockfile_path, timeout=60 * 15)
-
         try:
             is_locked = lock.acquire(blocking=False)
 
