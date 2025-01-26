@@ -449,6 +449,7 @@
             "type": "integer"
           },
           "data": {
+            "default": [],
             "items": {
               "$ref": "#/components/schemas/Environment"
             },
@@ -480,7 +481,6 @@
         },
         "required": [
           "status",
-          "data",
           "page",
           "size",
           "count"
@@ -721,6 +721,53 @@
         ],
         "title": "APIStatus",
         "type": "string"
+      },
+      "APIV2ListEnvironment": {
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cursor"
+          },
+          "data": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/Environment"
+            },
+            "title": "Data",
+            "type": "array"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "status": {
+            "$ref": "#/components/schemas/APIStatus"
+          }
+        },
+        "required": [
+          "status",
+          "count"
+        ],
+        "title": "APIV2ListEnvironment",
+        "type": "object"
       },
       "Body_api_post_specification_api_v1_specification__post": {
         "properties": {
@@ -1206,6 +1253,14 @@
         ],
         "title": "NamespaceRoleMapping",
         "type": "object"
+      },
+      "Ordering": {
+        "enum": [
+          "asc",
+          "desc"
+        ],
+        "title": "Ordering",
+        "type": "string"
       },
       "Specification": {
         "properties": {
@@ -2676,8 +2731,8 @@
     },
     "/api/v1/environment/": {
       "get": {
-        "description": "Retrieve a list of environments.\n\nParameters\n----------\nauth : Authentication\n    Authentication instance for the request. Used to get role bindings\n    and filter environments returned to those visible by the user making\n    the request\nentity : AuthenticationToken\n    Token of the user making the request\npaginated_args : PaginatedArgs\n    Arguments for controlling pagination of the response\nconda_store : app.CondaStore\n    The running conda store application\nsearch : Optional[str]\n    If specified, filter by environment names or namespace names containing the\n    search term\nnamespace : Optional[str]\n    If specified, filter by environments in the given namespace\nname : Optional[str]\n    If specified, filter by environments with the given name\nstatus : Optional[schema.BuildStatus]\n    If specified, filter by environments with the given status\npackages : Optional[List[str]]\n    If specified, filter by environments containing the given package name(s)\nartifact : Optional[schema.BuildArtifactType]\n    If specified, filter by environments with the given BuildArtifactType\njwt : Optional[auth_schema.AuthenticationToken]\n    If specified, retrieve only the environments accessible to this token; that is,\n    only return environments that the user has 'admin', 'editor', and 'viewer'\n    role bindings for.\n\nReturns\n-------\nDict\n    Paginated JSON response containing the requested environments",
-        "operationId": "api_list_environments_api_v1_environment__get",
+        "description": "Retrieve a list of environments.\n\nParameters\n----------\nauth : Authentication\n    Authentication instance for the request. Used to get role bindings\n    and filter environments returned to those visible by the user making\n    the request\nentity : AuthenticationToken\n    Token of the user making the request\npaginated_args : PaginatedArgs\n    Arguments for controlling pagination of the response\nconda_store : app.CondaStore\n    The running conda store application\nsearch : Optional[str]\n    If specified, filter by environment names or namespace names containing the\n    search term\nnamespace : Optional[str]\n    If specified, filter by environments in the given namespace\nname : Optional[str]\n    If specified, filter by environments with the given name\nstatus : Optional[schema.BuildStatus]\n    If specified, filter by environments with the given status\npackages : Optional[List[str]]\n    If specified, filter by environments containing the given package name(s)\nartifact : Optional[schema.BuildArtifactType]\n    If specified, filter by environments with the given BuildArtifactType\njwt : Optional[auth_schema.AuthenticationToken]\n    If specified, retrieve only the environments accessible to this token; that is,\n    only return environments that the user has 'admin', 'editor', and 'viewer'\n    role bindings for.\n\nReturns\n-------\nDict\n    Paginated JSON response containing the requested environments. Uses limit/offset-based\n    pagination.",
+        "operationId": "api_list_environments_v1_api_v1_environment__get",
         "parameters": [
           {
             "in": "query",
@@ -2873,7 +2928,7 @@
             "description": "Validation Error"
           }
         },
-        "summary": "Api List Environments",
+        "summary": "Api List Environments V1",
         "tags": [
           "api"
         ]
@@ -4489,6 +4544,210 @@
           }
         },
         "summary": "Api Get Usage",
+        "tags": [
+          "api"
+        ]
+      }
+    },
+    "/api/v2/environment/": {
+      "get": {
+        "description": "Retrieve a list of environments.\n\nParameters\n----------\nauth : Authentication\n    Authentication instance for the request. Used to get role bindings\n    and filter environments returned to those visible by the user making\n    the request\nentity : AuthenticationToken\n    Token of the user making the request\npaginated_args : CursorPaginatedArgs\n    Arguments for controlling pagination of the response\nconda_store : app.CondaStore\n    The running conda store application\nsearch : Optional[str]\n    If specified, filter by environment names or namespace names containing the\n    search term\nnamespace : Optional[str]\n    If specified, filter by environments in the given namespace\nname : Optional[str]\n    If specified, filter by environments with the given name\nstatus : Optional[schema.BuildStatus]\n    If specified, filter by environments with the given status\npackages : Optional[List[str]]\n    If specified, filter by environments containing the given package name(s)\nartifact : Optional[schema.BuildArtifactType]\n    If specified, filter by environments with the given BuildArtifactType\njwt : Optional[auth_schema.AuthenticationToken]\n    If specified, retrieve only the environments accessible to this token; that is,\n    only return environments that the user has 'admin', 'editor', and 'viewer'\n    role bindings for.\n\nReturns\n-------\nschema.APIListEnvironment\n    Paginated JSON response containing the requested environments. Cursor-based pagination\n    is used.\n\n    Note that the Environment objects returned here have their `current_build` fields omitted\n    to keep the repsonse size down; these fields otherwise drastically increase the response\n    size.",
+        "operationId": "api_list_environments_v2_api_v2_environment__get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "artifact",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/BuildArtifactType"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Artifact"
+            }
+          },
+          {
+            "in": "query",
+            "name": "jwt",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Jwt"
+            }
+          },
+          {
+            "in": "query",
+            "name": "name",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Name"
+            }
+          },
+          {
+            "in": "query",
+            "name": "namespace",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Namespace"
+            }
+          },
+          {
+            "in": "query",
+            "name": "packages",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": [],
+              "title": "Packages"
+            }
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/BuildStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "order",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/Ordering",
+              "default": "asc"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Limit"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort_by",
+            "required": false,
+            "schema": {
+              "default": [],
+              "items": {
+                "type": "string"
+              },
+              "title": "Sort By",
+              "type": "array"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/APIV2ListEnvironment"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Api List Environments V2",
         "tags": [
           "api"
         ]
