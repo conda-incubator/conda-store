@@ -33,7 +33,7 @@ $ kubectl get secret -n conda-store
 
 ## Generate vaules.local.yaml
 
-Use gomplate to generate the values.local.yaml file. 
+Use gomplate to generate the values.local.yaml file.
 
 If you don't already have gomplate installed, follow [these install instructions](https://docs.gomplate.ca/installing/)
 
@@ -45,7 +45,7 @@ $ cd tmpl
 $ gomplate -d api-server-config.py -d ui-server-config.py -d worker-config.py -d defaults.yaml -f values.local.yaml.tmpl -o ../values.local.yaml
 ```
 
-## Helm install 
+## Helm install
 
 ```
 $ helm install conda-store ../../conda-store-server/install/conda-store/  --values values.local.yaml
@@ -54,10 +54,10 @@ $ helm install conda-store ../../conda-store-server/install/conda-store/  --valu
 Expose the required ports
 ```
 # conda-store UI
-$ kubectl port-forward -n conda-store service/conda-store-ui-server 8080:8080  
+$ kubectl port-forward -n conda-store service/conda-store-ui-server 8080:8080
 
 # conda-store api
-$ kubectl port-forward -n conda-store service/conda-store-api-server 8081:8080  
+$ kubectl port-forward -n conda-store service/conda-store-api-server 8081:8080
 
 # minio
 $ kubectl port-forward -n conda-store service/minio 9000:9000
@@ -95,10 +95,10 @@ $ curl http://localhost:8080
 
 Connect to the database pod with psql
 ```
-$ kub exec --stdin --tty postgres-68cd794f77-z7qzk -n conda-store -- psql -U admin conda-store  
+$ kub exec --stdin --tty postgres-68cd794f77-z7qzk -n conda-store -- psql -U admin conda-store
 ```
 
 Connect to the worker pod with a shell
 ```
-$ kub exec --stdin --tty conda-store-worker-9cc75dd7d-87nz8 -n conda-store -- /bin/bash 
+$ kub exec --stdin --tty conda-store-worker-9cc75dd7d-87nz8 -n conda-store -- /bin/bash
 ```
