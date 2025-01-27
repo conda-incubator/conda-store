@@ -27,7 +27,7 @@ ARN_ALLOWED_REGEX = re.compile(ARN_ALLOWED)
 
 def _datetime_factory(offset: datetime.timedelta):
     """Utcnow datetime + timezone as string"""
-    return datetime.datetime.utcnow() + offset
+    return datetime.datetime.now(tz=datetime.timezone.utc) + offset
 
 
 RoleBindings: TypeAlias = Dict[

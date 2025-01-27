@@ -297,7 +297,7 @@ def task_delete_build(self, build_id):
             delete_build_artifact(db, conda_store, build_artifact)
 
         # Updates build size and marks build as deleted
-        build.deleted_on = datetime.datetime.utcnow()
+        build.deleted_on = datetime.datetime.now(tz=datetime.timezone.utc)
         build.size = 0
 
         db.commit()
