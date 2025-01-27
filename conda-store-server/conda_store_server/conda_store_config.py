@@ -52,7 +52,7 @@ def conda_store_validate_action(
     action: auth_schema.Permissions,
 ) -> None:
     storage_threshold = conda_store.get_setting("storage_threshold")
-    
+
     system_metrics = api.get_system_metrics(db)
 
     if action in (
