@@ -34,7 +34,9 @@ class CondaLock(lock.LockPlugin):
     ) -> str:
         context.log.info("lock_environment entrypoint for conda-lock")
         conda_command = self._conda_command(
-            context.conda_store, namespace=context.namespace, environment=context.environment
+            context.conda_store,
+            namespace=context.namespace,
+            environment=context.environment,
         )
         conda_flags = self._conda_flags(context.conda_store)
 

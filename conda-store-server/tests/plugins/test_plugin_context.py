@@ -16,7 +16,9 @@ from conda_store_server.plugins.plugin_context import PluginContext
 def test_run_command_no_logs():
     out = io.StringIO()
     err = io.StringIO()
-    context = PluginContext(conda_store=None, stdout=out, stderr=err, log_level=logging.ERROR)
+    context = PluginContext(
+        conda_store=None, stdout=out, stderr=err, log_level=logging.ERROR
+    )
 
     context.run_command(["echo", "testing"])
     assert err.getvalue() == ""
@@ -26,7 +28,9 @@ def test_run_command_no_logs():
 def test_run_command_log_info():
     out = io.StringIO()
     err = io.StringIO()
-    context = PluginContext(conda_store=None, stdout=out, stderr=err, log_level=logging.INFO)
+    context = PluginContext(
+        conda_store=None, stdout=out, stderr=err, log_level=logging.INFO
+    )
 
     context.run_command(["echo", "testing"])
     assert err.getvalue() == ""
@@ -52,7 +56,9 @@ def test_run_command_kwargs():
     """Ensure that kwargs get passed to subprocess"""
     out = io.StringIO()
     err = io.StringIO()
-    context = PluginContext(conda_store=None, stdout=out, stderr=err, log_level=logging.ERROR)
+    context = PluginContext(
+        conda_store=None, stdout=out, stderr=err, log_level=logging.ERROR
+    )
 
     # set the cwd to this directory and check that this file exists
     dir_path = os.path.dirname(os.path.realpath(__file__))

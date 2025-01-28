@@ -38,7 +38,6 @@ def test_solve_lockfile(
     request,
 ):
     """Test that the call to conda_lock.run_lock is formed correctly."""
-
     mock_run_lock.side_effect = run_lock_side_effect
 
     platforms = [conda_utils.conda_platform()]
@@ -81,15 +80,15 @@ def test_solve_lockfile_simple(conda_store, simple_specification):
 @mock.patch("conda_store_server._internal.plugins.lock.conda_lock.conda_lock.run_lock")
 def test_solve_right_conda_command(mock_run_lock, conda_store, simple_specification):
     # Update conda_command settings
-    conda_store.set_settings(
-        data={"conda_command": "conda"}
-    )
-    
+    conda_store.set_settings(data={"conda_command": "conda"})
+
     mock_run_lock.side_effect = run_lock_side_effect
 
     locker = conda_lock.CondaLock()
     locker.lock_environment(
-        context=plugin_context.PluginContext(conda_store, namespace="test", environment="one"),
+        context=plugin_context.PluginContext(
+            conda_store, namespace="test", environment="one"
+        ),
         spec=simple_specification,
         platforms=[conda_utils.conda_platform()],
     )
