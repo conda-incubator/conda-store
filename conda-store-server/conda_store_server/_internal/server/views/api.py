@@ -9,7 +9,7 @@ from typing import Any, Callable, Dict, List, Optional
 import pydantic
 import yaml
 from celery.result import AsyncResult
-from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request, Response
 from fastapi.responses import JSONResponse, PlainTextResponse, RedirectResponse
 
 from conda_store_server import __version__, api
@@ -124,13 +124,13 @@ def deprecated(sunset_date: datetime.date) -> Callable:
 
     def decorator(func):
         @wraps(func)
-        def add_deprecated_headers(*args, **kwargs):
-            response = func(*args, **kwargs)
+        async def add_deprecated_headers(*args, response: Response, **kwargs):
+            result = await func(*args, response, **kwargs)
             response.headers["Deprecation"] = "True"
             response.headers["Sunset"] = sunset_date.strftime(
                 "%a, %d %b %Y 00:00:00 UTC"
             )
-            return response
+            return result
 
         return add_deprecated_headers
 
@@ -635,10 +635,11 @@ async def api_delete_namespace(
 
 
 @router_api.get(
-    "/environment/",
-    response_model=schema.APIListEnvironment,
+    "/environment/", response_model=schema.APIListEnvironment, deprecated=True
 )
+@deprecated(sunset_date=datetime.date(2025, 3, 17))
 async def api_list_environments_v1(
+    response: Response,
     auth: Authentication = Depends(dependencies.get_auth),
     conda_store: CondaStore = Depends(dependencies.get_conda_store),
     entity: AuthenticationToken = Depends(dependencies.get_entity),
@@ -1361,6 +1362,7 @@ async def api_get_build_archive(
 @router_api.get("/build/{build_id}/docker/", deprecated=True)
 @deprecated(sunset_date=datetime.date(2025, 3, 17))
 async def api_get_build_docker_image_url(
+    response: Response,
     build_id: int,
     request: Request,
     conda_store=Depends(dependencies.get_conda_store),

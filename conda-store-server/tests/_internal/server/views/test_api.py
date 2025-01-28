@@ -240,6 +240,8 @@ def test_api_list_environments_auth(
 
     r = model.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
+    if version == "v1":
+        assert response.headers.get("Deprecation")
     assert sorted([_.name for _ in r.data]) == ["name1", "name2", "name3", "name4"]
 
 
