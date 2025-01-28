@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
 
+import datetime
 import json
 import time
 
@@ -11,6 +12,7 @@ from fastapi.responses import RedirectResponse, Response
 from conda_store_server import api
 from conda_store_server._internal import orm, schema
 from conda_store_server._internal.server import dependencies
+from conda_store_server._internal.server.views.api import deprecated
 from conda_store_server.server.schema import Permissions
 
 router_registry = APIRouter(tags=["registry"])
@@ -77,6 +79,7 @@ def dynamic_conda_store_environment(conda_store, packages):
     return environment_name
 
 
+@deprecated(sunset_date=datetime.date(2025, 3, 17))
 def get_docker_image_manifest(conda_store, image, tag, timeout=10 * 60):
     namespace, *image_name = image.split("/")
 
@@ -127,12 +130,14 @@ def get_docker_image_manifest(conda_store, image, tag, timeout=10 * 60):
     return RedirectResponse(conda_store.storage.get_url(manifests_key))
 
 
+@deprecated(sunset_date=datetime.date(2025, 3, 17))
 def get_docker_image_blob(conda_store, image, blobsum):
     blob_key = f"docker/blobs/{blobsum}"
     return RedirectResponse(conda_store.storage.get_url(blob_key))
 
 
-@router_registry.get("/v2/")
+@router_registry.get("/v2/", deprecated=True)
+@deprecated(sunset_date=datetime.date(2025, 3, 17))
 def v2(
     request: Request,
     entity=Depends(dependencies.get_entity),
@@ -143,9 +148,8 @@ def v2(
     return _json_response({})
 
 
-@router_registry.get(
-    "/v2/{rest:path}",
-)
+@router_registry.get("/v2/{rest:path}", deprecated=True)
+@deprecated(sunset_date=datetime.date(2025, 3, 17))
 def list_tags(
     rest: str,
     request: Request,
