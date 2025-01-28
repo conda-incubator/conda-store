@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ template "condaStore.fullname" . }}-api-server"
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: "{{ template "condaStore.fullname" . }}-api-server"
+{{ include "condaStore.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.apiServer.replicas }}
+  selector:
+    matchLabels:
+      app: "{{ template "condaStore.fullname" . }}-api-server"
+  template:
+    metadata:
+      labels:
+        app: "{{ template "condaStore.fullname" . }}-api-server"
+{{ include "condaStore.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: "{{ template "condaStore.fullname" . }}-api-server"
+          image: "{{ .Values.apiServer.image.repository }}:{{ .Values.apiServer.image.tag }}"
+          imagePullPolicy: {{ .Values.apiServer.image.pullPolicy }}
+          args:
+            - "conda-store-server"
+            - "--config"
+            - "/etc/conda-store/conda_store_config.py"
+          ports:
+            - containerPort: {{ .Values.apiServer.port }}
+          livenessProbe:
+            httpGet:
+              path: /api/v1/
+              port: {{ .Values.apiServer.port }}
+            initialDelaySeconds: {{ .Values.apiServer.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.apiServer.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.apiServer.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.apiServer.livenessProbe.failureThreshold }}
+          readinessProbe:
+            httpGet:
+              path: /api/v1/
+              port: {{ .Values.apiServer.port }}
+            initialDelaySeconds: {{ .Values.apiServer.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.apiServer.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.apiServer.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.apiServer.readinessProbe.failureThreshold }}
+          {{ template "apiServer.resources" . }}
+          env:
+            - name: POSTGRES_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: conda-store-postgres-secret
+                  key: username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: conda-store-postgres-secret
+                  key: password
+            - name: MINIO_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: conda-store-minio-secret
+                  key: username
+            - name: MINIO_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: conda-store-minio-secret
+                  key: password
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: conda-store-redis-secret
+                  key: password
+          volumeMounts:
+            - name: config
+              mountPath: "/etc/conda-store/"
+              readOnly: true
+      restartPolicy: Always
+      volumes:
+        - name: config
+          configMap:
+            name: "{{ template "condaStore.fullname" . }}-api-server"
