@@ -153,7 +153,7 @@ outlined below.
 
 In this stage, conda-store should not be introducing a breaking change. The
 deprecation step communicates to users that the endpoint is marked for removal
-and will removed in a future release.
+and will be removed in a future release.
 
 :::info[For vulnerabilities]
 
