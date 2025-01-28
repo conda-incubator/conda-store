@@ -13,6 +13,15 @@ from conda_store_server._internal.plugins.lock.conda_lock import conda_lock
 from conda_store_server.plugins import plugin_context
 
 
+def run_lock_side_effect(lockfile_path, **kwargs):
+    """Mock method to simulate the output of running a
+    lock with conda-lock.
+    Dumps dummy data to the expected lockfile output location.
+    """
+    with open(lockfile_path, "w") as f:
+        yaml.dump({"foo": "bar"}, f)
+
+
 @pytest.mark.parametrize(
     "specification",
     [
@@ -29,11 +38,6 @@ def test_solve_lockfile(
     request,
 ):
     """Test that the call to conda_lock.run_lock is formed correctly."""
-
-    # Dump dummy data to the expected lockfile output location
-    def run_lock_side_effect(lockfile_path, **kwargs):
-        with open(lockfile_path, "w") as f:
-            yaml.dump({"foo": "bar"}, f)
 
     mock_run_lock.side_effect = run_lock_side_effect
 
@@ -81,11 +85,6 @@ def test_solve_right_conda_command(mock_run_lock, conda_store, simple_specificat
         data={"conda_command": "conda"}
     )
     
-    # Dump dummy data to the expected lockfile output location
-    def run_lock_side_effect(lockfile_path, **kwargs):
-        with open(lockfile_path, "w") as f:
-            yaml.dump({"foo": "bar"}, f)
-
     mock_run_lock.side_effect = run_lock_side_effect
 
     locker = conda_lock.CondaLock()
