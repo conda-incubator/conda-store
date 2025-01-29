@@ -125,7 +125,7 @@ def test_remove_conda_package_build_channel_basic(
     alembic_runner.migrate_up_to("89637f546129")
 
     # try downgrading
-    alembic_runner.migrate_down_one()
+    alembic_runner.migrate_down_to("bf065abf375b")
 
     # ensure the channel_id column exists, will error if channel_id column does not exist
     with conda_store.session_factory() as db:
@@ -148,7 +148,7 @@ def test_remove_conda_package_build_bad_data(
     alembic_runner.migrate_up_to("89637f546129")
 
     # try downgrading
-    alembic_runner.migrate_down_one()
+    alembic_runner.migrate_down_to("bf065abf375b")
 
     # ensure the channel_id column exists, will error if channel_id column does not exist
     with conda_store.session_factory() as db:
