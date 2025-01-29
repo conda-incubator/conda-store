@@ -175,7 +175,9 @@ def test_api_list_namespace_auth(testclient, seed_conda_store, authenticate):
     assert sorted([_.name for _ in r.data]) == ["default", "namespace1", "namespace2"]
 
 
-def test_api_list_namespace_including_missing_metadata_(testclient, seed_namespace_with_edge_cases, authenticate):
+def test_api_list_namespace_including_missing_metadata_(
+    testclient, seed_namespace_with_edge_cases, authenticate
+):
     response = testclient.get("api/v1/namespace")
     response.raise_for_status()
 

@@ -421,7 +421,7 @@ def alembic_config(conda_store):
 def seed_namespace_with_edge_cases(db: Session, conda_store):
     namespaces = [
         orm.Namespace(name="normal_namespace"),
-        orm.Namespace(name="namespace_missing_meta", metadata_=None)
+        orm.Namespace(name="namespace_missing_meta", metadata_=None),
     ]
 
     for namespace in namespaces:
