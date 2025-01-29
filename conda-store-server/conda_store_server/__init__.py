@@ -14,7 +14,7 @@ if typing.TYPE_CHECKING:
     from .app import CondaStore
 
 
-__version__ = "2025.1.1"
+__version__ = "2025.1.2-dev"
 
 
 CONDA_STORE_DIR = platformdirs.user_data_path(appname="conda-store")
