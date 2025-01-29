@@ -81,7 +81,7 @@ class NamespaceRoleMappingV2(BaseModel):
 class Namespace(BaseModel):
     id: int
     name: Annotated[str, StringConstraints(pattern=f"^[{ALLOWED_CHARACTERS}]+$")]  # noqa: F722
-    metadata_: Dict[str, Any] = None
+    metadata_: Optional[Dict[str, Any]] = None
     role_mappings: List[NamespaceRoleMapping] = []
     model_config = ConfigDict(from_attributes=True)
 

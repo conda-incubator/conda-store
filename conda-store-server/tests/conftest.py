@@ -417,6 +417,18 @@ def alembic_config(conda_store):
     return {"file": ini_file}
 
 
+@pytest.fixture
+def seed_namespace_with_edge_cases(db: Session, conda_store):
+    namespaces = [
+        orm.Namespace(name="normal_namespace"),
+        orm.Namespace(name="namespace_missing_meta", metadata_=None)
+    ]
+
+    for namespace in namespaces:
+        db.add(namespace)
+    db.commit()
+
+
 def _seed_conda_store(
     db: Session,
     conda_store,
