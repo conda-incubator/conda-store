@@ -22,10 +22,10 @@ Release captain responsible - <@gh_username>
 
 ### 2. Prepare the codebase for a new release
 
-- [ ] Prepare the release by running the `cut-release-pr.sh` script
+- [ ] Prepare the release by running the `cut-release-pr.sh` script (ensure you have the conda-store-dev env activated and a valid GITHUB_ACCESS_TOKEN)
 
   ```bash
-  ./cut-release-pr.sh -r <conda-store version> -c <conda-store-ui version>
+  ./tools/cut-release-pr.sh -r <conda-store version> -c <conda-store-ui version>
   ```
 
   - [ ] Ensure that the conda-store, conda-store-server, conda-store-ui versions have been updated
@@ -58,5 +58,4 @@ Release captain responsible - <@gh_username>
 - [ ] Update the [conda-forge feedstock version](https://github.com/conda-forge/conda-store-feedstock) through a PR or review and merge the regro-bot PR.
   - [ ] If needed - update `meta.yaml` or `recipe.yaml` and re-render the feedstock.
 - [ ] Open a follow-up PR to bump `conda-store` and `conda-store-server` versions to the next dev-release number (for example `2024.10.1`).
-- [ ] Open a follow-up PR to bump the `conda-store-server` version in the [`conda-store-ui` compose file](https://github.com/conda-incubator/conda-store-ui/blob/main/docker-compose.yml).
 - [ ] Celebrate, you're done! 🎉
