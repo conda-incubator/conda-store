@@ -178,8 +178,8 @@ def test_api_list_namespace_auth(testclient, seed_conda_store, authenticate):
 def test_api_list_namespace_including_missing_metadata_(
     testclient, seed_namespace_with_edge_cases, authenticate
 ):
-    """Test that a namespace with metadata_ = None can be retrieved. 
-    
+    """Test that a namespace with metadata_ = None can be retrieved.
+
     See https://github.com/conda-incubator/conda-store/issues/1062
     for additional context.
     """
