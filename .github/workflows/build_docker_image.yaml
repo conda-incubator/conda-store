@@ -44,6 +44,8 @@ jobs:
 
       - name: "Set up Docker Buildx 🏗"
         uses: docker/setup-buildx-action@v3
+        # Required for building multi-platform images. See
+        # https://docs.docker.com/build/ci/github-actions/multi-platform/#build-and-load-multi-platform-images
         with:
           daemon-config: |
             {
