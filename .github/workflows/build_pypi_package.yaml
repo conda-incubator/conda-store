@@ -4,7 +4,6 @@ on:
   pull_request:
     paths:
       - ".github/workflows/**"
-      - "conda-store/**"
       - "conda-store-server/**"
       - "tests/**"
   push:
@@ -22,27 +21,20 @@ jobs:
   build-package:
     name: "Build & verify package"
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        directory:
-          - "conda-store"
-          - "conda-store-server"
     defaults:
       run:
-        working-directory: ${{ matrix.directory }}
+        working-directory: conda-store-server
     steps:
       - name: "Checkout Repository 🛎"
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - run: echo "Running on ${{ matrix.directory }}"
-
-      - name: "Build and check package - ${{ matrix.directory }} 📦"
+      - name: "Build and check package 📦"
         uses: hynek/build-and-inspect-python-package@v2
         id: baipp
         with:
-          path: ${{ matrix.directory }}
-          upload-name-suffix: "-${{ matrix.directory }}"
+          path: conda-store-server
+          upload-name-suffix: "-conda-store-server"
 
       - run: echo Packages can be found at ${{ steps.baipp.outputs.dist }} and in artifact ${{ steps.baipp.outputs.artifact-name }}

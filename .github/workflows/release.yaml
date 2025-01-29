@@ -20,28 +20,22 @@ jobs:
   build-package:
     name: "Build & verify package"
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        directory:
-          - "conda-store"
-          - "conda-store-server"
     defaults:
       run:
-        working-directory: ${{ matrix.directory }}
+        working-directory: conda-store-server
     steps:
       - name: "Checkout Repository 🛎"
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - run: echo "Running on ${{ matrix.directory }}"
 
-      - name: "Build and check package - ${{ matrix.directory }} 📦"
+      - name: "Build and check package 📦"
         uses: hynek/build-and-inspect-python-package@v2
         id: baipp
         with:
-          path: ${{ matrix.directory }}
-          upload-name-suffix: "-${{ matrix.directory }}"
+          path: conda-store-server
+          upload-name-suffix: "-conda-store-server"
           attest-build-provenance-github: "true"
 
       - run: echo Packages can be found at ${{ steps.baipp.outputs.dist }} and in artifact ${{ steps.baipp.outputs.artifact-name }}
@@ -55,17 +49,11 @@ jobs:
     if: github.repository_owner == 'conda-incubator' && github.event_name == 'push' && github.ref == 'refs/heads/main'
     permissions:
       id-token: write # IMPORTANT: this permission is mandatory for trusted publishing
-    strategy:
-      matrix:
-        directory:
-          - "conda-store"
-          - "conda-store-server"
-
     steps:
       - name: "Download build artefacts 📥"
         uses: actions/download-artifact@v4.1.7
         with:
-          name: Packages-${{ matrix.directory }}
+          name: Packages-conda-store-server
           path: dist
 
       - run: ls -lR dist/
@@ -86,20 +74,15 @@ jobs:
     needs: build-package
     permissions:
       id-token: write # IMPORTANT: this permission is mandatory for trusted publishing
-    strategy:
-      matrix:
-        directory:
-          - "conda-store"
-          - "conda-store-server"
     defaults:
       run:
-        working-directory: ${{ matrix.directory }}
+        working-directory: conda-store-server
 
     steps:
       - name: "Download build artefacts 📥"
         uses: actions/download-artifact@v4.1.7
         with:
-          name: Packages-${{ matrix.directory }}
+          name: Packages-conda-store-server
           path: dist
 
       - name: "Upload to PyPI 🚀"
@@ -114,11 +97,6 @@ jobs:
     needs: release-pypi
     permissions:
       id-token: write # IMPORTANT: this permission is mandatory for trusted publishing
-    strategy:
-      matrix:
-        docker-image:
-          - conda-store
-          - conda-store-server
     steps:
       - name: "Checkout Repository 🛎"
         uses: actions/checkout@v4
@@ -129,7 +107,7 @@ jobs:
 
       - name: "Copy .dockerignore"
         run: |
-          cp .dockerignore ${{ matrix.docker-image }}/.dockerignore
+          cp .dockerignore conda-store-server/.dockerignore
         shell: bash
 
       - name: "Retrieve secret from Vault 🗝"
@@ -166,8 +144,8 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            quansight/${{ matrix.docker-image }}
-            quay.io/quansight/${{ matrix.docker-image }}
+            quansight/conda-store-server
+            quay.io/quansight/conda-store-server
           tags: |
             type=ref,event=tag
             type=ref,event=branch
@@ -176,9 +154,9 @@ jobs:
       - name: "Publish Docker image 🚀"
         uses: docker/build-push-action@v5
         with:
-          context: "${{ matrix.docker-image }}"
+          context: "conda-store-server"
           target: "prod"
-          file: "${{ matrix.docker-image }}/Dockerfile"
+          file: "conda-store-server/Dockerfile"
           build-args: |
             RELEASE_VERSION=${{github.ref_name}}
             python_version=${{ env.PYTHON_VERSION_DEFAULT }}
