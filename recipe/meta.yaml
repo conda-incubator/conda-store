@@ -45,9 +45,12 @@ outputs:
         - {{ pin_subpackage('conda-store-server', min_pin='x.x.x', max_pin='x.x.x') }}
 
     test:
+      requires:
+        - pip
       imports:
         - conda_store
       commands:
+        - pip check
         - conda-store --help
 
   - name: conda-store-server
@@ -100,9 +103,12 @@ outputs:
         - {{ pin_subpackage('conda-store', min_pin='x.x.x', max_pin='x.x.x') }}
 
     test:
+      requires:
+        - pip
       imports:
         - conda_store_server
       commands:
+        - pip check
         - conda-store-server --help
         - conda-store-worker --help
 
