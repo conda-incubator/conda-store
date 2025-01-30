@@ -22,7 +22,7 @@ apiServer:
     pullPolicy: IfNotPresent
     tag: latest
 
-  # Config for the conda-store-server. For all available options, see the 
+  # Config for the conda-store-server. For all available options, see the
   # docs at https://conda.store/conda-store/references/configuration-options
   # The following env vars are injected into the container if required:
   #  * POSTGRES_USERNAME
@@ -99,14 +99,14 @@ uiServer:
   appEnv:
     # publically accessible URL for the conda store server api instance
     apiUrl:
-    
+
     # publically accessible URL to access the login page
     loginPageUrl:
 
     # publically accessible URL to access the logout page
     logoutPageUrl:
 
-    # base url prefix to access the api. Should match the api server config option 
+    # base url prefix to access the api. Should match the api server config option
     # `c.CondaStoreServer.url_prefix`
     urlBasename: "/"
 
@@ -135,15 +135,15 @@ uiServer:
 worker:
   # Number of workers that are to be in the worker deployment
   replicas: 2
-  
+
   # Image for the worker container
   image:
     repository: quansight/conda-store-server
     pullPolicy: IfNotPresent
     tag: latest
-  
-  # Volume attached to the worker volumes that contains conda environments 
-  # and packages. This will bind to the worker with a PVC. To bind your 
+
+  # Volume attached to the worker volumes that contains conda environments
+  # and packages. This will bind to the worker with a PVC. To bind your
   # PV to the PVC ensure to set the claim ref on your volume. For example
   # ```
   #   spec:
@@ -158,7 +158,7 @@ worker:
   # Size of the environmentsVolume
   environmentsVolumeSize: 2Gi
 
-  # Config for the conda-store-server. For all available options, see the 
+  # Config for the conda-store-server. For all available options, see the
   # docs at https://conda.store/conda-store/references/configuration-options
   # The following env vars are injected into the container if required:
   #  * POSTGRES_USERNAME

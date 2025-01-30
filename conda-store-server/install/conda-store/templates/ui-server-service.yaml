@@ -15,4 +15,3 @@ spec:
       name: http
   selector:
     app: "{{ template "condaStore.fullname" . }}-ui-server"
-
