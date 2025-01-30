@@ -1,4 +1,4 @@
 image:
   repository: quansight/conda-store-server
   pullPolicy: IfNotPresent
-  tag: 2024.11.1
+  tag: 2025.1.1
