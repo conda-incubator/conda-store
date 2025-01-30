@@ -95,6 +95,7 @@ outputs:
         - yarl
         - psycopg2
         - pymysql
+        - psycopg2-binary
       run_constrained:
         - {{ pin_subpackage('conda-store', min_pin='x.x.x', max_pin='x.x.x') }}
 
