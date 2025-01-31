@@ -561,7 +561,10 @@ form.addEventListener('submit', loginHandler);
             domain=self.cookie_domain,
             # set cookie to expire at same time as jwt
             max_age=int(
-                (authentication_token.exp - datetime.datetime.utcnow()).total_seconds()
+                (
+                    authentication_token.exp
+                    - datetime.datetime.now(tz=datetime.timezone.utc)
+                ).total_seconds()
             ),
         )
         return response
