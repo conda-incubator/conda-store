@@ -9,7 +9,7 @@ from typing import Any, Callable, Dict, List, Optional
 import pydantic
 import yaml
 from celery.result import AsyncResult
-from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request, Response
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request
 from fastapi.responses import JSONResponse, PlainTextResponse, RedirectResponse
 
 from conda_store_server import __version__, api
@@ -107,29 +107,42 @@ def paginated_api_response(
 
 
 def deprecated(sunset_date: datetime.date) -> Callable:
-    """Decorator to add deprecation headers to a HTTP response. These will include:
-        {
-            Deprecation: True
-            Sunset: <sunset_date>
-        }
+    """Add deprecation headers to a HTTP request and response.
+
+    This will include the deprecation date on the request object,
+    which will then be picked up by the conda_store_middleware
+    to add the deprecation date to the response object.
 
     See the conda-store backwards compatibility policy for appropriate use of
     deprecations https://conda.store/community/policies/backwards-compatibility.
+
+    Note that decorated functions _must_ include the request parameter.
+    This is not an elegant way of doing this, but FastAPI has no other
+    way of achieving the same effect without confusing its request/response
+    inference machinery, which relies on the type annotations of the
+    routes.
 
     Parameters
     ----------
     sunset_date : datetime.date
         the date that the endpoint will have it's functionality removed
+
+    Returns
+    -------
+    Callable
+        Decorator which wraps an endpoint
     """
 
     def decorator(func):
         @wraps(func)
-        async def add_deprecated_headers(*args, response: Response, **kwargs):
-            result = await func(*args, response, **kwargs)
-            response.headers["Deprecation"] = "True"
-            response.headers["Sunset"] = sunset_date.strftime(
+        async def add_deprecated_headers(request: Request, *args, **kwargs):
+            # It's not possible to add the deprecation headers to the
+            # output of `func(*args, **kwargs)`, since that may be a
+            # simple dict object, not a Response
+            request.state.deprecation_date = sunset_date.strftime(
                 "%a, %d %b %Y 00:00:00 UTC"
             )
+            result = await func(*args, request=request, **kwargs)
             return result
 
         return add_deprecated_headers
@@ -639,7 +652,7 @@ async def api_delete_namespace(
 )
 @deprecated(sunset_date=datetime.date(2025, 3, 17))
 async def api_list_environments_v1(
-    response: Response,
+    request: Request,
     auth: Authentication = Depends(dependencies.get_auth),
     conda_store: CondaStore = Depends(dependencies.get_conda_store),
     entity: AuthenticationToken = Depends(dependencies.get_entity),
@@ -1362,9 +1375,8 @@ async def api_get_build_archive(
 @router_api.get("/build/{build_id}/docker/", deprecated=True)
 @deprecated(sunset_date=datetime.date(2025, 3, 17))
 async def api_get_build_docker_image_url(
-    response: Response,
-    build_id: int,
     request: Request,
+    build_id: int,
     conda_store=Depends(dependencies.get_conda_store),
     server=Depends(dependencies.get_server),
     auth=Depends(dependencies.get_auth),

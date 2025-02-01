@@ -13,6 +13,7 @@ import httpx
 import pytest
 import traitlets
 import yaml
+from fastapi import Request
 from fastapi.testclient import TestClient
 
 from conda_store_server import CONDA_STORE_DIR, __version__
@@ -47,19 +48,22 @@ def mock_entity_role_bindings(
     testclient.app.dependency_overrides = {}
 
 
-def test_deprecation_warning():
+def test_deprecation_warning(testclient):
     from fastapi.responses import JSONResponse
 
     from conda_store_server._internal.server.views.api import deprecated
 
+    router = testclient.app.router
+
+    @router.get("/foo")
     @deprecated(datetime.date(2024, 12, 17))
-    def api_status():
+    async def api_status(request: Request):
         return JSONResponse(
             status_code=400,
             content={"ok": "ok"},
         )
 
-    result = api_status()
+    result = testclient.get("/foo")
     assert result.headers.get("Deprecation") == "True"
     assert result.headers.get("Sunset") == "Tue, 17 Dec 2024 00:00:00 UTC"
 
