@@ -1195,7 +1195,6 @@ def test_api_list_environments_paginate(
     cursor = None
     cursor_param = ""
     while cursor is None or cursor != Cursor.end():
-        # breakpoint()
         response = testclient.get(f"api/v2/environment/?limit={limit}{cursor_param}")
         response.raise_for_status()
 
