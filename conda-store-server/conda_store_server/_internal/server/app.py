@@ -255,6 +255,13 @@ class CondaStoreServer(Application):
             request.state.authentication = self.authentication
             request.state.templates = self.templates
             response = await call_next(request)
+
+            # Handle requests that are sent to deprecated endpoints;
+            # see conda_store_server._internal.server.views.api.deprecated
+            # for additional information
+            if hasattr(request.state, "deprecation_date"):
+                response.headers["Deprecation"] = "True"
+                response.headers["Sunset"] = request.state.deprecation_date
             return response
 
         @app.exception_handler(HTTPException)
