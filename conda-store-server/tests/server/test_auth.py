@@ -79,7 +79,8 @@ def test_expired_token():
     token = authentication.encrypt_token(
         AuthenticationToken(
             primary_namespace="default",
-            exp=datetime.datetime.utcnow() - datetime.timedelta(hours=1),
+            exp=datetime.datetime.now(tz=datetime.timezone.utc)
+            - datetime.timedelta(hours=1),
             role_bindings={
                 "default/*": ["viewer"],
                 "e*/e*": ["admin"],

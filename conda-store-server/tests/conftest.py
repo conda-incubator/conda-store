@@ -236,8 +236,8 @@ def seed_conda_store(db, conda_store):
 
     # for testing purposes make build 4 complete
     build = api.get_build(db, build_id=4)
-    build.started_on = datetime.datetime.utcnow()
-    build.ended_on = datetime.datetime.utcnow()
+    build.started_on = datetime.datetime.now(tz=datetime.timezone.utc)
+    build.ended_on = datetime.datetime.now(tz=datetime.timezone.utc)
     build.status = schema.BuildStatus.COMPLETED
     db.commit()
     return db
@@ -276,8 +276,8 @@ def seed_conda_store_big(db, conda_store):
 
     # for testing purposes make build 4 complete
     build = api.get_build(db, build_id=4)
-    build.started_on = datetime.datetime.utcnow()
-    build.ended_on = datetime.datetime.utcnow()
+    build.started_on = datetime.datetime.now(tz=datetime.timezone.utc)
+    build.ended_on = datetime.datetime.now(tz=datetime.timezone.utc)
     build.status = schema.BuildStatus.COMPLETED
     db.commit()
     return db
