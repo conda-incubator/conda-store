@@ -1207,8 +1207,15 @@
             "type": "integer"
           },
           "metadata_": {
-            "title": "Metadata",
-            "type": "object"
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metadata"
           },
           "name": {
             "pattern": "^[A-Za-z0-9-+_@$&?^~.=]+$",
@@ -1333,7 +1340,7 @@
   },
   "info": {
     "title": "conda-store",
-    "version": "2024.11.3-dev"
+    "version": "2025.1.2-rc1"
   },
   "openapi": "3.1.0",
   "paths": {
@@ -5013,65 +5020,6 @@
         "summary": "Get Conda Store Ui",
         "tags": [
           "conda-store-ui"
-        ]
-      }
-    },
-    "/v2/": {
-      "get": {
-        "operationId": "v2_v2__get",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            },
-            "description": "Successful Response"
-          }
-        },
-        "summary": "V2",
-        "tags": [
-          "registry"
-        ]
-      }
-    },
-    "/v2/{rest}": {
-      "get": {
-        "operationId": "list_tags_v2__rest__get",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "rest",
-            "required": true,
-            "schema": {
-              "title": "Rest",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "List Tags",
-        "tags": [
-          "registry"
         ]
       }
     }
