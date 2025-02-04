@@ -284,7 +284,7 @@ class API:
         if namespace:
             query_params.append(f"namespace={namespace}")
 
-        return self._make_request(f'api/v1/build/?{"&".join(query_params)}').json()[
+        return self._make_request(f"api/v1/build/?{'&'.join(query_params)}").json()[
             "data"
         ]
 
