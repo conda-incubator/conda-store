@@ -19,8 +19,8 @@ from traitlets import (
 )
 from traitlets.config import LoggingConfigurable
 
-from conda_store_server import CONDA_STORE_DIR, BuildKey, api, storage
-from conda_store_server._internal import conda_utils, environment, schema, utils
+from conda_store_server import CONDA_STORE_DIR, BuildKey, api, exception, storage
+from conda_store_server._internal import conda_utils, environment, schema
 from conda_store_server.server import schema as auth_schema
 
 
@@ -59,7 +59,7 @@ def conda_store_validate_action(
         auth_schema.Permissions.ENVIRONMENT_CREATE,
         auth_schema.Permissions.ENVIRONMENT_UPDATE,
     ) and (storage_threshold > system_metrics.disk_free):
-        raise utils.CondaStoreError(
+        raise exception.CondaStoreError(
             f"`CondaStore.storage_threshold` reached. Action {action.value} prevented due to insufficient storage space"
         )
 
