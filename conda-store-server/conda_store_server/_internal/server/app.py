@@ -34,6 +34,7 @@ from traitlets.config import Application, catch_config_error
 import conda_store_server
 from conda_store_server import __version__, storage
 from conda_store_server._internal import dbutil, orm
+from conda_store_server._internal.log import RedactingFormatter
 from conda_store_server._internal.server import views
 from conda_store_server.conda_store import CondaStore
 from conda_store_server.conda_store_config import CondaStore as CondaStoreConfig
@@ -198,6 +199,14 @@ class CondaStoreServer(Application):
 
         self.conda_store_config = CondaStoreConfig(parent=self, log=self.log)
         self.conda_store = CondaStore(config=self.conda_store_config)
+
+        # Set the logging configuration to use the RedactingFormatter.
+        # Must be initialized after self.conda_store
+        self.logging_formatter = RedactingFormatter(
+            self.log_format, blocklist=[self.conda_store.config.database_url]
+        )
+        for handler in self.log.handlers:
+            handler.setFormatter(self.logging_formatter)
 
         self.conda_store.ensure_directories()
         self.log.info(
@@ -440,6 +449,8 @@ class CondaStoreServer(Application):
             logger.addHandler(logging.StreamHandler())
             logger.setLevel(self.log_level)
             logger.info(f"Starting server on {self.address}:{self.port}")
+            for handler in logger.handlers:
+                handler.setFormatter(self.logging_formatter)
 
             uvicorn.run(
                 "conda_store_server._internal.server.app:CondaStoreServer.create_webserver",

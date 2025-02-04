@@ -10,6 +10,7 @@ from traitlets import Integer, List, Unicode, validate
 from traitlets.config import Application, catch_config_error
 
 from conda_store_server import __version__
+from conda_store_server._internal.log import RedactingFormatter
 from conda_store_server.conda_store import CondaStore
 from conda_store_server.conda_store_config import CondaStore as CondaStoreConfig
 
@@ -70,6 +71,15 @@ class CondaStoreWorker(Application):
 
         self.conda_store_config = CondaStoreConfig(parent=self, log=self.log)
         self.conda_store = CondaStore(config=self.conda_store_config)
+
+        # Set the logging configuration to use the RedactingFormatter.
+        # Must be initialized after self.conda_store
+        self.logging_formatter = RedactingFormatter(
+            self.log_format, blocklist=[self.conda_store.config.database_url]
+        )
+        for handler in self.log.handlers:
+            handler.setFormatter(self.logging_formatter)
+
         # ensure checks on redis_url
         self.conda_store.config.redis_url
 
