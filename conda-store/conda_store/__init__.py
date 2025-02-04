@@ -2,4 +2,4 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
 
-__version__ = "2025.1.2-rc1"
+__version__ = "2025.2.1"
