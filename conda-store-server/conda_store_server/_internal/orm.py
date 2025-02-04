@@ -562,7 +562,7 @@ class CondaChannel(Base):
             packages = {}
 
             for p_build in packages_data:
-                package_key = f'{p_build["name"]}-{p_build["version"]}-{self.id}'
+                package_key = f"{p_build['name']}-{p_build['version']}-{self.id}"
 
                 # Filtering out : if the key already exists in existing_packages_keys,
                 # then the package is already if DB, we don't add it.

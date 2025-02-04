@@ -372,9 +372,7 @@ class CondaStoreServer(Application):
             with session_factory() as db:
                 q = db.query(orm.Worker).first()
                 if q is not None and q.initialized:
-                    self.log.info(
-                        f"{_Color.GREEN}" "Worker initialized" f"{_Color.RESET}"
-                    )
+                    self.log.info(f"{_Color.GREEN}Worker initialized{_Color.RESET}")
                     break
 
             time.sleep(delay)
