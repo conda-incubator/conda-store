@@ -18,7 +18,7 @@ IMPROVEMENTS:
 - Build and push docker images for multiple platforms in one step [#1067](https://github.com/conda-incubator/conda-store/pull/1067) ([@soapy1](https://github.com/soapy1))
 
 
-BUG FIXES: 
+BUG FIXES:
 - Undo migration to remove redundant channel column [#1071](https://github.com/conda-incubator/conda-store/pull/1071) ([@soapy1](https://github.com/soapy1))
 - Fix conda store server deps [#1069](https://github.com/conda-incubator/conda-store/pull/1069) ([@soapy1](https://github.com/soapy1))
 
