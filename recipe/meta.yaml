@@ -45,9 +45,12 @@ outputs:
         - {{ pin_subpackage('conda-store-server', min_pin='x.x.x', max_pin='x.x.x') }}
 
     test:
+      requires:
+        - pip
       imports:
         - conda_store
       commands:
+        - pip check
         - conda-store --help
 
   - name: conda-store-server
@@ -89,19 +92,27 @@ outputs:
         - pyyaml >=6.0.1
         - redis-py
         - requests
+        # setuptools>=70 uses local version of packaging (and other deps) without
+        # pinning them; conda-lock depends on this, but also doesn't pin the setuptools
+        # version. See https://github.com/pypa/setuptools/issues/4478 for details
+        - setuptools<70
         - sqlalchemy >=2.0,<2.1
         - traitlets
         - uvicorn
         - yarl
         - psycopg2
         - pymysql
+        - psycopg2-binary
       run_constrained:
         - {{ pin_subpackage('conda-store', min_pin='x.x.x', max_pin='x.x.x') }}
 
     test:
+      requires:
+        - pip
       imports:
         - conda_store_server
       commands:
+        - pip check
         - conda-store-server --help
         - conda-store-worker --help
 
