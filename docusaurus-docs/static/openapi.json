@@ -1340,7 +1340,7 @@
   },
   "info": {
     "title": "conda-store",
-    "version": "2025.1.2-rc1"
+    "version": "2025.2.2-dev"
   },
   "openapi": "3.1.0",
   "paths": {
@@ -2738,6 +2738,7 @@
     },
     "/api/v1/environment/": {
       "get": {
+        "deprecated": true,
         "description": "Retrieve a list of environments.\n\nParameters\n----------\nauth : Authentication\n    Authentication instance for the request. Used to get role bindings\n    and filter environments returned to those visible by the user making\n    the request\nentity : AuthenticationToken\n    Token of the user making the request\npaginated_args : PaginatedArgs\n    Arguments for controlling pagination of the response\nconda_store : app.CondaStore\n    The running conda store application\nsearch : Optional[str]\n    If specified, filter by environment names or namespace names containing the\n    search term\nnamespace : Optional[str]\n    If specified, filter by environments in the given namespace\nname : Optional[str]\n    If specified, filter by environments with the given name\nstatus : Optional[schema.BuildStatus]\n    If specified, filter by environments with the given status\npackages : Optional[List[str]]\n    If specified, filter by environments containing the given package name(s)\nartifact : Optional[schema.BuildArtifactType]\n    If specified, filter by environments with the given BuildArtifactType\njwt : Optional[auth_schema.AuthenticationToken]\n    If specified, retrieve only the environments accessible to this token; that is,\n    only return environments that the user has 'admin', 'editor', and 'viewer'\n    role bindings for.\n\nReturns\n-------\nDict\n    Paginated JSON response containing the requested environments. Uses limit/offset-based\n    pagination.",
         "operationId": "api_list_environments_v1_api_v1_environment__get",
         "parameters": [
