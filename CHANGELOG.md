@@ -1,4 +1,3 @@
-
 # Changelog
 
 All notable changes to this project will be documented in this file.
@@ -7,6 +6,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 The project changed to `CalVer` in September 2023.
 
 ---
+## [2025.2.2] - 2025-02-11
+
+([full changelog](https://github.com/conda-incubator/conda-store/compare/2025.2.1...58b51292123ddb124135a848b01a98a8b72d5b0c))
+
+### Merged PRs
+
+IMPROVEMENTS:
+- Mount code into docker container [#1052](https://github.com/conda-incubator/conda-store/pull/1052) ([@soapy1](https://github.com/soapy1))
+
+BUG FIXES:
+- Re-add docker blob build artifact type [#1086](https://github.com/conda-incubator/conda-store/pull/1086) ([@soapy1](https://github.com/soapy1))
+
+DEPRECATIONS:
+- [MAINT] Deprecate `/api/v1/environments/` [#1061](https://github.com/conda-incubator/conda-store/pull/1061) ([@peytondmurray](https://github.com/peytondmurray))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/conda-incubator/conda-store/graphs/contributors?from=2025-02-04&to=2025-02-11&type=c))
+
+[@github-actions](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Agithub-actions+updated%3A2025-02-04..2025-02-11&type=Issues) | [@netlify](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Anetlify+updated%3A2025-02-04..2025-02-11&type=Issues) | [@peytondmurray](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Apeytondmurray+updated%3A2025-02-04..2025-02-11&type=Issues) | [@soapy1](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Asoapy1+updated%3A2025-02-04..2025-02-11&type=Issues)
+
 ## [2025.2.1] - 2025-02-04
 
 ([full changelog](https://github.com/conda-incubator/conda-store/compare/2025.1.2-rc1...a6ce878082c7247989b0100990a47457bb807758))
