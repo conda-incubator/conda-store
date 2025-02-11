@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
 
+import datetime
 import pytest
 
 from conda_store_server._internal import schema
@@ -62,3 +63,31 @@ def test_parse_lockfile_obj(test_lockfile):
     }
     specification = schema.LockfileSpecification.model_validate(lockfile_spec)
     assert specification.model_dump()["lockfile"] == test_lockfile
+
+@pytest.mark.parametrize(
+    ("build"),
+    [
+        {
+            "id": 1,
+            "environment_id": 1,
+            "status": "BUILDING",
+            "scheduled_on": datetime.datetime.now(),
+            "size": 123,
+        },
+        {
+            "id": 2,
+            "environment_id": 1,
+            "status": "BUILDING",
+            "scheduled_on": datetime.datetime.now(),
+            "size": 123,
+            "build_artifacts": [
+                {"id": 1, "artifact_type": "YAML", "key": "not_a_real_key"},
+                {"id": 2, "artifact_type": "DOCKER_BLOB", "key": "not_a_real_key"},
+                {"id": 3, "artifact_type": "CONTAINER_REGISTRY", "key": "not_a_real_key"},
+            ]
+        }
+    ],
+)
+def test_parse_build(build):
+    output = schema.Build.model_validate(build).model_dump()
+    assert output is not None

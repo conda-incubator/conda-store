@@ -104,7 +104,13 @@ class BuildArtifactType(str, enum.Enum):
     CONDA_PACK = "CONDA_PACK"
     DOCKER_MANIFEST = "DOCKER_MANIFEST"
     CONSTRUCTOR_INSTALLER = "CONSTRUCTOR_INSTALLER"
-    _ = "CONTAINER_REGISTRY"
+
+    # Deprecated
+    # Old database may still have docker or container build artifacts.
+    # So, these enum values must stay in order to remain backwards compatible
+    # however, no new artifacts of these types should be created.
+    CONTAINER_REGISTRY = "CONTAINER_REGISTRY"
+    DOCKER_BLOB = "DOCKER_BLOB"
 
 
 class BuildStatus(enum.Enum):
