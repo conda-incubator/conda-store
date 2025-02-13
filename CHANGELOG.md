@@ -1,4 +1,3 @@
-
 # Changelog
 
 All notable changes to this project will be documented in this file.
@@ -7,6 +6,96 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 The project changed to `CalVer` in September 2023.
 
 ---
+## [2025.2.2] - 2025-02-11
+
+([full changelog](https://github.com/conda-incubator/conda-store/compare/2025.2.1...58b51292123ddb124135a848b01a98a8b72d5b0c))
+
+### Merged PRs
+
+IMPROVEMENTS:
+- Mount code into docker container [#1052](https://github.com/conda-incubator/conda-store/pull/1052) ([@soapy1](https://github.com/soapy1))
+
+BUG FIXES:
+- Re-add docker blob build artifact type [#1086](https://github.com/conda-incubator/conda-store/pull/1086) ([@soapy1](https://github.com/soapy1))
+
+DEPRECATIONS:
+- [MAINT] Deprecate `/api/v1/environments/` [#1061](https://github.com/conda-incubator/conda-store/pull/1061) ([@peytondmurray](https://github.com/peytondmurray))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/conda-incubator/conda-store/graphs/contributors?from=2025-02-04&to=2025-02-11&type=c))
+
+[@github-actions](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Agithub-actions+updated%3A2025-02-04..2025-02-11&type=Issues) | [@netlify](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Anetlify+updated%3A2025-02-04..2025-02-11&type=Issues) | [@peytondmurray](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Apeytondmurray+updated%3A2025-02-04..2025-02-11&type=Issues) | [@soapy1](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Asoapy1+updated%3A2025-02-04..2025-02-11&type=Issues)
+
+## [2025.2.1] - 2025-02-04
+
+([full changelog](https://github.com/conda-incubator/conda-store/compare/2025.1.2-rc1...a6ce878082c7247989b0100990a47457bb807758))
+
+### Merged PRs
+
+IMPROVEMENTS:
+- [MAINT] Replace prettier with biome; fix bad pre-commit exclusion rule [#1075](https://github.com/conda-incubator/conda-store/pull/1075) ([@peytondmurray](https://github.com/peytondmurray))
+- Build and push docker images for multiple platforms in one step [#1067](https://github.com/conda-incubator/conda-store/pull/1067) ([@soapy1](https://github.com/soapy1))
+
+
+BUG FIXES:
+- Undo migration to remove redundant channel column [#1071](https://github.com/conda-incubator/conda-store/pull/1071) ([@soapy1](https://github.com/soapy1))
+- Fix conda store server deps [#1069](https://github.com/conda-incubator/conda-store/pull/1069) ([@soapy1](https://github.com/soapy1))
+- [BUG] Fix bad invocation of CondaStoreError [#1080](https://github.com/conda-incubator/conda-store/pull/1080) ([@peytondmurray](https://github.com/peytondmurray))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/conda-incubator/conda-store/graphs/contributors?from=2025-01-31&to=2025-02-04&type=c))
+
+[@peytondmurray](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Apeytondmurray+updated%3A2025-01-31..2025-02-04&type=Issues) | [@soapy1](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Asoapy1+updated%3A2025-01-31..2025-02-04&type=Issues)
+
+## [2025.1.1] - 2025-01-29
+
+([full changelog](https://github.com/conda-incubator/conda-store/compare/2024.11.2...a965967d8678dd3a944cd359b96ff84402ea96a6))
+
+### Merged PRs
+
+FEATURES:
+- Sort envs returned by REST API by current build's scheduled_on time [#881](https://github.com/conda-incubator/conda-store/pull/881) ([@peytondmurray](https://github.com/peytondmurray))
+
+
+IMPROVEMENTS:
+- Build and release a arm64 docker image as part of the release process [#1060](https://github.com/conda-incubator/conda-store/pull/1060) ([@soapy1](https://github.com/soapy1))
+- Ensure settings are retrieved for the right level [#1054](https://github.com/conda-incubator/conda-store/pull/1054) ([@soapy1](https://github.com/soapy1))
+- Fix user-journey tests for running against non-default targets [#1050](https://github.com/conda-incubator/conda-store/pull/1050) ([@soapy1](https://github.com/soapy1))
+- Get database url from conda-store config in tests [#1045](https://github.com/conda-incubator/conda-store/pull/1045) ([@soapy1](https://github.com/soapy1))
+- Add settings module [#1044](https://github.com/conda-incubator/conda-store/pull/1044) ([@soapy1](https://github.com/soapy1))
+- Add env var setting to disable ssl verification for user journey tests [#1040](https://github.com/conda-incubator/conda-store/pull/1040) ([@soapy1](https://github.com/soapy1))
+- Remove exception handler that prints to the console [#1037](https://github.com/conda-incubator/conda-store/pull/1037) ([@soapy1](https://github.com/soapy1))
+- Don't output db secret to logs [#1033](https://github.com/conda-incubator/conda-store/pull/1033) ([@soapy1](https://github.com/soapy1))
+- Bump nanoid from 3.3.7 to 3.3.8 in /docusaurus-docs [#1024](https://github.com/conda-incubator/conda-store/pull/1024) ([@dependabot](https://github.com/dependabot))
+- Separate conda-store app instance from config [#1023](https://github.com/conda-incubator/conda-store/pull/1023) ([@soapy1](https://github.com/soapy1))
+- fix below typo (bellow -> below) [#1020](https://github.com/conda-incubator/conda-store/pull/1020) ([@Adam-D-Lewis](https://github.com/Adam-D-Lewis))
+- Run unit tests on all supported python versions [#1015](https://github.com/conda-incubator/conda-store/pull/1015) ([@soapy1](https://github.com/soapy1))
+- Setup pluggy with locking plugin [#965](https://github.com/conda-incubator/conda-store/pull/965) ([@soapy1](https://github.com/soapy1))
+
+BUG FIXES:
+- Allow Namespace pydantic model to have a null metadata_ entry [#1063](https://github.com/conda-incubator/conda-store/pull/1063) ([@soapy1](https://github.com/soapy1))
+- Trim conda-store package dependencies [#1056](https://github.com/conda-incubator/conda-store/pull/1056) ([@soapy1](https://github.com/soapy1))
+- Update test_disk_usage for change in default `du` behaviour in ubuntu 24.04 [#1041](https://github.com/conda-incubator/conda-store/pull/1041) ([@soapy1](https://github.com/soapy1))
+- Login page without UI enabled [#1039](https://github.com/conda-incubator/conda-store/pull/1039) ([@soapy1](https://github.com/soapy1))
+- fix: handle None system metrics in user admin panel [#1029](https://github.com/conda-incubator/conda-store/pull/1029) ([@imprvhub](https://github.com/imprvhub))
+- Fix conda_package_build "build" column type [#1011](https://github.com/conda-incubator/conda-store/pull/1011) ([@soapy1](https://github.com/soapy1))
+- Remove redundant channel column [#1010](https://github.com/conda-incubator/conda-store/pull/1010) ([@soapy1](https://github.com/soapy1))
+
+DEPRECATIONS:
+- api: /registry, /build/<build id>/docker
+- config: CondaStoreServer.enable_registry, CondaStoreServer.registry_external_url, CondaStoreServer.container_registry_class, ContainerRegistry.
+- Remove upload to docker registry code snippets [#1017](https://github.com/conda-incubator/conda-store/pull/1017) ([@soapy1](https://github.com/soapy1))
+- Deprecate docker registry [#1016](https://github.com/conda-incubator/conda-store/pull/1016) ([@soapy1](https://github.com/soapy1))
+- Remove docker build tasks [#1001](https://github.com/conda-incubator/conda-store/pull/1001) ([@soapy1](https://github.com/soapy1))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/conda-incubator/conda-store/graphs/contributors?from=2024-11-26&to=2025-01-29&type=c))
+
+[@Adam-D-Lewis](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3AAdam-D-Lewis+updated%3A2024-11-26..2025-01-29&type=Issues) | [@dependabot](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Adependabot+updated%3A2024-11-26..2025-01-29&type=Issues) | [@github-actions](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Agithub-actions+updated%3A2024-11-26..2025-01-29&type=Issues) | [@imprvhub](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Aimprvhub+updated%3A2024-11-26..2025-01-29&type=Issues) | [@jaimergp](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Ajaimergp+updated%3A2024-11-26..2025-01-29&type=Issues) | [@netlify](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Anetlify+updated%3A2024-11-26..2025-01-29&type=Issues) | [@peytondmurray](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Apeytondmurray+updated%3A2024-11-26..2025-01-29&type=Issues) | [@pre-commit-ci](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Apre-commit-ci+updated%3A2024-11-26..2025-01-29&type=Issues) | [@rigzba21](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Arigzba21+updated%3A2024-11-26..2025-01-29&type=Issues) | [@soapy1](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Asoapy1+updated%3A2024-11-26..2025-01-29&type=Issues) | [@trallard](https://github.com/search?q=repo%3Aconda-incubator%2Fconda-store+involves%3Atrallard+updated%3A2024-11-26..2025-01-29&type=Issues)
+
 ## [2024.11.2] - 2024-11-26
 
 ([full changelog](https://github.com/conda-incubator/conda-store/compare/2024.11.1...710d61c86b6b8591672c4819328ebd11f9c3a917))

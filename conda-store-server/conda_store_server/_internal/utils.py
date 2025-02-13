@@ -172,7 +172,7 @@ def compile_arn_sql_like(
     match = allowed_regex.match(arn)
     if match is None:
         raise ValueError(
-            "Could not find a match for the requested " f"namespace/environment={arn}"
+            f"Could not find a match for the requested namespace/environment={arn}"
         )
 
     return (

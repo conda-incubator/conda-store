@@ -129,7 +129,7 @@ conda activate "$PREFIX"
 """
         if pip_dependencies:
             post_install += f"""
-python -m pip install {' '.join(pip_dependencies)}
+python -m pip install {" ".join(pip_dependencies)}
 """
 
         # Writes files to disk

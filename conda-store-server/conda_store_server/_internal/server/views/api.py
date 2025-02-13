@@ -3,7 +3,8 @@
 # license that can be found in the LICENSE file.
 
 import datetime
-from typing import Any, Dict, List, Optional
+from functools import wraps
+from typing import Any, Callable, Dict, List, Optional
 
 import pydantic
 import yaml
@@ -103,6 +104,50 @@ def paginated_api_response(
         "size": paginated_args["limit"],
         "count": count,
     }
+
+
+def deprecated(sunset_date: datetime.date) -> Callable:
+    """Add deprecation headers to a HTTP request and response.
+
+    This will include the deprecation date on the request object,
+    which will then be picked up by the conda_store_middleware
+    to add the deprecation date to the response object.
+
+    See the conda-store backwards compatibility policy for appropriate use of
+    deprecations https://conda.store/community/policies/backwards-compatibility.
+
+    Note that decorated functions _must_ include the request parameter.
+    This is not an elegant way of doing this, but FastAPI has no other
+    way of achieving the same effect without confusing its request/response
+    inference machinery, which relies on the type annotations of the
+    routes.
+
+    Parameters
+    ----------
+    sunset_date : datetime.date
+        the date that the endpoint will have it's functionality removed
+
+    Returns
+    -------
+    Callable
+        Decorator which wraps an endpoint
+    """
+
+    def decorator(func):
+        @wraps(func)
+        async def add_deprecated_headers(request: Request, *args, **kwargs):
+            # It's not possible to add the deprecation headers to the
+            # output of `func(*args, **kwargs)`, since that may be a
+            # simple dict object, not a Response
+            request.state.deprecation_date = sunset_date.strftime(
+                "%a, %d %b %Y 00:00:00 UTC"
+            )
+            result = await func(*args, request=request, **kwargs)
+            return result
+
+        return add_deprecated_headers
+
+    return decorator
 
 
 @router_api.get(
@@ -603,10 +648,11 @@ async def api_delete_namespace(
 
 
 @router_api.get(
-    "/environment/",
-    response_model=schema.APIListEnvironment,
+    "/environment/", response_model=schema.APIListEnvironment, deprecated=True
 )
+@deprecated(sunset_date=datetime.date(2025, 3, 17))
 async def api_list_environments_v1(
+    request: Request,
     auth: Authentication = Depends(dependencies.get_auth),
     conda_store: CondaStore = Depends(dependencies.get_conda_store),
     entity: AuthenticationToken = Depends(dependencies.get_entity),
@@ -1327,14 +1373,14 @@ async def api_get_build_archive(
 
 
 @router_api.get("/build/{build_id}/docker/", deprecated=True)
+@deprecated(sunset_date=datetime.date(2025, 3, 17))
 async def api_get_build_docker_image_url(
-    build_id: int,
     request: Request,
+    build_id: int,
     conda_store=Depends(dependencies.get_conda_store),
     server=Depends(dependencies.get_server),
     auth=Depends(dependencies.get_auth),
 ):
-    response_headers = {"Deprecation": "True"}
     with conda_store.get_db() as db:
         build = api.get_build(db, build_id)
         auth.authorize_request(
@@ -1346,7 +1392,7 @@ async def api_get_build_docker_image_url(
 
         if build.has_docker_manifest:
             url = f"{server.registry_external_url}/{build.environment.namespace.name}/{build.environment.name}:{build.build_key}"
-            return PlainTextResponse(url, headers=response_headers)
+            return PlainTextResponse(url)
 
         else:
             content = {
@@ -1354,7 +1400,8 @@ async def api_get_build_docker_image_url(
                 "message": f"Build {build_id} doesn't have a docker manifest",
             }
             return JSONResponse(
-                status_code=400, content=content, headers=response_headers
+                status_code=400,
+                content=content,
             )
 
 

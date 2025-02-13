@@ -3,6 +3,7 @@
 # license that can be found in the LICENSE file.
 
 import contextlib
+import datetime
 import json
 import os
 import sys
@@ -12,6 +13,7 @@ import httpx
 import pytest
 import traitlets
 import yaml
+from fastapi import Request
 from fastapi.testclient import TestClient
 
 from conda_store_server import CONDA_STORE_DIR, __version__
@@ -44,6 +46,26 @@ def mock_entity_role_bindings(
     yield
 
     testclient.app.dependency_overrides = {}
+
+
+def test_deprecation_warning(testclient):
+    from fastapi.responses import JSONResponse
+
+    from conda_store_server._internal.server.views.api import deprecated
+
+    router = testclient.app.router
+
+    @router.get("/foo")
+    @deprecated(datetime.date(2024, 12, 17))
+    async def api_status(request: Request):
+        return JSONResponse(
+            status_code=400,
+            content={"ok": "ok"},
+        )
+
+    result = testclient.get("/foo")
+    assert result.headers.get("Deprecation") == "True"
+    assert result.headers.get("Sunset") == "Tue, 17 Dec 2024 00:00:00 UTC"
 
 
 def test_api_version_unauth(testclient):
@@ -157,6 +179,23 @@ def test_api_list_namespace_auth(testclient, seed_conda_store, authenticate):
     assert sorted([_.name for _ in r.data]) == ["default", "namespace1", "namespace2"]
 
 
+def test_api_list_namespace_including_missing_metadata_(
+    testclient, seed_namespace_with_edge_cases, authenticate
+):
+    """Test that a namespace with metadata_ = None can be retrieved.
+
+    See https://github.com/conda-incubator/conda-store/issues/1062
+    for additional context.
+    """
+    response = testclient.get("api/v1/namespace")
+    response.raise_for_status()
+
+    r = schema.APIListNamespace.model_validate(response.json())
+    assert r.status == schema.APIStatus.OK
+    namespaces = [_.name for _ in r.data]
+    assert "namespace_missing_meta" in namespaces
+
+
 def test_api_get_namespace_unauth(testclient, seed_conda_store):
     response = testclient.get("api/v1/namespace/default")
     response.raise_for_status()
@@ -222,6 +261,8 @@ def test_api_list_environments_auth(
 
     r = model.model_validate(response.json())
     assert r.status == schema.APIStatus.OK
+    if version == "v1":
+        assert response.headers.get("Deprecation")
     assert sorted([_.name for _ in r.data]) == ["name1", "name2", "name3", "name4"]
 
 
@@ -1171,7 +1212,6 @@ def test_api_list_environments_paginate(
     cursor = None
     cursor_param = ""
     while cursor is None or cursor != Cursor.end():
-        # breakpoint()
         response = testclient.get(f"api/v2/environment/?limit={limit}{cursor_param}")
         response.raise_for_status()
 

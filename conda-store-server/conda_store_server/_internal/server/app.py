@@ -84,7 +84,9 @@ class CondaStoreServer(Application):
     )
 
     enable_registry = Bool(
-        True, help="enable the docker registry for conda-store", config=True
+        False,
+        help="(deprecated) enable the docker registry for conda-store",
+        config=True,
     )
 
     enable_metrics = Bool(
@@ -101,7 +103,7 @@ class CondaStoreServer(Application):
 
     registry_external_url = Unicode(
         "localhost:8080",
-        help='external hostname and port to access docker registry cannot contain "http://" or "https://"',
+        help='(deprecated) external hostname and port to access docker registry cannot contain "http://" or "https://"',
         config=True,
     )
 
@@ -253,6 +255,13 @@ class CondaStoreServer(Application):
             request.state.authentication = self.authentication
             request.state.templates = self.templates
             response = await call_next(request)
+
+            # Handle requests that are sent to deprecated endpoints;
+            # see conda_store_server._internal.server.views.api.deprecated
+            # for additional information
+            if hasattr(request.state, "deprecation_date"):
+                response.headers["Deprecation"] = "True"
+                response.headers["Sunset"] = request.state.deprecation_date
             return response
 
         @app.exception_handler(HTTPException)
@@ -370,9 +379,7 @@ class CondaStoreServer(Application):
             with session_factory() as db:
                 q = db.query(orm.Worker).first()
                 if q is not None and q.initialized:
-                    self.log.info(
-                        f"{_Color.GREEN}" "Worker initialized" f"{_Color.RESET}"
-                    )
+                    self.log.info(f"{_Color.GREEN}Worker initialized{_Color.RESET}")
                     break
 
             time.sleep(delay)
