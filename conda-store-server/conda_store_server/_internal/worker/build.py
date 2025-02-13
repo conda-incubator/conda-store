@@ -239,6 +239,8 @@ def build_conda_environment(db: Session, conda_store, build):
                             build=build,
                             prefix=f"plugin-{lock_backend}: ",
                         ),
+                        namespace=build.environment.namespace.name,
+                        environment=build.environment.name,
                     ),
                 )
 
