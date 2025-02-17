@@ -1044,7 +1044,8 @@
           "CONDA_PACK",
           "DOCKER_MANIFEST",
           "CONSTRUCTOR_INSTALLER",
-          "CONTAINER_REGISTRY"
+          "CONTAINER_REGISTRY",
+          "DOCKER_BLOB"
         ],
         "title": "BuildArtifactType",
         "type": "string"
@@ -1340,7 +1341,7 @@
   },
   "info": {
     "title": "conda-store",
-    "version": "2025.2.2-dev"
+    "version": "2025.2.3-dev"
   },
   "openapi": "3.1.0",
   "paths": {
