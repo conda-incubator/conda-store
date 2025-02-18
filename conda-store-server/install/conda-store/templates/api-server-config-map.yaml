@@ -1,0 +1,10 @@
+apiVersion: v1
+data:
+  conda_store_config.py: |
+    {{ .Values.apiServer.condaStoreConfig | nindent 4 }}
+kind: ConfigMap
+metadata:
+  name: "{{ template "condaStore.fullname" . }}-api-server"
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    {{- include "condaStore.labels" . | nindent 8 }}
