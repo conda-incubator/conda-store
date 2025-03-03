@@ -19,7 +19,7 @@ exclude: |
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
-    rev: "v0.9.4"
+    rev: "v0.9.9"
     hooks:
       - id: ruff
         exclude: "examples|tests/assets"
@@ -37,7 +37,7 @@ repos:
         exclude: ".python-version-default"
 
   - repo: https://github.com/biomejs/pre-commit
-    rev: "v0.6.1"
+    rev: "v1.9.4"
     hooks:
     - id: biome-check
       additional_dependencies: ["@biomejs/biome@1.9.4"]
