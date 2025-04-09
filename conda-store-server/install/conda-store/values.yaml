@@ -1,0 +1,204 @@
+podAnnotations: {}
+podLabels: {}
+
+global:
+  # The namespace to deploy to. Defaults to the `helm` installation namespace.
+  namespace: ""
+
+apiServer:
+  # Node port for the API Server K8 service
+  nodePort: 30501
+
+  # Port (internal) the service will be accessible on. To port forward this service
+  # try `kubectl port-forward -n conda-store service/conda-store-api-server <port>:8080`
+  port: 8080
+
+  # Number of API Servers replica pods to start up
+  replicas: 1
+
+  # Image to use for the api server
+  image:
+    repository: quansight/conda-store-server
+    pullPolicy: IfNotPresent
+    tag: latest
+
+  # Config for the conda-store-server. For all available options, see the
+  # docs at https://conda.store/conda-store/references/configuration-options
+  # The following env vars are injected into the container if required:
+  #  * POSTGRES_USERNAME
+  #  * POSTGRES_PASSWORD
+  #  * MINIO_USERNAME
+  #  * MINIO_PASSWORD
+  #  * REDIS_PASSWORD
+  # Provided is a good starting point for the config
+  condaStoreConfig: |
+    c.CondaStoreServer.enable_ui = False
+    c.CondaStoreServer.enable_api = True
+    c.CondaStoreServer.enable_registry = False
+    c.CondaStoreServer.address = "0.0.0.0"
+    c.CondaStoreServer.port = 8080
+    c.CondaStoreServer.url_prefix = "/"
+
+    c.CondaStore.database_url = f"postgresql+psycopg2://{os.environ.get('POSTGRES_USERNAME')}:{os.environ.get('POSTGRES_PASSWORD')}@postgres/conda-store"
+    c.CondaStore.redis_url =   (
+        f"redis://:{os.environ.get('REDIS_PASSWORD')}@redis:6379/0"
+    )
+    c.CondaStore.default_uid = 1000
+    c.CondaStore.default_gid = 100
+    c.CondaStore.default_permissions = "555"
+    c.CondaStore.storage_class = S3Storage
+
+    c.S3Storage.internal_endpoint = "minio:9000"
+    c.S3Storage.internal_secure = False
+    c.S3Storage.external_endpoint = "localhost:9000"
+    c.S3Storage.external_secure = False
+    c.S3Storage.access_key = os.environ.get('MINIO_USERNAME')
+    c.S3Storage.secret_key = os.environ.get('MINIO_PASSWORD')
+
+    c.RBACAuthorizationBackend.role_mappings_version = 2
+
+  # This is to setup the liveness and readiness probes more information can be
+  # found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readinessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+  resources: {}
+  # resources:
+  #   limits:
+  #     cpu: 100m
+  #     memory: 128Mi
+  #   requests:
+  #     cpu: 100m
+  #     memory: 128Mi
+
+uiServer:
+  # Node port for the UI Server K8 service
+  nodePort: 30500
+
+  # Port (internal) the service will be accessible on. To port forward this service
+  # try `kubectl port-forward -n conda-store service/conda-store-ui-server <port>:8080`
+  port: 8080
+
+  # Number of API Servers replica pods to start up
+  replicas: 1
+
+  # Image to use for the ui server
+  image:
+    repository: ghcr.io/conda-incubator/conda-store-ui
+    pullPolicy: IfNotPresent
+    tag: latest
+
+  appEnv:
+    # publically accessible URL for the conda store server api instance
+    apiUrl:
+
+    # publically accessible URL to access the login page
+    loginPageUrl:
+
+    # publically accessible URL to access the logout page
+    logoutPageUrl:
+
+    # base url prefix to access the api. Should match the api server config option
+    # `c.CondaStoreServer.url_prefix`
+    urlBasename: "/"
+
+  # This is to setup the liveness and readiness probes more information can be
+  # found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readinessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+  resources: {}
+  # resources:
+  #   limits:
+  #     cpu: 100m
+  #     memory: 128Mi
+  #   requests:
+  #     cpu: 100m
+  #     memory: 128Mi
+
+worker:
+  # Number of workers that are to be in the worker deployment
+  replicas: 2
+
+  # Image for the worker container
+  image:
+    repository: quansight/conda-store-server
+    pullPolicy: IfNotPresent
+    tag: latest
+
+  # Volume attached to the worker volumes that contains conda environments
+  # and packages. This will bind to the worker with a PVC. To bind your
+  # PV to the PVC ensure to set the claim ref on your volume. For example
+  # ```
+  #   spec:
+  #     accessModes:
+  #       - ReadWriteMany
+  #     storageClassName: ""
+  #     claimRef:
+  #       name: conda-store-worker-claim
+  # ```
+  environmentsVolume: ""
+
+  # Size of the environmentsVolume
+  environmentsVolumeSize: 2Gi
+
+  # Config for the conda-store-server. For all available options, see the
+  # docs at https://conda.store/conda-store/references/configuration-options
+  # The following env vars are injected into the container if required:
+  #  * POSTGRES_USERNAME
+  #  * POSTGRES_PASSWORD
+  #  * MINIO_USERNAME
+  #  * MINIO_PASSWORD
+  #  * REDIS_PASSWORD
+  # Provided is a good starting point for the config
+  condaStoreConfig: |
+    c.CondaStore.database_url = f"postgresql+psycopg2://{os.environ.get('POSTGRES_USERNAME')}:{os.environ.get('POSTGRES_PASSWORD')}@postgres/conda-store"
+    c.CondaStore.redis_url =   (
+        f"redis://:{os.environ.get('REDIS_PASSWORD')}@redis:6379/0"
+    )
+    c.CondaStore.default_uid = 1000
+    c.CondaStore.default_gid = 100
+    c.CondaStore.default_permissions = "555"
+    c.CondaStore.storage_class = S3Storage
+    c.CondaStore.store_directory = "/opt/conda-store/conda-store/"
+
+    c.S3Storage.internal_endpoint = "minio:9000"
+    c.S3Storage.internal_secure = False
+    c.S3Storage.external_endpoint = "localhost:9000"
+    c.S3Storage.external_secure = False
+    c.S3Storage.access_key = os.environ.get('MINIO_USERNAME')
+    c.S3Storage.secret_key = os.environ.get('MINIO_PASSWORD')
+
+    c.CondaStoreServer.enable_ui = False
+    c.CondaStoreServer.enable_api = False
+    c.CondaStoreServer.enable_registry = False
+    c.CondaStoreServer.enable_metrics = False
+
+    c.CondaStoreWorker.log_level = logging.INFO
+    c.CondaStoreWorker.watch_paths = ["/opt/environments"]
+    c.CondaStoreWorker.concurrency = 4
+
+  resources: {}
+  # resources:
+  #   limits:
+  #     cpu: 100m
+  #     memory: 128Mi
+  #   requests:
+  #     cpu: 100m
+  #     memory: 128Mi
