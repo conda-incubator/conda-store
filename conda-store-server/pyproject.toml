@@ -43,7 +43,7 @@ dependencies = [
   "python-docker",
   # we need platform dependent dependencies here
   "conda-docker; sys_platform == 'linux'",
-  "conda-lock >=1.0.5",
+  "conda-lock >=1.0.5,<3.0.0",
   "conda-pack",
   "conda-package-handling",
   "conda-package-streaming",
