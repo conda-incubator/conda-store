@@ -494,6 +494,7 @@ class CondaStore:
             raise CondaStoreError("cannot delete build since not finished building")
 
         build.deleted_on = datetime.datetime.utcnow()
+        build.status = schema.BuildStatus.DELETED
         db.commit()
 
         self.celery_app
