@@ -41,7 +41,7 @@ from conda_store_server.server import schema as auth_schema
 class AuthenticationBackend(LoggingConfigurable):
     secret = Unicode(
         secrets.token_hex(128),
-        help="symetric secret to use for encrypting tokens",
+        help="symmetric secret to use for encrypting tokens",
         config=True,
     )
 
@@ -192,7 +192,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
         {
             "default/*": {"viewer"},
         },
-        help="default roles bindings to asign to unauthenticated users",
+        help="default roles bindings to assign to unauthenticated users",
         config=True,
     )
 
@@ -349,7 +349,7 @@ class RBACAuthorizationBackend(LoggingConfigurable):
     def is_subset_entity_permissions(self, entity, new_entity):
         """Determine if new_entity_bindings is a strict subset of entity_bindings
 
-        This feature is required to allow authenticated entitys to
+        This feature is required to allow authenticated entities to
         create new permissions that are a strict subset of its
         permissions.
         """

@@ -322,7 +322,7 @@ class CondaStore(LoggingConfigurable):
 
     serialize_builds = Bool(
         True,
-        help="DEPRICATED no longer has any effect",
+        help="DEPRECATED no longer has any effect",
         config=True,
     )
 
@@ -336,7 +336,7 @@ class CondaStore(LoggingConfigurable):
 
     validate_specification = Callable(
         conda_store_validate_specification,
-        help="callable function taking conda_store, namespace, and specification as input arguments to apply for validating and modifying a given specification. If there are validation issues with the environment ValueError with message should be raised. If changed you may need to call the default function to preseve many of the trait effects e.g. `c.CondaStore.default_channels` etc",
+        help="callable function taking conda_store, namespace, and specification as input arguments to apply for validating and modifying a given specification. If there are validation issues with the environment ValueError with message should be raised. If changed you may need to call the default function to preserve many of the trait effects e.g. `c.CondaStore.default_channels` etc",
         config=True,
     )
 

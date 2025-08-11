@@ -83,7 +83,7 @@ async def api_list_environments_v2(
         is used.
 
         Note that the Environment objects returned here have their `current_build` fields omitted
-        to keep the repsonse size down; these fields otherwise drastically increase the response
+        to keep the response size down; these fields otherwise drastically increase the response
         size.
     """
     with conda_store.get_db() as db:

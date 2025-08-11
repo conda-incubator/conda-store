@@ -225,10 +225,10 @@ def test_get_setting_invalid(settings: Settings):
 
 
 def test_get_setting_overriden(settings: Settings):
-    # conda_channel_alias is not a global command, it may be overriden
+    # conda_channel_alias is not a global command, it may be overridden
     test_setting = settings.get_setting("conda_channel_alias")
     assert test_setting == "globalchannelalias"
-    # default_uid is a global setting. It should never be overriden
+    # default_uid is a global setting. It should never be overridden
     test_setting = settings.get_setting("default_uid")
     assert test_setting == 888
     # conda_command is also a global setting. Even if somehow the value gets

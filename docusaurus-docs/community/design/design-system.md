@@ -10,7 +10,7 @@ This design system provides guidelines, components, and assets to ensure consist
 
 These guidelines and assets are for all conda-store branding, including web properties, promotion material, presentations, and more:
 
-📝 [Brand guidelines PDF (incudes details about colors, typography, iconography, and more)](https://github.com/conda-incubator/conda-store/tree/main/docusaurus-docs/community/assets/conda-store-brand-guidelines.pdf)
+📝 [Brand guidelines PDF (includes details about colors, typography, iconography, and more)](https://github.com/conda-incubator/conda-store/tree/main/docusaurus-docs/community/assets/conda-store-brand-guidelines.pdf)
 
 📦 [Logos (PNG and SVG files with various logo options)](https://github.com/conda-incubator/conda-store/tree/main/docusaurus-docs/community/assets/logos)
 

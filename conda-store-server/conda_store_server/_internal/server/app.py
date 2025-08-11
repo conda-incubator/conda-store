@@ -122,7 +122,7 @@ class CondaStoreServer(Application):
 
     behind_proxy = Bool(
         False,
-        help="Indicates if server is behind web reverse proxy such as Nginx, Traefik, Apache. Will use X-Forward-.. headers to detemine scheme. Do not set to true if not behind proxy since Flask will trust any X-Forward-... header",
+        help="Indicates if server is behind web reverse proxy such as Nginx, Traefik, Apache. Will use X-Forward-.. headers to determine scheme. Do not set to true if not behind proxy since Flask will trust any X-Forward-... header",
         config=True,
     )
 

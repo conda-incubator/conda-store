@@ -675,7 +675,7 @@ def create_or_ignore_conda_package(db, package_record: Dict):
     if conda_package is None:
         conda_package = create_conda_package(db, package_record=package_record)
 
-    # Retrieve the build for this pacakge, if it already exists
+    # Retrieve the build for this package, if it already exists
     conda_package_build = get_conda_package_build(
         db,
         package_id=conda_package.id,

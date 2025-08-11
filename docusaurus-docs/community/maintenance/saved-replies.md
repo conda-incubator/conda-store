@@ -103,7 +103,7 @@ It may be helpful to store some of these in [GitHub’s saved replies](https://g
 
   ```md
   We notice that the automated tests are failing on this pull request. In our investigation it appears that the failing tests are caused by your changes.
-  In order for this pull request to be accepted, the tests will have to be fixeed.
+  In order for this pull request to be accepted, the tests will have to be fixed.
   ```
 
 ### Code of conduct

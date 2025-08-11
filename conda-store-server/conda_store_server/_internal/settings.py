@@ -109,7 +109,7 @@ class Settings:
         settings = self.deployment_default
         settings.update(api.get_kvstore_key_values(self.db, "setting"))
 
-        # bulid list of prefixes to check from least precidence to highest precedence
+        # build list of prefixes to check from least precedence to highest precedence
         prefixes = []
         if namespace is not None:
             prefixes.append(f"setting/{namespace}")
