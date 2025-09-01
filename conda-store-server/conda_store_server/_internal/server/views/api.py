@@ -4,7 +4,7 @@
 
 import datetime
 from functools import wraps
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List
 
 import pydantic
 import yaml
@@ -234,9 +234,9 @@ async def api_get_usage(
 )
 async def api_post_token(
     request: Request,
-    primary_namespace: Optional[str] = Body(None),
-    expiration: Optional[datetime.datetime] = Body(None),
-    role_bindings: Optional[Dict[str, List[str]]] = Body(None),
+    primary_namespace: str | None = Body(None),
+    expiration: datetime.datetime | None = Body(None),
+    role_bindings: Dict[str, List[str]] | None = Body(None),
     conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
     entity=Depends(dependencies.get_entity),
@@ -659,13 +659,13 @@ async def api_list_environments_v1(
     paginated_args: dependencies.PaginatedArgs = Depends(
         dependencies.get_paginated_args
     ),
-    artifact: Optional[schema.BuildArtifactType] = None,
-    jwt: Optional[str] = None,
-    name: Optional[str] = None,
-    namespace: Optional[str] = None,
-    packages: Optional[List[str]] = Query([]),
-    search: Optional[str] = None,
-    status: Optional[schema.BuildStatus] = None,
+    artifact: schema.BuildArtifactType | None = None,
+    jwt: str | None = None,
+    name: str | None = None,
+    namespace: str | None = None,
+    packages: List[str] | None = Query([]),
+    search: str | None = None,
+    status: schema.BuildStatus | None = None,
 ):
     """Retrieve a list of environments.
 
@@ -892,10 +892,10 @@ async def api_post_specification(
     auth=Depends(dependencies.get_auth),
     entity=Depends(dependencies.get_entity),
     specification: str = Body(""),
-    namespace: Optional[str] = Body(None),
-    is_lockfile: Optional[bool] = Body(False, embed=True),
-    environment_name: Optional[str] = Body("", embed=True),
-    environment_description: Optional[str] = Body("", embed=True),
+    namespace: str | None = Body(None),
+    is_lockfile: bool | None = Body(False, embed=True),
+    environment_name: str | None = Body("", embed=True),
+    environment_description: str | None = Body("", embed=True),
 ):
     with conda_store.get_db() as db:
         permissions = {Permissions.ENVIRONMENT_CREATE}
@@ -954,12 +954,12 @@ async def api_post_specification(
 
 @router_api.get("/build/", response_model=schema.APIListBuild)
 async def api_list_builds(
-    status: Optional[schema.BuildStatus] = None,
-    packages: Optional[List[str]] = Query([]),
-    artifact: Optional[schema.BuildArtifactType] = None,
-    environment_id: Optional[int] = None,
-    name: Optional[str] = None,
-    namespace: Optional[str] = None,
+    status: schema.BuildStatus | None = None,
+    packages: List[str] | None = Query([]),
+    artifact: schema.BuildArtifactType | None = None,
+    environment_id: int | None = None,
+    name: str | None = None,
+    namespace: str | None = None,
     conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
     entity=Depends(dependencies.get_entity),
@@ -1153,9 +1153,9 @@ async def api_delete_build(
 async def api_get_build_packages(
     build_id: int,
     request: Request,
-    search: Optional[str] = None,
-    exact: Optional[str] = None,
-    build: Optional[str] = None,
+    search: str | None = None,
+    exact: str | None = None,
+    build: str | None = None,
     auth=Depends(dependencies.get_auth),
     conda_store=Depends(dependencies.get_conda_store),
     paginated_args=Depends(dependencies.get_paginated_args),
@@ -1233,9 +1233,9 @@ async def api_list_channels(
     response_model=schema.APIListCondaPackage,
 )
 async def api_list_packages(
-    search: Optional[str] = None,
-    exact: Optional[str] = None,
-    build: Optional[str] = None,
+    search: str | None = None,
+    exact: str | None = None,
+    build: str | None = None,
     paginated_args=Depends(dependencies.get_paginated_args),
     conda_store=Depends(dependencies.get_conda_store),
     distinct_on: List[str] = Query([]),

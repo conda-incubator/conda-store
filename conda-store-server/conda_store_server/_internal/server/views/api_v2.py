@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List
 
 from fastapi import APIRouter, Depends, Query, Request
 
@@ -36,13 +36,13 @@ async def api_list_environments_v2(
         dependencies.get_cursor_paginated_args
     ),
     cursor: Cursor = Depends(dependencies.get_cursor),
-    artifact: Optional[schema.BuildArtifactType] = None,
-    jwt: Optional[str] = None,
-    name: Optional[str] = None,
-    namespace: Optional[str] = None,
-    packages: Optional[List[str]] = Query([]),
-    search: Optional[str] = None,
-    status: Optional[schema.BuildStatus] = None,
+    artifact: schema.BuildArtifactType | None = None,
+    jwt: str | None = None,
+    name: str | None = None,
+    namespace: str | None = None,
+    packages: List[str] | None = Query([]),
+    search: str | None = None,
+    status: schema.BuildStatus | None = None,
 ) -> schema.APIListEnvironment:
     """Retrieve a list of environments.
 

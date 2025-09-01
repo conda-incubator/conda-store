@@ -78,18 +78,14 @@ def set_build_started(db: Session, build: orm.Build):
     db.commit()
 
 
-def set_build_failed(
-    db: Session, build: orm.Build, status_info: typing.Optional[str] = None
-):
+def set_build_failed(db: Session, build: orm.Build, status_info: str | None = None):
     build.status = schema.BuildStatus.FAILED
     build.status_info = status_info
     build.ended_on = datetime.datetime.utcnow()
     db.commit()
 
 
-def set_build_canceled(
-    db: Session, build: orm.Build, status_info: typing.Optional[str] = None
-):
+def set_build_canceled(db: Session, build: orm.Build, status_info: str | None = None):
     build.status = schema.BuildStatus.CANCELED
     build.status_info = status_info
     build.ended_on = datetime.datetime.utcnow()
