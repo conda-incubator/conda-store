@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ template "condaStore.fullname" . }}-ui-server"
+  namespace: {{ .Values.global.namespace }}
+  labels:
+{{ include "condaStore.labels" . | nindent 4 }}
+    app: "{{ template "condaStore.fullname" . }}-ui-server"
+spec:
+  replicas: {{ .Values.uiServer.replicas }}
+  selector:
+    matchLabels:
+      app: "{{ template "condaStore.fullname" . }}-ui-server"
+  template:
+    metadata:
+      labels:
+{{ include "condaStore.labels" . | nindent 8 }}
+        app: "{{ template "condaStore.fullname" . }}-ui-server"
+    spec:
+      containers:
+        - name: "{{ template "condaStore.fullname" . }}-ui-server"
+          image: "{{ .Values.uiServer.image.repository }}:{{ .Values.uiServer.image.tag }}"
+          imagePullPolicy: {{ .Values.uiServer.image.pullPolicy }}
+          env:
+          - name: REACT_APP_STYLE_TYPE
+            value: green-accent
+          - name: REACT_APP_API_URL
+            value: {{ .Values.uiServer.appEnv.apiUrl }}
+          - name: REACT_APP_LOGIN_PAGE_URL
+            value: {{ .Values.uiServer.appEnv.loginPageUrl }}
+          - name: REACT_APP_LOGOUT_PAGE_URL
+            value: {{ .Values.uiServer.appEnv.logoutPageUrl }}
+          - name: REACT_APP_URL_BASENAME
+            value: {{ .Values.uiServer.appEnv.urlBasename }}
+          - name: PORT
+            value: "{{ .Values.uiServer.port }}"
+          ports:
+            - containerPort: {{ .Values.uiServer.port }}
+          livenessProbe:
+            httpGet:
+              path: /status
+              port: {{ .Values.uiServer.port }}
+            initialDelaySeconds: {{ .Values.uiServer.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.uiServer.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.uiServer.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.uiServer.livenessProbe.failureThreshold }}
+          readinessProbe:
+            httpGet:
+              path: /status
+              port: {{ .Values.uiServer.port }}
+            initialDelaySeconds: {{ .Values.uiServer.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.uiServer.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.uiServer.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.uiServer.readinessProbe.failureThreshold }}
+          {{ template "uiServer.resources" . }}
+      restartPolicy: Always
