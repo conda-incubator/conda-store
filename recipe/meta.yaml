@@ -76,7 +76,7 @@ outputs:
         - __osx    # [osx]
         - __win    # [win]
         - conda-pack
-        - conda-lock
+        - conda-lock <3.0.0
         - constructor
         - fastapi
         - filelock
