@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
 
+import os
 import asyncio
 import datetime
 import pathlib
@@ -243,7 +244,9 @@ def test_set_conda_prefix_permissions(tmp_path, conda_store, simple_conda_lock):
         uid=None,
         gid=None,
     )
-    assert "no changes for permissions of conda_prefix" in context.stdout.getvalue()
+
+    stats = os.stat(conda_prefix)
+    assert oct(stats.st_mode & 0o777) == "0o755"
     assert "no changes for gid and uid of conda_prefix" in context.stdout.getvalue()
 
 
