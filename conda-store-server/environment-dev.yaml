@@ -30,7 +30,7 @@ dependencies:
   - twine>=5.0.0
   - pkginfo>=1.10 # needed to support metadata 2.3
   # installer
-  - constructor # runtime dep but must be conda installed
+  - constructor<=3.11 # runtime dep but must be conda installed
   # linting
   - pre_commit
   - pip
