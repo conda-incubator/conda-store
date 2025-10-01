@@ -16,6 +16,7 @@ dependencies:
   - python >=3.10,<3.13
   # conda builds
   - conda
+  - mamba <2.3
   # dev dependencies
   - aiohttp>=3.8.1
   - pytest
