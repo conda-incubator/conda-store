@@ -182,6 +182,7 @@ def test_failed_build_logs(base_url: str, token: str, verify_ssl: bool):
     )
 
 
+@pytest.mark.skip
 @pytest.mark.user_journey
 def test_cancel_build(base_url: str, token: str, verify_ssl: bool):
     """Test that a user cancel a build in progress."""

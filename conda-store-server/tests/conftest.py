@@ -194,7 +194,7 @@ def testclient_api_server(conda_store_api_server):
 @pytest.fixture
 def authenticate(testclient):
     response = testclient.post(
-        "/login/", json={"username": "username", "password": "password"}
+        "/login/", json={"username": "username", "password": "password"}, timeout=10
     )
     assert response.status_code == 200
 

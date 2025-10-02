@@ -84,7 +84,7 @@ services:
       POSTGRES_DB: conda-store
 
   redis:
-    image: bitnami/redis
+    image: bitnamilegacy/redis
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
