@@ -188,7 +188,7 @@ from the release that the deprecation notice first appears in.
 ##### 2. Remove the endpoint
 
 Once we have reached the `Sunset` date from step (1), the API endpoint may be fully
-removed. At this stage, users should expect to recieve a `404 Not Found` error for the
+removed. At this stage, users should expect to receive a `404 Not Found` error for the
 endpoint.
 
 ### Python API

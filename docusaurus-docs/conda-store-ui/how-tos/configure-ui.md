@@ -48,7 +48,7 @@ In your HTML file, add the following **before** loading the react app :
 
 ## Docker compose configuration
 
-By default, Docker compose uses the latest release of conda-store-server, but there could be cases where a devloper wishes to test against a different versions, such as a release candidate.
+By default, Docker compose uses the latest release of conda-store-server, but there could be cases where a developer wishes to test against a different versions, such as a release candidate.
 
 Adding the `CONDA_STORE_SERVER_VERSION` variable to the `.env` file will allow overriding this default and setting whichever version of conda-store-server is desired.
 

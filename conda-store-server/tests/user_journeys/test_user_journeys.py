@@ -65,7 +65,7 @@ def test_admin_login_and_delete_shared_environment(
     """Test that an admin can login and create/delete an env in a shared namespace."""
     api = utils.API(base_url=base_url, token=token, verify_ssl=verify_ssl)
 
-    # Create a shared namespace; default permissions for namepace/environment
+    # Create a shared namespace; default permissions for namespace/environment
     # */* is admin
     namespace = api.create_namespace().json()["data"]["name"]
     environment = api.create_environment(
@@ -90,7 +90,7 @@ def test_user_login_and_create_shared_environment(
     """Test that a user can login and create an environment in a shared namespace."""
     api = utils.API(base_url=base_url, token=token, verify_ssl=verify_ssl)
 
-    # Create a shared namespace; default permissions for namepace/environment
+    # Create a shared namespace; default permissions for namespace/environment
     # */* is admin
     namespace = api.create_namespace().json()["data"]["name"]
 

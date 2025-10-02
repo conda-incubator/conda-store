@@ -29,7 +29,7 @@ The conda-store roadmap for the remaining part of 2024 into 2025 will revolve ar
     - 🏃 ~40% of environment build time is due to package download and extraction, which is carried out serially to avoid collisions when multiple concurrent requests for the same package are made. Implement a locking mechanism to allow concurrent downloads, reducing this to just the bare network time required to download the required assets.
         - 🏃 Currently, simultaneous calls to conda create result in corrupted packages and cached repo data ([#13037](https://github.com/conda/conda/issues/13037)). Support for locking the repodata cache was added by the community recently ([#12996](https://github.com/conda/conda/pull/12996)), but full locking support must be added to prevent conflicts/data corruption from other concurrent conda operations.
             - ⬆️📪 Add native conda support for locking to allow parallel conda commands on a single machine ([#13055](https://github.com/conda/conda/issues/13055)).
-- 🏃 Implement a plugin system for critical conda-store functions including locking, solving, and package managment, paving the way for slow code paths to be replaced with faster alternatives. ([#929](https://github.com/conda-incubator/conda-store/issues/929))
+- 🏃 Implement a plugin system for critical conda-store functions including locking, solving, and package management, paving the way for slow code paths to be replaced with faster alternatives. ([#929](https://github.com/conda-incubator/conda-store/issues/929))
 
 ## Storage / Backup and Restore
 
