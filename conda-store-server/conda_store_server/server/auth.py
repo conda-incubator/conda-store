@@ -7,7 +7,7 @@ import datetime
 import re
 import secrets
 from collections import defaultdict
-from typing import Iterable, Optional, Set
+from typing import Iterable, Set
 
 import jwt
 import requests
@@ -517,7 +517,7 @@ form.addEventListener('submit', loginHandler);
     def get_login_method(
         self,
         request: Request,
-        next: Optional[str] = None,
+        next: str | None = None,
         templates=Depends(dependencies.get_templates),
     ):
         request.session["next"] = next
@@ -541,7 +541,7 @@ form.addEventListener('submit', loginHandler);
         self,
         request: Request,
         response: Response,
-        next: Optional[str] = None,
+        next: str | None = None,
         templates=Depends(dependencies.get_templates),
     ):
         authentication_token = await self.authenticate(request)
@@ -566,7 +566,7 @@ form.addEventListener('submit', loginHandler);
         )
         return response
 
-    def post_logout_method(self, request: Request, next: Optional[str] = None):
+    def post_logout_method(self, request: Request, next: str | None = None):
         redirect_url = next or request.base_url
         response = RedirectResponse(redirect_url, status_code=303)
         response.set_cookie(self.cookie_name, "", domain=self.cookie_domain, expires=0)
@@ -757,7 +757,7 @@ class GenericOAuthAuthentication(Authentication):
     def get_login_method(
         self,
         request: Request,
-        next: Optional[str] = None,
+        next: str | None = None,
         templates=Depends(dependencies.get_templates),
     ):
         request.session["next"] = next

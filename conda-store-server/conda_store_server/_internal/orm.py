@@ -10,7 +10,7 @@ import pathlib
 import shutil
 import sys
 from functools import partial
-from typing import List, Optional
+from typing import List
 
 from sqlalchemy import (
     JSON,
@@ -75,7 +75,7 @@ class Namespace(Base):
 
     deleted_on: Mapped[datetime.datetime] = mapped_column(DateTime, default=None)
 
-    metadata_: Mapped[Optional[dict]] = mapped_column(JSON, default=dict, nullable=True)
+    metadata_: Mapped[dict | None] = mapped_column(JSON, default=dict, nullable=True)
 
     role_mappings: Mapped[List["NamespaceRoleMapping"]] = relationship(
         "NamespaceRoleMapping", back_populates="namespace"

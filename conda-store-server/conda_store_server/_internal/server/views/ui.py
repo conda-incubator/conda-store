@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
 
-from typing import Optional
 
 import yaml
 from fastapi import APIRouter, Depends, Request
@@ -53,7 +52,7 @@ async def ui_create_get_environment(
 @router_ui.get("/")
 async def ui_list_environments(
     request: Request,
-    search: Optional[str] = None,
+    search: str | None = None,
     templates=Depends(dependencies.get_templates),
     conda_store=Depends(dependencies.get_conda_store),
     auth=Depends(dependencies.get_auth),
