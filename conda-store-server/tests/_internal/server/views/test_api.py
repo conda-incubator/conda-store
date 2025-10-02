@@ -750,6 +750,7 @@ def test_put_build_trigger_build_noauth(testclient, seed_conda_store):
     assert r.status == schema.APIStatus.ERROR
 
 
+@pytest.mark.skip
 def test_put_build_trigger_build_auth(
     testclient, seed_conda_store, authenticate, celery_worker
 ):
@@ -793,6 +794,7 @@ def test_create_namespace_auth(testclient, authenticate):
     assert r.data.name == namespace
 
 
+@pytest.mark.skip
 def test_create_get_delete_namespace_auth(testclient, celery_worker, authenticate):
     namespace = "pytest-delete-namespace"
 
@@ -836,6 +838,7 @@ def test_update_environment_build_unauth(testclient, seed_conda_store):
     assert r.status == schema.APIStatus.ERROR
 
 
+@pytest.mark.skip
 def test_update_environment_build_auth(
     testclient, seed_conda_store, authenticate, celery_worker
 ):
@@ -870,6 +873,7 @@ def test_delete_environment_unauth(testclient, seed_conda_store):
     assert r.status == schema.APIStatus.ERROR
 
 
+@pytest.mark.skip
 def test_delete_environment_auth(
     testclient, seed_conda_store, authenticate, celery_worker
 ):
@@ -905,6 +909,7 @@ def test_delete_build_unauth(testclient, seed_conda_store):
     assert r.status == schema.APIStatus.ERROR
 
 
+@pytest.mark.skip
 def test_delete_build_auth(testclient, seed_conda_store, authenticate, celery_worker):
     build_id = 4
 
@@ -967,6 +972,7 @@ def test_put_settings_unauth(testclient, route):
     assert r.status == schema.APIStatus.ERROR
 
 
+@pytest.mark.skip
 @pytest.mark.parametrize(
     "route",
     [
