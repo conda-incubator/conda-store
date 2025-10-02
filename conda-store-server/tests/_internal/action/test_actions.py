@@ -2,9 +2,9 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
 
-import os
 import asyncio
 import datetime
+import os
 import pathlib
 import re
 import sys

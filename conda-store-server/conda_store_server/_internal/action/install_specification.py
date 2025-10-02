@@ -2,8 +2,9 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
 
-import yaml
 import pathlib
+
+import yaml
 
 from conda_store_server._internal import action, schema
 
