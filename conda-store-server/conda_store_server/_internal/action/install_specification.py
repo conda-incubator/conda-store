@@ -2,8 +2,9 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
 
-import json
 import pathlib
+
+import yaml
 
 from conda_store_server._internal import action, schema
 
@@ -17,7 +18,9 @@ def action_install_specification(
 ):
     environment_filename = pathlib.Path.cwd() / "environment.yaml"
     with environment_filename.open("w") as f:
-        json.dump(specification.model_dump(), f)
+        spec = specification.model_dump()
+        spec_filtered = {k: v for k, v in spec.items() if v is not None}
+        yaml.dump(spec_filtered, f)
 
     command = [
         conda_command,
