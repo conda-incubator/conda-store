@@ -91,7 +91,7 @@ jobs:
 
       - name: "Unit tests ✅"
         run: |
-          python -m pytest -m "not extended_prefix and not user_journey" --cov=conda_store_server tests
+          python -m pytest -m "not extended_prefix and not user_journey " --cov=conda_store_server tests
 
       - name: "Coverage report"
         run: |

@@ -13,9 +13,10 @@ channels:
   - conda-forge
 dependencies:
   # must be kept in sync with the min supported version in pyproject.toml
-  - python >=3.10
+  - python >=3.10,<3.13
   # conda builds
   - conda
+  - mamba <2.3
   # dev dependencies
   - aiohttp>=3.8.1
   - pytest
@@ -30,7 +31,7 @@ dependencies:
   - twine>=5.0.0
   - pkginfo>=1.10 # needed to support metadata 2.3
   # installer
-  - constructor # runtime dep but must be conda installed
+  - constructor<=3.11 # runtime dep but must be conda installed
   # linting
   - pre_commit
   - pip
