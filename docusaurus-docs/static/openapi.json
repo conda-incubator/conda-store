@@ -200,6 +200,7 @@
       "APIGetSetting": {
         "properties": {
           "data": {
+            "additionalProperties": true,
             "title": "Data",
             "type": "object"
           },
@@ -277,6 +278,7 @@
         "properties": {
           "data": {
             "additionalProperties": {
+              "additionalProperties": true,
               "type": "object"
             },
             "title": "Data",
@@ -890,6 +892,7 @@
       "Body_api_update_namespace_api_v1_namespace__namespace___put": {
         "properties": {
           "metadata": {
+            "additionalProperties": true,
             "title": "Metadata",
             "type": "object"
           },
@@ -1210,6 +1213,7 @@
           "metadata_": {
             "anyOf": [
               {
+                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -1290,6 +1294,7 @@
             "type": "string"
           },
           "spec": {
+            "additionalProperties": true,
             "title": "Spec",
             "type": "object"
           }
@@ -3560,6 +3565,7 @@
           "content": {
             "application/json": {
               "schema": {
+                "additionalProperties": true,
                 "title": "Metadata",
                 "type": "object"
               }
@@ -4123,6 +4129,7 @@
           "content": {
             "application/json": {
               "schema": {
+                "additionalProperties": true,
                 "title": "Data",
                 "type": "object"
               }
@@ -4234,6 +4241,7 @@
           "content": {
             "application/json": {
               "schema": {
+                "additionalProperties": true,
                 "title": "Data",
                 "type": "object"
               }
@@ -4345,6 +4353,7 @@
           "content": {
             "application/json": {
               "schema": {
+                "additionalProperties": true,
                 "title": "Data",
                 "type": "object"
               }
