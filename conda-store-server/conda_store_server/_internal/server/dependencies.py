@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
 
-from typing import Optional, TypedDict
+from typing import TypedDict
 
 from fastapi import Depends, Query, Request
 
@@ -65,8 +65,8 @@ class PaginatedArgs(TypedDict):
 
 def get_paginated_args(
     page: int = 1,
-    order: Optional[str] = None,
-    size: Optional[int] = None,
+    order: str | None = None,
+    size: int | None = None,
     sort_by: list[str] = Query([]),
     server=Depends(get_server),
 ) -> PaginatedArgs:
