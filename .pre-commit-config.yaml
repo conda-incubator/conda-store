@@ -19,7 +19,7 @@ exclude: |
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
-    rev: "v0.11.4"
+    rev: "v0.13.3"
     hooks:
       - id: ruff
         exclude: "examples|tests/assets"
@@ -28,7 +28,7 @@ repos:
         exclude: "examples|tests/assets"
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: trailing-whitespace
       - id: check-added-large-files
@@ -37,7 +37,7 @@ repos:
         exclude: ".python-version-default"
 
   - repo: https://github.com/biomejs/pre-commit
-    rev: "v2.0.0-beta.1"
+    rev: "v2.2.5"
     hooks:
     - id: biome-check
       additional_dependencies: ["@biomejs/biome@1.9.4"]

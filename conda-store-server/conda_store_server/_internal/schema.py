@@ -7,7 +7,7 @@ import enum
 import os
 import re
 import sys
-from typing import Annotated, Any, Dict, List, Optional, Union
+from typing import Annotated, Any, Dict, List, Union
 
 from conda_lock.lockfile.v1.models import Lockfile
 from pydantic import (
@@ -38,7 +38,7 @@ class StorageBackend(enum.Enum):
 class CondaChannel(BaseModel):
     id: int
     name: str
-    last_update: Optional[datetime.datetime] = None
+    last_update: datetime.datetime | None = None
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -52,10 +52,10 @@ class CondaPackageBuild(BaseModel):
 class CondaPackage(BaseModel):
     id: int
     channel: CondaChannel
-    license: Optional[str] = None
+    license: str | None = None
     name: str
     version: str
-    summary: Optional[str] = None
+    summary: str | None = None
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -81,7 +81,7 @@ class NamespaceRoleMappingV2(BaseModel):
 class Namespace(BaseModel):
     id: int
     name: Annotated[str, StringConstraints(pattern=f"^[{ALLOWED_CHARACTERS}]+$")]  # noqa: F722
-    metadata_: Optional[Dict[str, Any]] = None
+    metadata_: Dict[str, Any] | None = None
     role_mappings: List[NamespaceRoleMapping] = []
     model_config = ConfigDict(from_attributes=True)
 
@@ -131,15 +131,15 @@ class BuildArtifact(BaseModel):
 class Build(BaseModel):
     id: int
     environment_id: int
-    specification: Optional[Specification] = None
-    packages: Optional[List[CondaPackage]] = None
+    specification: Specification | None = None
+    packages: List[CondaPackage] | None = None
     status: BuildStatus
-    status_info: Optional[str] = None
+    status_info: str | None = None
     size: int
     scheduled_on: datetime.datetime
-    started_on: Optional[datetime.datetime] = None
-    ended_on: Optional[datetime.datetime] = None
-    build_artifacts: Optional[List[BuildArtifact]] = None
+    started_on: datetime.datetime | None = None
+    ended_on: datetime.datetime | None = None
+    build_artifacts: List[BuildArtifact] | None = None
     model_config = ConfigDict(from_attributes=True, use_enum_values=True)
 
 
@@ -148,9 +148,9 @@ class Environment(BaseModel):
     namespace: Namespace
     name: str
     current_build_id: int
-    current_build: Optional[Build] = None
+    current_build: Build | None = None
 
-    description: Optional[str] = None
+    description: str | None = None
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -167,19 +167,19 @@ class Settings(BaseModel):
         metadata={"global": True},
     )
 
-    default_uid: Optional[int] = Field(
+    default_uid: int | None = Field(
         None if sys.platform == "win32" else os.getuid(),
         description="default uid to assign to built environments",
         metadata={"global": True},
     )
 
-    default_gid: Optional[int] = Field(
+    default_gid: int | None = Field(
         None if sys.platform == "win32" else os.getgid(),
         description="default gid to assign to built environments",
         metadata={"global": True},
     )
 
-    default_permissions: Optional[str] = Field(
+    default_permissions: str | None = Field(
         None if sys.platform == "win32" else "775",
         description="default file permissions to assign to built environments",
         metadata={"global": True},
@@ -317,10 +317,10 @@ CondaDep = Annotated[str, AfterValidator(lambda v: check_dependencies(v))]
 class CondaSpecification(BaseModel):
     channels: List[str] = []
     dependencies: List[CondaDep | CondaSpecificationPip] = []
-    description: Optional[str] = ""
+    description: str | None = ""
     name: Annotated[str, StringConstraints(pattern=f"^[{ALLOWED_CHARACTERS}]+$")]
-    prefix: Optional[str] = None
-    variables: Optional[Dict[str, Union[str, int]]] = None
+    prefix: str | None = None
+    variables: Dict[str, Union[str, int]] | None = None
     model_config = ConfigDict(from_attributes=True)
 
     @classmethod
@@ -362,7 +362,7 @@ class CondaSpecification(BaseModel):
 
 class LockfileSpecification(BaseModel):
     name: Annotated[str, StringConstraints(pattern=f"^[{ALLOWED_CHARACTERS}]+$")]  # noqa: F722
-    description: Optional[str] = ""
+    description: str | None = ""
     lockfile: Lockfile
     model_config = ConfigDict(from_attributes=True)
 
@@ -441,8 +441,8 @@ class APIStatus(enum.Enum):
 
 class APIResponse(BaseModel):
     status: APIStatus
-    data: Optional[Any] = None
-    message: Optional[str] = None
+    data: Any | None = None
+    message: str | None = None
 
 
 class APIPaginatedResponse(APIResponse):
@@ -452,16 +452,16 @@ class APIPaginatedResponse(APIResponse):
 
 
 class APICursorPaginatedResponse(BaseModel):
-    data: Optional[Any] = None
+    data: Any | None = None
     status: APIStatus
-    message: Optional[str] = None
-    cursor: Optional[str] = None
+    message: str | None = None
+    cursor: str | None = None
     count: int  # the total number of results available to fetch
 
 
 class APIAckResponse(BaseModel):
     status: APIStatus
-    message: Optional[str] = None
+    message: str | None = None
 
 
 # GET /api/v1
@@ -479,7 +479,7 @@ class APIGetPermissionData(BaseModel):
     primary_namespace: str
     entity_permissions: Dict[str, List[str]]
     entity_roles: Dict[str, List[str]]
-    expiration: Optional[datetime.datetime] = None
+    expiration: datetime.datetime | None = None
 
 
 class APIGetPermission(APIResponse):

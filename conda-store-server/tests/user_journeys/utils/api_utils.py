@@ -8,7 +8,7 @@ import json
 import time
 import uuid
 from enum import Enum
-from typing import Any, Callable, Dict, Optional, Union
+from typing import Any, Callable, Dict, Union
 
 import requests
 
@@ -203,7 +203,7 @@ class API:
             f"api/v1/environment/{namespace}/{environment_name}", method="DELETE"
         )
 
-    def list_environments(self, namespace: Optional[str] = None):
+    def list_environments(self, namespace: str | None = None):
         """List the environments in the given namespace.
 
         Parameters
@@ -259,8 +259,8 @@ class API:
 
     def get_builds(
         self,
-        environment: Optional[str] = None,
-        namespace: Optional[str] = None,
+        environment: str | None = None,
+        namespace: str | None = None,
     ) -> dict[str, Any]:
         """Get information about an environment.
 
