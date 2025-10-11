@@ -74,27 +74,27 @@ def append_to_logs(db: Session, conda_store, build, logs: typing.Union[str, byte
 
 def set_build_started(db: Session, build: orm.Build):
     build.status = schema.BuildStatus.BUILDING
-    build.started_on = datetime.datetime.utcnow()
+    build.started_on = datetime.datetime.now(tz=datetime.timezone.utc)
     db.commit()
 
 
 def set_build_failed(db: Session, build: orm.Build, status_info: str | None = None):
     build.status = schema.BuildStatus.FAILED
     build.status_info = status_info
-    build.ended_on = datetime.datetime.utcnow()
+    build.ended_on = datetime.datetime.now(tz=datetime.timezone.utc)
     db.commit()
 
 
 def set_build_canceled(db: Session, build: orm.Build, status_info: str | None = None):
     build.status = schema.BuildStatus.CANCELED
     build.status_info = status_info
-    build.ended_on = datetime.datetime.utcnow()
+    build.ended_on = datetime.datetime.now(tz=datetime.timezone.utc)
     db.commit()
 
 
 def set_build_completed(db: Session, conda_store, build: orm.Build):
     build.status = schema.BuildStatus.COMPLETED
-    build.ended_on = datetime.datetime.utcnow()
+    build.ended_on = datetime.datetime.now(tz=datetime.timezone.utc)
 
     directory_build_artifact = orm.BuildArtifact(
         build_id=build.id,
@@ -158,7 +158,10 @@ or error in conda-store
             and str(build.id) not in build_active_tasks
             and (
                 build.started_on
-                < (datetime.datetime.utcnow() - datetime.timedelta(seconds=5))
+                < (
+                    datetime.datetime.now(tz=datetime.timezone.utc)
+                    - datetime.timedelta(seconds=5)
+                )
             )
         ):
             conda_store.log.warning(
@@ -190,7 +193,7 @@ def build_conda_environment(db: Session, conda_store, build):
             db,
             conda_store,
             build,
-            f"starting build of conda environment {datetime.datetime.utcnow()} UTC\n",
+            f"starting build of conda environment {datetime.datetime.now(tz=datetime.timezone.utc)} UTC\n",
         )
 
         settings = conda_store.get_settings(
@@ -333,7 +336,7 @@ def build_conda_environment(db: Session, conda_store, build):
 
 
 def solve_conda_environment(db: Session, conda_store, solve: orm.Solve):
-    solve.started_on = datetime.datetime.utcnow()
+    solve.started_on = datetime.datetime.now(tz=datetime.timezone.utc)
     db.commit()
 
     _, locker = conda_store.lock_plugin()
@@ -349,7 +352,7 @@ def solve_conda_environment(db: Session, conda_store, solve: orm.Solve):
         solve_id=solve.id,
     )
 
-    solve.ended_on = datetime.datetime.utcnow()
+    solve.ended_on = datetime.datetime.now(tz=datetime.timezone.utc)
     db.commit()
 
 
