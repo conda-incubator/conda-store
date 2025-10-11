@@ -68,7 +68,7 @@ class CondaStore:
 
         with self.get_db() as db:
             # setup the setting object with a session. Once this block finishes
-            # excuting, the db session will close. By default in sqlalchemy, this
+            # executing, the db session will close. By default in sqlalchemy, this
             # will release the connection, however, the connection may be restablished.
             # ref: https://docs.sqlalchemy.org/en/20/orm/session_basics.html#closing
             self._settings = settings.Settings(

@@ -58,7 +58,7 @@ variables:
     `export CONDA_STORE_TOKEN='my_token_value'`.
 
 In order to run against a host with self signed certs, you may be required to
-diable SSL verification. To disable SSL verification set the environment
+disable SSL verification. To disable SSL verification set the environment
 variable `export CONDA_STORE_TEST_VERIFY_SSL=0`. By default, SSL verification
 is enabled.
 

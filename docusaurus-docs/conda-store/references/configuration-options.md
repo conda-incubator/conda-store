@@ -324,7 +324,7 @@ the login form.
 
 ## `conda_store_server.server.auth.DummyAuthentication`
 
-Has all the configuration settings of `Authetication`. This class is
+Has all the configuration settings of `Authentication`. This class is
 modeled after the [JupyterHub DummyAuthentication
 class](https://github.com/jupyterhub/jupyterhub/blob/9f3663769e96d2e4f665fd6ef485c101704c4645/jupyterhub/auth.py#L1142).
 

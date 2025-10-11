@@ -861,7 +861,7 @@ async def api_get_specification(
 ):
     with conda_store.get_db() as db:
         # GET is used for the solve to make this endpoint easily
-        # cachable
+        # cacheable
         if pip:
             conda.append({"pip": pip})
 
@@ -1081,7 +1081,7 @@ async def api_put_build_cancel(
             raise HTTPException(
                 status_code=409,
                 detail=(
-                    "conda-store celery broker does not support task cancelation. "
+                    "conda-store celery broker does not support task cancellation. "
                     "Use redis or rabbitmq message queues. "
                     "See docs for a more detailed explanation"
                 ),

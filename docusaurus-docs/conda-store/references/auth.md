@@ -11,7 +11,7 @@ This page is in active development, content may be incomplete or inaccurate.
 ## Authentication Model
 
 Authentication was modeled after JupyterHub for implementation. There
-is a base class `conda_store_server._internal.server.auth.Authenticaiton`. If
+is a base class `conda_store_server._internal.server.auth.Authentication`. If
 you are extending and using a form of OAuth2 use the
 `conda_store_server._internal.server.auth.GenericOAuthAuthentication`. Similar
 to JupyterHub all configuration is modified via

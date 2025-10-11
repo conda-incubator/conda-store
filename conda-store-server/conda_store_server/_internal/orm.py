@@ -157,7 +157,7 @@ class NamespaceRoleMappingV2(Base):
 
 
 class Specification(Base):
-    """The specifiction for a given conda environment"""
+    """The specification for a given conda environment"""
 
     __tablename__ = "specification"
 
@@ -535,17 +535,17 @@ class CondaChannel(Base):
                First step :  we insert all the new conda_package rows
                Second step : we insert all the new conda_package_builds rows
 
-               These steps are detailled below.
+               These steps are detailed below.
             """
 
             # package_data contains all the data for the iterated architecture.
             # Each dict represents a conda_package_build and also contains
-            # thge data of the conda_package
+            # the data of the conda_package
             packages_data = list(
                 repodata["architectures"][architecture]["packages"].values()
             )
 
-            # First, we retrieve all the pairs "package name - pacakge version"
+            # First, we retrieve all the pairs "package name - package version"
             # in the DB. This represents all the existing packages.
             existing_packages_keys = [
                 f"{_[0]}-{_[1]}-{self.id}"
