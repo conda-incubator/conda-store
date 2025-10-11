@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "{{ template "condaStore.fullname" . }}-worker"
+  namespace: {{ .Values.global.namespace }}
+  labels:
+{{ include "condaStore.labels" . | nindent 4 }}
+    app: "{{ template "condaStore.fullname" . }}-worker"
+spec:
+  replicas: {{ .Values.worker.replicas }}
+  selector:
+    matchLabels:
+      app: "{{ template "condaStore.fullname" . }}-worker"
+  template:
+    metadata:
+      labels:
+{{ include "condaStore.labels" . | nindent 8 }}
+        app: "{{ template "condaStore.fullname" . }}-worker"
+    spec:
+      containers:
+        - name: "{{ template "condaStore.fullname" . }}-worker"
+          image: "{{ .Values.worker.image.repository }}:{{ .Values.worker.image.tag }}"
+          imagePullPolicy: {{ .Values.worker.image.pullPolicy }}
+          args:
+            - "conda-store-worker"
+            - "--config"
+            - "/etc/conda-store/conda_store_config.py"
+          {{ template "worker.resources" . }}
+          env:
+            - name: POSTGRES_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: conda-store-postgres-secret
+                  key: username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: conda-store-postgres-secret
+                  key: password
+            - name: MINIO_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: conda-store-minio-secret
+                  key: username
+            - name: MINIO_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: conda-store-minio-secret
+                  key: password
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: conda-store-redis-secret
+                  key: password
+          volumeMounts:
+            - name: config
+              mountPath: "/etc/conda-store/"
+              readOnly: true
+            - name: storage
+              mountPath: "/opt/conda-store/"
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
+      restartPolicy: Always
+      volumes:
+        - name: config
+          configMap:
+            name: "{{ template "condaStore.fullname" . }}-worker"
+        - name: storage
+          persistentVolumeClaim:
+            claimName: "{{ template "condaStore.fullname" . }}-worker-claim"
