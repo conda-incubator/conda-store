@@ -88,6 +88,10 @@ Hence, conda-store keeps older versions (also called "builds") of the environmen
 Internally, conda-store handles versions with ✨ symlinking magic ✨, where the environment name points to different environments corresponding to versions.
 :::
 
+## This section is a test
+
+I am adding a test section here to make sure the build process of Netfly for publishing the docs is working as expected. Please don't mind it, this PR will not be merged. 
+
 <!-- Internal links -->
 [conda-concepts-env-creation]: conda-concepts#environment-creation
 [artifacts]: artifacts
