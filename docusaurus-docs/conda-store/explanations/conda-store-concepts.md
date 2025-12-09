@@ -90,7 +90,7 @@ Internally, conda-store handles versions with ✨ symlinking magic ✨, where th
 
 ## This section is a test
 
-I am adding a test section here to make sure the build process of Netfly for publishing the docs is working as expected. Please don't mind it, this PR will not be merged. 
+I am adding a test section here to make sure the build process of Netfly for publishing the docs is working as expected. Please don't mind it, this PR will not be merged.
 
 <!-- Internal links -->
 [conda-concepts-env-creation]: conda-concepts#environment-creation
