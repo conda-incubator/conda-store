@@ -747,7 +747,7 @@ class GenericOAuthAuthentication(Authentication):
     @default("oauth_callback_url")
     def _default_oauth_callback_url(self):
         def _oauth_callback_url(request: Request):
-            return request.url_for("post_login_method")
+            return str(request.url_for("post_login_method"))
 
         return _oauth_callback_url
 
