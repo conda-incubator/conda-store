@@ -4,16 +4,30 @@
 
 import datetime
 import uuid
+from unittest.mock import Mock
 
 import pytest
 from fastapi import Request
+from starlette.datastructures import URL
 
 from conda_store_server.server.auth import (
     Authentication,
     AuthenticationBackend,
+    GenericOAuthAuthentication,
     RBACAuthorizationBackend,
 )
 from conda_store_server.server.schema import AuthenticationToken, Permissions
+
+
+def test_default_oauth_callback_url_is_string():
+    request = Mock(spec=Request)
+    request.url_for.return_value = URL("https://example.com/oauth_callback/")
+
+    authentication = GenericOAuthAuthentication()
+
+    assert authentication.get_oauth_callback_url(request) == (
+        "https://example.com/oauth_callback/"
+    )
 
 
 @pytest.mark.parametrize(
