@@ -214,8 +214,9 @@ For example:
 
 ```py
 class _Private:
-  # everything is private here even without underscores
-  def this_is_also_private(self): pass
+    # everything is private here even without underscores
+    def this_is_also_private(self):
+        pass
 ```
 
 or

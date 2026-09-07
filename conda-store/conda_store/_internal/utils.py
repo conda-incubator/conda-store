@@ -7,12 +7,10 @@ import functools
 import json
 import sys
 
-from typing import Dict, List
-
-from conda_store import exception
 from rich.console import Console
 from rich.table import Table
 
+from conda_store import exception
 
 console = Console()
 error_console = Console(stderr=True, style="bold red")
@@ -30,7 +28,7 @@ def coro(f):
     return wrapper
 
 
-def flatten(d: Dict):
+def flatten(d: dict):
     _d = {}
     for key, value in d.items():
         if isinstance(value, dict):
@@ -41,7 +39,7 @@ def flatten(d: Dict):
     return _d
 
 
-def lookup(d: Dict, key: str):
+def lookup(d: dict, key: str):
     _d = d
     keys = key.split(".")
     for key in keys:
@@ -92,9 +90,9 @@ def output_json(data, **kwargs):
     print(json.dumps(data, **kwargs), end="")
 
 
-def output_table(title: str, columns: Dict[str, str], rows: List[Dict]):
+def output_table(title: str, columns: dict[str, str], rows: list[dict]):
     table = Table(title=title)
-    for column in columns.keys():
+    for column in columns:
         table.add_column(column)
 
     for row in rows:
