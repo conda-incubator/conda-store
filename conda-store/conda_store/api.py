@@ -6,8 +6,6 @@ import datetime
 import math
 import os
 
-from typing import Dict, List
-
 import yarl
 
 from conda_store import exception
@@ -95,7 +93,7 @@ class CondaStoreAPI:
     async def create_token(
         self,
         primary_namespace: str = None,
-        role_bindings: Dict[str, List[str]] = None,
+        role_bindings: dict[str, list[str]] = None,
         expiration: datetime.datetime = None,
     ):
         current_permissions = await self.get_permissions()
@@ -130,7 +128,7 @@ class CondaStoreAPI:
             if response.status != 200:
                 raise CondaStoreAPIError(f"Error deleting namespace {namespace}")
 
-    async def list_environments(self, status: str, artifact: str, packages: List[str]):
+    async def list_environments(self, status: str, artifact: str, packages: list[str]):
         url = self.api_url / "environment"
         if status:
             url = url % {"status": status}
@@ -178,7 +176,7 @@ class CondaStoreAPI:
             return (await response.json())["data"]
 
     async def solve_environment(
-        self, channels: List[str], conda: List[str], pip: List[str]
+        self, channels: list[str], conda: list[str], pip: list[str]
     ):
         async with self.session.get(
             utils.ensure_slash(
@@ -193,7 +191,7 @@ class CondaStoreAPI:
         ) as response:
             return (await response.json())["solve"]
 
-    async def list_builds(self, status: str, artifact: str, packages: List[str]):
+    async def list_builds(self, status: str, artifact: str, packages: list[str]):
         url = self.api_url / "build"
         if status:
             url = url % {"status": status}
