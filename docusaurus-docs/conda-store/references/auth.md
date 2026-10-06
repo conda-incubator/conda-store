@@ -84,9 +84,7 @@ below `c.RBACAuthorizationBackend.role_mappings`.
 
 ```python
 c.RBACAuthorizationBackend.role_mappings = {
-    "viewer": {
-        Permissions.ENVIRONMENT_READ
-    },
+    "viewer": {Permissions.ENVIRONMENT_READ},
     "editor": {
         Permissions.ENVIRONMENT_CREATE,
         Permissions.ENVIRONMENT_READ,
@@ -166,9 +164,7 @@ In addition to the default role bindings the user was authenticated
 via the `authenticate` method and has the following bindings added.
 
 ```python
-{
-    "*/*": {"admin"}
-}
+{"*/*": {"admin"}}
 ```
 
 In total the user has the following bindings.
