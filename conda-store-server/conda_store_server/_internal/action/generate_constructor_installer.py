@@ -63,8 +63,11 @@ def action_generate_constructor_installer(
     pip_dependencies = []
 
     if is_lockfile:
+        from conda.models.channel import Channel
+
         # Adds channels
         channels = [c.url for c in specification.lockfile.metadata.channels]
+        known_channels = {Channel(c).base_url for c in channels}
 
         # Adds dependencies
         for p in specification.lockfile.package:
@@ -81,6 +84,14 @@ def action_generate_constructor_installer(
                 ext = ".tar.bz2" if p.url.endswith(".tar.bz2") else ".conda"
                 build_string = p.url[: -len(ext)].rsplit("-", maxsplit=1)[-1]
                 dependencies.append(f"{p.name}=={p.version}={build_string}")
+
+                # The solve can pick packages from channels the lockfile
+                # metadata doesn't list (e.g. the default conda channels), and a
+                # pinned build is only found in the channel it came from
+                channel = Channel(p.url).base_url
+                if channel not in known_channels:
+                    known_channels.add(channel)
+                    channels.append(channel)
 
     else:
         # Adds channels

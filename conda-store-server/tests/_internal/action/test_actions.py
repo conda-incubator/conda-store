@@ -12,6 +12,7 @@ import tempfile
 from unittest import mock
 
 import pytest
+import yaml
 import yarl
 from celery.result import AsyncResult
 from conda.base.context import context as conda_base_context
@@ -147,6 +148,43 @@ def test_generate_constructor_installer(
 
     assert temp_directory is not None
     temp_directory.cleanup()
+
+
+def test_generate_constructor_installer_lockfile_package_channels(
+    conda_store, simple_conda_lock, tmp_path
+):
+    """Test that the installer can find packages from channels missing in the lockfile metadata."""
+    # The packages in the lockfile come from conda-forge
+    simple_conda_lock["metadata"]["channels"] = [{"url": "main", "used_env_vars": []}]
+    specification = schema.LockfileSpecification.model_validate(
+        {"name": "test", "lockfile": simple_conda_lock}
+    )
+
+    constructs = []
+
+    def read_construct(context, command):
+        if command[0] == "constructor":
+            constructs.append(
+                yaml.safe_load(open(pathlib.Path(command[-1]) / "construct.yaml"))
+            )
+
+    with mock.patch(
+        "conda_store_server._internal.action.generate_constructor_installer.logged_command",
+        side_effect=read_construct,
+    ):
+        generate_constructor_installer.action_generate_constructor_installer(
+            conda_command=conda_store.config.conda_command,
+            specification=specification,
+            installer_dir=tmp_path / "installer_dir",
+            version="1",
+            is_lockfile=True,
+        )
+
+    assert len(constructs) == 1
+    assert constructs[0]["channels"] == [
+        "main",
+        "https://conda.anaconda.org/conda-forge",
+    ]
 
 
 def test_fetch_and_extract_conda_packages(tmp_path, simple_conda_lock):
