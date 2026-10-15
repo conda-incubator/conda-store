@@ -70,7 +70,9 @@ outputs:
       run:
         - alembic
         - celery
-        - conda
+        # conda>=26.9 imports packaging.metadata at load time, which breaks once
+        # conda-lock<3 puts its vendored (older) packaging first on sys.path
+        - conda <26.9
         - conda-docker  # [linux]
         - __linux  # [linux]
         - __osx    # [osx]

@@ -15,7 +15,9 @@ dependencies:
   # must be kept in sync with the min supported version in pyproject.toml
   - python >=3.10,<3.13
   # conda builds
-  - conda
+  # conda>=26.9 imports packaging.metadata at load time, which breaks once
+  # conda-lock<3 puts its vendored (older) packaging first on sys.path
+  - conda <26.9
   - mamba <2.3
   # dev dependencies
   - aiohttp>=3.8.1
