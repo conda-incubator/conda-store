@@ -7,7 +7,7 @@
 		"start": "docusaurus start",
 		"build": "docusaurus build",
 		"swizzle": "docusaurus swizzle",
-		"deploy": "wrangler deploy",
+		"deploy": "wrangler deploy --domain conda.store",
 		"clear": "docusaurus clear",
 		"serve": "docusaurus serve",
 		"write-translations": "docusaurus write-translations",

@@ -109,7 +109,9 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: docusaurus-docs
-          command: deploy
+          # Attaches conda.store (DNS record + TLS certificate) to the Worker.
+          # Only production passes --domain; see wrangler.jsonc.
+          command: deploy --domain conda.store
 
       - name: "Comment preview URL"
         if: ${{ github.event_name == 'pull_request' && steps.preview.outputs.url != '' }}
