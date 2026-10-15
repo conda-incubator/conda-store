@@ -28,6 +28,7 @@ dependencies:
   - pytest-alembic
   - docker-py<=7
   - docker-compose
+  - httpx
   # build dependencies
   - hatch
   - twine>=5.0.0
