@@ -9,7 +9,6 @@ import os
 import sys
 import time
 
-import httpx
 import pytest
 import traitlets
 import yaml
@@ -1253,11 +1252,9 @@ def test_api_list_environments_invalid_query_params(
     seed_conda_store_big,
     authenticate,
 ):
-    """Test that invalid query parameters return 400 status codes."""
+    """Test that invalid query parameters return client error status codes."""
     response = testclient.get("api/v2/environment/?order=foo")
-    with pytest.raises(httpx.HTTPStatusError):
-        response.raise_for_status()
+    assert response.is_client_error
 
     response = testclient.get("api/v2/environment/?sort_by=foo")
-    with pytest.raises(httpx.HTTPStatusError):
-        response.raise_for_status()
+    assert response.is_client_error
