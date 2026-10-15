@@ -1,0 +1,121 @@
+name: "Deploy docs"
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docusaurus-docs/**"
+      - ".github/workflows/deploy_docs.yaml"
+  pull_request:
+    paths:
+      - "docusaurus-docs/**"
+      - ".github/workflows/deploy_docs.yaml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CF_WORKER: conda-store-docs
+
+jobs:
+  docs:
+    name: "Build and deploy"
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: docusaurus-docs
+    steps:
+      - name: "Checkout repository 🛎️"
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: "Set up Node.js"
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          # wrangler 4 requires Node.js >= 22.
+          node-version: 22
+          cache: npm
+          cache-dependency-path: docusaurus-docs/package-lock.json
+
+      - name: "Install dependencies 📦"
+        run: npm ci
+
+      - name: "Build docs"
+        run: npm run build
+
+      - name: "Compute preview alias"
+        id: site
+        env:
+          HEAD_REF: ${{ github.head_ref || github.ref_name }}
+        run: |
+          ALIAS=$(printf '%s' "$HEAD_REF" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | cut -c1-50 | sed -e 's/^-*//' -e 's/-*$//')
+          echo "alias=${ALIAS}" >> "$GITHUB_OUTPUT"
+
+      - name: "Determine deployability"
+        id: candeploy
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+        run: |
+          OK=true
+          if [ -z "${CF_TOKEN}" ] || [ -z "${CF_ACCOUNT}" ]; then
+            OK=false
+            # Fork and Dependabot PRs never see these secrets; on main it means
+            # they have not been configured, which should not go unnoticed.
+            if [ "${{ github.event_name }}" = "pull_request" ]; then
+              echo "::notice::Cloudflare secrets unavailable; skipping preview deploy (build still gates)."
+            else
+              echo "::warning::CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID are not set; skipping production deploy."
+            fi
+          elif [ "${{ github.event_name }}" = "pull_request" ] && [ "${HEAD_REPO}" != "${{ github.repository }}" ]; then
+            OK=false
+            echo "::notice::PR from a fork; skipping preview deploy (build still gates)."
+          fi
+          echo "ok=${OK}" >> "$GITHUB_OUTPUT"
+
+      - name: "Upload preview version to the conda-store-docs Worker"
+        id: preview-deploy
+        if: ${{ github.ref != 'refs/heads/main' && steps.candeploy.outputs.ok == 'true' }}
+        uses: cloudflare/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0 # v4.0.0
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: docusaurus-docs
+          # A brand-new Worker can't accept `versions upload`; seed it with a
+          # one-time `deploy` if it doesn't exist yet.
+          preCommands: npx wrangler deployments list > /dev/null 2>&1 || npx wrangler deploy
+          command: versions upload --preview-alias ${{ steps.site.outputs.alias }}
+
+      - name: "Extract preview URL"
+        id: preview
+        if: ${{ steps.preview-deploy.outcome == 'success' }}
+        env:
+          WRANGLER_OUTPUT: ${{ steps.preview-deploy.outputs.command-output }}
+        run: |
+          URL=$(printf '%s\n' "$WRANGLER_OUTPUT" | grep -Eo 'https://[a-zA-Z0-9-]+\.[a-zA-Z0-9-]+\.workers\.dev' | tail -n1)
+          echo "url=${URL}" >> "$GITHUB_OUTPUT"
+          echo "::notice::Preview URL: ${URL}"
+
+      - name: "Deploy production to the conda-store-docs Worker"
+        if: ${{ github.ref == 'refs/heads/main' && steps.candeploy.outputs.ok == 'true' }}
+        uses: cloudflare/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0 # v4.0.0
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: docusaurus-docs
+          command: deploy
+
+      - name: "Comment preview URL"
+        if: ${{ github.event_name == 'pull_request' && steps.preview.outputs.url != '' }}
+        uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88 # v3.0.5
+        with:
+          header: docs-preview
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          message: |
+            **Docs preview** for `${{ github.event.pull_request.head.ref }}` (via the `${{ env.CF_WORKER }}` Worker): ${{ steps.preview.outputs.url }}

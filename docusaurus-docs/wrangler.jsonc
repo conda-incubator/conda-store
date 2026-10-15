@@ -1,0 +1,20 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	// conda.store docs, built with `npm run build`.
+	// Deploy with `npm run deploy` (or `npx wrangler deploy`).
+	"name": "conda-store-docs",
+	"compatibility_date": "2026-08-01",
+	"assets": {
+		"directory": "./build",
+		// Docusaurus writes each page to `<path>/index.html` and links to it
+		// without a trailing slash, so serve `/<path>` directly and redirect
+		// `/<path>/` to it. This keeps the URLs in sitemap.xml canonical.
+		"html_handling": "drop-trailing-slash",
+		"not_found_handling": "404-page"
+	},
+	// Creates the DNS record and TLS certificate for the domain on deploy.
+	// Needs the conda.store zone in the same Cloudflare account as the Worker,
+	// and no existing DNS record for the hostname.
+	"routes": [{ "pattern": "conda.store", "custom_domain": true }],
+	"preview_urls": true
+}
