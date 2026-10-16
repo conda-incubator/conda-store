@@ -59,7 +59,7 @@ jobs:
       - name: "Determine deployability"
         id: candeploy
         env:
-          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_TOKEN: ${{ secrets.CONDA_STORE_DOCS_CF_TOKEN }}
           CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
         run: |
@@ -71,7 +71,7 @@ jobs:
             if [ "${{ github.event_name }}" = "pull_request" ]; then
               echo "::notice::Cloudflare secrets unavailable; skipping preview deploy (build still gates)."
             else
-              echo "::warning::CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID are not set; skipping production deploy."
+              echo "::warning::CONDA_STORE_DOCS_CF_TOKEN / CLOUDFLARE_ACCOUNT_ID are not set; skipping production deploy."
             fi
           elif [ "${{ github.event_name }}" = "pull_request" ] && [ "${HEAD_REPO}" != "${{ github.repository }}" ]; then
             OK=false
@@ -84,7 +84,7 @@ jobs:
         if: ${{ github.ref != 'refs/heads/main' && steps.candeploy.outputs.ok == 'true' }}
         uses: cloudflare/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0 # v4.0.0
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          apiToken: ${{ secrets.CONDA_STORE_DOCS_CF_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: docusaurus-docs
           # A brand-new Worker can't accept `versions upload`; seed it with a
@@ -106,7 +106,7 @@ jobs:
         if: ${{ github.ref == 'refs/heads/main' && steps.candeploy.outputs.ok == 'true' }}
         uses: cloudflare/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0 # v4.0.0
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          apiToken: ${{ secrets.CONDA_STORE_DOCS_CF_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: docusaurus-docs
           # Attaches conda.store (DNS record + TLS certificate) to the Worker.
