@@ -13,6 +13,23 @@ from conda_store_server import api
 from conda_store_server._internal import action
 
 
+def package_hashes(record) -> tuple[str, str]:
+    """
+    Returns the md5 and sha256 of the package file a prefix record was installed from
+
+    """
+    # conda-meta records carry the package file's hashes from repodata
+    if record.get("md5") and record.get("sha256"):
+        return record.md5, record.sha256
+
+    # mamba writes `package_tarball_full_path` with a `.tar.bz2` extension even
+    # when it downloaded the `.conda` file, so locate the file by its name
+    path = os.path.join(os.path.dirname(record.package_tarball_full_path), record.fn)
+    with open(path, "rb") as f:
+        content = f.read()
+    return hashlib.md5(content).hexdigest(), hashlib.sha256(content).hexdigest()
+
+
 def list_conda_prefix_packages(conda_prefix: pathlib.Path):
     """
     Returns a list of the packages that exist for a given prefix
@@ -24,6 +41,7 @@ def list_conda_prefix_packages(conda_prefix: pathlib.Path):
     prefix_data.load()
 
     for record in prefix_data.iter_records():
+        md5, sha256 = package_hashes(record)
         package = {
             "build": record.build,
             "build_number": record.build_number,
@@ -31,12 +49,8 @@ def list_conda_prefix_packages(conda_prefix: pathlib.Path):
             "depends": list(record.depends),
             "license": record.license,
             "license_family": record.license_family,
-            "md5": hashlib.md5(
-                open(record.package_tarball_full_path, "rb").read()
-            ).hexdigest(),
-            "sha256": hashlib.sha256(
-                open(record.package_tarball_full_path, "rb").read()
-            ).hexdigest(),
+            "md5": md5,
+            "sha256": sha256,
             "name": record.name,
             "size": getattr(record, "size", 0),
             "subdir": record.subdir,

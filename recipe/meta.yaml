@@ -70,7 +70,9 @@ outputs:
       run:
         - alembic
         - celery
-        - conda
+        # conda>=26.9 imports packaging.metadata at load time, which breaks once
+        # conda-lock<3 puts its vendored (older) packaging first on sys.path
+        - conda <26.9
         - conda-docker  # [linux]
         - __linux  # [linux]
         - __osx    # [osx]
@@ -102,7 +104,9 @@ outputs:
         - yarl
         - psycopg2
         - pymysql
-        - psycopg2-binary
+        # Older psycopg2-binary builds declare `psycopg2==2.9` in their pip
+        # metadata, which fails `pip check` once a newer psycopg2 is solved.
+        - psycopg2-binary >=2.9.12
       run_constrained:
         - {{ pin_subpackage('conda-store', min_pin='x.x.x', max_pin='x.x.x') }}
 
