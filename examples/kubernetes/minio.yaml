@@ -45,23 +45,23 @@ spec:
       labels:
         app: minio
     spec:
+      securityContext:
+        # The image runs as uid 1001; make the volume writable by it.
+        fsGroup: 1001
       containers:
         - name: minio
-          image: minio/minio:RELEASE.2021-08-25T00-41-18Z
-          args:
-            - "-c"
-            - "mkdir -p /data/conda-store && /usr/bin/minio server /data"
-          command:
-            - "sh"
+          image: bitnamilegacy/minio:2025.7.23-debian-12-r5
           env:
-            - name: MINIO_ACCESS_KEY
+            - name: MINIO_ROOT_USER
               value: admin
-            - name: MINIO_SECRET_KEY
+            - name: MINIO_ROOT_PASSWORD
               value: password
+            - name: MINIO_DEFAULT_BUCKETS
+              value: conda-store
           ports:
             - containerPort: 9000
           volumeMounts:
-            - mountPath: /data
+            - mountPath: /bitnami/minio/data
               name: minio-claim
       restartPolicy: Always
       volumes:

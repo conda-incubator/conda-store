@@ -53,8 +53,10 @@ RUN printf 'channels: []\n' > /opt/conda/.condarc && \
 
 USER ${user_no}:${user_no}
 
+# conda>=26.9 imports packaging.metadata at load time, which breaks once
+# conda-lock<3 puts its vendored (older) packaging first on sys.path
 RUN mamba create --name ${conda_env_name} \
-    python=${python_version} conda \
+    python=${python_version} "conda<26.9" \
     --channel conda-forge -y && \
     conda clean --force-pkgs-dirs --all -y
 
