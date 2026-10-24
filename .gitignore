@@ -47,6 +47,9 @@ conda-store-server/conda_store_server/_internal/server/static/conda-store-ui/
 .docusaurus
 .cache-loader
 
+# Wrangler (Cloudflare Worker for the docs) local state
+.wrangler
+
 # Docusaurus misc
 .env.local
 .env.development.local

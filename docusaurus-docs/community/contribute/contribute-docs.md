@@ -66,7 +66,9 @@ npm run build
 
 This command generates static content into the `build` directory and can be served using any static contents hosting service.
 
-Currently, conda-store docs are deployed using [Netlify][netlify].
+conda-store docs are deployed to a [Cloudflare Worker][cloudflare-workers-assets] that serves the `build` directory as static assets.
+The [`deploy_docs.yaml`][deploy-docs-workflow] workflow deploys every push to `main` to [conda.store](https://conda.store), and uploads a preview version for each pull request opened from a branch of this repository.
+The preview URL is posted as a comment on the pull request.
 
 
 <!-- External links -->
@@ -77,5 +79,6 @@ Currently, conda-store docs are deployed using [Netlify][netlify].
 [nebari-style-guide-capitalization]: https://www.nebari.dev/docs/community/style-guide#capitalization
 [google-style-guide]: https://developers.google.cn/style
 [nodejs]: https://nodejs.org/en
-[netlify]: https://www.netlify.com
+[cloudflare-workers-assets]: https://developers.cloudflare.com/workers/static-assets/
+[deploy-docs-workflow]: https://github.com/conda-incubator/conda-store/blob/main/.github/workflows/deploy_docs.yaml
 [cs-github]: https://github.com/conda-incubator/conda-store

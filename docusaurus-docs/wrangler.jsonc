@@ -1,0 +1,22 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	// conda.store docs, built with `npm run build`.
+	// Deploy to production with `npm run deploy`.
+	"name": "conda-store-docs",
+	"compatibility_date": "2026-08-01",
+	"assets": {
+		"directory": "./build",
+		// Docusaurus writes each page to `<path>/index.html` and links to it
+		// without a trailing slash, so serve `/<path>` directly and redirect
+		// `/<path>/` to it. This keeps the URLs in sitemap.xml canonical.
+		"html_handling": "drop-trailing-slash",
+		"not_found_handling": "404-page"
+	},
+	// The conda.store custom domain is not set here: it is passed with
+	// `--domain conda.store` by `npm run deploy` and the production deploy in
+	// CI. Wrangler takes over any existing DNS record for a custom domain
+	// without asking in CI, so keeping it out of this file stops the one-time
+	// `wrangler deploy` that seeds the Worker for PR previews from pointing
+	// conda.store at a PR build.
+	"preview_urls": true
+}
