@@ -9,13 +9,11 @@ import re
 import tempfile
 import time
 
-from typing import List
-
 import click
+from ruamel.yaml import YAML
 
 from conda_store import __version__, api, exception
 from conda_store._internal import runner, utils
-from ruamel.yaml import YAML
 
 
 async def parse_build(conda_store_api: api.CondaStoreAPI, uri: str):
@@ -115,7 +113,7 @@ async def get_permissions(ctx):
 )
 @click.pass_context
 @utils.coro
-async def get_token(ctx, namespace: str, expiration: int, permission: List[str]):
+async def get_token(ctx, namespace: str, expiration: int, permission: list[str]):
     role_bindings = {}
     for p in permission:
         namespace_name, roles = p.split(":")
@@ -221,13 +219,16 @@ async def wait_environment(ctx, uri: str, timeout: int, interval: int, artifact:
                 return
             elif artifact == "build" and build["status"] == "FAILED":
                 raise exception.CondaStoreError(f"Build {build_id} failed")
-            elif artifact == "lockfile" and "LOCKFILE" in build_artifact_types:
-                return
-            elif artifact == "yaml" and "YAML" in build_artifact_types:
-                return
-            elif artifact == "archive" and "CONDA_PACK" in build_artifact_types:
-                return
-            elif artifact == "docker" and "DOCKER_MANIFEST" in build_artifact_types:
+            elif (
+                artifact == "lockfile"
+                and "LOCKFILE" in build_artifact_types
+                or artifact == "yaml"
+                and "YAML" in build_artifact_types
+                or artifact == "archive"
+                and "CONDA_PACK" in build_artifact_types
+                or artifact == "docker"
+                and "DOCKER_MANIFEST" in build_artifact_types
+            ):
                 return
             await asyncio.sleep(interval)
 
@@ -388,7 +389,7 @@ async def list_namespace(ctx, output: str):
 )
 @click.pass_context
 @utils.coro
-async def list_build(ctx, output: str, status: str, artifact: str, package: List[str]):
+async def list_build(ctx, output: str, status: str, artifact: str, package: list[str]):
     async with ctx.obj["CONDA_STORE_API"] as conda_store:
         builds = await conda_store.list_builds(
             status=status,
@@ -444,7 +445,7 @@ async def list_build(ctx, output: str, status: str, artifact: str, package: List
 @click.pass_context
 @utils.coro
 async def list_environment(
-    ctx, output: str, status: str, artifact: str, package: List[str]
+    ctx, output: str, status: str, artifact: str, package: list[str]
 ):
     async with ctx.obj["CONDA_STORE_API"] as conda_store:
         builds = await conda_store.list_environments(
