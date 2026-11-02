@@ -69,27 +69,28 @@ alembic revision --autogenerate -m "description of your changes"
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = 'abcdef01234567'
-down_revision = '987654321f0edc'
+revision = "abcdef01234567"
+down_revision = "987654321f0edc"
 branch_labels = None
 depends_on = None
+
 
 def upgrade():
 
     # operations to modify the database structure
     # ...
     op.create_table(
-        'new_table',
-        Column('id', INTEGER, primary_key=True),
-        Column('field1', VARCHAR(50), nullable=False),
-        Column('field2', INTEGER),
-        Column('timestamp', TIMESTAMP, server_default=func.now())
+        "new_table",
+        Column("id", INTEGER, primary_key=True),
+        Column("field1", VARCHAR(50), nullable=False),
+        Column("field2", INTEGER),
+        Column("timestamp", TIMESTAMP, server_default=func.now()),
     )
     # ...
 
-    op.execute('''INSERT INTO new_table (field1, field2)
+    op.execute("""INSERT INTO new_table (field1, field2)
                   SELECT field1, field2
-                  FROM old_table''')
+                  FROM old_table""")
 
     # other operations to modify the database structure
     # ...
@@ -97,8 +98,7 @@ def upgrade():
 
 def downgrade():
 
-    op.drop_table('new_table')
-
+    op.drop_table("new_table")
 ```
 
 - Once you're sure about the changes generated, you can apply them by running :

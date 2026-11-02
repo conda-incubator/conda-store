@@ -8,8 +8,6 @@ import shlex
 import subprocess
 import tarfile
 
-from typing import List
-
 from conda_store import api
 from conda_store.exception import CondaStoreError
 
@@ -18,7 +16,7 @@ async def run_build(
     conda_store_api: api.CondaStoreAPI,
     directory: str,
     build_id: int,
-    command: List[str],
+    command: list[str],
     artifact="archive",
 ):
     if artifact == "archive":
@@ -31,7 +29,7 @@ async def run_build_archive(
     conda_store_api: api.CondaStoreAPI,
     conda_prefix: str,
     build_id: int,
-    command: List[str],
+    command: list[str],
 ):
     activate = os.path.join(conda_prefix, "bin", "activate")
     conda_unpack = os.path.join(conda_prefix, "bin", "conda-unpack")

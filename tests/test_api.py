@@ -20,15 +20,12 @@ import json
 import statistics
 import time
 import uuid
-
 from functools import partial
 
 import aiohttp
+import conda_store_server
 import pytest
 import requests
-
-import conda_store_server
-
 from conda_store_server._internal import schema
 from conda_store_server.server import schema as auth_schema
 
